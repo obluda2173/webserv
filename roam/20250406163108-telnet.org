@@ -1,0 +1,13 @@
+:PROPERTIES:
+:ID:       9b047f66-e1c1-4970-8595-6165a6f87594
+:END:
+#+title: telnet
+#+date: [2025-04-06 Sun 16:31]
+#+startup: overview
+
+- telnet is like ssh but non-secure
+  - since there is no encryption
+- terminal application that provides a way of communication with a remote server
+- allows logging into a computer
+- allows the execution of commands on the remote computer
+- usually uses TCP and Port 23

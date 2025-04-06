@@ -1,0 +1,10 @@
+:PROPERTIES:
+:ID:       2d2bf457-b078-469b-b953-d811aa3417d9
+:END:
+#+title: SSL termination
+#+date: [2025-04-06 Sun 16:37]
+#+startup: overview
+
+- ssl termination is a process by which the encrypted traffic sent to a server is getting decrypted and encrypted respectively
+  - it includes the check of the SSL-certificate
+  - but the primary function is the encryption and decryption itself

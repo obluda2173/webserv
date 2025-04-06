@@ -1,0 +1,11 @@
+:PROPERTIES:
+:ID:       c66c1799-4a57-4977-8af9-4bf9c5bb62ef
+:END:
+#+title: reverse proxy server
+#+date: [2025-04-06 Sun 16:34]
+#+startup: overview
+
+- a reverse proxy server is a server that in a client-server model is located at the server side before the server which provides the actual service to the client
+  - it is often used to do validation on the client request, add information, redirect to specific servers (load-balancing), caching (Redis), logging and [[id:2d2bf457-b078-469b-b953-d811aa3417d9][SSL-termination]]
+
+- it is called =reverse= because it acts on behalf of the server (not the client)

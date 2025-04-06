@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID:       0f79f342-3f30-4e90-8bcf-e3d9ca595a2b
+:END:
+#+title: http
+#+date: [2025-04-06 Sun 18:30]
+#+startup: overview
+
+* Terminology
+** connection
+- a connection is provided by the transport layer
+  - it is virtual (in the sense that it is an abstraction)
+  - an abstraction which provides reliable data transfer
+** message
+- core unit of the protocols
+- consisting of octects
+*** a http response
+*** a http request
+** resource
+- a data object or service
+- can be identified by an [[id:362e3b2f-512f-42f0-b4a0-c065ffdf5b12][URI]]
+** entity
+- information that is transferred with the payload
+** client
+- the entity which initiates a request
+** servers
+- a server accepts connections
+  - in order to provide services / data objects
+- sends back responses
+** origin server
+- the server which actually provides the resource/service being asked for
+** proxy
+- intermediary program between client and server
+- a proxy MUST implement both CLIENT and SERVER requirements
+*** transparent
+- doesn't modify request or response
+  - other than what is required for authentication
+*** non-transparent proxy
+- modifies request or response
+  - to provide service to the user-agent
+  - cookies, annotations, media type transformation, protocol reduction, anonymity filtering
+** gateway
+- a gateway is an intermediary between the client and the origin server
+- for the client it is not possible to know if it is talking to the gateway or the actual server providing the resource/service
+- it masks the servers identity
+** tunnel
+- a relay between two connections
+  - a relay is basically as a pipe
+    - two subjects are talking to the relay, but the relay makes it so that the subjects talk to eachother
+    - data is being relayed
+- a tunnel is no longer part of the HTTP communication, once the tunnel is established
+- a tunnel gets "destroyed" once one end of the relayed connection is getting closed
+** cache
+- it is a storage and the storage system , for responses which may be sent to the client, if the server receives equivalent requests
+- stores cacheable responses
+  - if the program is allowed to store a copy of the response message
+  - [[file:~/rfc/rfc2616.txt::13.1.1 Cache Correctness]]
+- it's to reduce response time, and unloading
+- a cache can not be used if a server is a tunnel

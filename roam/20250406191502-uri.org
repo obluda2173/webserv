@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID:       362e3b2f-512f-42f0-b4a0-c065ffdf5b12
+:END:
+#+title: URI
+#+date: [2025-04-06 Sun 19:15]
+#+startup: overview
+
+https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+[[file:~/rfc/rfc3986.txt]]
+
+- URI's are basically names for resources which you can find over a network
+- they are uniform
+  - it abstracts away the way of how to access the ressource
+
+- URI's have a specific syntax that consists of  a sequence : scheme - authority - path - query - fragment
+  - scheme and path are required (path may be empty)
+
+
