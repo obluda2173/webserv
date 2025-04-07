@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "af5322ba80764db2",
+        "id": "324b44554d357309",
         "type": "tabs",
         "children": [
           {
-            "id": "6b2b0ce2eab10ece",
+            "id": "ba0e0714bcc94542",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -168,10 +168,25 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "dd26c319e6c68db2",
+  "active": "ba0e0714bcc94542",
   "lastOpenFiles": [
     "Welcome.md",
+    "Sockets.md",
+    "Untitled.md",
+    "HTTP messages.md",
     "Http.md",
+    "Backus-Naur Form.canvas",
+    "http.md",
+    "telnet.md",
+    "Screenshot from 2024-11-25 15-13-42.png",
+    "SSL termination.md",
+    "webserv.md",
+    "URI.md",
+    "reverse proxy server.md",
+    "http message.md",
+    "Resources.md",
+    "poll.md",
+    "http resources.md",
     "create a link.md"
   ]
 }

@@ -10,9 +10,9 @@
 - a connection is provided by the transport layer
   - it is virtual (in the sense that it is an abstraction)
   - an abstraction which provides reliable data transfer
-** message
-- core unit of the protocols
-- consisting of octects
+** message ([[id:f30150ae-4c2e-41f5-8bc4-cc4c723909c9][http message]])
+- basic/core unit of HTTP communication
+- consisting of octects (bytes)
 *** a http response
 *** a http request
 ** resource
@@ -56,3 +56,11 @@
   - [[file:~/rfc/rfc2616.txt::13.1.1 Cache Correctness]]
 - it's to reduce response time, and unloading
 - a cache can not be used if a server is a tunnel
+** age
+- how old an response is
+  - measured from the point in time where it was sent from the origin server
+** freshness lifetime
+- time until expiration time of a response (since it was generated)
+** upstream/downstream
+- upstream refers to the stages that a message has gone through the system until reaching the current position
+- downstream refers to the stages that a message will go through the system from the current position

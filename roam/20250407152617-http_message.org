@@ -1,0 +1,6 @@
+:PROPERTIES:
+:ID:       f30150ae-4c2e-41f5-8bc4-cc4c723909c9
+:END:
+#+title: http message
+#+date: [2025-04-07 Mo 15:26]
+#+startup: overview

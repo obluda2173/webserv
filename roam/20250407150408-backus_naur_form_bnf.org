@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID:       2236de01-9e1e-4601-a936-d83d72d31f0c
+:END:
+#+title: Backus-Naur Form (BNF)
+#+date: [2025-04-07 Mo 15:04]
+#+startup: overview
+
+* What it is
+- BNF is used to describe the grammar of a language in a precise and unambiguous way
+
+1. *Purpose*:
+   - BNF is used to describe the grammar of a language in a precise and unambiguous way, which is especially useful for parser development and compiler construction.
+
+2. *Structure*:
+   - *Non-Terminals*: Symbols that can be further expanded. They denote abstract syntactic categories and are usually represented with angle brackets (e.g., =<expression>=).
+   - *Terminals*: Basic symbols that cannot be broken down further. They represent actual characters or tokens in the language (e.g., keywords, operators, literals).
+
+3. *Productions*:
+   - A BNF grammar consists of a set of production rules, each defining how a non-terminal can be replaced with a combination of non-terminals and terminals.
+   - The general form of a production rule is =<non-terminal> ::= <sequence of terminals and/or non-terminals>=.
+
+4. *Examples*:
+   - For a simple arithmetic expression grammar:
+     #+begin_src
+     <expression> ::= <term> | <expression> "+" <term> | <expression> "-" <term>
+     <term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
+     <factor> ::= <number> | "(" <expression> ")"
+     <number> ::= <digit> | <number> <digit>
+     <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+     #+end_src
+
+* Terminals
+1. *Angle Brackets (=<=, =>=)*:
+   - to represent non-terminal symbols
+
+2. *Colons and Equals (=::==)*:
+   - to define a production rule
+   - left side of =::== is the non-terminal being defined
+   - right side is the sequence that it can represent
+
+3. *Vertical Bar (=|=)*:
+   - Represents an "or" choice between alternatives
+
+4. *Quotation Marks (="=, ='=)*:
+   - Enclose terminal symbols, which are the basic symbols of the language
+   - For instance, ="+"= or ='a'=
