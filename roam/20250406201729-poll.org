@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID:       f11a1719-330f-46e6-9665-ebcfab98630b
+:END:
+#+title: poll
+#+date: [2025-04-06 Sun 20:17]
+#+startup: overview
+
+- is a C standard library function
+  - waits for a set of file descriptors to become ready to perform I/O
+  - epoll has more features
+  - I imagine it to useful, to listen to ports
+#+begin_src c
+int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+#+end_src
+
+- it takes an array to the =struct pollfd=
+  - nfds represents the number of file descriptors inside fds
+
+#+begin_src c
+struct pollfd {
+	int fd;		/* file desciptor */
+	short events;	/* requested events */
+	short revents;	/* returned events */
+};
+#+end_src
+- fd is an *open* file-descriptor
