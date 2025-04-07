@@ -11,14 +11,17 @@
             "id": "ba0e0714bcc94542",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Http.md",
-                "mode": "source",
-                "source": false
+                "file": "Backus-Naur Form.canvas",
+                "viewState": {
+                  "x": 50,
+                  "y": -26,
+                  "zoom": 0
+                }
               },
-              "icon": "lucide-file",
-              "title": "Http"
+              "icon": "lucide-layout-dashboard",
+              "title": "Backus-Naur Form"
             }
           }
         ]
@@ -170,11 +173,11 @@
   },
   "active": "ba0e0714bcc94542",
   "lastOpenFiles": [
+    "Http.md",
     "Welcome.md",
     "Sockets.md",
     "Untitled.md",
     "HTTP messages.md",
-    "Http.md",
     "Backus-Naur Form.canvas",
     "http.md",
     "telnet.md",

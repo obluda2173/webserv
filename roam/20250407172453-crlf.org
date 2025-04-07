@@ -1,0 +1,13 @@
+:PROPERTIES:
+:ID:       ea420c6d-7f56-446f-929f-7f2eb861dc57
+:END:
+#+title: CRLF
+#+date: [2025-04-07 Mo 17:24]
+#+startup: overview
+
+Carriage Return Line Feed
+
+- denotes the end of a line
+- consisting of 2 characters "\r\n"
+- besides Windows, it is mostly used in network protocols (HTTP, SMTP)
+  - in those contexts, it often times refers to the end of headers or messages

@@ -44,3 +44,30 @@
 4. *Quotation Marks (="=, ='=)*:
    - Enclose terminal symbols, which are the basic symbols of the language
    - For instance, ="+"= or ='a'=
+5. Extended BNF
+   1. *Square Brackets* (=[]=)
+      - indicate optional elements
+   2. *Repetition* (=*=):
+      #+begin_src bnf
+<l>*<m>element
+      #+end_src
+      - at least =l= and at most =m= occurences of element
+      - default are =0= and =infinity=
+        - so it allows any number
+          #+begin_src bnf
+*element
+          #+end_src
+      - at least 1
+        #+begin_src bnf
+1*element
+        #+end_src
+      - at most 1
+        #+begin_src bnf
+*1element
+        #+end_src
+      - 1 or 2
+        #+begin_src bnf
+1*2element
+        #+end_src
+   3. *Specific Repition* (=<n>element=)
+      + equivalent to (=<n>*<n>element=)

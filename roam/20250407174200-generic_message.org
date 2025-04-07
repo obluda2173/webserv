@@ -1,0 +1,8 @@
+:PROPERTIES:
+:ID:       def2d116-4283-4c69-b202-db7fa8280dc6
+:END:
+#+title: generic message
+#+date: [2025-04-07 Mo 17:42]
+#+startup: overview
+
+[[file:~/rfc/rfc822.txt::Standard for ARPA Internet Text Messages]]
