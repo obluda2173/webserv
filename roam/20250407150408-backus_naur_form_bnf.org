@@ -8,66 +8,26 @@
 * What it is
 - BNF is used to describe the grammar of a language in a precise and unambiguous way
 
-1. *Purpose*:
-   - BNF is used to describe the grammar of a language in a precise and unambiguous way, which is especially useful for parser development and compiler construction.
+- *Purpose*:
+  - BNF is used to describe the grammar of a language in a precise and unambiguous way, which is especially useful for parser development and compiler construction.
 
-2. *Structure*:
-   - *Non-Terminals*: Symbols that can be further expanded. They denote abstract syntactic categories and are usually represented with angle brackets (e.g., =<expression>=).
-   - *Terminals*: Basic symbols that cannot be broken down further. They represent actual characters or tokens in the language (e.g., keywords, operators, literals).
+- *Structure*:
+  - *Non-Terminals*: Symbols that can be further expanded. They denote abstract syntactic categories and are usually represented with angle brackets (e.g., =<expression>=).
+  - *Terminals*: Basic symbols that cannot be broken down further. They represent actual characters or tokens in the language (e.g., keywords, operators, literals).
 
-3. *Productions*:
-   - A BNF grammar consists of a set of production rules, each defining how a non-terminal can be replaced with a combination of non-terminals and terminals.
-   - The general form of a production rule is =<non-terminal> ::= <sequence of terminals and/or non-terminals>=.
+- *Productions*:
+  - A BNF grammar consists of a set of production rules, each defining how a non-terminal can be replaced with a combination of non-terminals and terminals.
+  - The general form of a production rule is =<non-terminal> ::= <sequence of terminals and/or non-terminals>=.
 
-4. *Examples*:
-   - For a simple arithmetic expression grammar:
-     #+begin_src
-     <expression> ::= <term> | <expression> "+" <term> | <expression> "-" <term>
-     <term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
-     <factor> ::= <number> | "(" <expression> ")"
-     <number> ::= <digit> | <number> <digit>
-     <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-     #+end_src
+- *Examples*:
+  - For a simple arithmetic expression grammar:
+    #+begin_src
+    <expression> ::= <term> | <expression> "+" <term> | <expression> "-" <term>
+    <term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor>
+    <factor> ::= <number> | "(" <expression> ")"
+    <number> ::= <digit> | <number> <digit>
+    <digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+    #+end_src
 
-* Terminals
-1. *Angle Brackets (=<=, =>=)*:
-   - to represent non-terminal symbols
-
-2. *Colons and Equals (=::==)*:
-   - to define a production rule
-   - left side of =::== is the non-terminal being defined
-   - right side is the sequence that it can represent
-
-3. *Vertical Bar (=|=)*:
-   - Represents an "or" choice between alternatives
-
-4. *Quotation Marks (="=, ='=)*:
-   - Enclose terminal symbols, which are the basic symbols of the language
-   - For instance, ="+"= or ='a'=
-5. Extended BNF
-   1. *Square Brackets* (=[]=)
-      - indicate optional elements
-   2. *Repetition* (=*=):
-      #+begin_src bnf
-<l>*<m>element
-      #+end_src
-      - at least =l= and at most =m= occurences of element
-      - default are =0= and =infinity=
-        - so it allows any number
-          #+begin_src bnf
-*element
-          #+end_src
-      - at least 1
-        #+begin_src bnf
-1*element
-        #+end_src
-      - at most 1
-        #+begin_src bnf
-*1element
-        #+end_src
-      - 1 or 2
-        #+begin_src bnf
-1*2element
-        #+end_src
-   3. *Specific Repition* (=<n>element=)
-      + equivalent to (=<n>*<n>element=)
+* [[id:ee689b2b-1249-4f6a-a320-9f430f238a0a][Standard BNF Terminals]]
+* [[id:25b39cee-665b-4005-aaf3-6f630cf769a4][Extended BNF Terminals]]

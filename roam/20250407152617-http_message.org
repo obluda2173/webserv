@@ -8,7 +8,7 @@
 * Http message
 - is either a request or a response
 ** general
-- uses generic message format ([[file:~/rfc/rfc822.txt::3. LEXICAL ANALYSIS OF MESSAGES]])
+- uses [[id:def2d116-4283-4c69-b202-db7fa8280dc6][generic message]] format
 - consist of
   1. A start line
   2. zero or more header fields (*header*)
@@ -27,8 +27,7 @@ start-line      = Request-Line | Status-Line
 #+end_src
 ** message headers
 - there are general-headers, request-headers, response-headers, entity-headers
-- follows
- 
+
 * SHOULDs
 - when a Request-Line is expected, the server SHOULD ignore empty lines
   - old implementations send too many CRLF's

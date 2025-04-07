@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID:       25b39cee-665b-4005-aaf3-6f630cf769a4
+:END:
+#+title: Extended BNF
+#+date: [2025-04-07 Mo 18:20]
+#+startup: overview
+
+1. *Square Brackets* (=[]=)
+   - indicate optional elements
+2. *Repetition* (=*=):
+   #+begin_src bnf
+<l>*<m>element
+   #+end_src
+   - at least =l= and at most =m= occurences of element
+   - default are =0= and =infinity=
+     - so it allows any number
+       #+begin_src bnf
+,*element
+       #+end_src
+   - at least 1
+     #+begin_src bnf
+1*element
+     #+end_src
+   - at most 1
+     #+begin_src bnf
+,*1element
+     #+end_src
+   - 1 or 2
+     #+begin_src bnf
+1*2element
+     #+end_src
+3. *Specific Repition* (=<n>element=)
+   + equivalent to (=<n>*<n>element=)
+
+4. *Lists* (=<l>#<m>element=)
+   - seperated by commas
+   - at least =l= and at most =m= elements
+   - with this, something like =(element *("," element))= becomes =1#element=
+     - NULL ELEMENTS ARE ALLOWED BUT DO NOT CONTRIBUTE TO THE COUNT OF ELEMENTS
+       =(element),,(element)=
+5. *Semicolons* (=;=) = Comments
