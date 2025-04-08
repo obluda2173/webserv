@@ -6,7 +6,7 @@
 /*   By: erian <erian@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 12:41:53 by erian             #+#    #+#             */
-/*   Updated: 2025/04/08 15:53:46 by erian            ###   ########.fr       */
+/*   Updated: 2025/04/08 18:56:55 by erian            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,12 @@ int main() {
 
 	ssize_t valread = read(new_socket, buffer, BUFFER_SIZE);
 	std::cout << "received: " << buffer << std::endl;
-	send(new_socket, buffer, valread, 0);
+	std::string msg = R"(HTTP/1.1 404 Not Found 
+Content-Type: text/html
+Content-Length:0
+
+<html><body><h1>hello from webserv</h1></body></html>)";
+	send(new_socket, msg.c_str(), msg.size(), 0);
 	std::cout << "echo message sent" << std::endl;
 
 	close(new_socket);

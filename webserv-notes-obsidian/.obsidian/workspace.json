@@ -11,20 +11,31 @@
             "id": "33c469a2353f435e",
             "type": "leaf",
             "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          },
+          {
+            "id": "bb06075a2a787fe3",
+            "type": "leaf",
+            "state": {
               "type": "canvas",
               "state": {
-                "file": "Project Map.canvas",
+                "file": "needed functions & explanations.canvas",
                 "viewState": {
-                  "x": 912.5606531157023,
-                  "y": 552.9471532936142,
-                  "zoom": -1.3834827654039987
+                  "x": 1996.2027361325058,
+                  "y": -197.29936382848678,
+                  "zoom": -0.20000000000000007
                 }
               },
               "icon": "lucide-layout-dashboard",
-              "title": "Project Map"
+              "title": "needed functions & explanations"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -81,7 +92,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "b7ad08268e9dad12",
@@ -171,16 +183,17 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "33c469a2353f435e",
+  "active": "bb06075a2a787fe3",
   "lastOpenFiles": [
-    "Sockets.md",
-    "Standard BNF Terminals.md",
-    "Backus-Naur Form.canvas",
-    "Backus-Naur Form (BNF).md",
     "Configuration File Creation and Parsing.md",
-    "Extended BNF.md",
+    "Standard BNF Terminals.md",
+    "needed functions & explanations.canvas",
     "Http.md",
     "Project Map.canvas",
+    "Extended BNF.md",
+    "Sockets.md",
+    "Backus-Naur Form.canvas",
+    "Backus-Naur Form (BNF).md",
     "Configuration File Explanation.md",
     "Socket Programming.md",
     "Welcome.md",
