@@ -11,14 +11,17 @@
             "id": "3fe564a90095d410",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "webserv-notes-obsidian/Sockets.md",
-                "mode": "source",
-                "source": false
+                "file": "webserv-notes-obsidian/Backus-Naur Form.canvas",
+                "viewState": {
+                  "x": 526.6570151445246,
+                  "y": 69.97986626071476,
+                  "zoom": -1.0717099484157342
+                }
               },
-              "icon": "lucide-file",
-              "title": "Sockets"
+              "icon": "lucide-layout-dashboard",
+              "title": "Backus-Naur Form"
             }
           }
         ]
@@ -94,17 +97,16 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "webserv-notes-obsidian/Sockets.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
                 "searchQuery": "",
-                "backlinkCollapsed": false,
+                "backlinkCollapsed": true,
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Sockets"
+              "title": "Backlinks"
             }
           },
           {
@@ -113,12 +115,11 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "webserv-notes-obsidian/Sockets.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Sockets"
+              "title": "Outgoing links"
             }
           },
           {
@@ -142,16 +143,17 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "webserv-notes-obsidian/Sockets.md",
+                "file": "needed functions & explanations.canvas",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Sockets"
+              "title": "Outline of needed functions & explanations"
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
@@ -168,6 +170,22 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "3fe564a90095d410",
-  "lastOpenFiles": []
+  "active": "d648e926abc5940a",
+  "lastOpenFiles": [
+    "needed functions & explanations.canvas",
+    "webserv-notes-obsidian/Project Map.canvas",
+    "webserv-notes-obsidian/Configuration File Creation and Parsing.md",
+    "sockets_tryout/server.cpp",
+    "sockets_tryout/client.cpp",
+    "sockets_tryout",
+    "Untitled",
+    "webserv-notes-obsidian/Backus-Naur Form.canvas",
+    "webserv-notes-obsidian/Sockets.md",
+    "Untitled.md",
+    "webserv-notes-obsidian/Standard BNF Terminals.md",
+    "webserv-notes-obsidian/Http.md",
+    "webserv-notes-obsidian/Extended BNF.md",
+    "webserv-notes-obsidian/Backus-Naur Form (BNF).md",
+    "en.subject.pdf"
+  ]
 }
