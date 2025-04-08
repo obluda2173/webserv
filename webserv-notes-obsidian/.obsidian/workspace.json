@@ -4,21 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "3792b6bb42a80046",
+        "id": "f97b03a51704af89",
         "type": "tabs",
         "children": [
           {
-            "id": "f53511020b81e0cc",
+            "id": "33c469a2353f435e",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Backus-Naur Form (BNF).md",
-                "mode": "source",
-                "source": false
+                "file": "Project Map.canvas",
+                "viewState": {
+                  "x": 912.5606531157023,
+                  "y": 552.9471532936142,
+                  "zoom": -1.3834827654039987
+                }
               },
-              "icon": "lucide-file",
-              "title": "Backus-Naur Form (BNF)"
+              "icon": "lucide-layout-dashboard",
+              "title": "Project Map"
             }
           }
         ]
@@ -168,16 +171,19 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "f53511020b81e0cc",
+  "active": "33c469a2353f435e",
   "lastOpenFiles": [
-    "Extended BNF.md",
-    "Backus-Naur Form (BNF).md",
-    "Standard BNF Terminals.md",
     "Sockets.md",
+    "Standard BNF Terminals.md",
     "Backus-Naur Form.canvas",
+    "Backus-Naur Form (BNF).md",
+    "Configuration File Creation and Parsing.md",
+    "Extended BNF.md",
     "Http.md",
+    "Project Map.canvas",
+    "Configuration File Explanation.md",
+    "Socket Programming.md",
     "Welcome.md",
-    "Untitled.md",
     "HTTP messages.md",
     "http.md",
     "telnet.md",
