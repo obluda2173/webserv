@@ -1,0 +1,9 @@
+:PROPERTIES:
+:ID:       18583cc7-eb19-4333-8f77-233b42708967
+:END:
+#+title: resources
+#+date: [2025-04-08 Tue 17:23]
+#+startup: overview
+
+- https://www.rfc-editor.org/rfc/rfc2616
+- https://httpbin.org/
