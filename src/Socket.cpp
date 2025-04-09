@@ -5,33 +5,42 @@
 #include <stdexcept>
 #include <unistd.h>
 
+std::string to_string(int value) {
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
+}
+
 Server::Server(void) : _port(80) {
     _logger = Logger();
     if (_init(_port) == -1) {
-        _logger.log("ERROR");
-        throw std::runtime_error("");
+        _logger.log("ERROR", "Failed to initialize server on default port 80");
+        throw std::runtime_error("Failed to initialize server");
     }
-    // TODO: log something
+    _logger.log("INFO", "Server initialized on port 80");
+
     if (_bind() == -1) {
-        _logger.log("ERROR");
-        throw std::runtime_error("");
+        _logger.log("ERROR", "Failed to bind server on port 80");
+        throw std::runtime_error("Failed to bind server");
     }
-    // TODO: log something
+    _logger.log("INFO", "Server successfully bound on port 80");
 }
 
 Server::Server(int port) : _port(port) {
     _logger = Logger();
     if (_init(_port) == -1) {
-        _logger.log("ERROR");
-        throw std::runtime_error("");
+        _logger.log("ERROR", "Failed to initialize server on port " + to_string(port));
+        throw std::runtime_error("Failed to initialize server");
     }
-    // TODO: log something
+    _logger.log("INFO", "Server initialized on port " + to_string(port));
+
     if (_bind() == -1) {
-        _logger.log("ERROR");
-        throw std::runtime_error("");
+        _logger.log("ERROR", "Failed to bind server on port " + to_string(port));
+        throw std::runtime_error("Failed to bind server");
     }
-    // TODO: log something
+    _logger.log("INFO", "Server successfully bound on port " + to_string(port));
 }
+
 
 int Server::listen() {
     if (::listen(_server_fd, 3) < 0) { // TODO: figure out the backlog, that we want to use

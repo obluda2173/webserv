@@ -9,31 +9,31 @@ Logger::t_log_func Logger::get_debug_level(std::string level) {
     return NULL;
 }
 
-void Logger::log(std::string level) {
-    Logger::t_log_func log_func= get_debug_level(level);
+void Logger::log(std::string level, const std::string& message) {
+    Logger::t_log_func log_func = get_debug_level(level);
     if (log_func)
-        (this->*log_func)();
+        (this->*log_func)(message);
     else
-        std::cout << "[ Probably complaining about insignificant problems ]" << std::endl;
-    return;
+        std::cout << "[ Probably complaining about insignificant problems ] " << message << std::endl;
 }
 
-void Logger::debug() {
-    std::cout << "[DEBUG]" << std::endl << "I love having extra bacon for my 7XL-double-cheese-triple-pickle-special ketchup burger. I really do!" << std::endl;
+void Logger::debug(const std::string& msg) {
+    std::cout << "[DEBUG] " << msg << std::endl;
 }
 
-void Logger::info() {
-    std::cout << "[INFO]" << std::endl << "I cannot believe adding extra bacon costs more money. You didn’t put enough bacon in my burger! If you did, I wouldn’t be asking for more!" << std::endl;
-}
-void Logger::warning() {
-    std::cout << "[WARNING]" << std::endl << "I think I deserve to have some extra bacon for free. I’ve been coming for years, whereas you started working here just last month."<< std::endl;
+void Logger::info(const std::string& msg) {
+    std::cout << "[INFO] " << msg << std::endl;
 }
 
-void Logger::error() {
-    std::cout << "[ERROR]" << std::endl << "This is unacceptable! I want to speak to the manager now." << std::endl;
+void Logger::warning(const std::string& msg) {
+    std::cout << "[WARNING] " << msg << std::endl;
 }
 
-void Logger::log_from(std::string level) {
+void Logger::error(const std::string& msg) {
+    std::cout << "[ERROR] " << msg << std::endl;
+}
+
+void Logger::log_from(std::string level, const std::string msg) {
     std::string levels[4] = {"DEBUG", "INFO", "WARNING", "ERROR"};
     int level_nbr = -1;
     for (int i = 0; i < 4 ; i++)
@@ -42,16 +42,16 @@ void Logger::log_from(std::string level) {
 
     switch (level_nbr) {
     case (0):
-        debug();
+        debug(msg);
         // fall through
     case (1):
-        info();
+        info(msg);
         // fall through
     case (2):
-        warning();
+        warning(msg);
         // fall through
     case (3):
-        error();
+        error(msg);
         break;
     default:
         std::cout << "[ Probably complaining about insignificant problems ]" << std::endl;
