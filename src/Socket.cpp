@@ -1,9 +1,13 @@
 #include "Socket.h"
+#include "Logger.h"
+#include <iostream>
 #include <stdexcept>
 
 Socket::Socket(void) : _port(80) {
+    Logger logger;
+
     int server_fd;
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) != -1) {
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket failed");
         throw std::runtime_error("");
     }
@@ -24,9 +28,12 @@ Socket::Socket(void) : _port(80) {
         throw std::runtime_error("");
     }
 
-	if (listen(server_fd, 3) < 0) { // TODO: figure out the backlog, that we want to use
-		perror("listen");
+    if (listen(server_fd, 3) < 0) { // TODO: figure out the backlog, that we want to use
+        perror("listen");
         throw std::runtime_error("");
-	}
+    }
+
+    logger.log("INFO");
 }
+
 Socket::Socket(int port) : _port(port) {}

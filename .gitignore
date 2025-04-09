@@ -3,3 +3,5 @@
 sockets_tryout/.vscode/
 sockets_tryout/webserv
 /compile_commands.json
+/.cache/
+/webserv

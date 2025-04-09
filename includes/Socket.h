@@ -4,7 +4,6 @@
 #include <netinet/in.h>
 #include <cstdio>
 #include <cstdlib>
-#include <exception>
 
 class Socket {
 private:
