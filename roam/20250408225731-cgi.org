@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID:       22536a49-1c27-4735-a465-636811f1eccb
+:END:
+#+title: CGI
+#+date: [2025-04-08 Tue 22:57]
+#+startup: overview
+
+- CGI is an interface specification
+  - it specifies the parameters, return values and overall behavior of a script, that is wished to be used as a programm to retrieve a resource (CGI scripts)
+
+  - i.e.:
+    1. a user submits a filled out form-request
+    2. the server parser the request and launches the CGI script with given form-data
+    3. the CGI performs a certain action and passes its output back to the server (usually html)
+    4. the server is responding with an http-response and the output in its body

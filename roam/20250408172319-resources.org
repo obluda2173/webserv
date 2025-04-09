@@ -5,5 +5,22 @@
 #+date: [2025-04-08 Tue 17:23]
 #+startup: overview
 
+
+* rfc's
 - https://www.rfc-editor.org/rfc/rfc2616
+- [[https://www.rfc-editor.org/rfc/rfc3875][rfc Common Gateway Interface]]
+  - [[https://en.wikipedia.org/wiki/Common_Gateway_Interface]]
+
+* tools
 - https://httpbin.org/
+- https://www.postman.com/
+
+
+* other projects
+
+
+* nginx
+- https://nginx.org/
+
+* infos
+- [[https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers][List of TCP and UDP port numbers]]

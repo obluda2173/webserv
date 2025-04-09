@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID:       205cbe77-c040-4336-95f9-c8adb5c701c1
+:END:
+#+title: web server
+#+date: [2025-04-09 Wed 07:38]
+#+startup: overview
+
+* main flow
+** listening for requests
+- listening for requests on a specific [[id:64795799-646a-4ac1-a133-4fd209429d8a][ports]]
+- usually it is listening on port *80* for *HTTP* and *443* for *HTTPS*
+  - the port *80* is actually a standardized port, so browsers will automatically send requests to *80* if the protocoll is *HTTP* and to *443* if it is *HTTPS*
+** processing requests
+- parsing and validating the [[id:7526fb62-781b-4a45-9c0a-cb76ecd3f7e6][http components]] request
+** mapping requests to resources (CGI)
+- since the request is requesting something, something needs to be collected
+- which resource is to be collected depends on the parameters of the http request (URL, query etc.)
+  - this can happen via a simple file read in the document store on the server
+    - document store at =/usr/local/apache/htdocs=, then a call to the host =example.com/index.html= woudl retrieve =/usr/local/apache/htdocs=
+  - or something more elaborate needs to be done, e.g. launching a php script ([[id:22536a49-1c27-4735-a465-636811f1eccb][CGI]])
+** Generating and sending Responses
+- for static resources, just respond with the retrieved files
+- for dynamic content, run CGI script, retrieve response content, build the http response
+* other tasks
+** logging
+- logging incoming requests, outgoing response, intermediate steps
+** concurrency
+- handle simultanieous requests at the same time
+- can involve multithreading, asynchronous I/O, event driven architectures
+** security
+- TLS/SSL certificates
+- protection against DDOS, SQLinjection, XSS (Cross-Site scripting), CSRF (Cross site request forgery)

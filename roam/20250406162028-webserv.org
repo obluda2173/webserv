@@ -15,6 +15,7 @@
   - htons, htonl, ntohs, ntohl
   - select, poll, epoll (epoll_create, epoll_ctl, epoll_wait)
   - kqueue (kqueue, kevent)
+
 - apparently poll, secect, keque, epoll do the somewhat same thing
 
 - We shall read the RFC and perform tests with telnet and NGINX before starting the project

@@ -64,3 +64,7 @@
 ** upstream/downstream
 - upstream refers to the stages that a message has gone through the system until reaching the current position
 - downstream refers to the stages that a message will go through the system from the current position
+* components
+:PROPERTIES:
+:ID:       7526fb62-781b-4a45-9c0a-cb76ecd3f7e6
+:END:
