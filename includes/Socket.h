@@ -6,14 +6,20 @@
 #include <cstdlib>
 #include <Logger.h>
 
-class Socket {
+#define BUFFER_SIZE 1024
+
+class Server {
 private:
+	struct sockaddr_in _address;
+	socklen_t _addrlen;
 	int _port;
 	int _server_fd;
 	Logger _logger;
+	int _fun(int);
 public:
-	Socket(void);
-	Socket(int port);
+	Server(void);
+	Server(int port);
+	int listen(void);
 };
 
 #endif // SOCKET_H
