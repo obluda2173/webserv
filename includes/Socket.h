@@ -15,7 +15,8 @@ private:
 	int _port;
 	int _server_fd;
 	Logger _logger;
-	int _fun(int);
+	int _init(int);
+	int _bind();
 public:
 	Server(void);
 	Server(int port);

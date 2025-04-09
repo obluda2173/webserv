@@ -7,19 +7,30 @@
 
 Server::Server(void) : _port(80) {
     _logger = Logger();
-    if ((_server_fd = _fun(_port)) == -1) {
+    if (_init(_port) == -1) {
         _logger.log("ERROR");
         throw std::runtime_error("");
     }
-    _logger.log("INFO");
+    // TODO: log something
+    if (_bind() == -1) {
+        _logger.log("ERROR");
+        throw std::runtime_error("");
+    }
+    // TODO: log something
 }
 
 Server::Server(int port) : _port(port) {
     _logger = Logger();
-    if ((_server_fd = _fun(_port)) == -1) {
+    if (_init(_port) == -1) {
         _logger.log("ERROR");
         throw std::runtime_error("");
     }
+    // TODO: log something
+    if (_bind() == -1) {
+        _logger.log("ERROR");
+        throw std::runtime_error("");
+    }
+    // TODO: log something
 }
 
 int Server::listen() {
@@ -43,7 +54,7 @@ int Server::listen() {
         if (valread < 0) {
             perror("read");
             close(new_socket);
-    close(_server_fd);
+            close(_server_fd);
             break;
         }
         std::cout << "received: " << buffer << std::endl;
@@ -64,7 +75,7 @@ int Server::listen() {
     return 0;
 }
 
-int Server::_fun(int port) {
+int Server::_init(int port) {
     int server_fd;
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket failed");
@@ -85,11 +96,16 @@ int Server::_fun(int port) {
     _address = address;
     _addrlen = sizeof(_address);
 
+    return 0;
+}
+
+int Server::_bind() {
     // binding the address to the socket file descriptor server_fd
-    if (bind(server_fd, (struct sockaddr*)&address, _addrlen) < 0) {
+    if (bind(_server_fd, (struct sockaddr*)&_address, _addrlen) < 0) {
         perror("bind failed");
         close(_server_fd);
         return -1;
     }
-    return server_fd;
+    return 0;
+
 }
