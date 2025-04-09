@@ -20,3 +20,12 @@ HISTORY
 
 * Resources
 - [[id:8c11beaa-1927-4834-b27f-2de1533422ae][sockets]]
+
+* API
+** htons
+- *Why `htons()` is needed*:
+  - standardizing *Network byte order*
+    - Different computer architectures (x86, ARM, etc.) may store multi-byte data like port numbers in different ways
+    - ensures that all machines interpret the data correctly, no matter their architecture.
+    - So, you use `htons()` to ensure that the port number is properly formatted for network transmission
+

@@ -18,7 +18,7 @@ CXXFLAGS := -std=c++98 -Wall -Werror -Wextra -Wshadow
 SRC_DIR := src
 BUILD_DIR := build
 INCLUDES := -Iincludes
-SRC_FILES := $(SRC_DIR)/
+SRC_FILES := $(SRC_DIR)/main.cpp $(SRC_DIR)/Socket.cpp
 
 NAME := webserv
 
