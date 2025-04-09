@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID:       a6df6013-b9e1-434f-af10-0dafda983bc9
+:END:
+#+title: socket programming
+#+date: [2025-04-09 Wed 07:56]
+#+startup: overview
+
+* what is a socket
+- a socket is a concept generally referred two if two parties want to exchange data in two directions
+- besides sockets which allow parties to communicate over a computer network, there are also sockets which facilitate the communication between processes inside the same computer ([[https://en.wikipedia.org/wiki/Unix_domain_socket][UDS - UNIX domain sockets]])
+- for network communication, we usually speak about Berkeley sockets
+  - man 2 socket =<sys/socket.h>= =socket()=
+  - this library function is part of POSIX and came out of =BSD= (Berkeley Software Distribution - Berkeley Socket)
+    #+begin_example
+HISTORY
+       POSIX.1-2001, 4.4BSD.
+       socket() appeared in 4.2BSD.  It is generally portable to/from non-BSD systems supporting clones of the BSD socket layer (including System V variants).
+       ...
+    #+end_example
+
+* Resources
+- [[id:8c11beaa-1927-4834-b27f-2de1533422ae][sockets]]

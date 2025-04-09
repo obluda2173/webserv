@@ -15,7 +15,15 @@
 - https://httpbin.org/
 - https://www.postman.com/
 
+* sockets
+:PROPERTIES:
+:ID:       8c11beaa-1927-4834-b27f-2de1533422ae
+:END:
+- man 2 socket
 
+** wikipedia
+- https://en.wikipedia.org/wiki/Berkeley_sockets#BSD_and_POSIX_sockets
+- https://en.wikipedia.org/wiki/Network_socket
 * other projects
 
 
