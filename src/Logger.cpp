@@ -18,19 +18,19 @@ void Logger::log(std::string level, const std::string& message) {
 }
 
 void Logger::debug(const std::string& msg) {
-    std::cout << "[DEBUG] " << msg << std::endl;
+    std::cout << DEBUG << msg << NC << std::endl;
 }
 
 void Logger::info(const std::string& msg) {
-    std::cout << "[INFO] " << msg << std::endl;
+    std::cout << INFO << msg << NC << std::endl;
 }
 
 void Logger::warning(const std::string& msg) {
-    std::cout << "[WARNING] " << msg << std::endl;
+    std::cout << WARNING << msg << NC << std::endl;
 }
 
 void Logger::error(const std::string& msg) {
-    std::cout << "[ERROR] " << msg << std::endl;
+    std::cout << ERROR << msg << NC << std::endl;
 }
 
 void Logger::log_from(std::string level, const std::string msg) {
