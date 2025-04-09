@@ -41,6 +41,11 @@ Server::Server(int port) : _port(port) {
     _logger.log("INFO", "Server successfully bound on port " + to_string(port));
 }
 
+Server::~Server() {
+    if (_server_fd > 0) {
+        close(_server_fd);
+    }
+}
 
 int Server::listen() {
     if (::listen(_server_fd, 3) < 0) { // TODO: figure out the backlog, that we want to use

@@ -20,6 +20,7 @@ private:
 public:
 	Server(void);
 	Server(int port);
+	~Server();
 	int listen(void);
 };
 
