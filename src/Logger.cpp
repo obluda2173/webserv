@@ -1,7 +1,4 @@
 #include "Logger.h"
-#include <iostream>
-#include <ctime>
-#include <iomanip>
 
 Logger::Logger() {
 	_cout = &std::cout;
@@ -13,73 +10,74 @@ Logger::Logger(std::string filepath) : _file() {
 }
 
 Logger::~Logger() {
-    if (_file.is_open()) {
-        _file.close();
-    }
+	if (_file.is_open()) {
+		_file.close();
+	}
 }
 
 Logger::t_log_func Logger::get_debug_level(std::string level) {
-    if (level == "DEBUG") { return &Logger::debug; }
-    if (level == "INFO") { return &Logger::info; }
-    if (level == "WARNING") { return &Logger::warning; }
-    if (level == "ERROR") { return &Logger::error; }
-    return NULL;
+	if (level == "DEBUG") { return &Logger::debug; }
+	if (level == "INFO") { return &Logger::info; }
+	if (level == "WARNING") { return &Logger::warning; }
+	if (level == "ERROR") { return &Logger::error; }
+	return NULL;
 }
 
 void Logger::log(std::string level, const std::string& message) {
-    Logger::t_log_func log_func = get_debug_level(level);
-    if (log_func)
-        (this->*log_func)(message);
-    else
-        *_cout << "[ Probably complaining about insignificant problems ] " << message << std::endl;
+	Logger::t_log_func log_func = get_debug_level(level);
+	if (log_func)
+		(this->*log_func)(message);
+	else
+		*_cout << "[ Probably complaining about insignificant problems ] " << message << std::endl;
 }
 
 void Logger::debug(const std::string& msg) {
-    std::time_t now = std::time(NULL);
-    std::tm* local_tm = std::localtime(&now);
-    char buffer[22]; // Enough for "[YYYY-MM-DD HH:MM:SS]"
-    if (local_tm) {
-        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
-    }
-    *_cout << buffer << " DEBUG " << msg << std::endl;
+	std::time_t now = std::time(NULL);
+	std::tm* local_tm = std::localtime(&now);
+	char buffer[22];
+	if (local_tm) {
+		std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+	}
+	*_cout << buffer << " DEBUG " << msg << std::endl;
 }
 
 void Logger::info(const std::string& msg) {
-    std::time_t now = std::time(NULL);
-    std::tm* local_tm = std::localtime(&now);
-    char buffer[22];
-    if (local_tm) {
-        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
-    }
-    *_cout << buffer << " INFO " << msg << std::endl;
+	std::time_t now = std::time(NULL);
+	std::tm* local_tm = std::localtime(&now);
+	char buffer[22];
+	if (local_tm) {
+		std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+	}
+	*_cout << buffer << " INFO " << msg << std::endl;
 }
 
 void Logger::warning(const std::string& msg) {
-    std::time_t now = std::time(NULL);
-    std::tm* local_tm = std::localtime(&now);
-    char buffer[22];
-    if (local_tm) {
-        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
-    }
-    *_cout << buffer << " WARNING " << msg << std::endl;
+	std::time_t now = std::time(NULL);
+	std::tm* local_tm = std::localtime(&now);
+	char buffer[22];
+	if (local_tm) {
+		std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+	}
+	*_cout << buffer << " WARNING " << msg << std::endl;
 }
 
 void Logger::error(const std::string& msg) {
-    std::time_t now = std::time(NULL);
-    std::tm* local_tm = std::localtime(&now);
-    char buffer[22];
-    if (local_tm) {
-        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
-    }
-    *_cout << buffer << " ERROR " << msg << std::endl;
+	std::time_t now = std::time(NULL);
+	std::tm* local_tm = std::localtime(&now);
+	char buffer[22];
+	if (local_tm) {
+		std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+	}
+	*_cout << buffer << " ERROR " << msg << std::endl;
 }
 
+// when I delete the comments from this funcitons I encounter errors :(
 void Logger::log_from(std::string level, const std::string msg) {
-    std::string levels[4] = {"DEBUG", "INFO", "WARNING", "ERROR"};
-    int level_nbr = -1;
-    for (int i = 0; i < 4 ; i++)
-        if (level == levels[i])
-            level_nbr = i;
+	std::string levels[4] = {"DEBUG", "INFO", "WARNING", "ERROR"};
+	int level_nbr = -1;
+	for (int i = 0; i < 4 ; i++)
+		if (level == levels[i])
+			level_nbr = i;
 
     switch (level_nbr) {
     case (0):
