@@ -1,5 +1,20 @@
 #include "Logger.h"
 #include <iostream>
+#include <ctime>
+#include <iomanip>
+
+Logger::Logger() {
+	_cout = &std::cout;
+}
+
+Logger::Logger(std::string filepath) : _file() {
+	_file.open(filepath.c_str(), std::ios::out | std::ios::app);
+	_cout = &_file;
+}
+
+Logger::~Logger() {
+	_file.close();
+}
 
 Logger::t_log_func Logger::get_debug_level(std::string level) {
     if (level == "DEBUG") { return &Logger::debug; }
@@ -14,23 +29,47 @@ void Logger::log(std::string level, const std::string& message) {
     if (log_func)
         (this->*log_func)(message);
     else
-        std::cout << "[ Probably complaining about insignificant problems ] " << message << std::endl;
+        *_cout << "[ Probably complaining about insignificant problems ] " << message << std::endl;
 }
 
 void Logger::debug(const std::string& msg) {
-    std::cout << DEBUG << msg << NC << std::endl;
+    std::time_t now = std::time(NULL);
+    std::tm* local_tm = std::localtime(&now);
+    char buffer[22]; // Enough for "[YYYY-MM-DD HH:MM:SS]"
+    if (local_tm) {
+        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+    }
+    *_cout << buffer << " DEBUG " << msg << std::endl;
 }
 
 void Logger::info(const std::string& msg) {
-    std::cout << INFO << msg << NC << std::endl;
+    std::time_t now = std::time(NULL);
+    std::tm* local_tm = std::localtime(&now);
+    char buffer[22];
+    if (local_tm) {
+        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+    }
+    *_cout << buffer << " INFO " << msg << std::endl;
 }
 
 void Logger::warning(const std::string& msg) {
-    std::cout << WARNING << msg << NC << std::endl;
+    std::time_t now = std::time(NULL);
+    std::tm* local_tm = std::localtime(&now);
+    char buffer[22];
+    if (local_tm) {
+        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+    }
+    *_cout << buffer << " WARNING " << msg << std::endl;
 }
 
 void Logger::error(const std::string& msg) {
-    std::cout << ERROR << msg << NC << std::endl;
+    std::time_t now = std::time(NULL);
+    std::tm* local_tm = std::localtime(&now);
+    char buffer[22];
+    if (local_tm) {
+        std::strftime(buffer, sizeof(buffer), "[%Y-%m-%d %H:%M:%S]", local_tm);
+    }
+    *_cout << buffer << " ERROR " << msg << std::endl;
 }
 
 void Logger::log_from(std::string level, const std::string msg) {
@@ -54,6 +93,6 @@ void Logger::log_from(std::string level, const std::string msg) {
         error(msg);
         break;
     default:
-        std::cout << "[ Probably complaining about insignificant problems ]" << std::endl;
+        *_cout << "[ Probably complaining about insignificant problems ]" << std::endl;
     }
 }

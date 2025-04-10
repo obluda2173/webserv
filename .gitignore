@@ -6,3 +6,4 @@ sockets_tryout/webserv
 /.cache/
 /webserv
 /.vscode/
+log.txt
