@@ -15,9 +15,6 @@
 - https://www.postman.com/
 
 * sockets
-:PROPERTIES:
-:ID:       8c11beaa-1927-4834-b27f-2de1533422ae
-:END:
 - man 2 socket
 - man 7 ip
   - defines address format ==struct sockaddr_in
