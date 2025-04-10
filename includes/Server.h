@@ -11,28 +11,23 @@
 #include <stdexcept>
 #include <netinet/in.h>
 
-class Logger;
-
 class Server {
 	private:
 		struct sockaddr_in _address;
 		socklen_t _addrlen;
 		int _port;
-		int _server_fd;
+		int _serverfd;
 		Logger* _logger;
-
 		int _init(int port);
 		int _bind();
 
 	public:
 		static const int BUFFER_SIZE = 1024;
-
-		Server(int port, Logger* logger);
+		Server(Logger* logger);
 		~Server();
-
-		int listen();
+		void listen(int port);
 		int handleConnections();
-		int processClient(int client_socket);
+		int processConn(int client_socket);
 		std::string generateHttpResponse();
 };
 
