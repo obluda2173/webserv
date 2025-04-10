@@ -5,7 +5,6 @@
 #+date: [2025-04-08 Tue 17:23]
 #+startup: overview
 
-
 * rfc's
 - https://www.rfc-editor.org/rfc/rfc2616
 - [[https://www.rfc-editor.org/rfc/rfc3875][rfc Common Gateway Interface]]
@@ -20,13 +19,14 @@
 :ID:       8c11beaa-1927-4834-b27f-2de1533422ae
 :END:
 - man 2 socket
-
+- man 7 ip
+  - defines address format ==struct sockaddr_in
+- https://beej.us/guide/bgnet/pdf/bgnet_usl_c_1.pdf
 ** wikipedia
 - https://en.wikipedia.org/wiki/Berkeley_sockets#BSD_and_POSIX_sockets
 - https://en.wikipedia.org/wiki/Network_socket
 * other projects
 - https://github.com/codecrafters-io/build-your-own-x?tab=readme-ov-file#build-your-own-web-server
-
 
 * nginx
 - https://nginx.org/

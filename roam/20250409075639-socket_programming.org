@@ -18,9 +18,6 @@ HISTORY
        ...
     #+end_example
 
-* Resources
-- [[id:8c11beaa-1927-4834-b27f-2de1533422ae][sockets]]
-
 * API
 ** htons
 - *Why `htons()` is needed*:
