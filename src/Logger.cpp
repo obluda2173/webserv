@@ -13,7 +13,9 @@ Logger::Logger(std::string filepath) : _file() {
 }
 
 Logger::~Logger() {
-	_file.close();
+    if (_file.is_open()) {
+        _file.close();
+    }
 }
 
 Logger::t_log_func Logger::get_debug_level(std::string level) {
