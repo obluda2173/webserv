@@ -25,6 +25,7 @@
 - https://en.wikipedia.org/wiki/Berkeley_sockets#BSD_and_POSIX_sockets
 - https://en.wikipedia.org/wiki/Network_socket
 * other projects
+- https://github.com/codecrafters-io/build-your-own-x?tab=readme-ov-file#build-your-own-web-server
 
 
 * nginx

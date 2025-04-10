@@ -64,7 +64,16 @@
 ** upstream/downstream
 - upstream refers to the stages that a message has gone through the system until reaching the current position
 - downstream refers to the stages that a message will go through the system from the current position
+
 * components
 :PROPERTIES:
 :ID:       7526fb62-781b-4a45-9c0a-cb76ecd3f7e6
 :END:
+** http header
+*** required
+**** host
+- multiple domains can be hosted on the same IP address in HTTP/1.1
+  - significant improvement to HTTP/1.0
+- virtual hosting
+  - this is a feature of nginx, whereby nginx can host multiple domains
+  - this makes it, that from the outside, it seems as if your talking to different servers
