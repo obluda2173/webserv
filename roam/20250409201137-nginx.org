@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID:       50b93003-66b9-4964-96f5-10b4e93f4183
+:END:
+#+title: nginx
+#+date: [2025-04-09 Wed 20:11]
+#+startup: overview
+
+* Architeture
+- one master process and several worker processes
+** master process
+- reads and evaluates the configuration
+- maintains worker processes
+** worker processes
+- number of worker processes is defined in config-file ([[https://nginx.org/en/docs/ngx_core_module.html#worker_processes][worker-proccesses-config]])
+  - threading?
+
+* How connections are being processed
+https://nginx.org/en/docs/events.html
+- you can choose between =select=, =kqueue=, =poll= etc.
+
+* config file
+- by default named *nginx.conf*
+- places inside
+  - =/usr/local/nginx/conf=
+  - =/etc/nginx=
+  - =/usr/local/etc/nginx=
+** some parameters
+#+begin_example
+user www www;
+worker_processes 2;
+
+error_log /var/log/nginx-error.log info;
+
+events {
+    use kqueue;
+    worker_connections 2048;
+    ...
+}
+#+end_example
