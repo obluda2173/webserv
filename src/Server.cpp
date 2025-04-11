@@ -1,13 +1,8 @@
 #include "Server.h"
 #include "Logger.h"
 
+std::string to_string(int value);
 std::string generateHttpResponse();
-
-std::string to_string(int value) {
-    std::stringstream ss;
-    ss << value;
-    return ss.str();
-}
 
 Server::Server(Logger *logger) : _logger(logger) {
     _serverfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -44,44 +39,72 @@ void Server::listen(int port) {
     _logger->log("INFO", "Server listening on port " + to_string(_port));
 }
 
+
 int Server::handleConnections() {
     while (true) {
-        int newConn =
-            accept(_serverfd, reinterpret_cast<struct sockaddr *>(&_address),
-                   &_addrlen);
-        if (newConn < 0) {
-            _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
-            close(_serverfd);
-            throw std::runtime_error(
-                "error getting establishing new connection");
-            break;
+        // wait for events on all fds
+        int ready = poll(&_pfds[0], _pfds.size(), -1);
+        if (ready < 0) {
+            _logger->log("ERROR", "poll: " + std::string(strerror(errno)));
+            throw std::runtime_error("poll error");
         }
 
-        if (processConn(newConn) < 0) {
-            close(_serverfd);
-            close(newConn);
-            throw std::runtime_error("error processing the connection");
-            continue;
+        // iterate through poll vector
+        for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); ) {
+            bool removeFd = false;
+
+            // handle incoming data or connections
+            if (it->revents & POLLIN) {
+                if (it->fd == _serverfd) {
+                    // accept new connection
+                    int newSocket = accept(_serverfd, reinterpret_cast<struct sockaddr *>(&_address), &_addrlen);
+                    if (newSocket < 0) {
+                        _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
+                    } else {
+                        struct pollfd newPfd = {newSocket, POLLIN, 0};
+                        _pfds.push_back(newPfd);
+                    }
+                } else {
+                    char buffer[BUFFER_SIZE] = {0};
+                    ssize_t bytesRead = read(it->fd, buffer, BUFFER_SIZE);
+                    if (bytesRead > 0) {
+                        _logger->log("INFO", std::string(buffer, bytesRead));
+                        it->events = POLLOUT;
+                    } else {
+                        close(it->fd);
+                        removeFd = true;
+                    }
+                }
+            }
+
+            // handle sending response
+            else if (it->revents & POLLOUT) {
+                std::string response = generateHttpResponse();
+                ssize_t bytesSent = send(it->fd, response.c_str(), response.size(), 0);
+                if (bytesSent > 0) {
+                    _logger->log("INFO", "response sent successfully");
+                } else {
+                    _logger->log("ERROR", "send: " + std::string(strerror(errno)));
+                }
+                close(it->fd);
+                removeFd = true;
+            }
+
+            // remove closed connections
+            if (removeFd) {
+                it = _pfds.erase(it);
+            } else {
+                ++it;
+            }
         }
-        close(newConn);
     }
-    close(_serverfd);
     return 0;
 }
 
-int Server::processConn(int conn) {
-    char buffer[BUFFER_SIZE] = {0};
-    ssize_t valread = read(conn, buffer, BUFFER_SIZE);
-    if (valread < 0) {
-        _logger->log("ERROR", "read: " + std::string(strerror(errno)));
-        return -1;
-    }
-
-    _logger->log("INFO", buffer);
-    std::string response = generateHttpResponse();
-    send(conn, response.c_str(), response.size(), 0);
-    _logger->log("INFO", "echo message sent");
-    return 0;
+std::string to_string(int value) {
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
 }
 
 std::string generateHttpResponse() {

@@ -1,15 +1,17 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include <Logger.h>
+#include <poll.h>
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <netinet/in.h>
 #include <sstream>
-#include <stdexcept>
 #include <unistd.h>
+#include <stdexcept>
+#include <netinet/in.h>
+
+#include <Logger.h>
 
 class Server {
   private:
@@ -18,6 +20,7 @@ class Server {
     int _port;
     int _serverfd;
     Logger *_logger;
+    std::vector<struct pollfd> _pfds;
     int _init(int port);
     int _bind();
 
