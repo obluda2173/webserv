@@ -1,5 +1,4 @@
 #include "Server.h"
-
 #include "Logger.h"
 
 std::string to_string(int value) {
