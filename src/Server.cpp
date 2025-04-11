@@ -64,9 +64,9 @@ int Server::handleConnections() {
 	return 0;
 }
 
-int Server::processConn(int client_socket) {
+int Server::processConn(int conn) {
 	char buffer[BUFFER_SIZE] = {0};
-	ssize_t valread = read(client_socket, buffer, BUFFER_SIZE);
+	ssize_t valread = read(conn, buffer, BUFFER_SIZE);
 	if (valread < 0) {
 		_logger->log("ERROR", "read: " + std::string(strerror(errno)));
 		return -1;
@@ -74,7 +74,7 @@ int Server::processConn(int client_socket) {
 
 	_logger->log("INFO", buffer);
 	std::string response = generateHttpResponse();
-	send(client_socket, response.c_str(), response.size(), 0);
+	send(conn, response.c_str(), response.size(), 0);
 	_logger->log("INFO", "echo message sent");
 	return 0;
 }
