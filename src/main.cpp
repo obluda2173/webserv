@@ -1,20 +1,21 @@
 #include "Server.h"
 
 int main() {
-	// Logger* logger = new Logger("log.txt");
-	Logger* logger = new Logger();
+    // Logger* logger = new Logger("log.txt");
+    Logger *logger = new Logger();
 
-	// TODO: parse the config file
-	// return Class config
-	try {
-		Server server(logger);
-		// TODO: registering Handlers depending on the config
-		server.listen(80);
-		server.handleConnections();
-	} catch (const std::exception& e) {
-		logger->log("ERROR", "Exception caught: " + std::string(e.what()));
-		delete logger;
-		exit(EXIT_FAILURE);
-	}
-	delete logger;
+    // TODO: parse the config file
+    // construct config Class
+    // config.parse()
+    try {
+        Server server(logger);
+        // TODO: registering Handlers depending on the config
+        server.listen(80);
+        server.handleConnections();
+    } catch (const std::exception &e) {
+        logger->log("ERROR", "Exception caught: " + std::string(e.what()));
+        delete logger;
+        exit(EXIT_FAILURE);
+    }
+    delete logger;
 }
