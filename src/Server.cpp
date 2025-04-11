@@ -41,16 +41,22 @@ void Server::listen(int port) {
 
 
 int Server::handleConnections() {
+    struct pollfd sererPfd = {_serverfd, POLLIN, 0};
+    _pfds.push_back(sererPfd);
     while (true) {
         // wait for events on all fds
-        int ready = poll(&_pfds[0], _pfds.size(), -1);
+        // int ready = poll(&_pfds[0], _pfds.size(), 100);      //this might be wrong but not sure yet.
+        int ready = poll(_pfds.data(), _pfds.size(), 100);
         if (ready < 0) {
             _logger->log("ERROR", "poll: " + std::string(strerror(errno)));
             throw std::runtime_error("poll error");
         }
-
+        
         // iterate through poll vector
+        std::cout   << "polling...\nthis is the serverfd: " << _pfds[0].fd << std::endl;
+        std::cout   << "this is the size of _pfds: " << _pfds.size() << std::endl;
         for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); ) {
+            std::cout << "this is the element of _pfds: " << _pfds.size() << std::endl;
             bool removeFd = false;
 
             // handle incoming data or connections
@@ -63,6 +69,7 @@ int Server::handleConnections() {
                     } else {
                         struct pollfd newPfd = {newSocket, POLLIN, 0};
                         _pfds.push_back(newPfd);
+                        _logger->log("INFO", "New connection: " + to_string(newSocket));
                     }
                 } else {
                     char buffer[BUFFER_SIZE] = {0};
@@ -76,9 +83,9 @@ int Server::handleConnections() {
                     }
                 }
             }
-
+            std::cout << "Before the POLLOUT, this is the itorator now: " << it->fd << std::endl;
             // handle sending response
-            else if (it->revents & POLLOUT) {
+            if (it->revents & POLLOUT) {
                 std::string response = generateHttpResponse();
                 ssize_t bytesSent = send(it->fd, response.c_str(), response.size(), 0);
                 if (bytesSent > 0) {
