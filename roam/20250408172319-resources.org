@@ -5,29 +5,25 @@
 #+date: [2025-04-08 Tue 17:23]
 #+startup: overview
 
-* rfc's
+* http
 - https://www.rfc-editor.org/rfc/rfc2616
-- [[https://www.rfc-editor.org/rfc/rfc3875][rfc Common Gateway Interface]]
-  - [[https://en.wikipedia.org/wiki/Common_Gateway_Interface]]
-
 * tools
 - https://httpbin.org/
 - https://swagger.io/
 - https://www.postman.com/
-
 * sockets
 - man 2 socket
 - man 7 ip
   - defines address format ==struct sockaddr_in
 - https://beej.us/guide/bgnet/pdf/bgnet_usl_c_1.pdf
+- [[https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers][List of TCP and UDP port numbers]]
 ** wikipedia
 - https://en.wikipedia.org/wiki/Berkeley_sockets#BSD_and_POSIX_sockets
 - https://en.wikipedia.org/wiki/Network_socket
-* other projects
-- https://github.com/codecrafters-io/build-your-own-x?tab=readme-ov-file#build-your-own-web-server
-
+* CGI
+- [[https://www.rfc-editor.org/rfc/rfc3875][rfc Common Gateway Interface]]
+- https://en.wikipedia.org/wiki/Common_Gateway_Interface
 * nginx
 - https://nginx.org/
-
-* infos
-- [[https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers][List of TCP and UDP port numbers]]
+* other projects
+- https://github.com/codecrafters-io/build-your-own-x?tab=readme-ov-file#build-your-own-web-server

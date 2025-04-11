@@ -18,6 +18,15 @@ HISTORY
        ...
     #+end_example
 
+* SOCK_STREAM sockets
+- they are full-duplex byte streams
+  - it means that receiving and sending data can happen at the same time without interfering with each other
+- in the POSIX API, one can send data via read/write or variant of send/recv
+- they queue up connections until BACKLOG limit is hit
+  (=int listen(int sockfd, int backlog)=)
+
+
+* [[id:73718bca-3b14-4888-addf-984719c83c2f][Asynchronous I/O communication]]
 * API
 ** htons
 - *Why `htons()` is needed*:
@@ -25,4 +34,3 @@ HISTORY
     - Different computer architectures (x86, ARM, etc.) may store multi-byte data like port numbers in different ways
     - ensures that all machines interpret the data correctly, no matter their architecture.
     - So, you use `htons()` to ensure that the port number is properly formatted for network transmission
-

@@ -10,7 +10,7 @@ int main() {
     try {
         Server server(logger);
         // TODO: registering Handlers depending on the config
-        server.listen(80);
+        server.listen(8080);
         server.handleConnections();
     } catch (const std::exception &e) {
         logger->log("ERROR", "Exception caught: " + std::string(e.what()));
