@@ -78,7 +78,6 @@ void Logger::error(const std::string &msg) {
     *_cout << buffer << " ERROR " << msg << std::endl;
 }
 
-// when I delete the comments from this funcitons I encounter errors :'(
 void Logger::log_from(std::string level, const std::string msg) {
     std::string levels[4] = {"DEBUG", "INFO", "WARNING", "ERROR"};
     int level_nbr = -1;
