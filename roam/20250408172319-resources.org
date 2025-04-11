@@ -6,23 +6,32 @@
 #+startup: overview
 
 * http
-- https://www.rfc-editor.org/rfc/rfc2616
+- https://www.rfc-editor.org/info/rfc9112
+- https://developer.mozilla.org/en-US/docs/Web/HTTP
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types
 * tools
 - https://httpbin.org/
 - https://swagger.io/
 - https://www.postman.com/
+- https://www.linode.com/docs/guides/load-testing-with-siege/
+- https://www.wireshark.org/
 * sockets
 - man 2 socket
 - man 7 ip
   - defines address format ==struct sockaddr_in
 - https://beej.us/guide/bgnet/pdf/bgnet_usl_c_1.pdf
 - [[https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers][List of TCP and UDP port numbers]]
+- https://w3.cs.jmu.edu/kirkpams/OpenCSF/Books/csf/html/TCPSockets.html
 ** wikipedia
 - https://en.wikipedia.org/wiki/Berkeley_sockets#BSD_and_POSIX_sockets
 - https://en.wikipedia.org/wiki/Network_socket
+** videos
+- https://www.youtube.com/playlist?list=PL9IEJIKnBJjH_zM5LnovnoaKlXML5qh17
 * CGI
 - [[https://www.rfc-editor.org/rfc/rfc3875][rfc Common Gateway Interface]]
 - https://en.wikipedia.org/wiki/Common_Gateway_Interface
+- https://www.tutorialspoint.com/python/python_cgi_programming.htm
+- https://www.garshol.priv.no/download/text/http-tut.html
 * nginx
 - https://nginx.org/
 * other projects

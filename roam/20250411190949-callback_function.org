@@ -1,0 +1,10 @@
+:PROPERTIES:
+:ID:       88d921c5-1ac5-4412-a469-d75835e49158
+:END:
+#+title: callback function
+#+date: [2025-04-11 Fri 19:09]
+#+startup: overview
+
+- a function that is given to another function
+  - shall be called when a certain event arises
+  - used for asynchronous behavior

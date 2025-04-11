@@ -5,10 +5,14 @@
 #+date: [2025-04-11 Fri 14:56]
 #+startup: overview
 
+* synchronous / blonking approach
+- current procedure is stopped until the work is complete
+
 * Problems with only one connection at a time
 - it is slow
 - it is dependent on that connection to be stable
   - if it stalls, malicious user is delibrately slow, it will just block communication with others
 
-* Solutions
-** Use threads
+* asynchonous
+- calls rely on an event / a signal / callback function
+  - may call a callback function
