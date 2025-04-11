@@ -14,5 +14,5 @@
   - if it stalls, malicious user is delibrately slow, it will just block communication with others
 
 * asynchonous
-- calls rely on an event / a signal / callback function
+- calls rely on an event / a signal / [[id:88d921c5-1ac5-4412-a469-d75835e49158][callback function]]
   - may call a callback function

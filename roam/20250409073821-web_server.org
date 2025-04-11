@@ -25,7 +25,7 @@
 ** logging
 - logging incoming requests, outgoing response, intermediate steps
 ** concurrency
-- handle simultanieous requests at the same time
+- handle simultaneious requests at the same time
 - can involve multithreading, asynchronous I/O, event driven architectures
 ** security
 - TLS/SSL certificates

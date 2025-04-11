@@ -7,6 +7,9 @@
 
 * what is a socket
 - a socket is a concept generally referred two if two parties want to exchange data in two directions
+- it is an standardized abstraction/network interface provided by the OS to give you network communication capabilities
+- they behave/look much like file-descriptors but they have a two-ways behavior
+  - the number returned is representing a network endpoint
 - besides sockets which allow parties to communicate over a computer network, there are also sockets which facilitate the communication between processes inside the same computer ([[https://en.wikipedia.org/wiki/Unix_domain_socket][UDS - UNIX domain sockets]])
 - for network communication, we usually speak about Berkeley sockets
   - man 2 socket =<sys/socket.h>= =socket()=
@@ -24,7 +27,6 @@ HISTORY
 - in the POSIX API, one can send data via read/write or variant of send/recv
 - they queue up connections until BACKLOG limit is hit
   (=int listen(int sockfd, int backlog)=)
-
 
 * [[id:73718bca-3b14-4888-addf-984719c83c2f][Asynchronous I/O communication]]
 

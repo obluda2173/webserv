@@ -9,6 +9,7 @@
   - waits for a set of file descriptors to become ready to perform I/O
   - epoll has more features
   - I imagine it to useful, to listen to ports
+
 #+begin_src c
 int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 #+end_src
@@ -18,9 +19,14 @@ int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 
 #+begin_src c
 struct pollfd {
-	int fd;		/* file desciptor */
-	short events;	/* requested events */
-	short revents;	/* returned events */
+    int fd;             /* file desciptor */
+    short events;       /* requested events */
+    short revents;      /* returned events */
 };
 #+end_src
 - fd is an *open* file-descriptor
+
+* Bitmasks
+- *POLLIN* ... Alert me when data is ready to be recv()ed
+- *POLLOUT* ... Alert me when the I can send() data to this socket
+- *POLLHUP* ... Alert me when the client hung up, the remote connection was closed

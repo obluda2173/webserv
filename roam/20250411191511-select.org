@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID:       6152652f-da74-4730-8823-e841ff2d1602
+:END:
+#+title: select
+#+date: [2025-04-11 Fri 19:15]
+#+startup: overview
+
+* general
+- allows resources to be used more efficiently on the thread that it is runnning on
+- watches connections until they become ready for reading/writing
+- only pitfall for select is that it can only monitor only filedescriptors up to FD_SETSIZE
+  #+begin_src cpp
+int select(int nfds, fd_set *_Nullable restrict readfds, // checking for reading
+		   fd_set *_Nullable restrict writefds,	 // checking for errors
+		   fd_set *_Nullable restrict exceptfds, // checking for errors/exceptions
+		   struct timeval *_Nullable restrict timeout);
+  #+end_src
+- is destructrive, which means that the content of the fd_sets are going to be changed by select
+- works with Macros
+  #+begin_src cpp
+FD_SET(server_socket, &current_sockets);
+FD_SET(client_socket, &current_sockets);
+// ##############################
+handle_conntection(i);			// i is the filedescriptors
+FD_CLR(i, &current_sockets);
+  #+end_src
+
+* Examples
+** only reading
+#+begin_src cpp
+select(FD_SETSIZE, &ready_sockets, NULL, NULL, NULL)
+#+end_src
