@@ -4,8 +4,11 @@ int main() {
 	// Logger* logger = new Logger("log.txt");
 	Logger* logger = new Logger();
 
+	// TODO: parse the config file
+	// return Class config
 	try {
 		Server server(logger);
+		// TODO: registering Handlers depending on the config
 		server.listen(80);
 		server.handleConnections();
 	} catch (const std::exception& e) {

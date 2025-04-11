@@ -12,6 +12,7 @@
 
 * tools
 - https://httpbin.org/
+- https://swagger.io/
 - https://www.postman.com/
 
 * sockets
