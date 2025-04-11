@@ -59,13 +59,14 @@ int Server::handleConnections() {
             if (it->revents & POLLIN) {
                 if (it->fd == _serverfd) {
                     // accept new connection
-                    int newSocket = accept(_serverfd, reinterpret_cast<struct sockaddr *>(&_address), &_addrlen);
-                    if (newSocket < 0) {
+                    int newConn = accept(_serverfd, reinterpret_cast<struct sockaddr *>(&_address), &_addrlen);
+                    if (newConn < 0) {
                         _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
                     } else {
-                        struct pollfd newPfd = {newSocket, POLLIN, 0};
+                        struct pollfd newPfd = {newConn, POLLIN, 0};
                         _pfds.push_back(newPfd);
-                        _logger->log("INFO", "New connection: " + to_string(newSocket));
+                        _logger->log("INFO", "New connection: " + to_string(newConn));
+                        break;
                     }
                 } else {
                     char buffer[BUFFER_SIZE] = {0};
@@ -82,11 +83,10 @@ int Server::handleConnections() {
                 }
             }
 
-            std::cout << "Before the POLLOUT, this is the itorator now: " << it->fd << std::endl;
             // handle sending response
             if (it->revents & POLLOUT) {
                 std::string response = generateHttpResponse();
-
+                _logger->log("INFO", "Sending...");
                 ssize_t bytesSent = send(it->fd, response.c_str(), response.size(), 0);
 
                 if (bytesSent > 0) {
