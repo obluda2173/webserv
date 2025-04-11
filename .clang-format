@@ -1,4 +1,8 @@
----
+--
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
+BasedOnStyle: LLVM
+IndentWidth: 4
+----
 Language:        Cpp
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
@@ -157,7 +161,6 @@ IndentExternBlock: AfterExternBlock
 IndentGotoLabels: true
 IndentPPDirectives: None
 IndentRequiresClause: true
-IndentWidth:     4
 IndentWrappedFunctionNames: false
 InsertBraces:    false
 InsertNewlineAtEOF: false
