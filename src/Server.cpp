@@ -55,8 +55,6 @@ int Server::handleConnections() {
 
         // iterate through poll vector
         for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end();) {
-            bool removeFd = false;
-
             // handle incoming data or connections
             if (it->revents & POLLIN) {
                 if (it->fd == _serverfd) {
@@ -74,33 +72,35 @@ int Server::handleConnections() {
                     ssize_t bytesRead = read(it->fd, buffer, BUFFER_SIZE);
                     if (bytesRead > 0) {
                         _logger->log("INFO", std::string(buffer, bytesRead));
-                        it->events = POLLOUT;
+                        it->events |= POLLOUT;
                     } else {
+                        // Handle disconnection
                         close(it->fd);
-                        removeFd = true;
+                        it = _pfds.erase(it);
+                        continue;
                     }
                 }
             }
+
             std::cout << "Before the POLLOUT, this is the itorator now: " << it->fd << std::endl;
             // handle sending response
             if (it->revents & POLLOUT) {
                 std::string response = generateHttpResponse();
+
                 ssize_t bytesSent = send(it->fd, response.c_str(), response.size(), 0);
+
                 if (bytesSent > 0) {
                     _logger->log("INFO", "response sent successfully");
-                } else {
-                    _logger->log("ERROR", "send: " + std::string(strerror(errno)));
-                }
-                close(it->fd);
-                removeFd = true;
-            }
+                    // Remove POLLOUT event after sending response
+                    it->events &= ~POLLOUT;
 
-            // remove closed connections
-            if (removeFd) {
-                it = _pfds.erase(it);
-            } else {
-                ++it;
+                    // Optionally close and remove socket if done
+                    close(it->fd);
+                    it = _pfds.erase(it);
+                    continue;
+                }
             }
+            it++;
         }
     }
     return 0;
