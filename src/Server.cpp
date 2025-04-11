@@ -1,6 +1,8 @@
 #include "Server.h"
 #include "Logger.h"
 
+std::string generateHttpResponse();
+
 std::string to_string(int value) {
     std::stringstream ss;
     ss << value;
@@ -82,7 +84,7 @@ int Server::processConn(int conn) {
     return 0;
 }
 
-std::string Server::generateHttpResponse() {
+std::string generateHttpResponse() {
     return "HTTP/1.1 200 OK\n"
            "Content-Type: text/html\n"
            "Content-Length: 52\n"
