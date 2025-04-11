@@ -39,24 +39,22 @@ void Server::listen(int port) {
     _logger->log("INFO", "Server listening on port " + to_string(_port));
 }
 
-
 int Server::handleConnections() {
-    struct pollfd sererPfd = {_serverfd, POLLIN, 0};
-    _pfds.push_back(sererPfd);
+    struct pollfd serverPfd = {_serverfd, POLLIN, 0};
+    _pfds.push_back(serverPfd); // Initial file descriptor setup to listen for
+                                // new connections
+
     while (true) {
         // wait for events on all fds
-        // int ready = poll(&_pfds[0], _pfds.size(), 100);      //this might be wrong but not sure yet.
-        int ready = poll(_pfds.data(), _pfds.size(), 100);
+        int ready = poll(_pfds.data(), _pfds.size(), -1);
         if (ready < 0) {
             _logger->log("ERROR", "poll: " + std::string(strerror(errno)));
             throw std::runtime_error("poll error");
         }
-        
+        _logger->log("INFO", "new connection is ready");
+
         // iterate through poll vector
-        std::cout   << "polling...\nthis is the serverfd: " << _pfds[0].fd << std::endl;
-        std::cout   << "this is the size of _pfds: " << _pfds.size() << std::endl;
-        for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); ) {
-            std::cout << "this is the element of _pfds: " << _pfds.size() << std::endl;
+        for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end();) {
             bool removeFd = false;
 
             // handle incoming data or connections

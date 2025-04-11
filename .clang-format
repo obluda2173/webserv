@@ -2,6 +2,7 @@
 # We'll use defaults from the LLVM style, but with 4 columns indentation.
 BasedOnStyle: LLVM
 IndentWidth: 4
+ColumnLimit: 120
 ---
 Language:        Cpp
 AccessModifierOffset: -2
@@ -120,7 +121,6 @@ BreakFunctionDefinitionParameters: false
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: true
 BreakTemplateDeclarations: MultiLine
-ColumnLimit:     80
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
