@@ -9,11 +9,5 @@ bool Server::isRunning() const {
 }
 
 void Server::start() {
-    _logger->log("INFO", "Server is running");
 	_isRunning = true;
-}
-
-void Server::stop() {
-	_isRunning = false;
-    _logger->log("INFO", "Server stopped");
 }

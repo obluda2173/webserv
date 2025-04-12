@@ -8,5 +8,4 @@ public:
 	explicit Server(ILogger* l);
 	bool isRunning() const;
 	void start();
-	void stop();
 };
