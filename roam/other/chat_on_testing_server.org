@@ -1,0 +1,269 @@
+:PROPERTIES:
+:GPTEL_MODEL: o3-mini
+:GPTEL_BACKEND: ChatGPT
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Avoid long answers.
+:GPTEL_BOUNDS: ((response (424 1690) (1807 3393) (3473 4524) (4582 5777) (5884 7001) (7102 7339) (7405 9269) (9282 9559)))
+:END:
+
+*** I'm trying to develop a server in a TTD manner.
+Support me in doing that.
+Give me only the tests.
+Give me the next step.
+
+
+Below is a snippet that adds a new test for stopping the server. (Remember: in TDD you write the test first, see it fail, and then add code to make it work.)
+
+--------------------------------------------------
+#include "Server.h"
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+class MockLogger : public ILogger {
+public:
+    MOCK_METHOD(void, log, (const std::string& level, const std::string& msg), (override));
+};
+
+class ServerTest : public ::testing::Test {};
+
+TEST_F(ServerTest, startupTest) {
+    MockLogger mLogger;
+    EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
+    Server svr(&mLogger);
+    EXPECT_FALSE(svr.isRunning());
+    svr.start();
+    EXPECT_TRUE(svr.isRunning());
+}
+
+TEST_F(ServerTest, shutdownTest) {
+    // Next step: define the expected behavior for a server "stop" method.
+    MockLogger mLogger;
+    EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
+    EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
+
+    Server svr(&mLogger);
+    svr.start();
+    // At this point we want the server to stop and log accordingly.
+    svr.stop();
+    EXPECT_FALSE(svr.isRunning());
+}
+
+--------------------------------------------------
+
+The next step is to add a stop() method in your Server class so that the shutdownTest passes.
+
+*** Got it. I added the test and implemented the behavior (the files have been edited). Now I need the next step.
+
+Below are additional tests for your logger. They verify that an unrecognized level produces the default complaint and that log_from() logs as expected. (Remember: write the failing tests, then adapt your production code to pass them.)
+
+--------------------------------------------------
+#include "Logger.h"
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+#include <sstream>
+
+// Using a test fixture to capture output from std::cout
+class LoggerTest : public ::testing::Test {
+protected:
+    std::streambuf/ orig_buf;
+    std::ostringstream captured;
+
+    void SetUp() override {
+        orig_buf = std::cout.rdbuf();
+        std::cout.rdbuf(captured.rdbuf());
+    }
+
+    void TearDown() override {
+        std::cout.rdbuf(orig_buf);
+    }
+};
+
+TEST_F(LoggerTest, invalidLevelLogsDefaultMessage) {
+    Logger logger;
+    logger.log("NOTALEVEL", "Invalid level test");
+
+    std::string output = captured.str();
+    EXPECT_THAT(output, testing::HasSubstr("Probably complaining about insignificant problems"));
+}
+
+TEST_F(LoggerTest, logFromWithWarningLogsWarningAndError) {
+    Logger logger;
+    captured.str("");  // clear the capture
+    logger.log_from("WARNING", "Test log_from");
+
+    std::string output = captured.str();
+    EXPECT_THAT(output, testing::HasSubstr("WARNING Test log_from"));
+    EXPECT_THAT(output, testing::HasSubstr("ERROR Test log_from"));
+}
+
+--------------------------------------------------
+
+The next step is to run these tests (which should fail if the behavior isn’t fully implemented) and then modify your Logger implementation until all tests pass.
+
+*** I've added the tests. It works fine. I need the next Test for the Server
+
+Below is a test to check that calling stop on a nonrunning server does not produce a "Server stopped" log message. (Remember: write the failing test, then adjust your Server implementation to pass this test.)
+
+--------------------------------------------------
+#include "Server.h"
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+class MockLogger : public ILogger {
+public:
+    MOCK_METHOD(void, log, (const std::string& level, const std::string& msg), (override));
+};
+
+class ServerTest : public ::testing::Test {};
+
+TEST_F(ServerTest, nonRunningStopTest) {
+    MockLogger mLogger;
+    EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
+    // Do NOT expect a "Server stopped" log call when stop() is called on a nonrunning server.
+    Server svr(&mLogger);
+    // Server has not been started, so it's not running.
+    svr.stop();
+    EXPECT_FALSE(svr.isRunning());
+}
+--------------------------------------------------
+
+The next step is to update your Server::stop() to check if the server is already stopped before logging "Server stopped."
+
+*** Ok. What is a possible Test that I could add next?
+
+Below is a test to verify that the server can be restarted properly. It expects that after a full cycle (start, stop, start, stop) the "Server constructed" log is only issued once, and that "Server stopped" is logged only on valid stops.
+
+--------------------------------------------------
+#include "Server.h"
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+class MockLogger : public ILogger {
+public:
+    MOCK_METHOD(void, log, (const std::string& level, const std::string& msg), (override));
+};
+
+class ServerTest : public ::testing::Test {};
+
+TEST_F(ServerTest, restartTest) {
+    MockLogger mLogger;
+    {
+       ::testing::InSequence seq;
+       EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
+       EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
+       EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
+    }
+
+    Server svr(&mLogger);
+    svr.start();
+    svr.stop();
+    svr.start();
+    svr.stop();
+    EXPECT_FALSE(svr.isRunning());
+}
+--------------------------------------------------
+
+The next step is to update your Server implementation so that repeated start‐stop cycles work as expected while logging "Server stopped" only when stopping a running server.
+
+*** Ok. I somehow need to add actual functionality. How do I add a test which tests some functionality?
+
+Here's an example of a test for actual functionality—in this case, having the Server process a simple request. The test expects that a "ping" request returns a "pong" response:
+
+--------------------------------------------------
+#include "Server.h"
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
+class MockLogger : public ILogger {
+public:
+    MOCK_METHOD(void, log, (const std::string& level, const std::string& msg), (override));
+};
+
+class ServerTest : public ::testing::Test {};
+
+TEST_F(ServerTest, processRequestTest) {
+    MockLogger mLogger;
+    EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
+    Server svr(&mLogger);
+    svr.start();
+
+    // Expect the processRequest() method to return a "pong" when a "ping" is sent.
+    std::string response = svr.processRequest("ping");
+    EXPECT_EQ(response, "pong");
+
+    svr.stop();
+}
+--------------------------------------------------
+
+The next step is to update your Server class to add a method processRequest that returns "pong" when given "ping". This test serves as a guide for the new functionality you want to implement, following TDD principles.
+
+*** Ok. What I have in mind is to test a running server by actually sending it requests over tcp.
+
+Below is an example integration test that uses TCP sockets to send a request to your running Server. (Note: This assumes you'll extend your Server to support TCP operations by adding, for example, startTcp(port) and stopTcp() methods.)
+
+-------------------------------------------------
+#+begin_src cpp
+#include "Server.h"
+#include "gtest/gtest.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <thread>
+#include <chrono>
+#include <cstring>
+
+// A simple dummy logger for integration tests.
+class DummyLogger : public ILogger {
+public:
+    void log(const std::string& level, const std::string& msg) override {
+        // Optionally log or ignore.
+    }
+};
+
+class ServerTCPTest : public ::testing::Test {};
+
+TEST_F(ServerTCPTest, tcpPingPongTest) {
+    DummyLogger dLogger;
+    int port = 12345; // choose an available test port
+
+    // Start the server TCP functionality in another thread.
+    Server svr(&dLogger);
+    std::thread serverThread([&svr, port](){
+        svr.startTcp(port); // You'll need to implement: startTcp(int port)
+    });
+    // Allow the server time to start listening.
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    // Create a TCP client socket.
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_NE(sock, -1) << "Failed to create socket";
+    struct sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
+
+    int connectStatus = connect(sock, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
+    ASSERT_EQ(connectStatus, 0) << "Failed to connect to server";
+
+    // Send a "ping" message.
+    const char /msg = "ping\n";
+    send(sock, msg, strlen(msg), 0);
+
+    // Read the response.
+    char buffer[1024] = {0};
+    int bytesReceived = read(sock, buffer, sizeof(buffer));
+    ASSERT_GT(bytesReceived, 0);
+    std::string response(buffer, bytesReceived);
+    EXPECT_EQ(response, "pong\n");
+
+    close(sock);
+
+    // Stop the server TCP functionality.
+    svr.stopTcp(); // You'll need to implement: stopTcp()
+    if(serverThread.joinable())
+        serverThread.join();
+}
+
+
+#+end_src
+
+The next step is to extend your Server class by implementing startTcp(int port) and stopTcp() so that the server listens for TCP connections, processes incoming "ping" messages by responding with "pong" (including any message formatting you desire), and shuts down gracefully.

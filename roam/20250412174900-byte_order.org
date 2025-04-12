@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID:       5d32867e-81df-4b51-ad4f-41bedf3f24e0
+:END:
+#+title: byte order
+#+date: [2025-04-12 Sa 17:49]
+#+startup: overview
+
+
+- standardizing *Network byte order*
+  - Different computer architectures (x86, ARM, etc.) may store multi-byte data like port numbers in different ways
+  - ensures that all machines interpret the data correctly, no matter their architecture.
+  - So, you use `htons()` to ensure that the port number is properly formatted for network transmission
+
+
+| Description | Function                                                              | nbr of Bytes |
+|             |                                                                       |              |
+|-------------+-----------------------------------------------------------------------+--------------|
+| htons()     | host to network short (that is HOST BYTE ORDER to NETWORK BYTE ORDER) |            2 |
+| htonl()     | host to network long                                                  |            4 |
+| ntohs()     | network to host short                                                 |            2 |
+| ntohl()     | network to host long                                                  |            4 |
