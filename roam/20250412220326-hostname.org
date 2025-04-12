@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID:       d1a49ac4-dc8a-4b4c-9a3c-c7be9004e2b2
+:END:
+#+title: hostname
+#+date: [2025-04-12 Sat 22:03]
+#+startup: overview
+
+- the hostname is the name of a specific device on a network
+- translation is done via [[id:190e1972-45df-4eeb-8785-95cca7d6ec61][DNS (domain name system)]] historically with the hosts file on the computer
+- https://de.wikipedia.org/wiki/Hostname
+- [[https://datatracker.ietf.org/doc/html/rfc1123][Requirements for Internet Hosts -- Application and Support]]
+- [[https://datatracker.ietf.org/doc/html/rfc952][DOD INTERNET HOST TABLE SPECIFICATION]]
+#+begin_src sh
+❯ cat /etc/hosts
+# Static table lookup for hostnames.
+# See hosts(5) for details.
+127.0.0.1 localhost
+127.0.1.1 archlinux.localdomain archlinux
+#+end_src

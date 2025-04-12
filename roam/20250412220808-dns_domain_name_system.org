@@ -1,0 +1,9 @@
+:PROPERTIES:
+:ID:       190e1972-45df-4eeb-8785-95cca7d6ec61
+:END:
+#+title: DNS (domain name system)
+#+date: [2025-04-12 Sat 22:08]
+#+startup: overview
+
+* DNS domain name system
+- system which translates hostnames to ip address

@@ -5,8 +5,12 @@
 #+date: [2025-04-12 Sa 19:34]
 #+startup: overview
 
-
+* struct addrinfo
+:PROPERTIES:
+:ID:       8760fc44-0e47-48d6-b973-36dea969669e
+:END:
 - used often in conjunction with =getaddrinfo()= which loads the struct up with information
+- man getaddrinfo
 - ai stands for address info
 - all this stuff has the purpose of accurately and entirely describing addresses in a wide range of applications (not only Internet)
 - it is a list
@@ -24,8 +28,8 @@ struct addrinfo {
         struct addrinfo *ai_next; // linked list, next node
 };
 #+end_src
-** ai family
-- either IVv4 (AF_INET) or IPv6 (AF_INET6), or choose with AF_UNSPEC
+- *ai family*
+  - either IVv4 (AF_INET) or IPv6 (AF_INET6), or choose with AF_UNSPEC
 
 * struct sockaddr
 #+begin_src cpp
@@ -35,15 +39,25 @@ struct sockaddr {
 };
 #+end_src
 
-** sa_family
-- again can be alot of things (AF_INET or AF_INET6 usually)
+- *sa_family*
+  - again can be alot of things (AF_INET or AF_INET6 usually)
+  - other may be
+    - =AF_UNIX= (or =AF_LOCAL=): Local communication within the same host, also known as Unix domain sockets.
+    - =AF_APPLETALK=: AppleTalk protocols.
+    - =AF_PACKET=: Low-level packet interface, available on Linux for direct access to network interfaces.
+    - =AF_NETLINK=: Used for communication between user-space processes and kernel services in Linux.
+    - =AF_X25=: X.25 protocol for network communications.
+    - =AF_DECnet=: DECnet protocol suite.
+    - =AF_BLUETOOTH=: Bluetooth protocol stack.
+    - =AF_CAN=: Controller Area Network, used for automotive networks.
+    - =AF_RDS=: Reliable Datagram Sockets, used for high-performance cluster applications.
 
-** sa_data
-- ip address
-- port number for the socket
-- depending on the context, this is either the remote or the local
+- *sa_data*
+  - ip address
+  - port number for the socket
+  - depending on the context, this is either the remote or the local
 
-** struct sockaddr_in
+* struct sockaddr_in
 - can be cast into sockadd
 - easier to handle
 - sin_zero is for padding
@@ -60,7 +74,7 @@ struct sockaddr_in {
 };
 #+end_src
 
-*** struct in_addr
+** struct in_addr
 - it's the 4 byte IPv4 address in Network-Byte Order
 #+begin_src c
 // (IPv4 only--see struct in6_addr for IPv6)
@@ -70,7 +84,7 @@ struct in_addr {
 };
 #+end_src
 
-*** inet_pton (string (presentation) to binary (network))
+** inet_pton (string (presentation) to binary (network))
 - presentation to network
   - converting string addresses into their binary representation
 - storing ip_address into a =struct addrinfo_in ina=
@@ -80,7 +94,7 @@ struct sockaddr_in sa;                  /* IPv4 */
 inet_pton(AF_INET, "10.12.110.57", (&sa.sin_addr));
   #+end_src
 
-*** inet_ntop (binary (network) to string (presentation))
+** inet_ntop (binary (network) to string (presentation))
   #+begin_src c
 struct sockaddr_in sa;                  /* IPv4 */
 char ip4[INET_ADDRSTRLEN];

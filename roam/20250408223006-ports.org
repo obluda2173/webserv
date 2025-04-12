@@ -11,5 +11,6 @@
 - if another device want to transfer data it needs to indicate a certain channel number
   - but since this can become tedious, a standard of usage of channel numbers has been established
     [[https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Well-known_ports][List of TCP and UDP port numbers]]
+    - [[https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml][IANA port list]] ([[(https://en.wikipedia.org/wiki/Internet_Assigned_Numbers_Authority)][IANA - internet assigned numbers authority]])
   - so certain protocols are assigned for certain channels
 - these channels are called ports

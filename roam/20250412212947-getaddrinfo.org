@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID:       0a45df01-9c44-4a61-90e0-3b8bd58f9ed6
+:END:
+#+title: getaddrinfo
+#+date: [2025-04-12 Sat 21:29]
+#+startup: overview
+
+* getaddrinfo
+- workhorse function which recollects a lot of data by just providing the [[id:8760fc44-0e47-48d6-b973-36dea969669e][struct addrinfo]]
+- combines functionalities of more historic functions  =gethostbyname= and =getserverbyname=
+- return values are stored into =struct addrinfo* res=
+#+begin_src c
+int getaddrinfo(const char *node, // e.g. "www.example.com" or IP
+                                const char *service, // e.g. "http" or port number
+                                const struct addrinfo *hints,
+                                struct addrinfo **res);
+#+end_src
+
+** node
+- is the hostname or ip-address to connect to
+  - "www.google.com", "mail.google.com", "google.com"
+
+** service
+- can be a port or anyting that can be found inside [[https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml][IANA port list]] ([[(https://en.wikipedia.org/wiki/Internet_Assigned_Numbers_Authority)][IANA - internet assigned numbers authority]])
+  - http, ftp, smtp, telnet
+- if =NULL=, port numbers in the returned structs will be uninitialized
+** hints
+- struct addrinfo already filled out with information
+** example
+#+begin_src cpp
+int status;
+struct addrinfo hints;
+struct addrinfo *servinfo; // will point to the results
+
+memset(&hints, 0, sizeof hints); // make sure the struct is empty
+hints.ai_family = AF_UNSPEC; // don't care IPv4 or IPv6
+hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
+
+// get ready to connect
+status = getaddrinfo("www.example.net", "3490", &hints, &servinfo);
+
+freeaddrinfo(servinfo)
+#+end_src
