@@ -29,7 +29,7 @@ Logger::t_log_func Logger::get_debug_level(std::string level) {
     return NULL;
 }
 
-void Logger::log(std::string level, const std::string &message) {
+void Logger::log(const std::string& level, const std::string &message) {
     Logger::t_log_func log_func = get_debug_level(level);
     if (log_func)
         (this->*log_func)(message);

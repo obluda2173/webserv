@@ -7,8 +7,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "ILogger.h"
 
-class Logger {
+class Logger : public ILogger{
   private:
     std::ostream *_cout;
     std::ofstream _file;
@@ -24,7 +25,7 @@ class Logger {
     Logger(std::string filepath);
     ~Logger();
 
-    void log(std::string level, const std::string &msg);
+    void log(const std::string& level, const std::string& msg);
     void log_from(std::string level, const std::string msg);
 };
 
