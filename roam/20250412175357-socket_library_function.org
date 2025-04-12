@@ -19,6 +19,10 @@ AF_INET      IPv4 Internet protocols                    ip(7)
 AF_UNIX      Local communication                        unix(7)
 AF_INET6     IPv6 Internet protocols                    ipv6(7)
 #+end_example
+- actually it should be PF_INET / PF_INET6
+  - AF, as address family was thought to support multiple protocols (referred to by protocol family - PF)
+    - but all stayed the same, so there is only PF_INET/PF_INET6
+    - so AF_INET inside [[id:370a29f0-3734-47d5-9d79-e7341bb429b0][addrinfo]] and PF_INET inside socket Call
 * type
 - refers to the network layer protocol being used for the communication
 - it specifies the language that the socket is speaking (communication semantics)
@@ -31,3 +35,19 @@ SOCK_DGRAM      Supports datagrams (connectionless, unreliable messages
                 of a fixed maximum length).
 #+end_example
 * protocol
+- if set to 0, it will give you the appropriate one with regards to domain and type
+- also =getprotobyname= with for example "tcp" or "udp" gives you the protocol respectively
+* usage examples
+** in use with getaddrinfo
+#+begin_src c
+int s;
+struct addrinfo hints, *res;
+// do the lookup
+// [pretend we already filled out the "hints" struct]
+getaddrinfo("www.example.com", "http", &hints, &res);
+// again, you should do error-checking on getaddrinfo(), and walk
+// the "res" linked list looking for valid entries instead of just
+// assuming the first one is good (like many of these examples do).
+// See the section on client/server for real examples.
+s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+#+end_src

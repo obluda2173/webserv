@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID:       a0c0c65f-c84a-4c9f-a1db-85c5b67af0e9
+:END:
+#+title: addresses
+#+date: [2025-04-12 Sa 19:58]
+#+startup: overview
+
+- to make life easier when working with addresses of all kind of network programming, there are several structs and functions defined
+
+- [[id:370a29f0-3734-47d5-9d79-e7341bb429b0][addrinfo]]
+  - struct(s) to hold addresses
+
+- inet_pton
+  - presentation to network
+  - storing ip_address into a =struct addrinfo_in ina=
+    #+begin_src c
+struct sockaddr_in sa;                  /* IPv4 */
+
+inet_pton(AF_INET, "10.12.110.57", (&sa.sin_addr));
+    #+end_src

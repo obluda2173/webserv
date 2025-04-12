@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID:       bdca0f95-9446-4c9c-ac62-962d118057bf
+:END:
+#+title: network address translation NAT
+#+date: [2025-04-12 Sa 20:10]
+#+startup: overview
+
+- basically hiding internal ip-addresses of a network from external networks
+- a firewall is translating these ip-addresses back and forth (*Network Address Tranlation*)
+- the internal network is private and can use a multitude of IP-addresses
+  - 10.x.x.x
+  - 192.168.x.x
+  - 172.y.x.x (16 to 31 for y)
+- [[file:~/rfc/rfc1918.txt]]
+- https://en.wikipedia.org/wiki/Private_network

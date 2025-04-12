@@ -34,5 +34,9 @@
 - https://www.garshol.priv.no/download/text/http-tut.html
 * nginx
 - https://nginx.org/
+* networks
+- https://www.rfc-editor.org/info/rfc1918
+- https://datatracker.ietf.org/doc/html/rfc4193
+- https://en.wikipedia.org/wiki/Private_network
 * other projects
 - https://github.com/codecrafters-io/build-your-own-x?tab=readme-ov-file#build-your-own-web-server
