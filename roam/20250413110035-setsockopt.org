@@ -1,0 +1,14 @@
+:PROPERTIES:
+:ID:       d084444c-7e28-4042-926c-9e4c6e912a6d
+:END:
+#+title: setsockopt
+#+date: [2025-04-13 So 11:00]
+#+startup: overview
+
+#+begin_src c
+int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+#+end_src
+- manipulate options for the socket
+
+- SOL_SOCKET ... manipulate options at the API level
+- SO_REUSEADDR ... macro from socket.h

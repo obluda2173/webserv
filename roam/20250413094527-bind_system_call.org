@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID:       d565d239-c4cd-434b-9c26-9742af717d01
+:END:
+#+title: bind system call
+#+date: [2025-04-13 So 09:45]
+#+startup: overview
+
+#+begin_src c
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+#+end_src
+- assigns an address _addr_ to an existing socket ([[id:7a1953a3-56cc-49f3-913d-d0f8a041caa2][struct sockaddr]])
+- _addrlen_ is the byte length of the _addr_ structure
+- also called "assigning a name to the socket"
+- don't go underneath 1024 with [[id:64795799-646a-4ac1-a133-4fd209429d8a][port]] (they are reserved)
+
+#+begin_src cpp
+struct addrinfo hints, *res;
+int sockfd;
+memset(&hints, 0, sizeof hints);
+hints.ai_family = AF_UNSPEC; // use IPv4 or IPv6, whichever
+hints.ai_socktype = SOCK_STREAM;
+hints.ai_flags = AI_PASSIVE;    // bind to the IP of the host
+getaddrinfo(NULL, "3490", &hints, &res);
+bind(sockfd, &hints, &res);
+#+end_src
+
+- sometimes sockets are still hanging in the kernel, which will have bind fail
+  #+begin_src c
+int yes=1;
+if (setsockopt(listener,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(yes)) == -1) {
+        perror("setsockopt");
+		exit(1);
+}
+  #+end_src

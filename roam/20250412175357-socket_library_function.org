@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID:       605ee64d-ee8f-4d89-bec8-07822a2f9ee3
 :END:
-#+title: socket library function
+#+title: socket system call
 #+date: [2025-04-12 Sa 17:53]
 #+startup: overview
 
@@ -12,6 +12,7 @@ int socket(int domain, int type, int protocol);
   are set appropriately to the arguments that I provide (i.e. PF_INET)
   - I can more over do certain things with this resource: bind it to a port; be listened to; connect etc.
   - the interface to that resource is a file descriptor
+- the socket itself exists in a namespace (address family) but there is no concrete address assigned to it
 
 * domain
 - address family

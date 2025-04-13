@@ -30,8 +30,14 @@ struct addrinfo {
 #+end_src
 - *ai family*
   - either IVv4 (AF_INET) or IPv6 (AF_INET6), or choose with AF_UNSPEC
+- *ai_flags*
+  - additional info
+  - bitmask
 
 * struct sockaddr
+:PROPERTIES:
+:ID:       7a1953a3-56cc-49f3-913d-d0f8a041caa2
+:END:
 #+begin_src cpp
 struct sockaddr {
         unsigned short sa_family; // address family, AF_xxx

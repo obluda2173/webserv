@@ -19,13 +19,19 @@ int getaddrinfo(const char *node, // e.g. "www.example.com" or IP
 ** node
 - is the hostname or ip-address to connect to
   - "www.google.com", "mail.google.com", "google.com"
-
+- if node is =NULL=
+  - network address will be the loopback interface address (own host)
+- if node is =NULL= and =AI_PASSIVE= set
+  - returned socket is suitable for binding a socket that will accept connections
 ** service
 - can be a port or anyting that can be found inside [[https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml][IANA port list]] ([[(https://en.wikipedia.org/wiki/Internet_Assigned_Numbers_Authority)][IANA - internet assigned numbers authority]])
   - http, ftp, smtp, telnet
 - if =NULL=, port numbers in the returned structs will be uninitialized
 ** hints
 - struct addrinfo already filled out with information
+** Return value
+- 0 when succeeds
+- Error_code when fail
 ** example
 *** simple
 #+begin_src cpp

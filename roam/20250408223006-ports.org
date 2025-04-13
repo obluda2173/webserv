@@ -14,3 +14,4 @@
     - [[https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml][IANA port list]] ([[(https://en.wikipedia.org/wiki/Internet_Assigned_Numbers_Authority)][IANA - internet assigned numbers authority]])
   - so certain protocols are assigned for certain channels
 - these channels are called ports
+- <1024 are reserved
