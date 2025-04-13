@@ -30,14 +30,18 @@ TEST_F(ServerTest, connectionTests) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     EXPECT_TRUE(svr.isRunning());
 
-    int clientfd = socket(AF_INET, SOCK_STREAM, 0);
-    ASSERT_NE(clientfd, -1) << "Failed to create socket";
+    int i = 0;
+    while (i < 7) {
+        int clientfd = socket(AF_INET, SOCK_STREAM, 0);
+        ASSERT_NE(clientfd, -1) << "Failed to create socket";
 
-    sockaddr_in server_addr = {};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8080);
-    ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr), 0);
-    ASSERT_GE(connect(clientfd, (sockaddr *)&server_addr, sizeof(server_addr)), 0);
+        sockaddr_in server_addr = {};
+        server_addr.sin_family = AF_INET;
+        server_addr.sin_port = htons(8080);
+        ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr), 0);
+        ASSERT_EQ(connect(clientfd, (sockaddr *)&server_addr, sizeof(server_addr)), 0);
+        i++;
+    }
     serverThread.join();
     svr.stop();
 }

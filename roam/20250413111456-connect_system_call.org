@@ -17,8 +17,9 @@ int connect(int sockfd, struct sockaddr *serv_addr, int addrlen);
 - *serv_addr*
   - contains destination address
 - information can come from *getaddrinfo* call
-
 - connect might block if it is in the queue of the server
+** Return Value
+- zero on success; -1 on error and errno set
 ** examples
 *** connect to example.com
 #+begin_src c

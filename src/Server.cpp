@@ -38,8 +38,8 @@ void Server::start() {
     _isRunning = true;
     _logger->log("INFO", "Server started");
 
-    int clientfd = accept(_serverfd, nullptr, nullptr);
-    close(clientfd);
+    // int clientfd = accept(_serverfd, nullptr, nullptr);
+    // close(clientfd);
 }
 
 void Server::stop() {
