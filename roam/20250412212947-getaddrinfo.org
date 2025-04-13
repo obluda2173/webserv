@@ -27,6 +27,7 @@ int getaddrinfo(const char *node, // e.g. "www.example.com" or IP
 ** hints
 - struct addrinfo already filled out with information
 ** example
+*** simple
 #+begin_src cpp
 int status;
 struct addrinfo hints;
@@ -41,3 +42,4 @@ status = getaddrinfo("www.example.net", "3490", &hints, &servinfo);
 
 freeaddrinfo(servinfo)
 #+end_src
+*** [[file:~/workspace/webserv/sockets_tryout/showip.c::/*][showip]]
