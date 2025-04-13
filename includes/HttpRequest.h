@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 
-struct HttpRequest {
-  std::string method;                              // GET, POST
+typedef struct HttpRequest {
+  std::string method;                              // GET, POST, DELETE 
   std::string uri;                                 // /path/to/resource
   std::string version;                             // HTTP/1.1
   std::map<std::string, std::string> headers;      // key-value pairs for headers
-  std::string body;                                // request body (if any)
+  char* body;                                		// request body (if any)
   std::map<std::string, std::string> queryParams;  // query parameters from URI
-};
+} HttpRequest;
 
 #endif // HTTPREQUEST_H

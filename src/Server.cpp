@@ -1,6 +1,6 @@
 #include "Server.h"
 #include "Logger.h"
-
+#include "IHttpParser.h"
 std::string to_string(int value);
 std::string generateHttpResponse();
 
@@ -52,7 +52,7 @@ int Server::handleConnections() {
             throw std::runtime_error("poll error");
         }
         _logger->log("INFO", "new connection is ready");
-
+        // std::vector<IHttpParser>;
         // iterate through poll vector
         for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end();) {
             // handle incoming data or connections
@@ -70,8 +70,22 @@ int Server::handleConnections() {
                     }
                 } else {
                     char buffer[BUFFER_SIZE] = {0};
-                    ssize_t bytesRead = read(it->fd, buffer, BUFFER_SIZE);
+                    ssize_t bytesRead = read(it->fd, buffer, BUFFER_SIZE-1); // -1 for NULL-TERMINATION
                     if (bytesRead > 0) {
+                        // parser = parsers[i];
+                        // HttpRequest req = parser.parse(std::string(buffer));
+                        // if (parser.error())
+                        // {
+                        //     /* stop reading from connection */
+                        //     /* Initiate HTTP Error response construction */
+                        // }
+                        // if (parser.ready())
+                        // {
+                        //     /* Initiate resource retrieval */
+                        //     /* Initiate HTTP Error response */
+                        // }
+                        
+                        
                         _logger->log("INFO", std::string(buffer, bytesRead));
                         it->events |= POLLOUT;
                     } else {
