@@ -1,9 +1,11 @@
 #include "Server.h"
+#include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 Server::Server(ILogger *l) : _logger(l) { _logger->log("INFO", "Server constructed"); }
 
@@ -11,20 +13,33 @@ bool Server::isRunning() const { return _isRunning; }
 
 void Server::start() {
     _logger->log("INFO", "Server is starting...");
+
+    _serverfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (_serverfd < 0) {
+        perror("socket");
+        exit(1);
+    }
+
+    sockaddr_in address = {};
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(8080);
+
+    if (bind(_serverfd, (sockaddr *)&address, sizeof(address)) < 0) {
+        perror("bind");
+        exit(1);
+    }
+
+    if (listen(_serverfd, 5) < 0) {
+        perror("listen");
+        exit(1);
+    }
+
     _isRunning = true;
-    _serverfd = socket(PF_INET, SOCK_STREAM, 0);
-
-    struct addrinfo hints, *res;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    getaddrinfo(NULL, "8080", &hints, &res);
-    freeaddrinfo(res);
-    // socket(res->ai_family, res->ai_addr, res->ai_addrlen);
-    // bind(_serverfd, *res);
     _logger->log("INFO", "Server started");
+
+    int clientfd = accept(_serverfd, nullptr, nullptr);
+    close(clientfd);
 }
 
 void Server::stop() {

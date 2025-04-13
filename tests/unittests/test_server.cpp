@@ -2,7 +2,9 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <netdb.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <thread>
@@ -15,62 +17,27 @@ class MockLogger : public ILogger {
 // defining a Test Fixture: ServerTest
 class ServerTest : public ::testing::Test {};
 
-TEST_F(ServerTest, startupTest) {
-    MockLogger mLogger;
-
-    EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
-    Server svr(&mLogger);
-
-    EXPECT_CALL(mLogger, log("INFO", "Server is starting..."));
-    EXPECT_CALL(mLogger, log("INFO", "Server started"));
-    EXPECT_FALSE(svr.isRunning());
-    svr.start();
-    EXPECT_TRUE(svr.isRunning());
-}
-
-TEST_F(ServerTest, shutdownTest) {
+TEST_F(ServerTest, connectionTests) {
     MockLogger mLogger;
     EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
     EXPECT_CALL(mLogger, log("INFO", "Server is starting..."));
     EXPECT_CALL(mLogger, log("INFO", "Server started"));
     EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
     EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
-
     Server svr(&mLogger);
-    svr.start();
+
+    std::thread serverThread(&Server::start, &svr);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_TRUE(svr.isRunning());
+
+    int clientfd = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_NE(clientfd, -1) << "Failed to create socket";
+
+    sockaddr_in server_addr = {};
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8080);
+    ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr), 0);
+    ASSERT_GE(connect(clientfd, (sockaddr *)&server_addr, sizeof(server_addr)), 0);
+    serverThread.join();
     svr.stop();
-    EXPECT_FALSE(svr.isRunning());
 }
-
-// TEST_F(ServerTest, connectionTests) {
-//     MockLogger mLogger;
-//     testing::internal::CaptureStdout();
-//     Server svr(&mLogger);
-//     testing::internal::GetCapturedStdout();
-
-//     EXPECT_CALL(mLogger, log("INFO", "Server started"));
-//     std::thread serverThread(&Server::start, &svr);
-//     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-//     EXPECT_TRUE(svr.isRunning());
-
-//     // Create a TCP client socket.
-//     int sock = socket(AF_INET, SOCK_STREAM, 0);
-//     ASSERT_NE(sock, -1) << "Failed to create socket";
-
-//     struct sockaddr_in serverAddr;
-//     serverAddr.sin_family = AF_INET;
-//     serverAddr.sin_port = htons(8080);
-//     inet_pton(AF_INET, "127.0.0.1", &serverAddr.sin_addr);
-
-//     int connectStatus = connect(sock, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
-//     ASSERT_EQ(connectStatus, 0) << "Failed to connect to server";
-
-//     EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
-//     EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
-//     svr.stop();
-//     EXPECT_FALSE(svr.isRunning());
-
-//     // int client_socket = socket(AF_INET, SOCK_STREAM, 0);
-//     // ASSERT_TRUE(client_socket >= 0);
-//     serverThread.join();
-// }

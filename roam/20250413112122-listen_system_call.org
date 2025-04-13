@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID:       769d1090-8c5e-4888-8537-74a830745c13
+:END:
+#+title: listen system call
+#+date: [2025-04-13 So 11:21]
+#+startup: overview
+
+#+begin_src c
+int listen(int sockfd, int backlog);
+#+end_src
+* listen
+- incomimg requests are queued up, until they are [[id:9f8b7dc2-79fc-4cdf-ae2f-33c8fd948a95][accepted]]
+- *backlog*
+  - how many connnection attempts will be queued
+
+- as soon as the server is listening, connection are being established, meaning that calls to connect from a client will succeed
+** return value
+- -1 on error

@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID:       a2c1f4e5-d4ce-4a84-83d0-0a7b01d0c5c1
+:END:
+#+title: fcntl
+#+date: [2025-04-13 So 13:35]
+#+startup: overview
+
+#+begin_src c
+int fcntl(int fd, int cmd, ... /* arg */ );
+#+end_src
+
+* fcntl
+** make it non-blocking
+#+begin_src c
+int fd;
+sockfd = socket(PF_INET, SOCK_STREAM, 0);
+fcntl(sockfd, F_SETFL, O_NONBLOCK);
+#+end_src
+
+** Return value
+- -1 on failure
