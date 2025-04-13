@@ -1,5 +1,5 @@
-#include "Server.h"
 #include "Logger.h"
+#include "Server.h"
 
 std::string to_string(int value);
 std::string generateHttpResponse();
@@ -39,6 +39,15 @@ void Server::listen(int port) {
     _logger->log("INFO", "Server listening on port " + to_string(_port));
 }
 
+class ConnectionHandler() {
+
+}
+
+void Server::notify() {
+    for (std::vector<CommunicationHandler>::iterator it = _cH.begin(), it != _cH.end();)
+        it.update();
+}
+
 int Server::handleConnections() {
     struct pollfd serverPfd = {_serverfd, POLLIN, 0};
     _pfds.push_back(serverPfd); // Initial file descriptor setup to listen for
@@ -52,6 +61,10 @@ int Server::handleConnections() {
             throw std::runtime_error("poll error");
         }
         _logger->log("INFO", "new connection is ready");
+
+        // have seperate list of serverfds
+        // check if they were affected
+        notify(); // notify all other connectionHandler
 
         // iterate through poll vector
         for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end();) {
