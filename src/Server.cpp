@@ -39,7 +39,9 @@ void Server::listen(int port) {
     _logger->log("INFO", "Server listening on port " + to_string(_port));
 }
 
+#include "HttpParser.h"
 int Server::handleConnections() {
+    HttpParser parser;
     struct pollfd serverPfd = {_serverfd, POLLIN, 0};
     _pfds.push_back(serverPfd); // Initial file descriptor setup to listen for
                                 // new connections
@@ -52,8 +54,6 @@ int Server::handleConnections() {
             throw std::runtime_error("poll error");
         }
         _logger->log("INFO", "new connection is ready");
-        // std::vector<IHttpParser>;
-        // iterate through poll vector
         for (std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end();) {
             // handle incoming data or connections
             if (it->revents & POLLIN) {
@@ -70,24 +70,24 @@ int Server::handleConnections() {
                     }
                 } else {
                     char buffer[BUFFER_SIZE] = {0};
-                    ssize_t bytesRead = read(it->fd, buffer, BUFFER_SIZE-1); // -1 for NULL-TERMINATION
-                    if (bytesRead > 0) {
-                        // parser = parsers[i];
-                        // HttpRequest req = parser.parse(std::string(buffer));
-                        // if (parser.error())
-                        // {
-                        //     /* stop reading from connection */
-                        //     /* Initiate HTTP Error response construction */
-                        // }
-                        // if (parser.ready())
-                        // {
-                        //     /* Initiate resource retrieval */
-                        //     /* Initiate HTTP Error response */
-                        // }
-                        
+
+                    ssize_t bytesRead = read(it->fd, buffer, BUFFER_SIZE - 1); // -1 for NULL-TERMINATION
+                    if (bytesRead > 0) {                        
+                        parser.feed(buffer, strlen(buffer));
+
+                        if (parser.ready()) {
+                            HttpRequest newRequest = parser.getRequest();
+                            std::cout << "\n-------------------------------\n";
+                            std::cout << newRequest.method << " | " << newRequest.uri << " | " << newRequest.version <<std::endl;
+                            for (std::map<std::string, std::string>::iterator itor = newRequest.headers.begin(); itor != newRequest.headers.end(); itor++) {
+                                std::cout << itor->first << " | " << itor->second << std::endl;
+                            }
+                            std::cout << "\n-------------------------------\n";
+                            // std::cout << newRequest.body << std::endl;
+                            it->events |= POLLOUT;
+                        }
                         
                         _logger->log("INFO", std::string(buffer, bytesRead));
-                        it->events |= POLLOUT;
                     } else {
                         // Handle disconnection
                         close(it->fd);
@@ -133,3 +133,6 @@ std::string generateHttpResponse() {
            "\n"
            "<html><body><h1>hello from webserv</h1></body></html>";
 }
+
+IHttpParser::~IHttpParser() {}
+HttpParser::~HttpParser() {}

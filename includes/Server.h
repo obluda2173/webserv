@@ -25,7 +25,7 @@ class Server {
     int _bind();
 
   public:
-    static const int BUFFER_SIZE = 1024;
+    static const int BUFFER_SIZE = 10;
     Server(Logger *logger);
     ~Server();
     void listen(int port);

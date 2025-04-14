@@ -13,20 +13,25 @@ class HttpParser : public IHttpParser {
       STATE_REQUEST_LINE,
       STATE_HEADERS,
       STATE_BODY,
-      STATE_DONE
+      STATE_CHUNKED_BODY,
+      STATE_DONE,
+      STATE_ERROR
     };
 
     State _state;
     std::string _buffer;
     HttpRequest _currentRequest;
-    size_t _bodyBytesRead;
     size_t _expectedBodyLength;
+    bool _isChunked;
+    size_t _chunkSize;
+    int _chunkState;
+    void reset();
     void parseBuffer();
 
   public:
     HttpParser();                             // hope Kay is fine with this
     ~HttpParser();
-    bool feed(char* buffer, size_t length);   // solution for chunk requests
+    bool feed(const char* buffer, size_t length);   // solution for chunk requests
     int error(void);
     int ready(void);
     HttpRequest getRequest(void);
