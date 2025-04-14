@@ -11,7 +11,7 @@ typedef struct HttpRequest {
   std::string version;                             // HTTP/1.1
   std::map<std::string, std::string> headers;      // key-value pairs for headers
   char* body;                                		// request body (if any)
-  std::map<std::string, std::string> queryParams;  // query parameters from URI
+  // std::map<std::string, std::string> queryParams;  // query parameters from URI
 } HttpRequest;
 
 #endif // HTTPREQUEST_H
