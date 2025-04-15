@@ -27,6 +27,11 @@ all: $(NAME)
 $(NAME): $(SRC_FILES)
 	$(CXX) $(CXXFLAGS) $(SRC_FILES) -o $(NAME) $(INCLUDES)
 
+unittest:
+	cmake -S . -B build && \
+	cmake --build build && \
+	./build/run_unittests
+
 clean:
 	rm -rf .cache
 	rm -rf build

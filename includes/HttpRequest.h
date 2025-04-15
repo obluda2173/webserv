@@ -10,7 +10,7 @@ typedef struct HttpRequest {
   std::string uri;                                 // /path/to/resource
   std::string version;                             // HTTP/1.1
   std::map<std::string, std::string> headers;      // key-value pairs for headers
-  // const char* body;                                		// request body (if any)
+  // const char* body;                             // request body (if any)
   std::string body;
 } HttpRequest;
 

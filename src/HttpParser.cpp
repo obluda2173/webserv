@@ -73,9 +73,14 @@ void HttpParser::parseBuffer() {
 
                     std::string sizeLine = _buffer.substr(0, pos);
                     _buffer.erase(0, pos + 2);
+                    
                     std::stringstream ss(sizeLine);
                     ss >> std::hex >> _chunkSize; //Erik, is this correct?(yao don't know this line-_-)
-
+                    if (ss.fail() || !ss.eof()) {
+                        _state = STATE_ERROR;
+                        return;
+                    }
+                    
                     if (_chunkSize == 0) {
                         if (_buffer.size() >= 2 && _buffer.substr(0, 2) == "\r\n") {
                             _buffer.erase(0, 2);
@@ -83,6 +88,7 @@ void HttpParser::parseBuffer() {
                         }
                         break;
                     }
+                    
                     _chunkState = 1; // Switch to reading chunk data
                 } else if (_chunkState == 1) { // Reading chunk data
                     if (_buffer.size() >= _chunkSize) {
