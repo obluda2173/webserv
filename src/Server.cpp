@@ -1,5 +1,6 @@
 #include "Server.h"
 #include "ILogger.h"
+#include "logging.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <netdb.h>
@@ -12,12 +13,6 @@
 Server::Server(ILogger *l) : _logger(l) { _logger->log("INFO", "Server constructed"); }
 
 bool Server::isRunning() const { return _isRunning; }
-
-void logConnection(ILogger *l, struct sockaddr_in addr) {
-    std::stringstream info;
-    info << "Connection accepted from IP: " << inet_ntoa(addr.sin_addr) << ", Port: " << ntohs(addr.sin_port);
-    l->log("INFO", info.str());
-}
 
 void Server::start() {
     _logger->log("INFO", "Server is starting...");
