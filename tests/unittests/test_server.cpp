@@ -34,8 +34,7 @@ TEST_F(ServerTest, connectionTest) {
 
     int clientfd;
     int count = 0;
-    // int nbrConns = 10 + distr(gen);
-    int nbrConns = 10;
+    int nbrConns = 10 + distr(gen);
     int clientPort = 8080;
     std::string clientIp = "127.0.0.";
     while (count++ < nbrConns) {
