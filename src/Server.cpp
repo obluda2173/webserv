@@ -5,7 +5,9 @@
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sstream>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -50,8 +52,14 @@ void Server::start() {
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
 
-    int i = 0;
-    while (i++ < 10) {
+    struct pollfd serverPfd = {_serverfd, POLLIN | POLLHUP, 0};
+
+    while (_isRunning) {
+        int ready = poll(&serverPfd, 1, 10);
+        if (!_isRunning)
+            break;
+        if (ready == 0)
+            continue;
         conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
         logConnection(_logger, theirAddr);
         close(conn);
@@ -60,10 +68,10 @@ void Server::start() {
 
 void Server::stop() {
     _logger->log("INFO", "Server is stopping...");
+    _isRunning = false;
     if (close(_serverfd) == -1) {
         perror("close");
         exit(1);
     }
-    _isRunning = false;
     _logger->log("INFO", "Server stopped");
 }

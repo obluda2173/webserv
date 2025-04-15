@@ -52,6 +52,8 @@ TEST_F(ServerTest, connectionTest) {
 
     EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
     EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     svr.stop();
 
     serverThread.join();
