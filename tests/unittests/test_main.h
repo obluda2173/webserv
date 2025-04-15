@@ -9,5 +9,5 @@
 #include <thread>
 
 // test_utils.h
-int getClientSocket(const char *ip, int port);
+int getClientSocket(std::string ip, int port);
 void setSvrAddr(sockaddr_in &svrAddr);

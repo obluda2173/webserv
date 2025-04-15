@@ -51,7 +51,7 @@ void Server::start() {
     int addrlen = sizeof(theirAddr);
 
     int i = 0;
-    while (i++ < 3) {
+    while (i++ < 10) {
         conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
         logConnection(_logger, theirAddr);
         close(conn);
