@@ -1,5 +1,6 @@
 #include "Server.h"
 #include <arpa/inet.h>
+#include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -43,10 +44,12 @@ void Server::start() {
 
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
-    int clientfd = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
-
-    _logger->log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8081");
-    close(clientfd);
+    while (_isRunning) {
+        int clientfd = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+        _logger->log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8081");
+        std::cout << "hello" << std::endl;
+        close(clientfd);
+    }
 }
 
 void Server::stop() {
