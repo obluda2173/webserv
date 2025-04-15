@@ -6,6 +6,7 @@ class Server {
     bool _isRunning;
     int _serverfd;
     void _listenPoll(void);
+    void _listenEPoll(void);
 
   public:
     explicit Server(ILogger *l);

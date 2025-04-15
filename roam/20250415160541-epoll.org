@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID:       955f39d6-4f4d-432a-97d9-dacd1169af3b
+:END:
+#+title: epoll
+#+date: [2025-04-15 Tue 16:05]
+#+startup: overview
+
+* epoll
+** epoll_instance
+- it's an in-kernel data-structure
+- it can be considered as a container of 2 lists
+  1. _interest_
+     - set of file descriptors that the process wants to monitor
+  2. _ready_
+     - the set of file descriptors that are ready for I/O
+     - subset of _interest_
+** API
+*** epoll_create
+#+begin_src c
+int epoll_create(int size);
+#+end_src
+- _size_ argument is ignored
+- creates a new *epoll instance*
+- returns a file-descriptor pointing to the new epoll instance (_epfd_)
+- should be closed with =close= if no longer needed
+- returns -1 on error
+**** Return value
+
+*** epoll_ctl
+#+begin_src c
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *_Nullable event);
+#+end_src
+- to register file-descriptor into the *epoll instance*, that you are interested in
+- add/modify/remove entries
+- _epfd_ is the file-descriptor which refers to the _interest list_
+- _op_ shall be performed for the targed _fd_
+**** MACROS
+***** EPOLL_CTL_ADD
+- registers an entry to the _interest list_ of _epfd_
+- includes
+  - the file-descriptor _fd_, that shall be observed
+  - setting specified by _event_
+***** EPOLL_CTL_MOD
+- change settings of _fd_ to new settings specified by _event_
+***** EPOLL_CTL_DEL
+- remove _fd_ from _interest_list_ of _epfd_
+- EVENT is ignored and can be NULL
+**** _event_ (epoll_event data structure)
+- describes the file-descriptor _fd_
+- see man _epoll_event(3type)_
+***** _data_member_
+- what the kernel should save and then return (via *epoll_wait*)
+***** _events_member_
+- bit mask
+- ORing together EVENT_TYPES (those are returned by *epoll_wait*) and INPUT_FLAGS (affect behaviour but aren't returned)
+*** epoll_wait
+- waits for events
+- blocks if no events are currently available
+  - like fetching ready items from the _interest_ list
+** EVENT_TYPES
+- man 2 epoll_ctl

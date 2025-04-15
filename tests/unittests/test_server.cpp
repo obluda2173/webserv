@@ -23,7 +23,7 @@ void testMultipleConnections(MockLogger &mLogger) {
 
     int clientfd;
     int count = 0;
-    int nbrConns = 10 + distr(gen);
+    int nbrConns = 1000;
     int clientPort = 8080;
     std::string clientIp = "127.0.0.";
     sockaddr_in svrAddr;

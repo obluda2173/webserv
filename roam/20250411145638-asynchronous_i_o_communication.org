@@ -16,3 +16,7 @@
 * asynchonous
 - calls rely on an event / a signal / [[id:88d921c5-1ac5-4412-a469-d75835e49158][callback function]]
   - may call a callback function
+
+* API
+** [[id:f11a1719-330f-46e6-9665-ebcfab98630b][poll]]
+** [[id:955f39d6-4f4d-432a-97d9-dacd1169af3b][epoll]]
