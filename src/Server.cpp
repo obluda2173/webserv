@@ -1,4 +1,5 @@
 #include "Server.h"
+#include "ILogger.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <netdb.h>
@@ -11,6 +12,12 @@
 Server::Server(ILogger *l) : _logger(l) { _logger->log("INFO", "Server constructed"); }
 
 bool Server::isRunning() const { return _isRunning; }
+
+void logConnection(ILogger *l, struct sockaddr_in addr) {
+    std::stringstream info;
+    info << "Connection accepted from IP: " << inet_ntoa(addr.sin_addr) << ", Port: " << ntohs(addr.sin_port);
+    l->log("INFO", info.str());
+}
 
 void Server::start() {
     _logger->log("INFO", "Server is starting...");
@@ -43,26 +50,17 @@ void Server::start() {
     _isRunning = true;
     _logger->log("INFO", "Server started");
 
+    int conn;
+    std::stringstream info;
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
-    int conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
-    _logger->log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8081");
-    close(conn);
 
-    conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
-    int port = ntohs(theirAddr.sin_port);
-    std::stringstream info;
-    info << "Connection accepted from IP: " << inet_ntoa(theirAddr.sin_addr) << ", Port: " << port;
-    _logger->log("INFO", info.str());
-    info.str("");
-    info.clear();
-    close(conn);
-
-    conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
-    port = ntohs(theirAddr.sin_port);
-    info << "Connection accepted from IP: " << inet_ntoa(theirAddr.sin_addr) << ", Port: " << port;
-    _logger->log("INFO", info.str());
-    close(conn);
+    int i = 0;
+    while (i++ < 3) {
+        conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+        logConnection(_logger, theirAddr);
+        close(conn);
+    }
 }
 
 void Server::stop() {
