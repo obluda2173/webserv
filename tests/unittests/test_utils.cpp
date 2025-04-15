@@ -4,30 +4,47 @@
 void reuseSocket(int socketfd) {
     int yes = 1;
     if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        perror("setsockopt");
+        std::cerr << "Failed to reuse socket: " << strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
 }
 
+void setAddr(std::string ip, int port, struct addrinfo &hints, struct addrinfo **res) {
+    std::memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;       // Use IPv4
+    hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
+
+    // Convert port to a string
+    std::string port_str = std::to_string(port);
+
+    int status = getaddrinfo(ip.c_str(), port_str.c_str(), &hints, res);
+    if (status != 0) {
+        std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
+        exit(1);
+    }
+}
+
 int getClientSocket(std::string ip, int port) {
-    int clientfd = socket(AF_INET, SOCK_STREAM, 0);
+    struct addrinfo hints, *res;
+    setAddr(ip, port, hints, &res);
+
+    int clientfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (clientfd < 0) {
         std::cerr << "Failed to create socket: " << strerror(errno) << std::endl;
+        freeaddrinfo(res);
         return -1;
     }
 
     reuseSocket(clientfd);
 
-    struct sockaddr_in local_address;
-    socklen_t local_address_length = sizeof(local_address);
-    local_address.sin_family = AF_INET;
-    inet_pton(AF_INET, ip.c_str(), &local_address.sin_addr);
-    local_address.sin_port = htons(port);
-
-    if (bind(clientfd, (sockaddr *)&local_address, local_address_length) < 0) {
+    if (bind(clientfd, res->ai_addr, res->ai_addrlen) < 0) {
         std::cerr << "Failed to bind socket: " << strerror(errno) << std::endl;
+        close(clientfd);
+        freeaddrinfo(res);
         return -1;
     }
+
+    freeaddrinfo(res);
     return clientfd;
 }
 
