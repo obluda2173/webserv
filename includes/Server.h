@@ -5,6 +5,7 @@ class Server {
     ILogger *_logger;
     bool _isRunning;
     int _serverfd;
+    void _listenPoll(void);
 
   public:
     explicit Server(ILogger *l);

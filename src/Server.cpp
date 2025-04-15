@@ -25,17 +25,17 @@ void Server::start() {
         exit(1);
     }
 
-    sockaddr_in address = {};
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(8080);
+    sockaddr_in svrAddr = {};
+    svrAddr.sin_family = AF_INET;
+    svrAddr.sin_addr.s_addr = INADDR_ANY;
+    svrAddr.sin_port = htons(8080);
 
     int yes = 1;
     if (setsockopt(_serverfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
-    if (bind(_serverfd, (sockaddr *)&address, sizeof(address)) < 0) {
+    if (bind(_serverfd, (sockaddr *)&svrAddr, sizeof(svrAddr)) < 0) {
         perror("bind");
         exit(1);
     }
@@ -46,15 +46,16 @@ void Server::start() {
 
     _isRunning = true;
     _logger->log("INFO", "Server started");
+    _listenPoll();
+}
 
-    int conn;
-    std::stringstream info;
-    struct sockaddr_in theirAddr;
-    int addrlen = sizeof(theirAddr);
-
+void Server::_listenPoll(void) {
     struct pollfd serverPfd = {_serverfd, POLLIN | POLLHUP, 0};
-
     while (_isRunning) {
+        int conn;
+        std::stringstream info;
+        struct sockaddr_in theirAddr;
+        int addrlen = sizeof(theirAddr);
         int ready = poll(&serverPfd, 1, 10);
         if (!_isRunning)
             break;
