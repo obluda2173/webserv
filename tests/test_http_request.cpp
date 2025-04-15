@@ -1,7 +1,7 @@
 #include "HttpParser.h"
 #include "HttpRequest.h"
 #include <gtest/gtest.h>
-# include <gmock/gmock.h>
+#include <gmock/gmock.h>
 
 struct TestHttpParserParams {
     int bufLen;                  // Buffer size for splitting input
