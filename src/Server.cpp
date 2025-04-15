@@ -3,11 +3,13 @@
 #include "logging.h"
 #include <arpa/inet.h>
 #include <cstring>
+#include <errno.h>
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <poll.h>
 #include <sstream>
+#include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
@@ -79,7 +81,14 @@ void Server::_listenEPoll(void) {
             exit(1);
         }
         logConnection(_logger, theirAddr);
+
+        // close connection
+        if (close(conn) == -1) {
+            _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+            exit(1);
+        }
     }
+    close(epfd);
 }
 
 void Server::_listenPoll(void) {

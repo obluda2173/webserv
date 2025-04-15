@@ -13,19 +13,20 @@
 # variable's value will not change even if the variables it depends on changes later
 
 CXX := c++
-CXXFLAGS := -std=c++98 -Wall -Werror -Wextra -Wshadow
+CXXFLAGS := -std=c++11 -Wall -Werror -Wextra -Wshadow
 
 SRC_DIR := src
 BUILD_DIR := build
+RUN_DIR := run
 INCLUDES := -Iincludes
-SRC_FILES := $(SRC_DIR)/main.cpp $(SRC_DIR)/Server.cpp $(SRC_DIR)/Logger.cpp
+SRC_FILES := $(SRC_DIR)/Server.cpp $(SRC_DIR)/Logger.cpp $(SRC_DIR)/logging.cpp
 
 NAME := webserv
 
 all: $(NAME)
 
-$(NAME): $(SRC_FILES)
-	$(CXX) $(CXXFLAGS) $(SRC_FILES) -o $(NAME) $(INCLUDES)
+$(NAME): $(SRC_FILES) $(RUN_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) $(SRC_FILES) $(RUN_DIR)/main.cpp -o $(NAME) $(INCLUDES)
 
 clean:
 	rm -rf .cache

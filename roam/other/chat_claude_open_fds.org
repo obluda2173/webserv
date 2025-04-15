@@ -1,0 +1,208 @@
+:PROPERTIES:
+:GPTEL_MODEL: claude-3-7-sonnet-20250219
+:GPTEL_BACKEND: Claude
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Avoid long answers.
+:GPTEL_BOUNDS: ((response (355 1261) (1354 3077) (3151 5010) (5127 7203)))
+:END:
+
+*** This is my code and my tests so far. I want to check for any open file descriptors
+
+You need to ensure all file descriptors are properly closed to avoid leaks. Here are the issues I see:
+
+1. In =_listenEPoll()=, you accept connections but never close them. Add:
+#+begin_src cpp
+if (close(conn) == -1) {
+    _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+    exit(1);
+}
+#+end_src
+
+2. In =stop()=, you've commented out the code to close the server file descriptor. Uncomment and fix it:
+#+begin_src cpp
+if (close(_serverfd) == -1) {
+    _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+    exit(1);
+}
+#+end_src
+
+To test for file descriptor leaks, you could:
+
+1. Add a counter for opened/closed descriptors
+2. Use =lsof= in your tests to check for open descriptors
+3. Add a =valgrind= test with =--track-fds=yes= option
+
+The most critical fix is ensuring that each =accept()= call is paired with a corresponding =close(conn)= in your =_listenEPoll()= method.
+
+*** I know how to solve it. But I want to write a test for it. Preferably in my unittests
+
+Here's how to add a unit test to check for file descriptor leaks:
+
+#+begin_src cpp
+TEST_F(ServerTest, noFileDescriptorLeaks) {
+    // Get initial file descriptor count
+    int initialFdCount = countOpenFileDescriptors();
+
+    // Create multiple connections
+    sockaddr_in svrAddr;
+    setSvrAddr(svrAddr);
+
+    // Make several connections
+    int clientPort = 8080;
+    std::string clientIp = "127.0.0.1";
+
+    // Make 10 connections
+    for (int i = 0; i < 10; i++) {
+        testOneConnection(mLogger, clientPort, clientIp, svrAddr);
+        clientPort++;
+    }
+
+    // Sleep briefly to allow server to process cleanup
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Count file descriptors after test
+    int finalFdCount = countOpenFileDescriptors();
+
+    // Verify no leaks (should be same number as start)
+    EXPECT_EQ(initialFdCount, finalFdCount)
+        << "File descriptor leak detected: "
+        << (finalFdCount - initialFdCount) << " unclosed file descriptors";
+}
+
+// Helper function to count open file descriptors for current process
+int countOpenFileDescriptors() {
+    int count = 0;
+    std::string procPath = "/proc/self/fd";
+    DIR* dir = opendir(procPath.c_str());
+    if (dir != nullptr) {
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            if (entry->d_name[0] != '.') {
+                count++;
+            }
+        }
+        closedir(dir);
+    }
+    return count;
+}
+#+end_src
+
+Don't forget to include the necessary headers:
+#+begin_src cpp
+#include <dirent.h>
+#+end_src
+
+This test counts open file descriptors before and after creating multiple connections to ensure they're properly closed when done.
+
+*** I can not have mutliple connections open on the same port, can I ?
+
+You're right. Let me clarify:
+
+1. Your server listens on port 8080
+2. Each client connection doesn't need a specific port on the server side - the client connects /to/ port 8080
+3. The client port is automatically assigned by the OS when you call =connect()=
+
+You don't need to manually specify different client ports. Here's a corrected test:
+
+#+begin_src cpp
+TEST_F(ServerTest, noFileDescriptorLeaks) {
+    // Get initial file descriptor count
+    int initialFdCount = countOpenFileDescriptors();
+
+    // Create server address
+    sockaddr_in svrAddr;
+    setSvrAddr(svrAddr);
+
+    // Make several connections
+    std::string clientIp = "127.0.0.1";
+
+    // Make 10 connections sequentially
+    for (int i = 0; i < 10; i++) {
+        int clientfd = socket(AF_INET, SOCK_STREAM, 0);
+        ASSERT_GT(clientfd, 0) << "socket creation failed";
+
+        // The client port is automatically assigned by the OS
+        EXPECT_CALL(mLogger, log("INFO", testing::_));
+
+        ASSERT_EQ(connect(clientfd, (sockaddr*)&svrAddr, sizeof(svrAddr)), 0)
+            << "connect: " << strerror(errno);
+
+        // Close client socket
+        close(clientfd);
+
+        // Sleep briefly to allow server to process
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    // Sleep to allow server to clean up
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Count file descriptors after test
+    int finalFdCount = countOpenFileDescriptors();
+
+    // Verify no leaks
+    EXPECT_EQ(initialFdCount, finalFdCount)
+        << "File descriptor leak detected: "
+        << (finalFdCount - initialFdCount) << " unclosed file descriptors";
+}
+#+end_src
+
+The key is that each client connects to the same server port, but the OS assigns unique source ports for each connection.
+
+*** no it doesn't because in my testOneConnection, i delibrately assign specific ip and port for the clientSocket
+
+You're right, I misunderstood your test setup. Looking at your =testOneConnection= function, you're actually setting a client IP and port but not in the way I initially thought.
+
+The =clientIp= and =clientPort= in your code appear to be for logging purposes, not for binding the client socket. When you call =getClientSocket()=, it's likely creating a socket without binding it to a specific port, and when you call =connect()=, the OS assigns a random source port.
+
+Here's a corrected file descriptor leak test that uses your existing functions:
+
+#+begin_src cpp
+TEST_F(ServerTest, noFileDescriptorLeaks) {
+    // Get initial file descriptor count
+    int initialFdCount = countOpenFileDescriptors();
+
+    // Setup for connections
+    sockaddr_in svrAddr;
+    setSvrAddr(svrAddr);
+
+    // Make several connections sequentially
+    std::string clientIp = "127.0.0.1";
+    int clientPort = 12345;  // This is just for logging in your code
+
+    // Make 10 connections
+    for (int i = 0; i < 10; i++) {
+        testOneConnection(mLogger, clientPort, clientIp, svrAddr);
+        clientPort++; // Increment just to have different logging values
+    }
+
+    // Sleep to allow server to clean up
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Count file descriptors after test
+    int finalFdCount = countOpenFileDescriptors();
+
+    // Verify no leaks
+    EXPECT_EQ(initialFdCount, finalFdCount)
+        << "File descriptor leak detected: "
+        << (finalFdCount - initialFdCount) << " unclosed file descriptors";
+}
+
+// Helper function to count open file descriptors
+int countOpenFileDescriptors() {
+    int count = 0;
+    DIR* dir = opendir("/proc/self/fd");
+    if (dir != nullptr) {
+        while (readdir(dir) != nullptr) {
+            count++;
+        }
+        closedir(dir);
+        // Adjust count to exclude ".", ".." and the dir fd itself
+        count -= 3;
+    }
+    return count;
+}
+#+end_src
+
+This test uses your existing =testOneConnection= function but focuses on checking if file descriptors are properly closed.
+
+***
