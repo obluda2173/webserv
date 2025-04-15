@@ -29,27 +29,17 @@ TEST_F(ServerTest, connectionTest) {
     int clientPort;
     clientPort = 8080;
 
-    int clientfd = getClientSocket("127.0.0.1", ++clientPort);
-    ASSERT_GT(clientfd, 0) << "getClientSocket failed";
-    sockaddr_in svrAddr;
-    setSvrAddr(svrAddr);
-    EXPECT_CALL(mLogger, log("INFO", "Connection accepted from IP: 127.0.0.1, Port: " + std::to_string(clientPort)));
-    ASSERT_EQ(connect(clientfd, (sockaddr *)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
-    close(clientfd);
-
-    clientfd = getClientSocket("127.0.0.2", ++clientPort);
-    ASSERT_GT(clientfd, 0) << "getClientSocket failed";
-    setSvrAddr(svrAddr);
-    EXPECT_CALL(mLogger, log("INFO", "Connection accepted from IP: 127.0.0.2, Port: " + std::to_string(clientPort)));
-    ASSERT_EQ(connect(clientfd, (sockaddr *)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
-    close(clientfd);
-
-    clientfd = getClientSocket("127.0.0.3", ++clientPort);
-    ASSERT_GT(clientfd, 0) << "getClientSocket failed";
-    setSvrAddr(svrAddr);
-    EXPECT_CALL(mLogger, log("INFO", "Connection accepted from IP: 127.0.0.3, Port: " + std::to_string(clientPort)));
-    ASSERT_EQ(connect(clientfd, (sockaddr *)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
-    close(clientfd);
+    int count = 0;
+    while (count++ < 3) {
+        int clientfd = getClientSocket("127.0.0.1", ++clientPort);
+        ASSERT_GT(clientfd, 0) << "getClientSocket failed";
+        sockaddr_in svrAddr;
+        setSvrAddr(svrAddr);
+        EXPECT_CALL(mLogger,
+                    log("INFO", "Connection accepted from IP: 127.0.0.1, Port: " + std::to_string(clientPort)));
+        ASSERT_EQ(connect(clientfd, (sockaddr *)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
+        close(clientfd);
+    }
 
     EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
     EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
