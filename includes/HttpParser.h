@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cstring>
 #include <string.h>
+#include <iostream>
 
 #include <IHttpParser.h>
 

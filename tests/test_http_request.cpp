@@ -14,6 +14,12 @@ struct TestHttpParserParams {
 class TestHttpParser : public ::testing::TestWithParam<TestHttpParserParams> {};
 
 void assertEqualHttpRequest(const HttpRequest& want, const HttpRequest& got) {
+    std::cout << "----------------------------------------------------\n";
+    std::cout << want.method << " | " << got.method << std::endl;
+    std::cout << want.uri << " | " << got.uri << std::endl;
+    std::cout << want.version << " | " << got.version << std::endl;
+    std::cout << want.body << " | " << got.body << std::endl;
+    std::cout << "----------------------------------------------------\n";
     EXPECT_EQ(want.method, got.method);
     EXPECT_EQ(want.uri, got.uri);
     EXPECT_EQ(want.version, got.version);
