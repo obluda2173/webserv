@@ -11,30 +11,41 @@ class MockLogger : public ILogger {
 };
 
 // defining a Test Fixture: ServerTest
-class ServerTest : public ::testing::Test {};
-
-TEST_F(ServerTest, connectionTest) {
-    // setup
+class ServerTest : public ::testing::Test {
+  protected:
     MockLogger mLogger;
-    EXPECT_CALL(mLogger, log("INFO", "Server constructed"));
-    Server svr(&mLogger);
+    Server svr;
+    std::thread serverThread;
 
-    EXPECT_CALL(mLogger, log("INFO", "Server is starting..."));
-    EXPECT_CALL(mLogger, log("INFO", "Server started"));
+    ServerTest() : svr(&mLogger) {}
 
-    std::thread serverThread(&Server::start, &svr);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    EXPECT_TRUE(svr.isRunning());
+    void SetUp() override { setupServer(); }
 
-    // test some stuff
-    testMultipleConnections(mLogger);
+    void TearDown() override { teardownServer(); }
 
-    // shutdown
-    EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
-    EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
-    svr.stop();
-    serverThread.join();
-}
+    void setupServer() {
+        EXPECT_CALL(mLogger, log("INFO", "Server is starting..."));
+        EXPECT_CALL(mLogger, log("INFO", "Server started"));
+
+        serverThread = std::thread(&Server::start, &svr);
+        waitForServerStartup();
+    }
+
+    void waitForServerStartup() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        EXPECT_TRUE(svr.isRunning());
+    }
+
+    void teardownServer() {
+        EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
+        EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
+
+        svr.stop();
+        serverThread.join();
+    }
+};
+
+TEST_F(ServerTest, connectionTest) { testMultipleConnections(mLogger); }
 
 void testOneConnection(MockLogger &mLogger, int &clientPort, std::string &clientIp, sockaddr_in svrAddr) {
     int clientfd = getClientSocket(clientIp, clientPort);

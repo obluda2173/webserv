@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-Server::Server(ILogger *l) : _logger(l) { _logger->log("INFO", "Server constructed"); }
+Server::Server(ILogger *l) : _logger(l) {}
 
 bool Server::isRunning() const { return _isRunning; }
 
@@ -60,8 +60,8 @@ void Server::_listenEPoll(void) {
     struct epoll_event event;
     event.events = EPOLLIN;
     event.data.fd = _serverfd;
-    epoll_ctl(epfd, EPOLL_CTL_ADD, _serverfd, &event);
 
+    epoll_ctl(epfd, EPOLL_CTL_ADD, _serverfd, &event);
     struct epoll_event events[1];
     while (_isRunning) {
         int conn;
@@ -79,6 +79,7 @@ void Server::_listenEPoll(void) {
             exit(1);
         }
         logConnection(_logger, theirAddr);
+
         // close connection
         if (close(conn) == -1) {
             _logger->log("ERROR", "close: " + std::string(strerror(errno)));
