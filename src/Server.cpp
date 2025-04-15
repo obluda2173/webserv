@@ -48,13 +48,42 @@ void Server::start() {
 
     _isRunning = true;
     _logger->log("INFO", "Server started");
-    _listenPoll();
+    _listenEPoll();
 }
 
 void Server::_listenEPoll(void) {
-    int epfd = epoll_create(0);
+    int epfd = epoll_create(1);
     if (epfd == -1) {
         _logger->log("ERROR", "epoll_create: " + std::string(strerror(errno)));
+        exit(1);
+    }
+    struct epoll_event event;
+    event.events = EPOLLIN;
+    event.data.fd = _serverfd;
+    epoll_ctl(epfd, EPOLL_CTL_ADD, _serverfd, &event);
+
+    struct epoll_event events[1];
+    while (_isRunning) {
+        int conn;
+        std::stringstream info;
+        struct sockaddr_in theirAddr;
+        int addrlen = sizeof(theirAddr);
+        int ready = epoll_wait(epfd, events, 1, 10);
+        if (!_isRunning)
+            break;
+        if (ready == 0)
+            continue;
+        conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+        if (conn < 0) {
+            _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
+            exit(1);
+        }
+        logConnection(_logger, theirAddr);
+        // close connection
+        if (close(conn) == -1) {
+            _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+            exit(1);
+        }
     }
 }
 

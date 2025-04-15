@@ -34,7 +34,7 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *_Nullable event);
 - add/modify/remove entries
 - _epfd_ is the file-descriptor which refers to the _interest list_
 - _op_ shall be performed for the targed _fd_
-**** MACROS
+**** _OP_ MACROS
 ***** EPOLL_CTL_ADD
 - registers an entry to the _interest list_ of _epfd_
 - includes
@@ -45,17 +45,61 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *_Nullable event);
 ***** EPOLL_CTL_DEL
 - remove _fd_ from _interest_list_ of _epfd_
 - EVENT is ignored and can be NULL
-**** _event_ (epoll_event data structure)
-- describes the file-descriptor _fd_
-- see man _epoll_event(3type)_
-***** _data_member_
-- what the kernel should save and then return (via *epoll_wait*)
-***** _events_member_
-- bit mask
-- ORing together EVENT_TYPES (those are returned by *epoll_wait*) and INPUT_FLAGS (affect behaviour but aren't returned)
+**** _event_ (epoll_event data structure) more under Event
 *** epoll_wait
+#+begin_src c
+int epoll_wait(int epfd, struct epoll_event events[.maxevents], int maxevents, int timeout);
+#+end_src
 - waits for events
 - blocks if no events are currently available
-  - like fetching ready items from the _interest_ list
-** EVENT_TYPES
-- man 2 epoll_ctl
+- unblocks
+  - event occurs on a registered file descriptor
+  - will be interrupted by any signal
+  - timeout expires
+**** arguments
+***** _events_
+- [[id:34d78bf5-f9e5-4dd4-a535-47083fddbfe6][epoll_event data structure]]
+- used to store information about file descriptors inside the _interest_list_, which have events available
+****** events
+- bit mask that indicates the events that have occured
+****** data
+- data field will contain exactly what was specified in the last call to epoll_ctl for the corresponding file-descriptor
+***** maxevents
+- maximum amount of events returned
+***** timeout
+- in milliseconds
+- blocks until timeout if no event happens
+- wait indefinetely if timeout=-1
+- return immediately if timeout=0
+**** return value
+- number of file-descriptors ready for I/O
+- 0 if no file descriptor became ready
+- -1 on failure
+** epoll_event data structure
+:PROPERTIES:
+:ID:       34d78bf5-f9e5-4dd4-a535-47083fddbfe6
+:END:
+#+begin_src c
+struct epoll_event {
+        uint32_t      events;  /* Epoll events */
+        epoll_data_t  data;    /* User data variable */
+};
+#+end_src
+- describes the file-descriptor _fd_
+- see man _epoll_event(3type)_
+**** _data_member_
+- what the kernel should save and then return (via *epoll_wait*)
+- man (3type) epoll_data
+  #+begin_src c
+union epoll_data {
+	void     *ptr;
+	int       fd;
+	uint32_t  u32;
+	uint64_t  u64;
+};
+  #+end_src
+**** _events_member_
+- bit mask
+- ORing together EVENT_TYPES (those are returned by *epoll_wait*) and INPUT_FLAGS (affect behaviour but aren't returned)
+***** EPOLLIN
+- The associated file is available for read(2) operations.
