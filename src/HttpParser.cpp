@@ -13,6 +13,15 @@ bool HttpParser::feed(const char* buffer, size_t length) {
     return _state == STATE_DONE;
 }
 
+// not used for now
+// function for debug, prints unprintable char.
+void    print_string(std::string temp) {
+    for (size_t i = 0; i < temp.size(); i++){
+        std::cout << static_cast<int>(temp[i]) << ","; 
+    }
+    std::cout << std::endl;
+}
+
 void HttpParser::parseBuffer() {
     while (_state != STATE_DONE && _state != STATE_ERROR) {
         if (_state == STATE_REQUEST_LINE || _state == STATE_HEADERS) {
@@ -68,27 +77,33 @@ void HttpParser::parseBuffer() {
             while (true) {
                 if (_chunkState == 0) { // Reading chunk size
                     size_t pos = _buffer.find("\r\n");
-                    if (pos == std::string::npos)
+                    if (pos == std::string::npos) {
                         return; // Wait for more data
+                    }
 
                     std::string sizeLine = _buffer.substr(0, pos);
                     _buffer.erase(0, pos + 2);
                     
+                    if (sizeLine.size() > 8) { // chunk size request overflow
+                        _state = STATE_ERROR;
+                        return;
+                    }
+
                     std::stringstream ss(sizeLine);
                     ss >> std::hex >> _chunkSize; //the number we received is hexadecimal, so we need to convert it
                     if (ss.fail() || !ss.eof()) {
                         _state = STATE_ERROR;
                         return;
                     }
-                    
-                    if (_chunkSize == 0) {
-                        _buffer.erase(0, 2);
-                        _state = STATE_DONE;
-                        break;
-                    }
-                    
+
                     _chunkState = 1; // Switch to reading chunk data
                 } else if (_chunkState == 1) { // Reading chunk data
+
+                    if (_chunkSize == 0 && _buffer.size() == 2) {
+                        _state = STATE_DONE;
+                        return;
+                    }
+
                     if (_buffer.size() >= _chunkSize + 2) {
                         _currentRequest.body.append(_buffer.substr(0, _chunkSize));
                         _buffer.erase(0, _chunkSize);
