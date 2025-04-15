@@ -36,7 +36,14 @@ TEST_F(ServerTest, connectionTest) {
     clientfd = getClientSocket("127.0.0.2", 8082);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     setSvrAddr(svrAddr);
-    EXPECT_CALL(mLogger, log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8081"));
+    EXPECT_CALL(mLogger, log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8082"));
+    ASSERT_EQ(connect(clientfd, (sockaddr *)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
+    close(clientfd);
+
+    clientfd = getClientSocket("127.0.0.3", 8083);
+    ASSERT_GT(clientfd, 0) << "getClientSocket failed";
+    setSvrAddr(svrAddr);
+    EXPECT_CALL(mLogger, log("INFO", "Connection accepted from IP: 127.0.0.3, Port: 8083"));
     ASSERT_EQ(connect(clientfd, (sockaddr *)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
     close(clientfd);
 

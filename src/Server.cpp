@@ -3,6 +3,7 @@
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sstream>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -44,12 +45,24 @@ void Server::start() {
 
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
-    while (_isRunning) {
-        int clientfd = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
-        _logger->log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8081");
-        std::cout << "hello" << std::endl;
-        close(clientfd);
-    }
+    int conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+    _logger->log("INFO", "Connection accepted from IP: 127.0.0.2, Port: 8081");
+    close(conn);
+
+    conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+    int port = ntohs(theirAddr.sin_port);
+    std::stringstream info;
+    info << "Connection accepted from IP: " << inet_ntoa(theirAddr.sin_addr) << ", Port: " << port;
+    _logger->log("INFO", info.str());
+    info.str("");
+    info.clear();
+    close(conn);
+
+    conn = accept(_serverfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+    port = ntohs(theirAddr.sin_port);
+    info << "Connection accepted from IP: " << inet_ntoa(theirAddr.sin_addr) << ", Port: " << port;
+    _logger->log("INFO", info.str());
+    close(conn);
 }
 
 void Server::stop() {
