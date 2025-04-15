@@ -79,12 +79,6 @@ void Server::_listenEPoll(void) {
             exit(1);
         }
         logConnection(_logger, theirAddr);
-
-        // close connection
-        if (close(conn) == -1) {
-            _logger->log("ERROR", "close: " + std::string(strerror(errno)));
-            exit(1);
-        }
     }
 }
 

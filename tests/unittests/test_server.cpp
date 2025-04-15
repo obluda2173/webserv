@@ -41,6 +41,8 @@ class ServerTest : public ::testing::Test {
         EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
 
         svr.stop();
+        EXPECT_FALSE(svr.isRunning());
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         serverThread.join();
     }
 };
