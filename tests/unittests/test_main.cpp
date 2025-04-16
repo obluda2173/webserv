@@ -3,5 +3,7 @@
 
 int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
+    testing::GTEST_FLAG(filter) = "ListenerTest*";
+    // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";
     return RUN_ALL_TESTS();
 }
