@@ -10,6 +10,12 @@ HttpParser::HttpParser() :
 bool HttpParser::feed(const char* buffer, size_t length) {
     _buffer.append(buffer, length);
     parseBuffer();
+
+    // TODO
+    // if (_state == STATE_DONE) { 
+    //     // do checks
+    // }
+
     return _state == STATE_DONE;
 }
 
@@ -24,103 +30,126 @@ void    print_string(std::string temp) {
 
 void HttpParser::parseBuffer() {
     while (_state != STATE_DONE && _state != STATE_ERROR) {
-        if (_state == STATE_REQUEST_LINE || _state == STATE_HEADERS) {
-            size_t pos = _buffer.find("\r\n");
-            if (pos == std::string::npos)
-                return; // Wait for more data
+        if (_state == STATE_REQUEST_LINE || _state == STATE_HEADERS) {    // REQUEST & HEADERS
+            if (handleRequestHeaders() == 1)
+                return;
+        } else if (_state == STATE_BODY) {                                // BODY [CONTENT LENGTH]
+            if (handleBodyContent() == 1)
+                return;
+        } else if (_state == STATE_CHUNKED_BODY) {                        // BODY [CHUNKED]
+            int handleBodyChunkResult = handleBodyChunk();
+            if (handleBodyChunkResult == 1)
+                return;
+            else if (handleBodyChunkResult == 2)
+                break;
+        }
+    }
+}
 
-            std::string line = _buffer.substr(0, pos);
-            _buffer.erase(0, pos + 2);
+int HttpParser::handleRequestHeaders() {
+    size_t pos = _buffer.find("\r\n");
+    if (pos == std::string::npos)
+        return DO_RETURN; // Wait for more data
 
-            if (_state == STATE_REQUEST_LINE) {
-                std::istringstream iss(line);
-                iss >> _currentRequest.method >> _currentRequest.uri >> _currentRequest.version;
-                _state = STATE_HEADERS;
-            } else if (_state == STATE_HEADERS) {
-                if (line.empty()) {
-                    std::map<std::string, std::string>::iterator it;
-                    it = _currentRequest.headers.find("Transfer-Encoding");
-                    if (it != _currentRequest.headers.end() && it->second == "chunked") {
-                        _isChunked = true;
-                        _state = STATE_CHUNKED_BODY;
-                    } else {
-                        it = _currentRequest.headers.find("Content-Length");
-                        if (it != _currentRequest.headers.end()) {
-                            std::stringstream ss(it->second);
-                            ss >> _expectedBodyLength;
-                        } else {
-                            _expectedBodyLength = 0;
-                        }
-                        _state = STATE_BODY;
-                    }
-                } else {
-                    size_t sep = line.find(':');
-                    if (sep != std::string::npos) {
-                        std::string key = line.substr(0, sep);
-                        std::string value = line.substr(sep + 1);
-                        value.erase(0, value.find_first_not_of(" \t")); // Trim leading whitespace
-                        _currentRequest.headers[key] = value;
-                    }
-                }
-            }
-        } else if (_state == STATE_BODY) {
-            if (_expectedBodyLength == 0) {
-                _state = STATE_DONE;
-            } else if (_buffer.size() >= _expectedBodyLength) {
-                _currentRequest.body = (_buffer.substr(0, _expectedBodyLength));
-                _buffer.erase(0, _expectedBodyLength);
-                _state = STATE_DONE;
+    std::string line = _buffer.substr(0, pos);
+    _buffer.erase(0, pos + 2);
+
+    if (_state == STATE_REQUEST_LINE) {
+        std::istringstream iss(line);
+        iss >> _currentRequest.method >> _currentRequest.uri >> _currentRequest.version;
+
+        _state = STATE_HEADERS;
+    } else if (_state == STATE_HEADERS) {
+        if (line.empty()) {
+            std::map<std::string, std::string>::iterator it;
+            it = _currentRequest.headers.find("Transfer-Encoding");
+            if (it != _currentRequest.headers.end() && it->second == "chunked") {
+                _isChunked = true;
+                _state = STATE_CHUNKED_BODY;
             } else {
-                return; // Wait for more data
-            }
-        } else if (_state == STATE_CHUNKED_BODY) {
-            while (true) {
-                if (_chunkState == 0) { // Reading chunk size
-                    size_t pos = _buffer.find("\r\n");
-                    if (pos == std::string::npos) {
-                        return; // Wait for more data
-                    }
-
-                    std::string sizeLine = _buffer.substr(0, pos);
-                    _buffer.erase(0, pos + 2);
-                    
-                    if (sizeLine.size() > 8) { // chunk size request overflow
-                        _state = STATE_ERROR;
-                        return;
-                    }
-
-                    std::stringstream ss(sizeLine);
-                    ss >> std::hex >> _chunkSize; //the number we received is hexadecimal, so we need to convert it
-                    if (ss.fail() || !ss.eof()) {
-                        _state = STATE_ERROR;
-                        return;
-                    }
-
-                    _chunkState = 1; // Switch to reading chunk data
-                } else if (_chunkState == 1) { // Reading chunk data
-
-                    if (_chunkSize == 0 && _buffer.size() == 2) {
-                        _state = STATE_DONE;
-                        return;
-                    }
-
-                    if (_buffer.size() >= _chunkSize + 2) {
-                        _currentRequest.body.append(_buffer.substr(0, _chunkSize));
-                        _buffer.erase(0, _chunkSize);
-                        if (_buffer.size() >= 2 && _buffer.substr(0, 2) == "\r\n") {
-                            _buffer.erase(0, 2);
-                            _chunkState = 0; // Next chunk size
-                        } else {
-                            _state = STATE_ERROR; // Malformed chunk
-                            break;
-                        }
-                    } else {
-                        return; // Wait for more data
-                    }
+                it = _currentRequest.headers.find("Content-Length");
+                if (it != _currentRequest.headers.end()) {
+                    std::stringstream ss(it->second);
+                    ss >> _expectedBodyLength;
+                } else {
+                    _expectedBodyLength = 0;
                 }
+                
+                _state = STATE_BODY;
+            }
+        } else {
+            size_t sep = line.find(':');
+            if (sep != std::string::npos) {
+                std::string key = line.substr(0, sep);
+                std::string value = line.substr(sep + 1);
+                value.erase(0, value.find_first_not_of(" \t")); // Trim leading whitespace
+                _currentRequest.headers[key] = value;
             }
         }
     }
+    return DO_NOTHING;
+}
+
+int HttpParser::handleBodyContent() {
+    if (_expectedBodyLength == 0) {
+        _state = STATE_DONE;
+    } else if (_buffer.size() >= _expectedBodyLength) {
+        _currentRequest.body = (_buffer.substr(0, _expectedBodyLength));
+        _buffer.erase(0, _expectedBodyLength);
+        _state = STATE_DONE;
+    } else {
+        return DO_RETURN; // Wait for more data
+    }
+    return DO_NOTHING;
+}
+
+int HttpParser::handleBodyChunk() {
+    while (true) {
+        if (_chunkState == 0) { // Reading chunk size
+            size_t pos = _buffer.find("\r\n");
+            if (pos == std::string::npos) {
+                return DO_RETURN; // Wait for more data
+            }
+
+            std::string sizeLine = _buffer.substr(0, pos);
+            _buffer.erase(0, pos + 2);
+            
+            if (sizeLine.size() > 8) { // chunk size request overflow
+                _state = STATE_ERROR;
+                return DO_RETURN;
+            }
+
+            std::stringstream ss(sizeLine);
+            ss >> std::hex >> _chunkSize; //the number we received is hexadecimal, so we need to convert it
+            if (ss.fail() || !ss.eof()) {
+                _state = STATE_ERROR;
+                return DO_RETURN;
+            }
+
+            _chunkState = 1; // Switch to reading chunk data
+        } else if (_chunkState == 1) { // Reading chunk data
+
+            if (_chunkSize == 0 && _buffer.size() == 2) {
+                _state = STATE_DONE;
+                return DO_RETURN;
+            }
+
+            if (_buffer.size() >= _chunkSize + 2) {
+                _currentRequest.body.append(_buffer.substr(0, _chunkSize));
+                _buffer.erase(0, _chunkSize);
+                if (_buffer.size() >= 2 && _buffer.substr(0, 2) == "\r\n") {
+                    _buffer.erase(0, 2);
+                    _chunkState = 0; // Next chunk size
+                } else {
+                    _state = STATE_ERROR; // Malformed chunk
+                    return DO_BREAK;
+                }
+            } else {
+                return DO_RETURN; // Wait for more data
+            }
+        }
+    }
+    return DO_NOTHING;
 }
 
 HttpRequest HttpParser::getRequest() {
@@ -149,3 +178,8 @@ int HttpParser::ready() {
 int HttpParser::error() {
     return _state == STATE_ERROR;
 }
+
+/* 
+ * enhace the parsing
+ * change body to char* 
+ */

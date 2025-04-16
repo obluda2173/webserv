@@ -8,6 +8,10 @@
 
 #include <IHttpParser.h>
 
+#define DO_NOTHING 0;
+#define DO_RETURN 1;
+#define DO_BREAK 2;
+
 class HttpParser : public IHttpParser {
   private:
     enum State {
@@ -28,6 +32,9 @@ class HttpParser : public IHttpParser {
     int _chunkState;
     void reset();
     void parseBuffer();
+    int handleRequestHeaders(); // 0 for noting. 1 for return, 2 for break
+    int handleBodyContent();
+    int handleBodyChunk();
 
   public:
     HttpParser();                             // hope Kay is fine with this
