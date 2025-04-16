@@ -3,14 +3,14 @@
 #include "gtest/gtest.h"
 #include <random>
 
-TEST_P(ServerTest, connectionTest) {
+TEST_P(ServerWithMockLoggerParametrizedPortTest, connectionTest) {
     std::vector<int> listeningPorts = GetParam();
     for (size_t i = 0; i < listeningPorts.size(); i++) {
         testMultipleConnections(_mLogger, listeningPorts[i]);
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(ServerTests, ServerTest,
+INSTANTIATE_TEST_SUITE_P(ServerTests, ServerWithMockLoggerParametrizedPortTest,
                          ::testing::Values(std::vector<int>{8080}, std::vector<int>{8080, 8081},
                                            std::vector<int>{8080, 8081, 8082}));
 

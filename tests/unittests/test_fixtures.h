@@ -12,8 +12,13 @@ class MockLogger : public ILogger {
     MOCK_METHOD(void, log, (const std::string& level, const std::string& msg), (override));
 };
 
+// class ServerTest : public ::testing::Test {
+//   protected:
+//     ILogger* _logger;
+// };
+
 // defining a Test Fixture: ServerTest
-class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
+class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam<std::vector<int>> {
   protected:
     MockLogger _mLogger;
     Server _svr;
@@ -21,7 +26,7 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
     int _openFdsBegin;
     std::vector<int> _ports;
 
-    ServerTest() : _svr(&_mLogger) { _ports = GetParam(); }
+    ServerWithMockLoggerParametrizedPortTest() : _svr(&_mLogger) { _ports = GetParam(); }
 
     void SetUp() override { setupServer(); }
 
