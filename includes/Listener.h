@@ -9,6 +9,7 @@ class Listener : public IListener {
     int _socketfd;
     bool _isListening;
     ILogger* _logger;
+    int _epfd;
 
   public:
     Listener(ILogger* logger);

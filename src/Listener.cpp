@@ -15,29 +15,27 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-Listener::Listener(ILogger* logger) : _logger(logger) {}
-
-Listener::~Listener() {};
-
-void Listener::listen() {
-    int epfd = epoll_create(1);
-    if (epfd == -1) {
+Listener::Listener(ILogger* logger) : _logger(logger) {
+    _epfd = epoll_create(1);
+    if (_epfd == -1) {
         _logger->log("ERROR", "epoll_create: " + std::string(strerror(errno)));
         exit(1);
     }
-    struct epoll_event event;
-    event.events = EPOLLIN;
-    event.data.fd = _socketfd;
+}
 
-    epoll_ctl(epfd, EPOLL_CTL_ADD, _socketfd, &event);
+Listener::~Listener() { close(_epfd); };
+
+void Listener::listen() {
+    int conn;
+    int ready;
+    std::stringstream info;
+    struct sockaddr_in theirAddr;
+    int addrlen = sizeof(theirAddr);
     struct epoll_event events[1];
+
     _isListening = true;
     while (_isListening) {
-        int conn;
-        std::stringstream info;
-        struct sockaddr_in theirAddr;
-        int addrlen = sizeof(theirAddr);
-        int ready = epoll_wait(epfd, events, 1, 10);
+        ready = epoll_wait(_epfd, events, 1, 10);
         if (ready == 0)
             continue;
         if (!_isListening)
@@ -47,6 +45,7 @@ void Listener::listen() {
             _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
             exit(1);
         }
+
         logConnection(_logger, theirAddr);
 
         // close connection
@@ -55,9 +54,15 @@ void Listener::listen() {
             exit(1);
         }
     }
-    close(epfd);
 }
 
 void Listener::stop() { _isListening = false; }
 
-void Listener::add(int socketfd) { _socketfd = socketfd; }
+void Listener::add(int socketfd) {
+    _socketfd = socketfd;
+
+    struct epoll_event event;
+    event.events = EPOLLIN;
+    event.data.fd = _socketfd;
+    epoll_ctl(_epfd, EPOLL_CTL_ADD, _socketfd, &event);
+}

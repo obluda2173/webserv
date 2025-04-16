@@ -15,40 +15,40 @@ class MockLogger : public ILogger {
 // defining a Test Fixture: ServerTest
 class ServerTest : public ::testing::Test {
   protected:
-    MockLogger mLogger;
-    Server svr;
-    std::thread serverThread;
-    int openFdsBegin;
+    MockLogger _mLogger;
+    Server _svr;
+    std::thread _svrThread;
+    int _openFdsBegin;
 
-    ServerTest() : svr(&mLogger) {}
+    ServerTest() : _svr(&_mLogger) {}
 
     void SetUp() override { setupServer(); }
 
     void TearDown() override { teardownServer(); }
 
     void setupServer() {
-        openFdsBegin = countOpenFileDescriptors();
-        EXPECT_CALL(mLogger, log("INFO", "Server is starting..."));
-        EXPECT_CALL(mLogger, log("INFO", "Server started"));
+        _openFdsBegin = countOpenFileDescriptors();
+        EXPECT_CALL(_mLogger, log("INFO", "Server is starting..."));
+        EXPECT_CALL(_mLogger, log("INFO", "Server started"));
 
-        serverThread = std::thread(&Server::start, &svr);
+        _svrThread = std::thread(&Server::start, &_svr);
         waitForServerStartup();
     }
 
     void waitForServerStartup() {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        EXPECT_TRUE(svr.isRunning());
+        EXPECT_TRUE(_svr.isRunning());
     }
 
     void teardownServer() {
-        EXPECT_CALL(mLogger, log("INFO", "Server is stopping..."));
-        EXPECT_CALL(mLogger, log("INFO", "Server stopped"));
+        EXPECT_CALL(_mLogger, log("INFO", "Server is stopping..."));
+        EXPECT_CALL(_mLogger, log("INFO", "Server stopped"));
 
-        svr.stop();
-        EXPECT_FALSE(svr.isRunning());
+        _svr.stop();
+        EXPECT_FALSE(_svr.isRunning());
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        EXPECT_EQ(openFdsBegin, countOpenFileDescriptors());
-        serverThread.join();
+        EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
+        _svrThread.join();
     }
 };
 
