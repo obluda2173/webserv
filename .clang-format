@@ -3,6 +3,7 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
 ColumnLimit: 120
+PointerAlignment: Left
 ---
 Language:        Cpp
 AccessModifierOffset: -2
@@ -202,7 +203,6 @@ PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
 PenaltyIndentedWhitespace: 0
 PenaltyReturnTypeOnItsOwnLine: 60
-PointerAlignment: Right
 PPIndentWidth:   -1
 QualifierAlignment: Leave
 ReferenceAlignment: Pointer

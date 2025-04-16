@@ -15,9 +15,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-Listener::Listener() : _portfd(-1) {}
+Listener::Listener(ILogger* logger) : _logger(logger) {}
 
-Listener::Listener(int &portfd, ILogger *logger) : _portfd(portfd), _logger(logger) {}
+Listener::~Listener() {};
 
 void Listener::listen() {
     int epfd = epoll_create(1);
@@ -27,9 +27,9 @@ void Listener::listen() {
     }
     struct epoll_event event;
     event.events = EPOLLIN;
-    event.data.fd = _portfd;
+    event.data.fd = _socketfd;
 
-    epoll_ctl(epfd, EPOLL_CTL_ADD, _portfd, &event);
+    epoll_ctl(epfd, EPOLL_CTL_ADD, _socketfd, &event);
     struct epoll_event events[1];
     _isListening = true;
     while (_isListening) {
@@ -42,7 +42,7 @@ void Listener::listen() {
             continue;
         if (!_isListening)
             break;
-        conn = accept(_portfd, (struct sockaddr *)&theirAddr, (socklen_t *)&addrlen);
+        conn = accept(_socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
         if (conn < 0) {
             _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
             exit(1);
@@ -59,3 +59,5 @@ void Listener::listen() {
 }
 
 void Listener::stop() { _isListening = false; }
+
+void Listener::add(int socketfd) { _socketfd = socketfd; }

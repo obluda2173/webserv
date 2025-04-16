@@ -1,5 +1,6 @@
 #include "Server.h"
 #include "ILogger.h"
+#include "Listener.h"
 #include "logging.h"
 #include <arpa/inet.h>
 #include <cstring>
@@ -16,7 +17,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-Server::Server(ILogger *l) : _logger(l) {}
+Server::Server(ILogger* lo) : _logger(lo), _listener(new Listener(lo)) {}
+
+Server::~Server() { delete _listener; }
 
 bool Server::isRunning() const { return _isRunning; }
 
@@ -39,7 +42,7 @@ void Server::start() {
         _logger->log("ERROR", "setsockopt: " + std::string(strerror(errno)));
         exit(EXIT_FAILURE);
     }
-    if (bind(_serverfd, (sockaddr *)&svrAddr, sizeof(svrAddr)) < 0) {
+    if (bind(_serverfd, (sockaddr*)&svrAddr, sizeof(svrAddr)) < 0) {
         _logger->log("ERROR", "bind: " + std::string(strerror(errno)));
         exit(1);
     }
@@ -51,13 +54,13 @@ void Server::start() {
     _isRunning = true;
     _logger->log("INFO", "Server started");
 
-    _listener = Listener(_serverfd, _logger);
-    _listener.listen();
+    _listener->add(_serverfd);
+    _listener->listen();
 }
 
 void Server::stop() {
     _logger->log("INFO", "Server is stopping...");
-    _listener.stop();
+    _listener->stop();
     _isRunning = false;
     if (close(_serverfd) == -1) {
         _logger->log("ERROR", "close: " + std::string(strerror(errno)));
