@@ -19,8 +19,8 @@ TEST_F(ListenerTest, multiplePortsTest) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-    testMultipleConnections(mLogger, 8070);
-    testMultipleConnections(mLogger, 8071);
+    testMultipleConnectionsWithLogging(mLogger, 8070);
+    testMultipleConnectionsWithLogging(mLogger, 8071);
     listener.stop();
     listenerThread.join();
     delete mLogger;
