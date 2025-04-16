@@ -66,3 +66,12 @@ void Listener::add(int socketfd) {
     event.data.fd = _socketfd;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, _socketfd, &event);
 }
+
+// void Listener::add(std::vector<int> socketfd) {
+//     _socketfd = socketfd;
+
+//     struct epoll_event event;
+//     event.events = EPOLLIN;
+//     event.data.fd = _socketfd;
+//     epoll_ctl(_epfd, EPOLL_CTL_ADD, _socketfd, &event);
+// }

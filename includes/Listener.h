@@ -3,6 +3,7 @@
 
 #include "IListener.h"
 #include "ILogger.h"
+#include <vector>
 
 class Listener : public IListener {
   private:
@@ -17,6 +18,7 @@ class Listener : public IListener {
     void listen();
     void stop();
     void add(int socketfd);
+    void add(std::vector<int> socketfd);
 };
 
 #endif // LISTENER_H

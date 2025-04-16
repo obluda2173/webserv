@@ -1,9 +1,11 @@
 #include "ILogger.h"
-#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sstream>
 
-void logConnection(ILogger *l, struct sockaddr_in addr) {
+void logConnection(ILogger* l, struct sockaddr_in addr) {
     std::stringstream info;
-    info << "Connection accepted from IP: " << inet_ntoa(addr.sin_addr) << ", Port: " << ntohs(addr.sin_port);
+    unsigned char* ip = reinterpret_cast<unsigned char*>(&addr.sin_addr.s_addr);
+    info << "Connection accepted from IP: " << static_cast<int>(ip[0]) << '.' << static_cast<int>(ip[1]) << '.'
+         << static_cast<int>(ip[2]) << '.' << static_cast<int>(ip[3]) << ", Port: " << ntohs(addr.sin_port);
     l->log("INFO", info.str());
 }
