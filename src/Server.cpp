@@ -17,6 +17,34 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+int new_socket(int port) {
+    int _serverfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (_serverfd < 0) {
+        perror("socket");
+        exit(1);
+    }
+
+    sockaddr_in svrAddr = {};
+    svrAddr.sin_family = AF_INET;
+    svrAddr.sin_addr.s_addr = INADDR_ANY;
+    svrAddr.sin_port = htons(port);
+
+    int yes = 1;
+    if (setsockopt(_serverfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    if (bind(_serverfd, (sockaddr*)&svrAddr, sizeof(svrAddr)) == -1) {
+        perror("bind");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(_serverfd, 5) == -1) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    return _serverfd;
+}
+
 Server::Server(ILogger* lo) : _logger(lo), _listener(new Listener(lo)) {}
 
 Server::~Server() { delete _listener; }
@@ -26,38 +54,11 @@ bool Server::isRunning() const { return _isRunning; }
 void Server::start() {
     _logger->log("INFO", "Server is starting...");
 
-    int portfd;
-    portfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (portfd < 0) {
-        _logger->log("ERROR", "socket: " + std::string(strerror(errno)));
-        exit(1);
-    }
-
-    sockaddr_in svrAddr = {};
-    svrAddr.sin_family = AF_INET;
-    svrAddr.sin_addr.s_addr = INADDR_ANY;
-    svrAddr.sin_port = htons(8080);
-
-    int yes = 1;
-    if (setsockopt(portfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        _logger->log("ERROR", "setsockopt: " + std::string(strerror(errno)));
-        exit(EXIT_FAILURE);
-    }
-    if (bind(portfd, (sockaddr*)&svrAddr, sizeof(svrAddr)) < 0) {
-        _logger->log("ERROR", "bind: " + std::string(strerror(errno)));
-        exit(1);
-    }
-    if (listen(portfd, 5) < 0) {
-        _logger->log("ERROR", "listen: " + std::string(strerror(errno)));
-        exit(1);
-    }
-
-    _portfds.push_back(portfd);
+    _portfds.push_back(new_socket(8080));
+    _listener->add(_portfds[0]);
 
     _isRunning = true;
     _logger->log("INFO", "Server started");
-
-    _listener->add(portfd);
     _listener->listen();
 }
 
