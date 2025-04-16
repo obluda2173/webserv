@@ -1,11 +1,18 @@
 #include "test_fixtures.h"
 #include "test_main.h"
+#include "gtest/gtest.h"
 #include <random>
 
-TEST_F(ServerTest, connectionTest) {
-    testMultipleConnections(_mLogger, 8080);
-    // testMultipleConnections(_mLogger, 8081);
+TEST_P(ServerTest, connectionTest) {
+    std::vector<int> listeningPorts = GetParam();
+    for (size_t i = 0; i < listeningPorts.size(); i++) {
+        testMultipleConnections(_mLogger, listeningPorts[i]);
+    }
 }
+
+INSTANTIATE_TEST_SUITE_P(ServerTests, ServerTest,
+                         ::testing::Values(std::vector<int>{8080}, std::vector<int>{8080, 8081},
+                                           std::vector<int>{8080, 8081, 8082}));
 
 void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr) {
     int clientfd = getClientSocket(clientIp, clientPort);
@@ -19,7 +26,7 @@ void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& client
 void testMultipleConnections(MockLogger& mLogger, int port) {
     std::random_device rd;                               // Obtain a random number from hardware
     std::mt19937 gen(rd());                              // Seed the generator
-    std::uniform_int_distribution<> distr1(8081, 20000); // Define the range
+    std::uniform_int_distribution<> distr1(9000, 20000); // Define the range
     std::uniform_int_distribution<> distr2(1, 255);      // Define the range
 
     int clientPort;

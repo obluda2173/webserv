@@ -13,14 +13,15 @@ class MockLogger : public ILogger {
 };
 
 // defining a Test Fixture: ServerTest
-class ServerTest : public ::testing::Test {
+class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
   protected:
     MockLogger _mLogger;
     Server _svr;
     std::thread _svrThread;
     int _openFdsBegin;
+    std::vector<int> _ports;
 
-    ServerTest() : _svr(&_mLogger) {}
+    ServerTest() : _svr(&_mLogger) { _ports = GetParam(); }
 
     void SetUp() override { setupServer(); }
 
@@ -31,7 +32,7 @@ class ServerTest : public ::testing::Test {
         EXPECT_CALL(_mLogger, log("INFO", "Server is starting..."));
         EXPECT_CALL(_mLogger, log("INFO", "Server started"));
 
-        _svrThread = std::thread(&Server::start, &_svr);
+        _svrThread = std::thread(&Server::start, &_svr, _ports);
         waitForServerStartup();
     }
 

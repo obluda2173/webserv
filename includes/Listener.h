@@ -3,10 +3,11 @@
 
 #include "IListener.h"
 #include "ILogger.h"
+#include <vector>
 
 class Listener : public IListener {
   private:
-    int _socketfd;
+    std::vector<int> _portfds;
     bool _isListening;
     ILogger* _logger;
     int _epfd;

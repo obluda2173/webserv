@@ -40,7 +40,9 @@ void Listener::listen() {
             continue;
         if (!_isListening)
             break;
-        conn = accept(_socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
+
+        int portfd = events[0].data.fd;
+        conn = accept(portfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
         if (conn < 0) {
             _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
             exit(1);
@@ -58,20 +60,10 @@ void Listener::listen() {
 
 void Listener::stop() { _isListening = false; }
 
-void Listener::add(int socketfd) {
-    _socketfd = socketfd;
-
+void Listener::add(int portfd) {
     struct epoll_event event;
     event.events = EPOLLIN;
-    event.data.fd = _socketfd;
-    epoll_ctl(_epfd, EPOLL_CTL_ADD, _socketfd, &event);
+    event.data.fd = portfd;
+    epoll_ctl(_epfd, EPOLL_CTL_ADD, portfd, &event);
+    _portfds.push_back(portfd);
 }
-
-// void Listener::add(std::vector<int> socketfd) {
-//     _socketfd = socketfd;
-
-//     struct epoll_event event;
-//     event.events = EPOLLIN;
-//     event.data.fd = _socketfd;
-//     epoll_ctl(_epfd, EPOLL_CTL_ADD, _socketfd, &event);
-// }

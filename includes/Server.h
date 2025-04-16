@@ -15,6 +15,6 @@ class Server {
     explicit Server(ILogger* li);
     ~Server();
     bool isRunning() const;
-    void start();
+    void start(std::vector<int> ports);
     void stop();
 };
