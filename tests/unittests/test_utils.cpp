@@ -1,5 +1,8 @@
 #include "test_main.h"
-#include <cstring>
+#include "gtest/gtest.h"
+#include <dirent.h>
+#include <iostream>
+#include <unistd.h>
 
 void reuseSocket(int socketfd) {
     int yes = 1;
@@ -9,7 +12,7 @@ void reuseSocket(int socketfd) {
     }
 }
 
-void setAddr(std::string ip, int port, struct addrinfo &hints, struct addrinfo **res) {
+void setAddr(std::string ip, int port, struct addrinfo& hints, struct addrinfo** res) {
     std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;       // Use IPv4
     hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
@@ -48,8 +51,22 @@ int getClientSocket(std::string ip, int port) {
     return clientfd;
 }
 
-void setSvrAddr(sockaddr_in &svrAddr) {
+void setSvrAddr(sockaddr_in& svrAddr) {
     svrAddr.sin_family = AF_INET;
     svrAddr.sin_port = htons(8080);
     ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &(svrAddr.sin_addr)), 0) << "inet_pton: " << strerror(errno);
+}
+
+int countOpenFileDescriptors() {
+    int count = 0;
+    DIR* dir = opendir("/proc/self/fd");
+    if (dir != nullptr) {
+        while (readdir(dir) != nullptr) {
+            count++;
+        }
+        closedir(dir);
+        // Adjust count to exclude ".", ".." and the dir fd itself
+        count -= 3;
+    }
+    return count;
 }
