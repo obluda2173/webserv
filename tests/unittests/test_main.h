@@ -18,7 +18,7 @@ void setSvrAddr(sockaddr_in& svrAddr, int port);
 int countOpenFileDescriptors();
 
 // test_server.cpp
-void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr);
-void testMultipleConnections(MockLogger& mLogger, int port);
+void testOneConnection(MockLogger* mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr);
+void testMultipleConnections(MockLogger* mLogger, int port);
 
 #endif // TEST_MAIN_H_

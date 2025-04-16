@@ -9,8 +9,8 @@ TEST_F(ListenerTest, multiplePortsTest) {
     int sfd1 = new_socket(8070);
     int sfd2 = new_socket(8071);
 
-    MockLogger mLogger;
-    Listener listener(&mLogger);
+    MockLogger* mLogger = new MockLogger;
+    Listener listener(mLogger);
     listener.add(sfd1);
     listener.add(sfd2);
 
@@ -23,4 +23,5 @@ TEST_F(ListenerTest, multiplePortsTest) {
     testMultipleConnections(mLogger, 8071);
     listener.stop();
     listenerThread.join();
+    delete mLogger;
 }
