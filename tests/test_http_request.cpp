@@ -217,22 +217,5 @@ INSTANTIATE_TEST_SUITE_P(
             "\r\n"
             "0\r\n"  // Missing final CRLF
         }
-
-        // TO RESEARCH
-        // Trailing headers
-        // TestHttpParserParams{
-        //     6,
-        //     1,
-        //     0,
-        //     {"GET", "/", "HTTP/1.1",
-        //      {{"Host", "example.com"}, {"X-Trailer", "value"}},
-        //      ""},
-        //     "GET / HTTP/1.1\r\n"
-        //     "Host: example.com\r\n"
-        //     "Transfer-Encoding: chunked\r\n"
-        //     "\r\n"
-        //     "0\r\n"
-        //     "X-Trailer: value\r\n\r\n"
-        // }
     )
 );
