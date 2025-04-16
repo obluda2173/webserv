@@ -51,9 +51,9 @@ int getClientSocket(std::string ip, int port) {
     return clientfd;
 }
 
-void setSvrAddr(sockaddr_in& svrAddr) {
+void setSvrAddr(sockaddr_in& svrAddr, int port) {
     svrAddr.sin_family = AF_INET;
-    svrAddr.sin_port = htons(8080);
+    svrAddr.sin_port = htons(port);
     ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &(svrAddr.sin_addr)), 0) << "inet_pton: " << strerror(errno);
 }
 

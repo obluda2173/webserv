@@ -2,7 +2,7 @@
 #include "test_main.h"
 #include <random>
 
-TEST_F(ServerTest, connectionTest) { testMultipleConnections(_mLogger); }
+TEST_F(ServerTest, connectionTest) { testMultipleConnections(_mLogger, 8080); }
 
 void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr) {
     int clientfd = getClientSocket(clientIp, clientPort);
@@ -13,22 +13,21 @@ void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& client
     close(clientfd);
 }
 
-void testMultipleConnections(MockLogger& mLogger) {
-    std::random_device rd;                       // Obtain a random number from hardware
-    std::mt19937 gen(rd());                      // Seed the generator
-    std::uniform_int_distribution<> distr(1, 9); // Define the range
+void testMultipleConnections(MockLogger& mLogger, int port) {
+    std::random_device rd;                               // Obtain a random number from hardware
+    std::mt19937 gen(rd());                              // Seed the generator
+    std::uniform_int_distribution<> distr1(8081, 20000); // Define the range
+    std::uniform_int_distribution<> distr2(1, 255);      // Define the range
 
+    int clientPort;
+    std::string clientIp;
+    sockaddr_in svrAddr;
+    setSvrAddr(svrAddr, port);
     int count = 0;
     int nbrConns = 1000;
-    int clientPort = 8080;
-    std::string clientIp = "127.0.0.";
-    sockaddr_in svrAddr;
-    setSvrAddr(svrAddr);
-
     while (count++ < nbrConns) {
-        int randNbr = distr(gen); // Generate the random number
-        clientPort += randNbr;
-        clientIp = "127.0.0." + std::to_string(randNbr);
+        clientPort = distr1(gen);
+        clientIp = "127.0.0." + std::to_string(distr2(gen));
         testOneConnection(mLogger, clientPort, clientIp, svrAddr);
     }
 }
