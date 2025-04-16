@@ -52,12 +52,12 @@ INSTANTIATE_TEST_SUITE_P(
         // 0 Valid request with Content-Length
         TestHttpParserParams{
             10,
-            1,  // Expect ready
-            0,  // No error
-            {   // Expected request
+            1,
+            0,
+            {
                 "POST", "/upload", "HTTP/1.1",
                 {{"Host", "localhost"}, {"Content-Length", "13"}},
-                "Hello, World!"  // Body
+                "Hello, World!"
             },
             "POST /upload HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -83,45 +83,45 @@ INSTANTIATE_TEST_SUITE_P(
 
         // 2 Valid chunked request
         TestHttpParserParams{
-            4,  // Split input into 4-byte chunks
-            1,  // Expect ready
-            0,  // No error
-            {   // Expected request
+            4, 
+            1,
+            0,
+            {
                 "POST", "/upload", "HTTP/1.1",
                 {{"Host", "localhost"}, {"Transfer-Encoding", "chunked"}},
-                "MozillaDeveloper"  // Combined chunks
+                "MozillaDeveloper"
             },
             "POST /upload HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
-            "7\r\n"        // Chunk 1: 7 bytes
-            "Mozilla\r\n"  // Data
-            "9\r\n"        // Chunk 2: 9 bytes
+            "7\r\n"
+            "Mozilla\r\n"
+            "9\r\n"
             "Developer\r\n"
-            "0\r\n"        // End of chunks
+            "0\r\n"
             "\r\n"
         },
 
         // 3 Strict 1 byte size read
         TestHttpParserParams{
-            1,  // Split input into 1-byte chunks
-            1,  // Expect ready
-            0,  // No error
-            {   // Expected request
+            1,
+            1,
+            0,
+            {
                 "POST", "/upload", "HTTP/1.1",
                 {{"Host", "localhost"}, {"Transfer-Encoding", "chunked"}},
-                "MozillaDeveloper"  // Combined chunks
+                "MozillaDeveloper"
             },
             "POST /upload HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
-            "7\r\n"        // Chunk 1: 7 bytes
-            "Mozilla\r\n"  // Data
-            "9\r\n"        // Chunk 2: 9 bytes
+            "7\r\n"
+            "Mozilla\r\n"
+            "9\r\n"
             "Developer\r\n"
-            "0\r\n"        // End of chunks
+            "0\r\n"
             "\r\n"
         },
 
@@ -141,7 +141,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         // 5 Multiple small chunks
         TestHttpParserParams{
-            1,  // Extreme fragmentation
+            1,
             1,
             0,
             {"POST", "/", "HTTP/1.1",
@@ -162,7 +162,7 @@ INSTANTIATE_TEST_SUITE_P(
             "POST / HTTP/1.1\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
-            "5\r\nhello\n"  // Invalid LF instead of CRLF
+            "5\r\nhello\n"
             "0\r\n\r\n"
         },
 
@@ -170,26 +170,26 @@ INSTANTIATE_TEST_SUITE_P(
         TestHttpParserParams{
             3,
             0,
-            1,  // Expect error
+            1,
             {},
             "POST / HTTP/1.1\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
-            "1g\r\n"  // Invalid hex
+            "1g\r\n"
             "data\r\n"
         },
 
-        // 8 Unterminated chunk
+        // 8 Unterminated chunk (not an error, waits for data)
         TestHttpParserParams{
             5,
             0,
-            0,  // Not an error yet (waiting for data)
+            0,
             {},
             "POST / HTTP/1.1\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
             "5\r\n"
-            "Hello"  // Missing \r\n after data
+            "Hello"
         },
 
         // 9 Chunk size overflow
@@ -201,7 +201,7 @@ INSTANTIATE_TEST_SUITE_P(
             "POST / HTTP/1.1\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
-            "1ffffffff\r\n"  // Exceeds size_t capacity
+            "1ffffffff\r\n"
             "data\r\n"
             "0\r\n\r\n"
         },
@@ -215,7 +215,7 @@ INSTANTIATE_TEST_SUITE_P(
             "POST / HTTP/1.1\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
-            "0\r\n"  // Missing final CRLF
+            "0\r\n"
         }
     )
 );
