@@ -2,7 +2,10 @@
 #include "test_main.h"
 #include <random>
 
-TEST_F(ServerTest, connectionTest) { testMultipleConnections(_mLogger, 8080); }
+TEST_F(ServerTest, connectionTest) {
+    testMultipleConnections(_mLogger, 8080);
+    testMultipleConnections(_mLogger, 8081);
+}
 
 void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr) {
     int clientfd = getClientSocket(clientIp, clientPort);
