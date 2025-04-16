@@ -26,8 +26,9 @@ bool Server::isRunning() const { return _isRunning; }
 void Server::start() {
     _logger->log("INFO", "Server is starting...");
 
-    _serverfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_serverfd < 0) {
+    int portfd;
+    portfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (portfd < 0) {
         _logger->log("ERROR", "socket: " + std::string(strerror(errno)));
         exit(1);
     }
@@ -38,23 +39,25 @@ void Server::start() {
     svrAddr.sin_port = htons(8080);
 
     int yes = 1;
-    if (setsockopt(_serverfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+    if (setsockopt(portfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
         _logger->log("ERROR", "setsockopt: " + std::string(strerror(errno)));
         exit(EXIT_FAILURE);
     }
-    if (bind(_serverfd, (sockaddr*)&svrAddr, sizeof(svrAddr)) < 0) {
+    if (bind(portfd, (sockaddr*)&svrAddr, sizeof(svrAddr)) < 0) {
         _logger->log("ERROR", "bind: " + std::string(strerror(errno)));
         exit(1);
     }
-    if (listen(_serverfd, 5) < 0) {
+    if (listen(portfd, 5) < 0) {
         _logger->log("ERROR", "listen: " + std::string(strerror(errno)));
         exit(1);
     }
 
+    _portfds.push_back(portfd);
+
     _isRunning = true;
     _logger->log("INFO", "Server started");
 
-    _listener->add(_serverfd);
+    _listener->add(portfd);
     _listener->listen();
 }
 
@@ -62,9 +65,11 @@ void Server::stop() {
     _logger->log("INFO", "Server is stopping...");
     _listener->stop();
     _isRunning = false;
-    if (close(_serverfd) == -1) {
-        _logger->log("ERROR", "close: " + std::string(strerror(errno)));
-        exit(1);
+    for (size_t i = 0; i < _portfds.size(); i++) {
+        if (close(_portfds[i]) == -1) {
+            _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+            exit(1);
+        }
     }
     _logger->log("INFO", "Server stopped");
 }

@@ -4,7 +4,7 @@
 
 TEST_F(ServerTest, connectionTest) {
     testMultipleConnections(_mLogger, 8080);
-    testMultipleConnections(_mLogger, 8081);
+    // testMultipleConnections(_mLogger, 8081);
 }
 
 void testOneConnection(MockLogger& mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr) {

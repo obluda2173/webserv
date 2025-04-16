@@ -1,12 +1,13 @@
 #include "IListener.h"
 #include "ILogger.h"
+#include <vector>
 
 class Server {
   private:
     ILogger* _logger;
     IListener* _listener;
     bool _isRunning;
-    int _serverfd;
+    std::vector<int> _portfds;
     void _listenPoll(void);
     void _listenEPoll(void);
 
