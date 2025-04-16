@@ -1,5 +1,13 @@
 #include "IListener.h"
 #include "ILogger.h"
+#include <cstring>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <vector>
 
 class Server {

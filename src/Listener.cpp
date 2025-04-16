@@ -1,19 +1,7 @@
 #include "Listener.h"
 #include "logging.h"
-#include <arpa/inet.h>
-#include <cstring>
 #include <errno.h>
-#include <iostream>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <poll.h>
 #include <sstream>
-#include <stdlib.h>
-#include <sys/epoll.h>
-#include <sys/poll.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 Listener::Listener(ILogger* logger) : _logger(logger) {
     _epfd = epoll_create(1);

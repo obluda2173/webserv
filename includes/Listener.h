@@ -5,6 +5,18 @@
 #include "ILogger.h"
 #include <vector>
 
+#include <arpa/inet.h>
+#include <cstring>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <stdlib.h>
+#include <sys/epoll.h>
+#include <sys/poll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 class Listener : public IListener {
   private:
     std::vector<int> _portfds;

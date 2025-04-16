@@ -3,15 +3,7 @@
 #include "Listener.h"
 #include "utils.h"
 #include <cstddef>
-#include <cstring>
 #include <errno.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <sys/epoll.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 Server::Server(ILogger* lo) : _logger(lo), _listener(new Listener(lo)) {}
 
