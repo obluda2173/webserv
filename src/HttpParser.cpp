@@ -17,10 +17,17 @@ std::string toLower(const std::string& str);
 
 void HttpParser::parseBuffer() {
     while (_state != STATE_DONE && _state != STATE_ERROR) {
-        // handle DoS attack
+        if (_buffer.size() > 8000) { // recommended limit
+            _state = STATE_ERROR;
+            return;
+        }
+
         size_t pos = _buffer.find("\r\n");
         if (pos == std::string::npos) {
-            return; // Wait for more data
+            if (_buffer.find("\n") != std::string::npos) { // optional. but we consider invalid
+                _state = STATE_ERROR;
+            }
+            return;
         }
 
         std::string line = _buffer.substr(0, pos);
@@ -28,15 +35,15 @@ void HttpParser::parseBuffer() {
 
         if (_state == STATE_REQUEST_LINE) {
             std::istringstream iss(line);
-            iss >> _currentRequest.method >> _currentRequest.uri >> _currentRequest.version;
-            if (_currentRequest.method.empty() || _currentRequest.uri.empty() || _currentRequest.version.empty()) {
+            std::string temp;
+            iss >> _currentRequest.method >> _currentRequest.uri >> _currentRequest.version >> temp;
+            if (_currentRequest.method.empty() || _currentRequest.uri.empty() || _currentRequest.version.empty() || !temp.empty()) {
                 _state = STATE_ERROR;
                 return;
             }
             _state = STATE_HEADERS;
         } else if (_state == STATE_HEADERS) {
             if (line.empty()) {
-                // Check for body-indicating headers
                 for (std::vector<std::pair<std::string, std::string> >::const_iterator it = _currentRequest.headers.begin();
                      it != _currentRequest.headers.end(); ++it) {
                     if (it->first == "content-length" || it->first == "transfer-encoding") {
@@ -53,11 +60,17 @@ void HttpParser::parseBuffer() {
                 }
                 std::string key = toLower(line.substr(0, sep));
                 std::string value = line.substr(sep + 1);
-                value.erase(0, value.find_first_not_of(" \t")); // Trim leading whitespace
-                if (key.empty() || value.empty()) {
+                value.erase(0, value.find_first_not_of(" \t"));
+                if (key.empty()) {
                     _state = STATE_ERROR;
                     return;
                 }
+
+                if (_currentRequest.headers.size() > 100) { // adjustable
+                    _state = STATE_ERROR;
+                    return;
+                }
+                
                 _currentRequest.headers.push_back(std::make_pair(key, value));
             }
         }

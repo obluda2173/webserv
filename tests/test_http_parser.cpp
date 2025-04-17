@@ -53,11 +53,21 @@ std::string generateLongURI(size_t segmentCount) {
     return uri;
 }
 
+// "Host: localhost\r\n"
+
+std::string generateManyHeaders(size_t headersCount) {
+    std::string uri;
+    for (size_t i = 0; i < headersCount; ++i) {
+        uri += "Host: localhost" + std::to_string(i) + "\r\n";
+    }
+    return uri;
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ChunkedRequests,
     TestHttpParser,
     ::testing::Values(
-        // 0 Valid request with Content-Length
+        // 0 Average request
         TestHttpParserParams{
             10,
             1,
@@ -74,7 +84,7 @@ INSTANTIATE_TEST_SUITE_P(
             "Hello, World!"
         },
 
-        // 1 Invalid new line
+        // 1 Invalid new lines
         TestHttpParserParams{
             10,
             0,
@@ -91,19 +101,13 @@ INSTANTIATE_TEST_SUITE_P(
             "Hello, World!"
         },
 
-        // 2 DoS attack
+        // 2 Maximum URI length (DoS attack)
         TestHttpParserParams{
             10,
             0,
             1,
-            {
-                "POST", 
-                generateLongURI(10000),
-                "HTTP/1.1",
-                {{"host", "localhost"}, {"content-length", "13"}},
-                true
-            },
-            "POST " + generateLongURI(10000) + " HTTP/1.1\r\n"
+            {},
+            "POST " + generateLongURI(1000000) + " HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Content-Length: 13\r\n"
             "\r\n"
@@ -155,6 +159,120 @@ INSTANTIATE_TEST_SUITE_P(
             "Content-Length: 13\r\n"
             "\r\n"
             "Hello, World!"
+        },
+
+        // 6 Malformed Request Line
+        TestHttpParserParams{
+            10,
+            0,
+            1,
+            {},
+            "POST /upload\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+        },
+
+        // 7 Header with No Value
+        TestHttpParserParams{
+            10,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1", 
+                {{"host", ""}}, 
+                false
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host:\r\n"
+            "\r\n"
+        },
+
+        // 8 Duplicate Headers
+        TestHttpParserParams{
+            10,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"set-cookie", "sessionId=123"}, {"set-cookie", "userId=456"}},
+                false
+            },
+            "GET / HTTP/1.1\r\n"
+            "Set-Cookie: sessionId=123\r\n"
+            "Set-Cookie: userId=456\r\n"
+            "\r\n"
+        },
+
+        // 9 
+        TestHttpParserParams{
+            10,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1", 
+                {{"custom-header", "value_with_special_chars!@#$%"}},
+                false
+            },
+            "GET / HTTP/1.1\r\n"
+            "Custom-Header: value_with_special_chars!@#$%\r\n"
+            "\r\n"
+        },
+
+        // 10 Maximum Header Count (DoS Protection)
+        TestHttpParserParams{
+            10,
+            0,
+            1,
+            {},
+            "GET / HTTP/1.1\r\n" + generateManyHeaders(1000000) + "\r\n"
+        },
+
+        // 11 Pipelined Requests
+        TestHttpParserParams{
+            10,
+            1,
+            0,
+            {
+                "GET", "/first", "HTTP/1.1",
+                {{"host", "localhost"}},
+                false
+            },
+            "GET /first HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+            "GET /second HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+        },
+
+        // 12 URI with Query Parameters
+        TestHttpParserParams{
+            10,
+            1,
+            0,
+            {
+                "GET", "/search?q=test&lang=en", "HTTP/1.1",
+                {{"host", "localhost"}},
+                false
+            },
+            "GET /search?q=test&lang=en HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+        },
+
+        // 13 Header with Leading Whitespace
+        TestHttpParserParams{
+            10,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}},
+                false
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host:    localhost\r\n"
+            "\r\n"
         }
     )
 );
