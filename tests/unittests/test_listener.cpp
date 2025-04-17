@@ -47,31 +47,31 @@ TEST_F(ListenerTest, closingAConnection) {
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
 
-// TEST_F(ListenerTest, multiplePortsTestWithLogging) {
-//     int openFdsBegin = countOpenFileDescriptors();
-//     int sfd1 = new_socket(8070);
-//     int sfd2 = new_socket(8071);
+TEST_F(ListenerTest, multiplePortsTestWithLogging) {
+    int openFdsBegin = countOpenFileDescriptors();
+    int sfd1 = new_socket(8070);
+    int sfd2 = new_socket(8071);
 
-//     MockLogger* mLogger = new MockLogger;
-//     Listener listener(mLogger);
-//     listener.add(sfd1);
-//     listener.add(sfd2);
+    MockLogger* mLogger = new MockLogger;
+    Listener listener(mLogger);
+    listener.add(sfd1);
+    listener.add(sfd2);
 
-//     std::thread listenerThread;
-//     listenerThread = std::thread(&Listener::listen, &listener);
-//     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::thread listenerThread;
+    listenerThread = std::thread(&Listener::listen, &listener);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-//     testMultipleConnectionsWithLogging(mLogger, 8070);
-//     testMultipleConnectionsWithLogging(mLogger, 8071);
-//     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    testMultipleConnectionsWithLogging(mLogger, 8070);
+    testMultipleConnectionsWithLogging(mLogger, 8071);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-//     listener.stop();
-//     listenerThread.join();
-//     close(sfd1);
-//     close(sfd2);
-//     delete mLogger;
-//     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
-// }
+    listener.stop();
+    listenerThread.join();
+    close(sfd1);
+    close(sfd2);
+    delete mLogger;
+    EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
+}
 
 TEST_F(ListenerTest, multiplePortsTestWoLogging) {
     int openFdsBegin = countOpenFileDescriptors();
