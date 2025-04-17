@@ -77,13 +77,13 @@ int Server::handleConnections() {
 
                         if (parser.ready()) {
                             HttpRequest newRequest = parser.getRequest();
-                            std::cout << "\n-------------------------------\n";
-                            std::cout << newRequest.method << " | " << newRequest.uri << " | " << newRequest.version <<std::endl;
-                            for (std::map<std::string, std::string>::iterator itor = newRequest.headers.begin(); itor != newRequest.headers.end(); itor++) {
-                                std::cout << itor->first << " | " << itor->second << std::endl;
-                            }
-                            std::cout << "\n-------------------------------\n";
-                            // std::cout << newRequest.body << std::endl;
+                            // std::cout << "\n-------------------------------\n";
+                            // std::cout << newRequest.method << " | " << newRequest.uri << " | " << newRequest.version <<std::endl;
+                            // for (std::map<std::string, std::string>::iterator itor = newRequest.headers.begin(); itor != newRequest.headers.end(); itor++) {
+                            //     std::cout << itor->first << " | " << itor->second << std::endl;
+                            // }
+                            // std::cout << "\n-------------------------------\n";
+                            // // std::cout << newRequest.body << std::endl;
                             it->events |= POLLOUT;
                         }
                         
@@ -135,4 +135,3 @@ std::string generateHttpResponse() {
 }
 
 IHttpParser::~IHttpParser() {}
-HttpParser::~HttpParser() {}
