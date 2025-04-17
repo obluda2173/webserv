@@ -17,10 +17,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+struct ConnectionInfo {
+    struct sockaddr_in addr;
+    int fd;
+};
+
 class Listener : public IListener {
   private:
     std::vector<int> _portfds;
     std::vector<int> _activeConns;
+    std::vector<ConnectionInfo*> _portfds_infos;
     int _epfd;
     ILogger* _logger;
     bool _isListening;

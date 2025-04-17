@@ -17,11 +17,6 @@ Listener::Listener(ILogger* logger) : _logger(logger) {
 
 Listener::~Listener() { close(_epfd); };
 
-struct ConnectionInfo {
-    struct sockaddr_in addr;
-    int fd;
-};
-
 void Listener::listen() {
     std::stringstream info;
     struct sockaddr_in theirAddr;
@@ -36,8 +31,10 @@ void Listener::listen() {
         if (!_isListening)
             break;
 
-        int portfd = events[0].data.fd; // this is becoming difficult because it can be either a portfd or a connection
-        // ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
+        // int portfd = events[0].data.fd; // this is becoming difficult because it can be either a portfd or a
+        // connection
+        ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
+        int portfd = connInfo->fd;
         if (std::find(_portfds.begin(), _portfds.end(), portfd) != std::end(_portfds)) {
             int conn = accept(portfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
             if (conn < 0) {
@@ -57,7 +54,7 @@ void Listener::listen() {
             continue;
         };
 
-        ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
+        // ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
 
         epoll_ctl(_epfd, EPOLL_CTL_DEL, connInfo->fd, NULL);
 
@@ -78,16 +75,19 @@ void Listener::stop() {
         _logger->log("ERROR", "close: " + std::string(strerror(errno)));
         exit(1);
     }
+    for (size_t i = 0; i < _portfds_infos.size(); i++)
+        delete _portfds_infos[i];
 }
 
 void Listener::add(int portfd) {
 
-    // ConnectionInfo* connInfo = new ConnectionInfo;
-    // connInfo->fd = portfd;
+    ConnectionInfo* connInfo = new ConnectionInfo;
+    connInfo->fd = portfd;
 
     struct epoll_event event;
     event.events = EPOLLIN;
-    event.data.fd = portfd;
+    event.data.ptr = connInfo;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, portfd, &event);
     _portfds.push_back(portfd);
+    _portfds_infos.push_back(connInfo);
 }
