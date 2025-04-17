@@ -46,7 +46,13 @@ void Listener::listen() {
     }
 }
 
-void Listener::stop() { _isListening = false; }
+void Listener::stop() {
+    _isListening = false;
+    if (close(_epfd) == -1) {
+        _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+        exit(1);
+    }
+}
 
 void Listener::add(int portfd) {
     struct epoll_event event;
