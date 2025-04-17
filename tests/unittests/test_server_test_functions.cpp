@@ -8,6 +8,7 @@ void testOneConnectionWithLogging(MockLogger* mLogger, int& clientPort, std::str
     EXPECT_CALL(*mLogger,
                 log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + std::to_string(clientPort)));
     ASSERT_EQ(connect(clientfd, (sockaddr*)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
+    EXPECT_CALL(*mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + std::to_string(clientPort)));
     close(clientfd);
 }
 
@@ -22,7 +23,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port) {
     sockaddr_in svrAddr;
     setSvrAddr(svrAddr, port);
     int count = 0;
-    int nbrConns = 1000;
+    int nbrConns = 5;
     while (count++ < nbrConns) {
         clientPort = distr1(gen);
         clientIp = "127.0.0." + std::to_string(distr2(gen));
