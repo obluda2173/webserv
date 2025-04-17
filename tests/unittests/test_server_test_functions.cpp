@@ -12,7 +12,7 @@ void testOneConnectionWithLogging(MockLogger* mLogger, int& clientPort, std::str
     close(clientfd);
 }
 
-void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port) {
+void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port, int nbrConns) {
     std::random_device rd;                               // Obtain a random number from hardware
     std::mt19937 gen(rd());                              // Seed the generator
     std::uniform_int_distribution<> distr1(9000, 20000); // Define the range
@@ -23,7 +23,6 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port) {
     sockaddr_in svrAddr;
     setSvrAddr(svrAddr, port);
     int count = 0;
-    int nbrConns = 5;
     while (count++ < nbrConns) {
         clientPort = distr1(gen);
         clientIp = "127.0.0." + std::to_string(distr2(gen));
@@ -38,7 +37,7 @@ void testOneConnection(int& clientPort, std::string& clientIp, sockaddr_in svrAd
     close(clientfd);
 }
 
-void testMultipleConnections(int port) {
+void testMultipleConnections(int port, int nbrConns) {
     std::random_device rd;                               // Obtain a random number from hardware
     std::mt19937 gen(rd());                              // Seed the generator
     std::uniform_int_distribution<> distr1(9000, 20000); // Define the range
@@ -49,7 +48,6 @@ void testMultipleConnections(int port) {
     sockaddr_in svrAddr;
     setSvrAddr(svrAddr, port);
     int count = 0;
-    int nbrConns = 1000;
     while (count++ < nbrConns) {
         clientPort = distr1(gen);
         clientIp = "127.0.0." + std::to_string(distr2(gen));

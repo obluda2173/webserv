@@ -19,8 +19,8 @@ int countOpenFileDescriptors();
 
 // test_server.cpp
 void testOneConnectionWithLogging(MockLogger* mLogger, int& clientPort, std::string& clientIp, sockaddr_in svrAddr);
-void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port);
+void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port, int nbrConns);
 void testOneConnection(int& clientPort, std::string& clientIp, sockaddr_in svrAddr);
-void testMultipleConnections(int port);
+void testMultipleConnections(int port, int nbrConns);
 
 #endif // TEST_MAIN_H_

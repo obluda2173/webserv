@@ -5,7 +5,7 @@
 TEST_P(ServerWithMockLoggerParametrizedPortTest, connectionTest) {
     std::vector<int> listeningPorts = GetParam();
     for (size_t i = 0; i < listeningPorts.size(); i++) {
-        testMultipleConnectionsWithLogging(_mLogger, listeningPorts[i]);
+        testMultipleConnectionsWithLogging(_mLogger, listeningPorts[i], 100);
     }
 }
 
@@ -17,7 +17,7 @@ TEST_P(ServerTest, connectionTest) {
     std::vector<int> listeningPorts = GetParam();
     std::vector<std::thread> threads;
     for (size_t i = 0; i < listeningPorts.size(); i++)
-        threads.push_back(std::thread(&testMultipleConnections, listeningPorts[i]));
+        threads.push_back(std::thread(&testMultipleConnections, listeningPorts[i], 100));
     for (size_t i = 0; i < threads.size(); i++)
         threads[i].join();
 }
