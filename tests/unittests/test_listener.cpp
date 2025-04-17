@@ -34,14 +34,16 @@ TEST_F(ListenerTest, closingAConnection) {
     svrAddr.sin_family = AF_INET;
     svrAddr.sin_port = htons(svrPort);
     ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &(svrAddr.sin_addr)), 0) << "inet_pton: " << strerror(errno);
-
     ASSERT_EQ(connect(clientfd, (sockaddr*)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
 
     EXPECT_CALL(*mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + std::to_string(clientPort)));
     close(clientfd);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     listener.stop();
     listenerThread.join();
     delete mLogger;
+    close(sfd1);
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
 

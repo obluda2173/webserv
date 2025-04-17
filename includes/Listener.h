@@ -20,9 +20,10 @@
 class Listener : public IListener {
   private:
     std::vector<int> _portfds;
-    bool _isListening;
-    ILogger* _logger;
+    std::vector<int> _activeConns;
     int _epfd;
+    ILogger* _logger;
+    bool _isListening;
 
   public:
     Listener(ILogger* logger);

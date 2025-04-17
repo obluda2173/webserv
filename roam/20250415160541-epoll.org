@@ -75,7 +75,7 @@ int epoll_wait(int epfd, struct epoll_event events[.maxevents], int maxevents, i
 - number of file-descriptors ready for I/O
 - 0 if no file descriptor became ready
 - -1 on failure
-** epoll_event data structure
+** Event - epoll_event data structure
 :PROPERTIES:
 :ID:       34d78bf5-f9e5-4dd4-a535-47083fddbfe6
 :END:
@@ -87,7 +87,7 @@ struct epoll_event {
 #+end_src
 - describes the file-descriptor _fd_
 - see man _epoll_event(3type)_
-**** _data_member_
+**** _data_
 - what the kernel should save and then return (via *epoll_wait*)
 - man (3type) epoll_data
   #+begin_src c
@@ -98,8 +98,13 @@ union epoll_data {
 	uint64_t  u64;
 };
   #+end_src
-**** _events_member_
+**** _events_
+- man epoll_ctl(2)
 - bit mask
 - ORing together EVENT_TYPES (those are returned by *epoll_wait*) and INPUT_FLAGS (affect behaviour but aren't returned)
 ***** EPOLLIN
 - The associated file is available for read(2) operations.
+** NOTES
+*** epoll_wait will always report certain events
+- EPOLLERR
+- EPOLLHUP
