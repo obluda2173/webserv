@@ -15,7 +15,11 @@ Listener::Listener(ILogger* logger) : _logger(logger) {
     }
 }
 
-Listener::~Listener() { close(_epfd); };
+Listener::~Listener() {
+    if (close(_epfd)) {
+        _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+    }
+}
 
 void Listener::listen() {
     std::stringstream info;
@@ -31,8 +35,6 @@ void Listener::listen() {
         if (!_isListening)
             break;
 
-        // int portfd = events[0].data.fd; // this is becoming difficult because it can be either a portfd or a
-        // connection
         ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
         int portfd = connInfo->fd;
         if (std::find(_portfds.begin(), _portfds.end(), portfd) != std::end(_portfds)) {
@@ -54,8 +56,6 @@ void Listener::listen() {
             continue;
         };
 
-        // ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
-
         epoll_ctl(_epfd, EPOLL_CTL_DEL, connInfo->fd, NULL);
 
         theirAddr = connInfo->addr;
@@ -71,10 +71,6 @@ void Listener::listen() {
 
 void Listener::stop() {
     _isListening = false;
-    if (close(_epfd) == -1) {
-        _logger->log("ERROR", "close: " + std::string(strerror(errno)));
-        exit(1);
-    }
     for (size_t i = 0; i < _portfds_infos.size(); i++)
         delete _portfds_infos[i];
 }

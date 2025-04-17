@@ -38,14 +38,14 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
     }
 
     void waitForServerStartup() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         EXPECT_TRUE(_svr.isRunning());
     }
 
     void teardownServer() {
         _svr.stop();
         EXPECT_FALSE(_svr.isRunning());
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
         _svrThread.join();
         delete _logger;

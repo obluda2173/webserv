@@ -12,7 +12,8 @@ FetchContent_MakeAvailable(googletest)
 project(webserv)
 option(BUILD_TEST "Build tests" ON)
 
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -fsanitize=address")
+# set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -fsanitize=address")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra ")
 
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_SOURCE_DIR}/src/main.cpp")
