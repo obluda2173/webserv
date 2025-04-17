@@ -1,5 +1,6 @@
 #include "Listener.h"
 #include "logging.h"
+#include <algorithm>
 #include <errno.h>
 #include <iostream>
 #include <sstream>
@@ -22,7 +23,6 @@ void Listener::listen() {
     struct epoll_event events[1];
 
     _isListening = true;
-    int count = 0;
     while (_isListening) {
         int ready = epoll_wait(_epfd, events, 1, 10);
         if (ready == 0)
@@ -31,7 +31,7 @@ void Listener::listen() {
             break;
 
         int portfd = events[0].data.fd;
-        if (portfd == _portfds[0]) {
+        if (std::find(_portfds.begin(), _portfds.end(), portfd) != std::end(_portfds)) {
             int conn = accept(portfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
             if (conn < 0) {
                 _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
@@ -41,16 +41,15 @@ void Listener::listen() {
 
             struct epoll_event event;
             event.events = EPOLLRDHUP; // Monitor for read events
-            event.data.fd = conn; // Monitor for read events
+            event.data.fd = conn;      // Monitor for read events
             epoll_ctl(_epfd, EPOLL_CTL_ADD, conn, &event);
             _activeConns.push_back(conn);
             continue;
-        }
- 
+        };
+
         epoll_ctl(_epfd, EPOLL_CTL_DEL, portfd, NULL);
         _logger->log("INFO", "Disconnect IP: 127.0.0.2, Port: 12345");
         close(portfd);
-        count++;
     }
 }
 

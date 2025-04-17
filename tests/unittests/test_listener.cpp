@@ -88,6 +88,7 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
 
     testMultipleConnections(8070);
     testMultipleConnections(8071);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     listener.stop();
     close(sfd1);
     close(sfd2);
