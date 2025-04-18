@@ -23,6 +23,10 @@ class HttpParser : public IHttpParser {
     size_t _totalProcessedSize;
     size_t _maxHeaderKeySize;   // 256B
     size_t _maxHeaderSize;      // 4KB
+    bool _extractNextLine(std::string& line);
+    void _parseRequestLine(const std::string& line);
+    void _parseHeader(const std::string& line);
+    void _handlePartialLine();
     void _reset();
     void _parseBuffer();
 
