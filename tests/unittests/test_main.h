@@ -16,14 +16,11 @@ class MockLogger;
 void setSvrAddr(sockaddr_in& svrAddr, int port);
 int countOpenFileDescriptors();
 int newListeningSocket(int port);
-int newListeningSocket1(const char* node, const char* port);
-int newSocket(const char* node, const char* port);
-void getSvrAddrInfo(const char* node, const char* port, struct addrinfo** addrInfo);
 
 // test_server.cpp
 void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
-                                  sockaddr_in svrAddr);
-void testMultipleConnectionsWithLogging(MockLogger* mLogger, int port, int nbrConns);
+                                  struct addrinfo* svrAddrInfo);
+void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string port, int nbrConns);
 void testOneConnection(std::string& clientPort, std::string& clientIp, sockaddr_in svrAddr);
 void testMultipleConnections(int port, int nbrConns);
 

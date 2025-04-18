@@ -27,6 +27,6 @@ class Server {
     explicit Server(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* _epollMngr);
     ~Server();
     bool isRunning() const;
-    void start(std::vector<int> ports);
+    void start(std::vector<std::string> ports);
     void stop();
 };

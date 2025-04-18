@@ -1,7 +1,7 @@
 #include "EPollManager.h"
 #include "ILogger.h"
 #include "Logger.h"
-#include "test_main.h"
+#include "utils.h"
 #include <gtest/gtest.h>
 
 TEST(ConnectionHandlerTest, firstTest) {

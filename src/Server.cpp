@@ -12,11 +12,11 @@ Server::~Server() { delete _listener; }
 
 bool Server::isRunning() const { return _isRunning; }
 
-void Server::start(std::vector<int> ports) {
+void Server::start(std::vector<std::string> ports) {
     _logger->log("INFO", "Server is starting...");
 
     for (size_t i = 0; i < ports.size(); i++)
-        _portfds.push_back(newListeningSocket(ports[i]));
+        _portfds.push_back(newListeningSocket1(NULL, ports[i].c_str()));
 
     for (size_t i = 0; i < _portfds.size(); i++)
         _listener->add(_portfds[i]);

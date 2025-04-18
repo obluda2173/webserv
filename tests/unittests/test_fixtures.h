@@ -19,7 +19,7 @@ class StubLogger : public ILogger {
     void log(const std::string& level, const std::string& msg) { (void)level, (void)msg; }
 };
 
-class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
+class ServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
     ILogger* _logger;
     EPollManager* _epollMngr;
@@ -27,7 +27,7 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
     Server _svr;
     std::thread _svrThread;
     int _openFdsBegin;
-    std::vector<int> _ports;
+    std::vector<std::string> _ports;
 
     ServerTest()
         : _logger(new StubLogger()), _epollMngr(new EPollManager(_logger)),
@@ -62,7 +62,7 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
 };
 
 // defining a Test Fixture: ServerTest
-class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam<std::vector<int>> {
+class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
     MockLogger* _mLogger;
     EPollManager* _epollMngr;
@@ -70,7 +70,7 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
     Server _svr;
     std::thread _svrThread;
     int _openFdsBegin;
-    std::vector<int> _ports;
+    std::vector<std::string> _ports;
 
     ServerWithMockLoggerParametrizedPortTest()
 

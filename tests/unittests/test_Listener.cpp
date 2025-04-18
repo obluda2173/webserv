@@ -3,6 +3,7 @@
 #include "Listener.h"
 #include "test_fixtures.h"
 #include "test_main.h"
+#include "utils.h"
 #include "gtest/gtest.h"
 #include <netdb.h>
 #include <netinet/in.h>
@@ -68,8 +69,8 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
         listenerThread = std::thread(&Listener::listen, &listener);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-        testMultipleConnectionsWithLogging(mLogger, 8070, 100);
-        testMultipleConnectionsWithLogging(mLogger, 8071, 100);
+        testMultipleConnectionsWithLogging(mLogger, "8070", 100);
+        testMultipleConnectionsWithLogging(mLogger, "8071", 100);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
         listener.stop();
@@ -86,8 +87,8 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
 TEST_F(ListenerTest, multiplePortsTestWoLogging) {
     int openFdsBegin = countOpenFileDescriptors();
     {
-        int sfd1 = newListeningSocket(8070);
-        int sfd2 = newListeningSocket(8071);
+        int sfd1 = newListeningSocket1(NULL, "8070");
+        int sfd2 = newListeningSocket1(NULL, "8071");
 
         ILogger* logger = new StubLogger();
         EPollManager* epollMngr = new EPollManager(logger);

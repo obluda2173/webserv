@@ -3,14 +3,14 @@
 #include "gtest/gtest.h"
 
 TEST_P(ServerWithMockLoggerParametrizedPortTest, connectionTest) {
-    std::vector<int> listeningPorts = GetParam();
+    std::vector<std::string> listeningPorts = GetParam();
     for (size_t i = 0; i < listeningPorts.size(); i++)
         testMultipleConnectionsWithLogging(_mLogger, listeningPorts[i], 100);
 }
 
 INSTANTIATE_TEST_SUITE_P(ServerTests, ServerWithMockLoggerParametrizedPortTest,
-                         ::testing::Values(std::vector<int>{8080}, std::vector<int>{8080, 8081},
-                                           std::vector<int>{8080, 8081, 8082}));
+                         ::testing::Values(std::vector<std::string>{"8080"}, std::vector<std::string>{"8080", "8081"},
+                                           std::vector<std::string>{"8080", "8081", "8082"}));
 
 // // // TODO: make proper integration tests with either golang or python
 // // // No parallel stuff in CPP
