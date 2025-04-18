@@ -1,6 +1,6 @@
 #include <HttpParser.h>
 
-HttpParser::HttpParser() : _state(STATE_REQUEST_LINE) { _currentRequest.hasBody = false; }
+HttpParser::HttpParser() : _state(STATE_REQUEST_LINE) {}
 
 HttpParser::~HttpParser() {}
 
@@ -8,7 +8,6 @@ void HttpParser::reset() {
     _state = STATE_REQUEST_LINE;
     _buffer.clear();
     _currentRequest = HttpRequest();
-    _currentRequest.hasBody = false;
 }
 
 std::string toLower(const std::string &str);
@@ -46,20 +45,7 @@ void HttpParser::parseBuffer() {
             }
             _state = STATE_HEADERS;
         } else if (_state == STATE_HEADERS) {
-            if (line.empty()) {
-
-                // TODO: factor out to a function or member function
-                for (std::vector<std::pair<std::string, std::string>>::const_iterator it =
-                         _currentRequest.headers.begin();
-                     it != _currentRequest.headers.end(); ++it) {
-                    if (it->first == "content-length" || it->first == "transfer-encoding") {
-                        _currentRequest.hasBody = true;
-                        break;
-                    }
-                }
-                _state = STATE_DONE;
-            } else {
-
+            if (!line.empty()) {
                 // TODO: factor out to a function or member function
                 size_t sep = line.find(':');
                 if (sep == std::string::npos) {
@@ -79,7 +65,14 @@ void HttpParser::parseBuffer() {
                     return;
                 }
 
-                _currentRequest.headers.push_back(std::make_pair(key, value));
+                if (_currentRequest.headers.find(key) != _currentRequest.headers.end()) {
+                    _state = STATE_ERROR;
+                    return;
+                }
+                
+                _currentRequest.headers[key] = value;
+            } else {
+                _state = STATE_DONE;
             }
         }
     }

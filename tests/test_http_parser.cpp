@@ -23,7 +23,6 @@ void assertEqualHttpRequest(const HttpRequest& want, const HttpRequest& got) {
     EXPECT_EQ(want.uri, got.uri);
     EXPECT_EQ(want.version, got.version);
     EXPECT_EQ(want.headers, got.headers);
-    EXPECT_EQ(want.hasBody, got.hasBody);
 }
 
 TEST_P(TestHttpParser, Parsing) {
@@ -72,7 +71,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "POST", "/upload", "HTTP/1.1",
                 {{"host", "localhost"}, {"content-length", "13"}},
-                true
             },
             "POST /upload HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -89,7 +87,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "POST", "/upload", "HTTP/1.1",
                 {{"host", "localhost"}, {"content-length", "13"}},
-                true
             },
             "POST /upload HTTP/1.1\n"
             "Host: localhost\n"
@@ -119,7 +116,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "POST", "/upload", "HTTP/1.1",
                 {{"host", "localhost"}, {"content-length", "13"}},
-                true
             },
             "POST   \t  /upload   \t\t     HTTP/1.1 \t\t \r\n"
             "Host: localhost\r\n"
@@ -136,7 +132,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "POST", "/upload", "HTTP/1.1",
                 {{"host", "localhost"}, {"content-length", "13"}},
-                true
             },
             "POST /upload HTTP/1.1\r\n  \r\n"
             "Host: localhost\r\n"
@@ -177,7 +172,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/", "HTTP/1.1", 
                 {{"host", ""}}, 
-                false
             },
             "GET / HTTP/1.1\r\n"
             "Host:\r\n"
@@ -187,13 +181,9 @@ INSTANTIATE_TEST_SUITE_P(
         // 8 Duplicate Headers
         TestHttpParserParams{
             10,
-            1,
             0,
-            {
-                "GET", "/", "HTTP/1.1",
-                {{"set-cookie", "sessionId=123"}, {"set-cookie", "userId=456"}},
-                false
-            },
+            1,
+            {},
             "GET / HTTP/1.1\r\n"
             "Set-Cookie: sessionId=123\r\n"
             "Set-Cookie: userId=456\r\n"
@@ -208,7 +198,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/", "HTTP/1.1", 
                 {{"custom-header", "value_with_special_chars!@#$%"}},
-                false
             },
             "GET / HTTP/1.1\r\n"
             "Custom-Header: value_with_special_chars!@#$%\r\n"
@@ -232,7 +221,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/first", "HTTP/1.1",
                 {{"host", "localhost"}},
-                false
             },
             "GET /first HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -250,7 +238,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/search?q=test&lang=en", "HTTP/1.1",
                 {{"host", "localhost"}},
-                false
             },
             "GET /search?q=test&lang=en HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -265,7 +252,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/", "HTTP/1.1",
                 {{"host", "localhost"}},
-                false
             },
             "GET / HTTP/1.1\r\n"
             "Host:    localhost\r\n"
@@ -280,7 +266,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "OPTIONS", "*", "HTTP/1.1",
                 {{"host", "localhost"}},
-                false
             },
             "OPTIONS * HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -290,13 +275,9 @@ INSTANTIATE_TEST_SUITE_P(
         // 15 Duplicate Content-Length Headers
         TestHttpParserParams{
             5,
-            1,
             0,
-            {
-                "POST", "/upload", "HTTP/1.1",
-                {{"host", "localhost"}, {"content-length", "5"}, {"content-length", "10"}},
-                true
-            },
+            1,
+            {},
             "POST /upload HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Content-Length: 5\r\n"
@@ -324,7 +305,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/path%20with%20spaces", "HTTP/1.1",
                 {{"host", "localhost"}},
-                false
             },
             "GET /path%20with%20spaces HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -339,7 +319,6 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET", "/", "HTTP/1.1",
                 {{"x-very-long-header-name-that-goes-on-and-on", "value"}},
-                false
             },
             "GET / HTTP/1.1\r\n"
             "X-Very-Long-Header-Name-That-Goes-On-And-On: value\r\n"
