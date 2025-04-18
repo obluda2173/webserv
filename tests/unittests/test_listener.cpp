@@ -1,4 +1,4 @@
-#include "ILogger.h"
+#include "EPollManager.h"
 #include "Listener.h"
 #include "test_fixtures.h"
 #include "test_main.h"
@@ -19,7 +19,8 @@ TEST_F(ListenerTest, closingAConnection) {
         int clientfd = getClientSocket(clientIp, clientPort);
 
         MockLogger* mLogger = new MockLogger;
-        Listener listener(mLogger);
+        EPollManager* epollMngr = new EPollManager(mLogger);
+        Listener listener(mLogger, epollMngr);
         listener.add(sfd1);
 
         std::thread listenerThread;
@@ -43,6 +44,7 @@ TEST_F(ListenerTest, closingAConnection) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         listener.stop();
         listenerThread.join();
+        delete epollMngr;
         delete mLogger;
         close(sfd1);
     }
@@ -56,7 +58,8 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
         int sfd2 = new_socket(8071);
 
         MockLogger* mLogger = new MockLogger;
-        Listener listener(mLogger);
+        EPollManager* epollMngr = new EPollManager(mLogger);
+        Listener listener(mLogger, epollMngr);
         listener.add(sfd1);
         listener.add(sfd2);
 
@@ -72,6 +75,7 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
         listenerThread.join();
         close(sfd1);
         close(sfd2);
+        delete epollMngr;
         delete mLogger;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
@@ -84,7 +88,8 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
         int sfd2 = new_socket(8071);
 
         ILogger* logger = new StubLogger();
-        Listener listener(logger);
+        EPollManager* epollMngr = new EPollManager(logger);
+        Listener listener(logger, epollMngr);
         listener.add(sfd1);
         listener.add(sfd2);
 
@@ -99,6 +104,7 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
         close(sfd1);
         close(sfd2);
         listenerThread.join();
+        delete epollMngr;
         delete logger;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);

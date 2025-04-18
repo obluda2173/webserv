@@ -1,6 +1,7 @@
 #ifndef TEST_FIXTURES_H
 #define TEST_FIXTURES_H
 
+#include "EPollManager.h"
 #include "test_main.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,7 +26,7 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
     int _openFdsBegin;
     std::vector<int> _ports;
 
-    ServerTest() : _logger(new StubLogger()), _svr(_logger), _ports(GetParam()) {}
+    ServerTest() : _logger(new StubLogger()), _svr(_logger, new EPollManager(_logger)), _ports(GetParam()) {}
 
     void SetUp() override { setupServer(); }
 
@@ -38,14 +39,14 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
     }
 
     void waitForServerStartup() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         EXPECT_TRUE(_svr.isRunning());
     }
 
     void teardownServer() {
         _svr.stop();
         EXPECT_FALSE(_svr.isRunning());
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
         _svrThread.join();
         delete _logger;
@@ -56,12 +57,15 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
 class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam<std::vector<int>> {
   protected:
     MockLogger* _mLogger;
+    EPollManager* _epollMngr;
     Server _svr;
     std::thread _svrThread;
     int _openFdsBegin;
     std::vector<int> _ports;
 
-    ServerWithMockLoggerParametrizedPortTest() : _mLogger(new MockLogger()), _svr(_mLogger), _ports(GetParam()) {}
+    ServerWithMockLoggerParametrizedPortTest()
+        : _mLogger(new MockLogger()), _epollMngr(new EPollManager(_mLogger)), _svr(_mLogger, _epollMngr),
+          _ports(GetParam()) {}
 
     void SetUp() override { setupServer(); }
 
@@ -91,6 +95,7 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
         _svrThread.join();
         delete _mLogger;
+        delete _epollMngr;
     }
 };
 

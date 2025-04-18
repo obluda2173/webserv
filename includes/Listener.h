@@ -1,10 +1,10 @@
 #ifndef LISTENER_H
 #define LISTENER_H
 
+#include "EPollManager.h"
 #include "IListener.h"
 #include "ILogger.h"
-#include <vector>
-
+#include "utils.h"
 #include <arpa/inet.h>
 #include <cstring>
 #include <netdb.h>
@@ -16,23 +16,19 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-struct ConnectionInfo {
-    struct sockaddr_in addr;
-    int fd;
-};
+#include <vector>
 
 class Listener : public IListener {
   private:
-    std::vector<int> _portfds;
-    std::vector<int> _activeConns;
-    std::vector<ConnectionInfo*> _portfds_infos;
-    int _epfd;
     ILogger* _logger;
+    EPollManager* _epollMngr;
+    std::vector<int> _portfds;
+    std::vector<ConnectionInfo*> _portfds_infos;
     bool _isListening;
+    void _addClientSocket(int clientSocket, ConnectionInfo* connInfo);
 
   public:
-    Listener(ILogger* logger);
+    Listener(ILogger* logger, EPollManager* epollMngr);
     ~Listener();
     void listen();
     void stop();

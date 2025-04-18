@@ -1,44 +1,33 @@
 #include "Listener.h"
+#include "EPollManager.h"
 #include "logging.h"
-#include <algorithm>
 #include <cstring>
 #include <errno.h>
 #include <iostream>
+#include <netinet/in.h>
 #include <sstream>
 #include <sys/epoll.h>
 
-Listener::Listener(ILogger* logger) : _logger(logger) {
-    _epfd = epoll_create(1);
-    if (_epfd == -1) {
-        _logger->log("ERROR", "epoll_create: " + std::string(strerror(errno)));
-        exit(1);
-    }
-}
+Listener::Listener(ILogger* logger, EPollManager* epollMngr) : _logger(logger), _epollMngr(epollMngr) {}
 
-Listener::~Listener() {
-    if (close(_epfd)) {
-        _logger->log("ERROR", "close: " + std::string(strerror(errno)));
-    }
-}
+Listener::~Listener() {}
 
 void Listener::listen() {
-    std::stringstream info;
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
     struct epoll_event events[1];
 
     _isListening = true;
     while (_isListening) {
-        int ready = epoll_wait(_epfd, events, 1, 10);
+        int ready = _epollMngr->wait(events, 1);
         if (ready == 0)
             continue;
         if (!_isListening)
             break;
 
         ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
-        int portfd = connInfo->fd;
-        if (std::find(_portfds.begin(), _portfds.end(), portfd) != std::end(_portfds)) {
-            int conn = accept(portfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
+        if (connInfo->type == LISTENING_SOCKET) {
+            int conn = accept(connInfo->fd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
             if (conn < 0) {
                 _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
                 exit(1);
@@ -47,23 +36,14 @@ void Listener::listen() {
 
             ConnectionInfo* connInfo = new ConnectionInfo;
             connInfo->addr = theirAddr;
+            connInfo->type = CLIENT_SOCKET;
             connInfo->fd = conn;
-            struct epoll_event event;
-            event.events = EPOLLRDHUP; // Monitor for read events
-            event.data.ptr = connInfo;
-            epoll_ctl(_epfd, EPOLL_CTL_ADD, conn, &event);
-            _activeConns.push_back(conn);
+            _epollMngr->add(conn, connInfo, CLIENT_HUNG_UP);
             continue;
         };
 
-        epoll_ctl(_epfd, EPOLL_CTL_DEL, connInfo->fd, NULL);
-
-        theirAddr = connInfo->addr;
-        unsigned char* ip = reinterpret_cast<unsigned char*>(&theirAddr.sin_addr.s_addr);
-        info << "Disconnect IP: " << static_cast<int>(ip[0]) << '.' << static_cast<int>(ip[1]) << '.'
-             << static_cast<int>(ip[2]) << '.' << static_cast<int>(ip[3]) << ", Port: " << ntohs(theirAddr.sin_port);
-        _logger->log("INFO", info.str());
-        info.str("");
+        _epollMngr->del(connInfo->fd);
+        logDisconnect(_logger, connInfo->addr);
         close(connInfo->fd);
         delete connInfo;
     }
@@ -76,14 +56,11 @@ void Listener::stop() {
 }
 
 void Listener::add(int portfd) {
-
     ConnectionInfo* connInfo = new ConnectionInfo;
     connInfo->fd = portfd;
+    connInfo->type = LISTENING_SOCKET;
 
-    struct epoll_event event;
-    event.events = EPOLLIN;
-    event.data.ptr = connInfo;
-    epoll_ctl(_epfd, EPOLL_CTL_ADD, portfd, &event);
+    _epollMngr->add(portfd, connInfo, READY_TO_READ);
     _portfds.push_back(portfd);
     _portfds_infos.push_back(connInfo);
 }

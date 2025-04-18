@@ -1,3 +1,4 @@
+#include "EPollManager.h"
 #include "IListener.h"
 #include "ILogger.h"
 #include <cstring>
@@ -14,13 +15,14 @@ class Server {
   private:
     ILogger* _logger;
     IListener* _listener;
+    EPollManager* _epollMngr;
     bool _isRunning;
     std::vector<int> _portfds;
     void _listenPoll(void);
     void _listenEPoll(void);
 
   public:
-    explicit Server(ILogger* li);
+    explicit Server(ILogger* logger, EPollManager* _epollMngr);
     ~Server();
     bool isRunning() const;
     void start(std::vector<int> ports);
