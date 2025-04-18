@@ -20,11 +20,15 @@ class HttpParser : public IHttpParser {
     State _state;
     std::string _buffer;
     HttpRequest _currentRequest;
-    void reset();
-    void parseBuffer();
+    size_t _totalProcessedSize;
+    size_t _maxHeaderKeySize;   // 256B
+    size_t _maxHeaderSize;      // 4KB
+    void _reset();
+    void _parseBuffer();
 
   public:
     HttpParser();
+    HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize);
     ~HttpParser();
     void feed(const char* buffer, size_t length);
     int error(void);
