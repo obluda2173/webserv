@@ -3,9 +3,7 @@
 #include "logging.h"
 #include <cstring>
 #include <errno.h>
-#include <iostream>
 #include <netinet/in.h>
-#include <sstream>
 #include <sys/epoll.h>
 
 Listener::Listener(ILogger* logger, EPollManager* epollMngr) : _logger(logger), _epollMngr(epollMngr) {}
@@ -26,7 +24,7 @@ void Listener::listen() {
             break;
 
         ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
-        if (connInfo->type == LISTENING_SOCKET) {
+        if (connInfo->type == PORT_SOCKET) {
             int conn = accept(connInfo->fd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
             if (conn < 0) {
                 _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
@@ -58,7 +56,7 @@ void Listener::stop() {
 void Listener::add(int portfd) {
     ConnectionInfo* connInfo = new ConnectionInfo;
     connInfo->fd = portfd;
-    connInfo->type = LISTENING_SOCKET;
+    connInfo->type = PORT_SOCKET;
 
     _epollMngr->add(portfd, connInfo, READY_TO_READ);
     _portfds.push_back(portfd);

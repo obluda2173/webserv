@@ -10,7 +10,7 @@
 
 
 typedef enum SocketType {
-	LISTENING_SOCKET,
+	PORT_SOCKET,
 	CLIENT_SOCKET,
 } SocketType;
 
