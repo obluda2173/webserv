@@ -10,6 +10,22 @@ Listener::Listener(ILogger* logger, EPollManager* epollMngr) : _logger(logger), 
 
 Listener::~Listener() {}
 
+void addClientConnection(ILogger* _logger, EPollManager* _epollMngr, int conn, struct sockaddr_in theirAddr) {
+    logConnection(_logger, theirAddr);
+    ConnectionInfo* connInfo = new ConnectionInfo;
+    connInfo->addr = theirAddr;
+    connInfo->type = CLIENT_SOCKET;
+    connInfo->fd = conn;
+    _epollMngr->add(conn, connInfo, CLIENT_HUNG_UP);
+}
+
+void removeClientConnection(ILogger* _logger, EPollManager* _epollMngr, ConnectionInfo* connInfo) {
+    _epollMngr->del(connInfo->fd);
+    logDisconnect(_logger, connInfo->addr);
+    close(connInfo->fd);
+    delete connInfo;
+}
+
 void Listener::listen() {
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
@@ -30,20 +46,11 @@ void Listener::listen() {
                 _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
                 exit(1);
             }
-            logConnection(_logger, theirAddr);
-
-            ConnectionInfo* connInfo = new ConnectionInfo;
-            connInfo->addr = theirAddr;
-            connInfo->type = CLIENT_SOCKET;
-            connInfo->fd = conn;
-            _epollMngr->add(conn, connInfo, CLIENT_HUNG_UP);
+            addClientConnection(_logger, _epollMngr, conn, theirAddr);
             continue;
         };
 
-        _epollMngr->del(connInfo->fd);
-        logDisconnect(_logger, connInfo->addr);
-        close(connInfo->fd);
-        delete connInfo;
+        removeClientConnection(_logger, _epollMngr, connInfo);
     }
 }
 
