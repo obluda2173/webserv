@@ -33,3 +33,14 @@ int newListeningSocket(int port) {
     }
     return _serverfd;
 }
+
+// void getSvrAddrInfo(const char* node, std::string port, struct addrinfo* addrInfo) {
+//     int status;
+//     struct addrinfo hints;
+//     memset(&hints, 0, sizeof hints);
+//     hints.ai_family = AF_INET;
+//     hints.ai_socktype = SOCK_STREAM;
+//     hints.ai_flags = AI_PASSIVE;
+//     if ((status = getaddrinfo(node, port.c_str(), &hints, &addrInfo) == -1))
+//         std::cerr << "getaddrinfo error: " << gai_strerror(status);
+// }

@@ -16,7 +16,7 @@ TEST_F(ListenerTest, closingAConnection) {
         int sfd1 = newListeningSocket(svrPort);
 
         int clientPort = 12345;
-        std::string clientIp = "127.0.0.2";
+        std::string clientIp = "127.0.0.3";
         int clientfd = getClientSocket(clientIp, clientPort);
 
         MockLogger* mLogger = new MockLogger;
