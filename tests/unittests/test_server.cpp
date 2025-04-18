@@ -4,9 +4,8 @@
 
 TEST_P(ServerWithMockLoggerParametrizedPortTest, connectionTest) {
     std::vector<int> listeningPorts = GetParam();
-    for (size_t i = 0; i < listeningPorts.size(); i++) {
+    for (size_t i = 0; i < listeningPorts.size(); i++)
         testMultipleConnectionsWithLogging(_mLogger, listeningPorts[i], 100);
-    }
 }
 
 INSTANTIATE_TEST_SUITE_P(ServerTests, ServerWithMockLoggerParametrizedPortTest,

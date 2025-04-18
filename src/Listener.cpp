@@ -1,6 +1,6 @@
 #include "Listener.h"
+#include "ConnectionHandler.h"
 #include "EPollManager.h"
-#include "logging.h"
 #include <cstring>
 #include <errno.h>
 #include <netinet/in.h>
@@ -10,25 +10,23 @@ Listener::Listener(ILogger* logger, EPollManager* epollMngr) : _logger(logger), 
 
 Listener::~Listener() {}
 
-void addClientConnection(ILogger* _logger, EPollManager* _epollMngr, int conn, struct sockaddr_in theirAddr) {
-    logConnection(_logger, theirAddr);
-    ConnectionInfo* connInfo = new ConnectionInfo;
-    connInfo->addr = theirAddr;
-    connInfo->type = CLIENT_SOCKET;
-    connInfo->fd = conn;
-    _epollMngr->add(conn, connInfo, CLIENT_HUNG_UP);
-}
+void handleConnection(ILogger* _logger, EPollManager* _epollMngr, ConnectionInfo* connInfo) {
+    struct sockaddr_in theirAddr;
+    int addrlen = sizeof(theirAddr);
+    if (connInfo->type == PORT_SOCKET) {
+        int conn = accept(connInfo->fd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
+        if (conn < 0) {
+            _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
+            exit(1);
+        }
+        addClientConnection(_logger, _epollMngr, conn, theirAddr);
+        return;
+    };
 
-void removeClientConnection(ILogger* _logger, EPollManager* _epollMngr, ConnectionInfo* connInfo) {
-    _epollMngr->del(connInfo->fd);
-    logDisconnect(_logger, connInfo->addr);
-    close(connInfo->fd);
-    delete connInfo;
+    removeClientConnection(_logger, _epollMngr, connInfo);
 }
 
 void Listener::listen() {
-    struct sockaddr_in theirAddr;
-    int addrlen = sizeof(theirAddr);
     struct epoll_event events[1];
 
     _isListening = true;
@@ -40,17 +38,7 @@ void Listener::listen() {
             break;
 
         ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
-        if (connInfo->type == PORT_SOCKET) {
-            int conn = accept(connInfo->fd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
-            if (conn < 0) {
-                _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
-                exit(1);
-            }
-            addClientConnection(_logger, _epollMngr, conn, theirAddr);
-            continue;
-        };
-
-        removeClientConnection(_logger, _epollMngr, connInfo);
+        handleConnection(_logger, _epollMngr, connInfo);
     }
 }
 
