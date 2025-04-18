@@ -1,5 +1,5 @@
-#ifndef TEST_FIXTURES_H
-#define TEST_FIXTURES_H
+#ifndef TEST_SERVERFIXTURES_H
+#define TEST_SERVERFIXTURES_H
 
 #include "ConnectionHandler.h"
 #include "EPollManager.h"
@@ -111,4 +111,4 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
     }
 };
 
-#endif // TEST_FIXTURES_H
+#endif // TEST_SERVERFIXTURES_H

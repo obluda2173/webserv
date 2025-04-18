@@ -1,7 +1,7 @@
 #include "ConnectionHandler.h"
 #include "EPollManager.h"
 #include "Listener.h"
-#include "test_fixtures.h"
+#include "test_ServerFixtures.h"
 #include "test_main.h"
 #include "utils.h"
 #include "gtest/gtest.h"
