@@ -1,4 +1,5 @@
 #include "EPollManager.h"
+#include <string.h>
 
 EPollManager::EPollManager(ILogger* logger) : _logger(logger) {
     _epfd = epoll_create(1);

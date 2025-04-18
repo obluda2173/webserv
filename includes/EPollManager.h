@@ -1,15 +1,15 @@
 #ifndef EPOLLMANAGER_H
 #define EPOLLMANAGER_H
 
-#include "utils.h"
 #include <ILogger.h>
 #include <cstdint>
-#include <string.h>
 #include <sys/epoll.h>
 #include <unistd.h>
 
 #define CLIENT_HUNG_UP EPOLLRDHUP
 #define READY_TO_READ EPOLLIN
+
+#include "IConnectionHandler.h"
 
 class EPollManager {
   private:

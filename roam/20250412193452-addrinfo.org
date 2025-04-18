@@ -107,3 +107,7 @@ char ip4[INET_ADDRSTRLEN];
 
 inet_ntop(AF_INET, "10.12.110.57", (&sa.sin_addr));
   #+end_src
+* sockaddr_storage
+https://man7.org/linux/man-pages/man3/sockaddr.3type.html
+- A structure at least as large as any other sockaddr_* address structures.
+- It's aligned so that a pointer to it can be cast as a pointer to other sockaddr_* structures and used to access its fields.

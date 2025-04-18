@@ -1,5 +1,6 @@
 #include "ConnectionHandler.h"
 #include "logging.h"
+#include <string.h>
 
 ConnectionHandler::ConnectionHandler(ILogger* l, EPollManager* ep) : _logger(l), _epollMngr(ep) {}
 
@@ -22,7 +23,6 @@ void removeClientConnection(ILogger* _logger, EPollManager* _epollMngr, Connecti
 }
 
 void ConnectionHandler::handleConnection(ConnectionInfo* connInfo) {
-
     struct sockaddr_in theirAddr;
     int addrlen = sizeof(theirAddr);
     if (connInfo->type == PORT_SOCKET) {

@@ -5,7 +5,6 @@
 #include "IConnectionHandler.h"
 #include "IListener.h"
 #include "ILogger.h"
-#include "utils.h"
 #include <arpa/inet.h>
 #include <cstring>
 #include <netdb.h>
