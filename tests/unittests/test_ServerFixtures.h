@@ -4,20 +4,11 @@
 #include "ConnectionHandler.h"
 #include "EPollManager.h"
 #include "test_main.h"
-#include "gmock/gmock.h"
+#include "test_mocks.h"
+#include "test_stubs.h"
 #include "gtest/gtest.h"
 #include <Server.h>
 #include <thread>
-
-class MockLogger : public ILogger {
-  public:
-    MOCK_METHOD(void, log, (const std::string& level, const std::string& msg), (override));
-};
-
-class StubLogger : public ILogger {
-  public:
-    void log(const std::string& level, const std::string& msg) { (void)level, (void)msg; }
-};
 
 class ServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
