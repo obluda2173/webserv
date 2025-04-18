@@ -18,7 +18,6 @@ void assertEqualHttpRequest(const HttpRequest& want, const HttpRequest& got) {
     // std::cout << want.method << " | " << got.method << std::endl;
     // std::cout << want.uri << " | " << got.uri << std::endl;
     // std::cout << want.version << " | " << got.version << std::endl;
-    // std::cout << want.body << " | " << got.body << std::endl;
     // std::cout << "----------------------------------------------------\n";
     EXPECT_EQ(want.method, got.method);
     EXPECT_EQ(want.uri, got.uri);
@@ -48,12 +47,10 @@ TEST_P(TestHttpParser, Parsing) {
 std::string generateLongURI(size_t segmentCount) {
     std::string uri = "/";
     for (size_t i = 0; i < segmentCount; ++i) {
-        uri += "a/"; // Each segment adds 2 characters: "a/"
+        uri += "a/";
     }
     return uri;
 }
-
-// "Host: localhost\r\n"
 
 std::string generateManyHeaders(size_t headersCount) {
     std::string uri;
@@ -272,6 +269,80 @@ INSTANTIATE_TEST_SUITE_P(
             },
             "GET / HTTP/1.1\r\n"
             "Host:    localhost\r\n"
+            "\r\n"
+        },
+
+        // 14 Request with Asterix URI
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "OPTIONS", "*", "HTTP/1.1",
+                {{"host", "localhost"}},
+                false
+            },
+            "OPTIONS * HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+        },
+
+        // 15 Duplicate Content-Length Headers
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "POST", "/upload", "HTTP/1.1",
+                {{"host", "localhost"}, {"content-length", "5"}, {"content-length", "10"}},
+                true
+            },
+            "POST /upload HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Content-Length: 5\r\n"
+            "Content-Length: 10\r\n"
+            "\r\n"
+            "Hello\r\n"
+        },
+
+        // 16 Missing Space in Request Line
+        TestHttpParserParams{
+            5,
+            0,
+            1,
+            {},
+            "GET/ HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+        },
+
+        // 17 URI with Encoded Characters
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/path%20with%20spaces", "HTTP/1.1",
+                {{"host", "localhost"}},
+                false
+            },
+            "GET /path%20with%20spaces HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "\r\n"
+        },
+
+        // 18 Very Long Header Name
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"x-very-long-header-name-that-goes-on-and-on", "value"}},
+                false
+            },
+            "GET / HTTP/1.1\r\n"
+            "X-Very-Long-Header-Name-That-Goes-On-And-On: value\r\n"
             "\r\n"
         }
     )
