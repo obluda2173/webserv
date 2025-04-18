@@ -36,6 +36,5 @@ void Listener::add(int portfd) {
     connInfo->type = PORT_SOCKET;
 
     _epollMngr->add(portfd, connInfo, READY_TO_READ);
-    _portfds.push_back(portfd);
     _portfds_infos.push_back(connInfo);
 }

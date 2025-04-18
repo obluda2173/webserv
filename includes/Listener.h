@@ -23,7 +23,6 @@ class Listener : public IListener {
     ILogger* _logger;
     IConnectionHandler* _connHdlr;
     EPollManager* _epollMngr;
-    std::vector<int> _portfds;
     std::vector<ConnectionInfo*> _portfds_infos;
     bool _isListening;
     void _addClientSocket(int clientSocket, ConnectionInfo* connInfo);
