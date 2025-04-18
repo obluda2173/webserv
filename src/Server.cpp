@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <errno.h>
 
-Server::Server(ILogger* logger, EPollManager* epollMngr)
-    : _logger(logger), _listener(new Listener(logger, epollMngr)), _epollMngr(epollMngr) {}
+Server::Server(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
+    : _logger(logger), _listener(new Listener(logger, connHdlr, epollMngr)), _epollMngr(epollMngr) {}
 
 Server::~Server() { delete _listener; }
 

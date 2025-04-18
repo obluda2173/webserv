@@ -2,6 +2,7 @@
 #define LISTENER_H
 
 #include "EPollManager.h"
+#include "IConnectionHandler.h"
 #include "IListener.h"
 #include "ILogger.h"
 #include "utils.h"
@@ -21,6 +22,7 @@
 class Listener : public IListener {
   private:
     ILogger* _logger;
+    IConnectionHandler* _connHdlr;
     EPollManager* _epollMngr;
     std::vector<int> _portfds;
     std::vector<ConnectionInfo*> _portfds_infos;
@@ -28,7 +30,7 @@ class Listener : public IListener {
     void _addClientSocket(int clientSocket, ConnectionInfo* connInfo);
 
   public:
-    Listener(ILogger* logger, EPollManager* epollMngr);
+    Listener(ILogger*, IConnectionHandler*, EPollManager*);
     ~Listener();
     void listen();
     void stop();

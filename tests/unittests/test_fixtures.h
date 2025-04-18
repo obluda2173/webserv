@@ -1,6 +1,7 @@
 #ifndef TEST_FIXTURES_H
 #define TEST_FIXTURES_H
 
+#include "ConnectionHandler.h"
 #include "EPollManager.h"
 #include "test_main.h"
 #include "gmock/gmock.h"
@@ -21,12 +22,17 @@ class StubLogger : public ILogger {
 class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
   protected:
     ILogger* _logger;
+    EPollManager* _epollMngr;
+    IConnectionHandler* _connHdlr;
     Server _svr;
     std::thread _svrThread;
     int _openFdsBegin;
     std::vector<int> _ports;
 
-    ServerTest() : _logger(new StubLogger()), _svr(_logger, new EPollManager(_logger)), _ports(GetParam()) {}
+    ServerTest()
+        : _logger(new StubLogger()), _epollMngr(new EPollManager(_logger)),
+          _connHdlr(new ConnectionHandler(_logger, _epollMngr)), _svr(_logger, _connHdlr, _epollMngr),
+          _ports(GetParam()) {}
 
     void SetUp() override { setupServer(); }
 
@@ -50,6 +56,8 @@ class ServerTest : public ::testing::TestWithParam<std::vector<int>> {
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
         _svrThread.join();
         delete _logger;
+        delete _epollMngr;
+        delete _connHdlr;
     }
 };
 
@@ -58,13 +66,16 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
   protected:
     MockLogger* _mLogger;
     EPollManager* _epollMngr;
+    IConnectionHandler* _connHdlr;
     Server _svr;
     std::thread _svrThread;
     int _openFdsBegin;
     std::vector<int> _ports;
 
     ServerWithMockLoggerParametrizedPortTest()
-        : _mLogger(new MockLogger()), _epollMngr(new EPollManager(_mLogger)), _svr(_mLogger, _epollMngr),
+
+        : _mLogger(new MockLogger()), _epollMngr(new EPollManager(_mLogger)),
+          _connHdlr(new ConnectionHandler(_mLogger, _epollMngr)), _svr(_mLogger, _connHdlr, _epollMngr),
           _ports(GetParam()) {}
 
     void SetUp() override { setupServer(); }
@@ -96,6 +107,7 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
         _svrThread.join();
         delete _mLogger;
         delete _epollMngr;
+        delete _connHdlr;
     }
 };
 

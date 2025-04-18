@@ -1,3 +1,4 @@
+#include "ConnectionHandler.h"
 #include "EPollManager.h"
 #include "Listener.h"
 #include "test_fixtures.h"
@@ -20,7 +21,8 @@ TEST_F(ListenerTest, closingAConnection) {
 
         MockLogger* mLogger = new MockLogger;
         EPollManager* epollMngr = new EPollManager(mLogger);
-        Listener listener(mLogger, epollMngr);
+        ConnectionHandler* connHdlr = new ConnectionHandler(mLogger, epollMngr);
+        Listener listener(mLogger, connHdlr, epollMngr);
         listener.add(sfd1);
 
         std::thread listenerThread;
@@ -44,9 +46,10 @@ TEST_F(ListenerTest, closingAConnection) {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         listener.stop();
         listenerThread.join();
+        close(sfd1);
         delete epollMngr;
         delete mLogger;
-        close(sfd1);
+        delete connHdlr;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
@@ -59,7 +62,8 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
 
         MockLogger* mLogger = new MockLogger;
         EPollManager* epollMngr = new EPollManager(mLogger);
-        Listener listener(mLogger, epollMngr);
+        ConnectionHandler* connHdlr = new ConnectionHandler(mLogger, epollMngr);
+        Listener listener(mLogger, connHdlr, epollMngr);
         listener.add(sfd1);
         listener.add(sfd2);
 
@@ -77,6 +81,7 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
         close(sfd2);
         delete epollMngr;
         delete mLogger;
+        delete connHdlr;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
@@ -89,7 +94,8 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
 
         ILogger* logger = new StubLogger();
         EPollManager* epollMngr = new EPollManager(logger);
-        Listener listener(logger, epollMngr);
+        ConnectionHandler* connHdlr = new ConnectionHandler(logger, epollMngr);
+        Listener listener(logger, connHdlr, epollMngr);
         listener.add(sfd1);
         listener.add(sfd2);
 
@@ -106,6 +112,7 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
         listenerThread.join();
         delete epollMngr;
         delete logger;
+        delete connHdlr;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }

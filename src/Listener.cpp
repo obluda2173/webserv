@@ -1,30 +1,14 @@
 #include "Listener.h"
-#include "ConnectionHandler.h"
 #include "EPollManager.h"
+#include "IConnectionHandler.h"
 #include <cstring>
-#include <errno.h>
 #include <netinet/in.h>
 #include <sys/epoll.h>
 
-Listener::Listener(ILogger* logger, EPollManager* epollMngr) : _logger(logger), _epollMngr(epollMngr) {}
+Listener::Listener(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
+    : _logger(logger), _connHdlr(connHdlr), _epollMngr(epollMngr) {}
 
 Listener::~Listener() {}
-
-void handleConnection(ILogger* _logger, EPollManager* _epollMngr, ConnectionInfo* connInfo) {
-    struct sockaddr_in theirAddr;
-    int addrlen = sizeof(theirAddr);
-    if (connInfo->type == PORT_SOCKET) {
-        int conn = accept(connInfo->fd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
-        if (conn < 0) {
-            _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
-            exit(1);
-        }
-        addClientConnection(_logger, _epollMngr, conn, theirAddr);
-        return;
-    };
-
-    removeClientConnection(_logger, _epollMngr, connInfo);
-}
 
 void Listener::listen() {
     struct epoll_event events[1];
@@ -36,9 +20,7 @@ void Listener::listen() {
             continue;
         if (!_isListening)
             break;
-
-        ConnectionInfo* connInfo = (ConnectionInfo*)events[0].data.ptr;
-        handleConnection(_logger, _epollMngr, connInfo);
+        _connHdlr->handleConnection((ConnectionInfo*)events[0].data.ptr);
     }
 }
 
