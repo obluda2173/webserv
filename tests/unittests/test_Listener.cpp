@@ -3,8 +3,8 @@
 #include "Listener.h"
 #include "test_fixtures.h"
 #include "test_main.h"
-#include "utils.h"
 #include "gtest/gtest.h"
+#include <netdb.h>
 #include <netinet/in.h>
 
 class ListenerTest : public ::testing::Test {};
@@ -12,12 +12,12 @@ class ListenerTest : public ::testing::Test {};
 TEST_F(ListenerTest, closingAConnection) {
     int openFdsBegin = countOpenFileDescriptors();
     {
-        int svrPort = 8080;
-        int sfd1 = newListeningSocket(svrPort);
+        std::string svrPort = "8080";
+        int sfd1 = newListeningSocket1(NULL, svrPort.c_str());
 
-        int clientPort = 12345;
+        std::string clientPort = "12345";
         std::string clientIp = "127.0.0.3";
-        int clientfd = getClientSocket(clientIp, clientPort);
+        int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
 
         MockLogger* mLogger = new MockLogger;
         EPollManager* epollMngr = new EPollManager(mLogger);
@@ -29,18 +29,15 @@ TEST_F(ListenerTest, closingAConnection) {
         listenerThread = std::thread(&Listener::listen, &listener);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-        EXPECT_CALL(*mLogger,
-                    log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + std::to_string(clientPort)));
+        EXPECT_CALL(*mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
 
-        struct sockaddr_in svrAddr;
+        struct addrinfo* svrAddrInfo;
+        getSvrAddrInfo(NULL, svrPort.c_str(), &svrAddrInfo);
+        ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0)
+            << "connect: " << strerror(errno);
+        freeaddrinfo(svrAddrInfo);
 
-        setSvrAddr(svrAddr, svrPort);
-        svrAddr.sin_family = AF_INET;
-        svrAddr.sin_port = htons(svrPort);
-        ASSERT_GT(inet_pton(AF_INET, "127.0.0.1", &(svrAddr.sin_addr)), 0) << "inet_pton: " << strerror(errno);
-        ASSERT_EQ(connect(clientfd, (sockaddr*)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
-
-        EXPECT_CALL(*mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + std::to_string(clientPort)));
+        EXPECT_CALL(*mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
         close(clientfd);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -57,8 +54,8 @@ TEST_F(ListenerTest, closingAConnection) {
 TEST_F(ListenerTest, multiplePortsTestWithLogging) {
     int openFdsBegin = countOpenFileDescriptors();
     {
-        int sfd1 = newListeningSocket(8070);
-        int sfd2 = newListeningSocket(8071);
+        int sfd1 = newListeningSocket1(NULL, "8070");
+        int sfd2 = newListeningSocket1(NULL, "8071");
 
         MockLogger* mLogger = new MockLogger;
         EPollManager* epollMngr = new EPollManager(mLogger);
