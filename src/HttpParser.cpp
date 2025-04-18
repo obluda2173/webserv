@@ -1,9 +1,9 @@
 #include <HttpParser.h>
 
 HttpParser::HttpParser() : 
-    _state(STATE_REQUEST_LINE), 
-    _totalProcessedSize(0),  
-    _maxHeaderKeySize(256), 
+    _state(STATE_REQUEST_LINE),
+    _totalProcessedSize(0),
+    _maxHeaderKeySize(256),
     _maxHeaderSize(4096){}
 
 HttpParser::HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize) :
@@ -45,7 +45,8 @@ void HttpParser::_parseRequestLine(const std::string& line) {
     if (_currentRequest.method.empty() || _currentRequest.uri.empty() ||
         _currentRequest.version.empty() || !tmp.empty()) {
         _state = STATE_ERROR;
-        return;
+    } else if (!_requestLineValidation(_currentRequest.method , _currentRequest.uri, _currentRequest.version)) {
+        _state = STATE_ERROR;
     } else {
         _state = STATE_HEADERS;
     }
@@ -61,6 +62,10 @@ void HttpParser::_parseHeader(const std::string& line) {
     std::string value = line.substr(sep + 1);
     value.erase(0, value.find_first_not_of(" \t"));
     if (key.empty() || key.size() > _maxHeaderKeySize || _currentRequest.headers.count(key) > 0) {
+        _state = STATE_ERROR;
+        return;
+    }
+    if (!_headerLineValidation(key , value)) {
         _state = STATE_ERROR;
         return;
     }
@@ -99,6 +104,19 @@ void HttpParser::_parseBuffer() {
             return;
         }
     }
+}
+
+bool HttpParser::_requestLineValidation(const std::string& method, const std::string& uri, const std::string& version) {
+    (void)method;
+    (void)uri;
+    (void)version;
+    return true;
+}
+
+bool HttpParser::_headerLineValidation(const std::string& key, const std::string& value) {
+    (void)key;
+    (void)value;
+    return true;
 }
 
 void HttpParser::feed(const char* buffer, size_t length) {

@@ -29,6 +29,8 @@ class HttpParser : public IHttpParser {
     void _handlePartialLine();
     void _reset();
     void _parseBuffer();
+    bool _requestLineValidation(const std::string& method, const std::string& uri, const std::string& version);
+    bool _headerLineValidation(const std::string& key, const std::string& value);
 
   public:
     HttpParser();
