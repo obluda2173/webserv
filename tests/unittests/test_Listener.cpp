@@ -87,8 +87,10 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
 TEST_F(ListenerTest, multiplePortsTestWoLogging) {
     int openFdsBegin = countOpenFileDescriptors();
     {
-        int sfd1 = newListeningSocket1(NULL, "8070");
-        int sfd2 = newListeningSocket1(NULL, "8071");
+        std::string clientPort1 = "8070";
+        std::string clientPort2 = "8071";
+        int sfd1 = newListeningSocket1(NULL, clientPort1.c_str());
+        int sfd2 = newListeningSocket1(NULL, clientPort2.c_str());
 
         ILogger* logger = new StubLogger();
         EPollManager* epollMngr = new EPollManager(logger);
@@ -101,8 +103,8 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
         listenerThread = std::thread(&Listener::listen, &listener);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-        testMultipleConnections(8070, 100);
-        testMultipleConnections(8071, 100);
+        testMultipleConnections(clientPort1, 100);
+        testMultipleConnections(clientPort2, 100);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         listener.stop();
         close(sfd1);

@@ -1,6 +1,7 @@
 #include "test_fixtures.h"
 #include "test_main.h"
 #include "utils.h"
+#include <netdb.h>
 #include <random>
 
 void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
@@ -31,16 +32,17 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
         clientIp = "127.0.0." + std::to_string(distr2(gen));
         testOneConnectionWithLogging(mLogger, clientPort, clientIp, svrAddrInfo);
     }
+    freeaddrinfo(svrAddrInfo);
 }
 
-void testOneConnection(std::string& clientPort, std::string& clientIp, sockaddr_in svrAddr) {
+void testOneConnection(std::string& clientPort, std::string& clientIp, struct addrinfo* svrAddrInfo) {
     int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
-    ASSERT_EQ(connect(clientfd, (sockaddr*)&svrAddr, sizeof(svrAddr)), 0) << "connect: " << strerror(errno);
+    ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
     close(clientfd);
 }
 
-void testMultipleConnections(int port, int nbrConns) {
+void testMultipleConnections(std::string& svrPort, int nbrConns) {
     std::random_device rd;                               // Obtain a random number from hardware
     std::mt19937 gen(rd());                              // Seed the generator
     std::uniform_int_distribution<> distr1(9000, 20000); // Define the range
@@ -48,12 +50,14 @@ void testMultipleConnections(int port, int nbrConns) {
 
     std::string clientPort;
     std::string clientIp;
-    sockaddr_in svrAddr;
-    setSvrAddr(svrAddr, port);
+
+    struct addrinfo* svrAddrInfo;
+    getSvrAddrInfo(NULL, svrPort.c_str(), &svrAddrInfo);
     int count = 0;
     while (count++ < nbrConns) {
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
-        testOneConnection(clientPort, clientIp, svrAddr);
+        testOneConnection(clientPort, clientIp, svrAddrInfo);
     }
+    freeaddrinfo(svrAddrInfo);
 }
