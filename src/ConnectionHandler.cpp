@@ -24,16 +24,20 @@ void ConnectionHandler::_removeClientConnection(ConnectionInfo* connInfo) {
     delete connInfo;
 }
 
-void ConnectionHandler::handleConnection(ConnectionInfo* connInfo) {
+void ConnectionHandler::_acceptNewConnection(ConnectionInfo* connInfo) {
     struct sockaddr theirAddr;
     int addrlen = sizeof(theirAddr);
+    int conn = accept(connInfo->fd, &theirAddr, (socklen_t*)&addrlen);
+    if (conn < 0) {
+        _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
+        exit(1);
+    }
+    _addClientConnection(conn, &theirAddr);
+}
+
+void ConnectionHandler::handleConnection(ConnectionInfo* connInfo) {
     if (connInfo->type == PORT_SOCKET) {
-        int conn = accept(connInfo->fd, &theirAddr, (socklen_t*)&addrlen);
-        if (conn < 0) {
-            _logger->log("ERROR", "accept: " + std::string(strerror(errno)));
-            exit(1);
-        }
-        _addClientConnection(conn, &theirAddr);
+        _acceptNewConnection(connInfo);
         return;
     };
 

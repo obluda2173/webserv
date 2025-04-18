@@ -10,6 +10,7 @@ class ConnectionHandler : public IConnectionHandler {
     EPollManager* _epollMngr;
 		void _addClientConnection(int conn, struct sockaddr* theirAddr);
 		void _removeClientConnection(ConnectionInfo* connInfo);
+		void _acceptNewConnection(ConnectionInfo* connInfo);
 
   public:
     ConnectionHandler(ILogger*, EPollManager*);
