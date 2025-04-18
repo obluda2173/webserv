@@ -4,13 +4,12 @@
 #include "EPollManager.h"
 #include "IConnectionHandler.h"
 
-void addClientConnection(ILogger* _logger, EPollManager* _epollMngr, int conn, struct sockaddr_in theirAddr);
-void removeClientConnection(ILogger* _logger, EPollManager* _epollMngr, ConnectionInfo* connInfo);
-
 class ConnectionHandler : public IConnectionHandler {
   private:
     ILogger* _logger;
     EPollManager* _epollMngr;
+		void _addClientConnection(int conn, struct sockaddr* theirAddr);
+		void _removeClientConnection(ConnectionInfo* connInfo);
 
   public:
     ConnectionHandler(ILogger*, EPollManager*);
