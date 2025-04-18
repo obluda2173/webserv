@@ -13,7 +13,7 @@ TEST_F(ListenerTest, closingAConnection) {
     int openFdsBegin = countOpenFileDescriptors();
     {
         int svrPort = 8080;
-        int sfd1 = new_socket(svrPort);
+        int sfd1 = newListeningSocket(svrPort);
 
         int clientPort = 12345;
         std::string clientIp = "127.0.0.2";
@@ -57,8 +57,8 @@ TEST_F(ListenerTest, closingAConnection) {
 TEST_F(ListenerTest, multiplePortsTestWithLogging) {
     int openFdsBegin = countOpenFileDescriptors();
     {
-        int sfd1 = new_socket(8070);
-        int sfd2 = new_socket(8071);
+        int sfd1 = newListeningSocket(8070);
+        int sfd2 = newListeningSocket(8071);
 
         MockLogger* mLogger = new MockLogger;
         EPollManager* epollMngr = new EPollManager(mLogger);
@@ -89,8 +89,8 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
 TEST_F(ListenerTest, multiplePortsTestWoLogging) {
     int openFdsBegin = countOpenFileDescriptors();
     {
-        int sfd1 = new_socket(8070);
-        int sfd2 = new_socket(8071);
+        int sfd1 = newListeningSocket(8070);
+        int sfd2 = newListeningSocket(8071);
 
         ILogger* logger = new StubLogger();
         EPollManager* epollMngr = new EPollManager(logger);
