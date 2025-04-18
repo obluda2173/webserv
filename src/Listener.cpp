@@ -20,7 +20,9 @@ void Listener::listen() {
             continue;
         if (!_isListening)
             break;
-        _connHdlr->handleConnection((ConnectionInfo*)events[0].data.ptr);
+        _connHdlr->handleConnection(
+            (ConnectionInfo*)events[0]
+                .data.ptr); // TODO: Make test for Reading something: only the event should probably be sent:
     }
 }
 
