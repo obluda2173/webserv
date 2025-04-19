@@ -110,12 +110,21 @@ bool HttpParser::_requestLineValidation(const std::string& method, const std::st
     (void)method;
     (void)uri;
     (void)version;
+    /*
+     * check for valid HTTP method (e.g. DELETE, POST, GET, etc)
+     * research of wether parser should constuct absolute URI from headers
+     * research about the formats of the URI and apply
+     * check wether version follows this format: HTTP-name "/" DIGIT "." DIGIT
+     */
     return true;
 }
 
 bool HttpParser::_headerLineValidation(const std::string& key, const std::string& value) {
     (void)key;
     (void)value;
+    /*
+     * see my "http and its parsing" notes in obsidian, it has some valuable information about the headers structure
+     */
     return true;
 }
 
