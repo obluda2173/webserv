@@ -1,6 +1,7 @@
 #include "ConnectionHandler.h"
 #include "EPollManager.h"
 #include "Listener.h"
+#include "test_ListenerFixtures.h"
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
@@ -9,6 +10,26 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <thread>
+
+TEST_P(ListenerTestWithMockLogging, closingAConnection) {
+    std::vector<int> ports = GetParam();
+    int port = ports[0];
+    std::string clientPort = "12345";
+    std::string clientIp = "127.0.0.3";
+    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
+
+    struct addrinfo* svrAddrInfo;
+    getSvrAddrInfo(NULL, std::to_string(port).c_str(), &svrAddrInfo);
+    EXPECT_CALL(*_mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
+    ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
+    freeaddrinfo(svrAddrInfo);
+
+    EXPECT_CALL(*_mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
+    close(clientfd);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+
+INSTANTIATE_TEST_SUITE_P(multiplePorts, ListenerTestWithMockLogging, ::testing::Values(std::vector<int>{8080}));
 
 class ListenerTest : public ::testing::Test {};
 
@@ -43,7 +64,7 @@ TEST_F(ListenerTest, closingAConnection) {
         EXPECT_CALL(*mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
         close(clientfd);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         listener.stop();
         listenerThread.join();
         close(sfd1);
@@ -73,7 +94,7 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
 
         testMultipleConnectionsWithLogging(mLogger, "8070", 100);
         testMultipleConnectionsWithLogging(mLogger, "8071", 100);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         listener.stop();
         listenerThread.join();
