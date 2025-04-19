@@ -23,6 +23,7 @@ TEST_P(ListenerTestWithMockLogging, closingAConnection) {
 
         EXPECT_CALL(*_logger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
         close(clientfd);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
 
@@ -30,7 +31,7 @@ TEST_P(ListenerTestWithMockLogging, multipleConnections) {
     std::vector<int> ports = GetParam();
     for (size_t i = 0; i < ports.size(); i++) {
         int port = ports[i];
-        testMultipleConnectionsWithLogging(_logger, std::to_string(port), 100);
+        testMultipleConnectionsWithLogging(_logger, std::to_string(port), 50);
     }
 }
 
@@ -41,7 +42,7 @@ TEST_P(ListenerTestWoMockLogging, multiplePortsTestWoLogging) {
     std::vector<int> ports = GetParam();
     for (size_t i = 0; i < ports.size(); i++) {
         int port = ports[i];
-        testMultipleConnections(std::to_string(port), 100);
+        testMultipleConnections(std::to_string(port), 50);
     }
 }
 

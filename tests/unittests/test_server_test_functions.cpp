@@ -1,8 +1,11 @@
-#include "test_ServerFixtures.h"
 #include "test_main.h"
+#include "test_mocks.h"
 #include "utils.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <netdb.h>
 #include <random>
+#include <thread>
 
 void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
                                   struct addrinfo* svrAddr) {
@@ -25,13 +28,16 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
 
     struct addrinfo* svrAddrInfo;
     getSvrAddrInfo(NULL, svrPort.c_str(), &svrAddrInfo);
-
     int count = 0;
     while (count++ < nbrConns) {
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
         testOneConnectionWithLogging(mLogger, clientPort, clientIp, svrAddrInfo);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+
+    // Add a delay after all connections to ensure all operations complete
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     freeaddrinfo(svrAddrInfo);
 }
 
@@ -58,6 +64,8 @@ void testMultipleConnections(std::string svrPort, int nbrConns) {
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
         testOneConnection(clientPort, clientIp, svrAddrInfo);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     freeaddrinfo(svrAddrInfo);
 }

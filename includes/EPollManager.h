@@ -9,8 +9,6 @@
 #define CLIENT_HUNG_UP EPOLLRDHUP
 #define READY_TO_READ EPOLLIN
 
-#include "IConnectionHandler.h"
-
 class EPollManager {
   private:
     ILogger* _logger;
@@ -19,7 +17,7 @@ class EPollManager {
   public:
     EPollManager(ILogger* logger);
     ~EPollManager(void);
-    void add(int socketfd, ConnectionInfo* connInfo, uint32_t listenEvent);
+    void add(int socketfd, uint32_t listenEvent);
     void del(int socketfd);
     int wait(struct epoll_event* events, int nEvents);
 };

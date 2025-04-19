@@ -21,7 +21,6 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
     Listener* _listener;
     std::thread _listenerThread;
     std::vector<int> _ports;
-    std::vector<int> _portfds;
 
   public:
     BaseListenerTest()
@@ -37,23 +36,22 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
         for (size_t i = 0; i < _ports.size(); i++) {
             int portfd = newListeningSocket1(NULL, std::to_string(_ports[i]).c_str());
             _listener->add(portfd);
-            _portfds.push_back(portfd);
         }
         _listenerThread = std::thread(&Listener::listen, _listener);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
     void tearDownListener() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         _listener->stop();
         if (_listenerThread.joinable())
             _listenerThread.join();
-        for (size_t i = 0; i < _portfds.size(); i++)
-            ASSERT_NE(close(_portfds[i]), -1);
+        // Add a small delay to ensure all pending operations complete
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         delete _listener;
         delete _connHdlr;
         delete _epollMngr;
         delete _logger;
+
         ASSERT_EQ(_openFdsBegin, countOpenFileDescriptors());
     }
 };

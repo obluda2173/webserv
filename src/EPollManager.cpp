@@ -16,10 +16,10 @@ EPollManager::~EPollManager(void) {
     }
 }
 
-void EPollManager::add(int socketfd, ConnectionInfo* connInfo, uint32_t listenEvent) {
+void EPollManager::add(int socketfd, uint32_t listenEvent) {
     struct epoll_event event;
     event.events = listenEvent; // Monitor for read events
-    event.data.ptr = connInfo;
+    event.data.fd = socketfd;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, socketfd, &event);
 }
 

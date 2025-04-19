@@ -8,7 +8,10 @@
 Listener::Listener(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
     : _logger(logger), _connHdlr(connHdlr), _epollMngr(epollMngr) {}
 
-Listener::~Listener() {}
+Listener::~Listener() {
+    for (size_t i = 0; i < _socketfds.size(); i++)
+        close(_socketfds[i]);
+}
 
 void Listener::listen() {
     struct epoll_event events[1];
@@ -16,27 +19,21 @@ void Listener::listen() {
     _isListening = true;
     while (_isListening) {
         int ready = _epollMngr->wait(events, 1);
-        if (ready == 0)
+        if (ready == 0) {
             continue;
-        if (!_isListening)
+        }
+        if (!_isListening) {
             break;
+        }
 
         // TODO: Make test for Reading something: only the event should probably be sent:
-        _connHdlr->handleConnection((ConnectionInfo*)events[0].data.ptr);
+        _connHdlr->handleConnection(events[0].data.fd);
     }
 }
 
-void Listener::stop() {
-    _isListening = false;
-    for (size_t i = 0; i < _portfds_infos.size(); i++)
-        delete _portfds_infos[i];
-}
+void Listener::stop() { _isListening = false; }
 
-void Listener::add(int portfd) {
-    ConnectionInfo* connInfo = new ConnectionInfo;
-    connInfo->fd = portfd;
-    connInfo->type = PORT_SOCKET;
-
-    _epollMngr->add(portfd, connInfo, READY_TO_READ);
-    _portfds_infos.push_back(connInfo);
+void Listener::add(int socketfd) {
+    _epollMngr->add(socketfd, READY_TO_READ);
+    _socketfds.push_back(socketfd);
 }
