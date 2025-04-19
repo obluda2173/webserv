@@ -9,6 +9,7 @@
 - https://www.rfc-editor.org/info/rfc9112
 - https://developer.mozilla.org/en-US/docs/Web/HTTP
 - https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/MIME_types
+- Cookies: https://datatracker.ietf.org/doc/html/rfc6265
 * tools
 - https://httpbin.org/
 - https://swagger.io/

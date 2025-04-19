@@ -46,13 +46,14 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
     void tearDownListener() {
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         _listener->stop();
-        _listenerThread.join();
-        delete _connHdlr;
-        delete _epollMngr;
-        delete _listener;
-        delete _logger;
+        if (_listenerThread.joinable())
+            _listenerThread.join();
         for (size_t i = 0; i < _portfds.size(); i++)
             ASSERT_NE(close(_portfds[i]), -1);
+        delete _listener;
+        delete _connHdlr;
+        delete _epollMngr;
+        delete _logger;
         ASSERT_EQ(_openFdsBegin, countOpenFileDescriptors());
     }
 };

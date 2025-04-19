@@ -18,8 +18,9 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr* theirAdd
 }
 
 void ConnectionHandler::_removeClientConnection(ConnectionInfo* connInfo) {
-    _epollMngr->del(connInfo->fd);
+    // check for connInfo=NULL
     logDisconnect(_logger, connInfo->addr);
+    _epollMngr->del(connInfo->fd);
     close(connInfo->fd);
     delete connInfo;
 }

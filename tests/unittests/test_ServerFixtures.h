@@ -10,46 +10,63 @@
 #include <Server.h>
 #include <thread>
 
-class ServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
+template <typename LoggerType> class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
-    ILogger* _logger;
+    int _openFdsBegin;
+    LoggerType* _logger;
     EPollManager* _epollMngr;
     IConnectionHandler* _connHdlr;
-    Server _svr;
+    Server* _svr;
     std::thread _svrThread;
-    int _openFdsBegin;
     std::vector<std::string> _ports;
 
-    ServerTest()
-        : _logger(new StubLogger()), _epollMngr(new EPollManager(_logger)),
-          _connHdlr(new ConnectionHandler(_logger, _epollMngr)), _svr(_logger, _connHdlr, _epollMngr),
-          _ports(GetParam()) {}
+  public:
+    BaseServerTest()
+        : _openFdsBegin(0), _logger(new LoggerType()), _epollMngr(new EPollManager(_logger)),
+          _connHdlr(new ConnectionHandler(_logger, _epollMngr)), _svr(nullptr), _ports(GetParam()) {}
 
-    void SetUp() override { setupServer(); }
+    virtual ~BaseServerTest() {
+        // Clean up in destructor
+        delete _svr;
+        delete _connHdlr;
+        delete _epollMngr;
+        delete _logger;
+    }
+
+    void SetUp() override {
+        _openFdsBegin = countOpenFileDescriptors();
+        _svr = new Server(_logger, _connHdlr, _epollMngr);
+        setupServer();
+    }
 
     void TearDown() override { teardownServer(); }
 
-    void setupServer() {
-        _openFdsBegin = countOpenFileDescriptors();
-        _svrThread = std::thread(&Server::start, &_svr, _ports);
+    void waitForServerStartup() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        EXPECT_TRUE(_svr->isRunning());
+    }
+
+    virtual void setupServer() {
+        _svrThread = std::thread(&Server::start, _svr, _ports);
         waitForServerStartup();
     }
 
-    void waitForServerStartup() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        EXPECT_TRUE(_svr.isRunning());
-    }
-
-    void teardownServer() {
-        _svr.stop();
-        EXPECT_FALSE(_svr.isRunning());
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    virtual void teardownServer() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        _svr->stop();
+        EXPECT_FALSE(_svr->isRunning());
+        if (_svrThread.joinable()) {
+            _svrThread.join();
+        }
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
-        _svrThread.join();
-        delete _logger;
-        delete _epollMngr;
-        delete _connHdlr;
     }
+};
+
+class ServerTestWoMockLogging : public BaseServerTest<StubLogger> {
+  public:
+    void setupServer() override { BaseServerTest::setupServer(); }
+
+    void teardownServer() override { BaseServerTest::teardownServer(); }
 };
 
 // defining a Test Fixture: ServerTest
