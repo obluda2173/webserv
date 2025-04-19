@@ -1,141 +1,49 @@
-#include "ConnectionHandler.h"
-#include "EPollManager.h"
-#include "Listener.h"
 #include "test_ListenerFixtures.h"
 #include "test_main.h"
-#include "test_mocks.h"
-#include "test_stubs.h"
 #include "utils.h"
 #include "gtest/gtest.h"
 #include <netdb.h>
 #include <netinet/in.h>
-#include <thread>
+#include <string>
 
 TEST_P(ListenerTestWithMockLogging, closingAConnection) {
     std::vector<int> ports = GetParam();
-    int port = ports[0];
-    std::string clientPort = "12345";
-    std::string clientIp = "127.0.0.3";
-    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
-
-    struct addrinfo* svrAddrInfo;
-    getSvrAddrInfo(NULL, std::to_string(port).c_str(), &svrAddrInfo);
-    EXPECT_CALL(*_mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
-    ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
-    freeaddrinfo(svrAddrInfo);
-
-    EXPECT_CALL(*_mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
-    close(clientfd);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-}
-
-INSTANTIATE_TEST_SUITE_P(multiplePorts, ListenerTestWithMockLogging, ::testing::Values(std::vector<int>{8080}));
-
-class ListenerTest : public ::testing::Test {};
-
-TEST_F(ListenerTest, closingAConnection) {
-    int openFdsBegin = countOpenFileDescriptors();
-    {
-        std::string svrPort = "8080";
-        int sfd1 = newListeningSocket1(NULL, svrPort.c_str());
-
+    for (size_t i = 0; i < ports.size(); i++) {
+        int port = ports[i];
         std::string clientPort = "12345";
         std::string clientIp = "127.0.0.3";
         int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
-
-        MockLogger* mLogger = new MockLogger;
-        EPollManager* epollMngr = new EPollManager(mLogger);
-        ConnectionHandler* connHdlr = new ConnectionHandler(mLogger, epollMngr);
-        Listener listener(mLogger, connHdlr, epollMngr);
-        listener.add(sfd1);
-
-        std::thread listenerThread;
-        listenerThread = std::thread(&Listener::listen, &listener);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-        EXPECT_CALL(*mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
-
         struct addrinfo* svrAddrInfo;
-        getSvrAddrInfo(NULL, svrPort.c_str(), &svrAddrInfo);
+        getSvrAddrInfo(NULL, std::to_string(port).c_str(), &svrAddrInfo);
+
+        EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
         ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0)
             << "connect: " << strerror(errno);
         freeaddrinfo(svrAddrInfo);
 
-        EXPECT_CALL(*mLogger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
+        EXPECT_CALL(*_logger, log("INFO", "Disconnect IP: " + clientIp + ", Port: " + clientPort));
         close(clientfd);
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        listener.stop();
-        listenerThread.join();
-        close(sfd1);
-        delete epollMngr;
-        delete connHdlr;
-        delete mLogger;
     }
-    EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
 
-TEST_F(ListenerTest, multiplePortsTestWithLogging) {
-    int openFdsBegin = countOpenFileDescriptors();
-    {
-        int sfd1 = newListeningSocket1(NULL, "8070");
-        int sfd2 = newListeningSocket1(NULL, "8071");
-
-        MockLogger* mLogger = new MockLogger;
-        EPollManager* epollMngr = new EPollManager(mLogger);
-        ConnectionHandler* connHdlr = new ConnectionHandler(mLogger, epollMngr);
-        Listener listener(mLogger, connHdlr, epollMngr);
-        listener.add(sfd1);
-        listener.add(sfd2);
-
-        std::thread listenerThread;
-        listenerThread = std::thread(&Listener::listen, &listener);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-        testMultipleConnectionsWithLogging(mLogger, "8070", 100);
-        testMultipleConnectionsWithLogging(mLogger, "8071", 100);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-        listener.stop();
-        listenerThread.join();
-        close(sfd1);
-        close(sfd2);
-        delete epollMngr;
-        delete connHdlr;
-        delete mLogger;
+TEST_P(ListenerTestWithMockLogging, multipleConnections) {
+    std::vector<int> ports = GetParam();
+    for (size_t i = 0; i < ports.size(); i++) {
+        int port = ports[i];
+        testMultipleConnectionsWithLogging(_logger, std::to_string(port), 100);
     }
-    EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
 
-TEST_F(ListenerTest, multiplePortsTestWoLogging) {
-    int openFdsBegin = countOpenFileDescriptors();
-    {
-        std::string clientPort1 = "8070";
-        std::string clientPort2 = "8071";
-        int sfd1 = newListeningSocket1(NULL, clientPort1.c_str());
-        int sfd2 = newListeningSocket1(NULL, clientPort2.c_str());
+INSTANTIATE_TEST_SUITE_P(multiplePorts, ListenerTestWithMockLogging,
+                         ::testing::Values(std::vector<int>{8080}, std::vector<int>{8080, 8081}));
 
-        ILogger* logger = new StubLogger();
-        EPollManager* epollMngr = new EPollManager(logger);
-        ConnectionHandler* connHdlr = new ConnectionHandler(logger, epollMngr);
-        Listener listener(logger, connHdlr, epollMngr);
-        listener.add(sfd1);
-        listener.add(sfd2);
-
-        std::thread listenerThread;
-        listenerThread = std::thread(&Listener::listen, &listener);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-        testMultipleConnections(clientPort1, 100);
-        testMultipleConnections(clientPort2, 100);
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        listener.stop();
-        close(sfd1);
-        close(sfd2);
-        listenerThread.join();
-        delete epollMngr;
-        delete connHdlr;
-        delete logger;
+TEST_P(ListenerTestWoMockLogging, multiplePortsTestWoLogging) {
+    std::vector<int> ports = GetParam();
+    for (size_t i = 0; i < ports.size(); i++) {
+        int port = ports[i];
+        testMultipleConnections(std::to_string(port), 100);
     }
-    EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
+
+INSTANTIATE_TEST_SUITE_P(multiplePorts, ListenerTestWoMockLogging,
+                         ::testing::Values(std::vector<int>{8080}, std::vector<int>{8080, 8081}));
