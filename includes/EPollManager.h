@@ -19,7 +19,7 @@ class EPollManager {
     ~EPollManager(void);
     void add(int socketfd, uint32_t listenEvent);
     void del(int socketfd);
-    int wait(struct epoll_event* events, int nEvents);
+    int wait(int* conn);
 };
 
 #endif // EPOLLMANAGER_H

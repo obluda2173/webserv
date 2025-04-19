@@ -1,5 +1,6 @@
 #include "EPollManager.h"
 #include <string.h>
+#include <sys/epoll.h>
 
 EPollManager::EPollManager(ILogger* logger) : _logger(logger) {
     _epfd = epoll_create(1);
@@ -25,4 +26,12 @@ void EPollManager::add(int socketfd, uint32_t listenEvent) {
 
 void EPollManager::del(int socketfd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, socketfd, NULL); }
 
-int EPollManager::wait(struct epoll_event* events, int nEvents) { return epoll_wait(_epfd, events, nEvents, 10); }
+int EPollManager::wait(int* fd) {
+    struct epoll_event events[1]; // TODO: make maxEvents configurable
+    int ready = epoll_wait(_epfd, events, 1, 10);
+    if (ready > 0)
+        *fd = events[0].data.fd;
+    else
+        *fd = -1;
+    return ready;
+}

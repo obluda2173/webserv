@@ -14,20 +14,16 @@ Listener::~Listener() {
 }
 
 void Listener::listen() {
-    struct epoll_event events[1];
-
     _isListening = true;
     while (_isListening) {
-        int ready = _epollMngr->wait(events, 1);
-        if (ready == 0) {
+        int fd;
+        int ready = _epollMngr->wait(&fd);
+        if (ready == 0)
             continue;
-        }
-        if (!_isListening) {
+        if (!_isListening)
             break;
-        }
 
-        // TODO: Make test for Reading something: only the event should probably be sent:
-        _connHdlr->handleConnection(events[0].data.fd);
+        _connHdlr->handleConnection(fd);
     }
 }
 
