@@ -31,6 +31,7 @@ class Listener : public IListener {
     Listener(ILogger*, IConnectionHandler*, EPollManager*);
     ~Listener();
     void listen();
+    void processEvents();
     void stop();
     void add(int socketfd);
 };

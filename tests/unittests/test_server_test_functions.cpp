@@ -42,7 +42,7 @@ void testOneConnection(std::string& clientPort, std::string& clientIp, struct ad
     close(clientfd);
 }
 
-void testMultipleConnections(std::string& svrPort, int nbrConns) {
+void testMultipleConnections(std::string svrPort, int nbrConns) {
     std::random_device rd;                               // Obtain a random number from hardware
     std::mt19937 gen(rd());                              // Seed the generator
     std::uniform_int_distribution<> distr1(9000, 20000); // Define the range

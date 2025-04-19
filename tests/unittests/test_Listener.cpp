@@ -1,12 +1,14 @@
 #include "ConnectionHandler.h"
 #include "EPollManager.h"
 #include "Listener.h"
-#include "test_ServerFixtures.h"
 #include "test_main.h"
+#include "test_mocks.h"
+#include "test_stubs.h"
 #include "utils.h"
 #include "gtest/gtest.h"
 #include <netdb.h>
 #include <netinet/in.h>
+#include <thread>
 
 class ListenerTest : public ::testing::Test {};
 
@@ -46,8 +48,8 @@ TEST_F(ListenerTest, closingAConnection) {
         listenerThread.join();
         close(sfd1);
         delete epollMngr;
-        delete mLogger;
         delete connHdlr;
+        delete mLogger;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
@@ -78,8 +80,8 @@ TEST_F(ListenerTest, multiplePortsTestWithLogging) {
         close(sfd1);
         close(sfd2);
         delete epollMngr;
-        delete mLogger;
         delete connHdlr;
+        delete mLogger;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }
@@ -111,8 +113,8 @@ TEST_F(ListenerTest, multiplePortsTestWoLogging) {
         close(sfd2);
         listenerThread.join();
         delete epollMngr;
-        delete logger;
         delete connHdlr;
+        delete logger;
     }
     EXPECT_EQ(countOpenFileDescriptors(), openFdsBegin);
 }

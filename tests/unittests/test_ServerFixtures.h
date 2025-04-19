@@ -55,17 +55,17 @@ class ServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
 // defining a Test Fixture: ServerTest
 class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
+    int _openFdsBegin;
     MockLogger* _mLogger;
     EPollManager* _epollMngr;
     IConnectionHandler* _connHdlr;
     Server _svr;
     std::thread _svrThread;
-    int _openFdsBegin;
     std::vector<std::string> _ports;
 
     ServerWithMockLoggerParametrizedPortTest()
 
-        : _mLogger(new MockLogger()), _epollMngr(new EPollManager(_mLogger)),
+        : _openFdsBegin(countOpenFileDescriptors()), _mLogger(new MockLogger()), _epollMngr(new EPollManager(_mLogger)),
           _connHdlr(new ConnectionHandler(_mLogger, _epollMngr)), _svr(_mLogger, _connHdlr, _epollMngr),
           _ports(GetParam()) {}
 
@@ -74,7 +74,6 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
     void TearDown() override { teardownServer(); }
 
     void setupServer() {
-        _openFdsBegin = countOpenFileDescriptors();
         EXPECT_CALL(*_mLogger, log("INFO", "Server is starting..."));
         EXPECT_CALL(*_mLogger, log("INFO", "Server started"));
 
@@ -94,11 +93,12 @@ class ServerWithMockLoggerParametrizedPortTest : public ::testing::TestWithParam
         _svr.stop();
         EXPECT_FALSE(_svr.isRunning());
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
         _svrThread.join();
-        delete _mLogger;
         delete _epollMngr;
         delete _connHdlr;
+        delete _mLogger;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
     }
 };
 
