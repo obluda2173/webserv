@@ -61,7 +61,7 @@ void HttpParser::_parseHeader(const std::string& line) {
     std::string key = toLower(line.substr(0, sep));
     std::string value = line.substr(sep + 1);
     value.erase(0, value.find_first_not_of(" \t"));
-    if (key.empty() || key.size() > _maxHeaderKeySize || _currentRequest.headers.count(key) > 0) {
+    if (key.empty() || key.size() > _maxHeaderKeySize || _currentRequest.headers.count(key) > 0) {//the _currentRequest.headers.count(key) > 0 check is to prevent duplicate headers, but we use map so this might have some issues
         _state = STATE_ERROR;
         return;
     }
@@ -106,25 +106,66 @@ void HttpParser::_parseBuffer() {
     }
 }
 
-bool HttpParser::_requestLineValidation(const std::string& method, const std::string& uri, const std::string& version) {
-    (void)method;
-    (void)uri;
-    (void)version;
-    /*
-     * check for valid HTTP method (e.g. DELETE, POST, GET, etc)
-     * research of wether parser should constuct absolute URI from headers
-     * research about the formats of the URI and apply
-     * check wether version follows this format: HTTP-name "/" DIGIT "." DIGIT
-     */
-    return true;
+bool	checkValidMethod(const std::string& method) {
+	return method == "GET" || method == "POST" || method == "PUT" || method == "DELETE" ||
+			method == "HEAD" || method == "OPTIONS" || method == "PATCH";
+}
+
+bool	checkValidVersion(const std::string& version) {
+	double ver = 0;
+	if (version.empty()) {
+		return false;
+	}
+	if (version.find("HTTP/") != 0) {
+		return false;
+	}
+	std::string verStr = version.substr(5);
+	if (verStr.find('.') == std::string::npos) {
+		return false;
+	}
+	std::istringstream iss(verStr);
+	iss >> ver;
+	if (iss.fail() || !iss.eof()) {
+		return false;
+	}
+	if (ver < 0 || ver > 2) {
+		return false;
+	}
+	return true;
+}
+
+bool	checkValidURI(const std::string& uri) {
+	return uri.find("http://") == 0 || uri.find("https://") == 0 || 
+			uri.find("ftp://") == 0 || uri.find("file://") == 0;
+}
+
+bool	HttpParser::_requestLineValidation(const std::string& method, const std::string& uri, const std::string& version) {
+	if (!checkValidMethod(method)) {
+		return false;
+	}
+	if (!checkValidURI(uri)) {
+		return false;
+	}
+	if (!checkValidVersion(version)) {
+		return false;
+	}
+	return true;
 }
 
 bool HttpParser::_headerLineValidation(const std::string& key, const std::string& value) {
-    (void)key;
-    (void)value;
-    /*
-     * see my "http and its parsing" notes in obsidian, it has some valuable information about the headers structure
-     */
+	if (key.empty() || value.empty()) {
+		return false;
+	}
+	if (key.find(' ') != std::string::npos && key.find('\t') != std::string::npos && key.find('\r') != std::string::npos && key.find('\n') != std::string::npos) {
+		return false;
+	}
+	for (size_t i = 0; i < value.size(); i++)
+	{
+		if ((value[i] == ' ' || value[i] == '\t') && (value[i - 1] != ',' || value[i - 1] != ';')) {
+			return false;
+		}
+	}
+	
     return true;
 }
 
