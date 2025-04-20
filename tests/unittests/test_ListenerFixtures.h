@@ -25,7 +25,7 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
   public:
     BaseListenerTest()
         : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType), _epollMngr(new EPollManager(_logger)),
-          _connHdlr(new ConnectionHandler(_logger, *_epollMngr)),
+          _connHdlr(new ConnectionHandler(*_logger, *_epollMngr)),
           _listener(new Listener(_logger, _connHdlr, _epollMngr)), _ports(GetParam()) {}
 
     void SetUp() override { setupListener(); }

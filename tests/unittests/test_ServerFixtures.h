@@ -24,7 +24,7 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
   public:
     BaseServerTest()
         : _openFdsBegin(0), _logger(new LoggerType()), _epollMngr(new EPollManager(_logger)),
-          _connHdlr(new ConnectionHandler(_logger, *_epollMngr)), _svr(nullptr), _ports(GetParam()) {}
+          _connHdlr(new ConnectionHandler(*_logger, *_epollMngr)), _svr(nullptr), _ports(GetParam()) {}
 
     virtual ~BaseServerTest() { delete _svr; }
 
