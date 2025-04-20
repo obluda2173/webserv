@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 
-Listener::Listener(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
+Listener::Listener(ILogger& logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
     : _logger(logger), _connHdlr(connHdlr), _epollMngr(epollMngr) {}
 
 Listener::~Listener() {

@@ -20,14 +20,14 @@
 
 class Listener : public IListener {
   private:
-    ILogger* _logger;
+    ILogger& _logger;
     IConnectionHandler* _connHdlr;
     EPollManager* _epollMngr;
     std::vector<int> _socketfds;
     bool _isListening;
 
   public:
-    Listener(ILogger*, IConnectionHandler*, EPollManager*);
+    Listener(ILogger&, IConnectionHandler*, EPollManager*);
     ~Listener();
     void listen();
     void processEvents();
