@@ -2,22 +2,23 @@
 #define EPOLLMANAGER_H
 
 #include <ILogger.h>
-#include <cstdint>
 #include <sys/epoll.h>
 #include <unistd.h>
 
-#define CLIENT_HUNG_UP EPOLLRDHUP
-#define READY_TO_READ EPOLLIN
+#include <IIONotifier.h>
 
-class EPollManager {
+// #define CLIENT_HUNG_UP EPOLLRDHUP
+// #define READY_TO_READ EPOLLIN
+
+class EpollIONotifier : public IIONotifier {
   private:
     ILogger* _logger;
     int _epfd;
 
   public:
-    EPollManager(ILogger* logger);
-    ~EPollManager(void);
-    void add(int socketfd, uint32_t listenEvent);
+    EpollIONotifier(ILogger* logger);
+    ~EpollIONotifier(void);
+    void add(int socketfd, e_notif notif);
     void del(int socketfd);
     int wait(int* conn);
 };

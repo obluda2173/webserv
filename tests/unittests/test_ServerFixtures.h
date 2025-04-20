@@ -2,7 +2,7 @@
 #define TEST_SERVERFIXTURES_H
 
 #include "ConnectionHandler.h"
-#include "EPollManager.h"
+#include "EpollIONotifier.h"
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
@@ -15,7 +15,7 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
-    EPollManager* _epollMngr;
+    EpollIONotifier* _ioNotif;
     IConnectionHandler* _connHdlr;
     Server* _svr;
     std::thread _svrThread;
@@ -23,14 +23,14 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
 
   public:
     BaseServerTest()
-        : _openFdsBegin(0), _logger(new LoggerType()), _epollMngr(new EPollManager(_logger)),
-          _connHdlr(new ConnectionHandler(*_logger, *_epollMngr)), _svr(nullptr), _ports(GetParam()) {}
+        : _openFdsBegin(0), _logger(new LoggerType()), _ioNotif(new EpollIONotifier(_logger)),
+          _connHdlr(new ConnectionHandler(*_logger, *_ioNotif)), _svr(nullptr), _ports(GetParam()) {}
 
     virtual ~BaseServerTest() { delete _svr; }
 
     void SetUp() override {
         _openFdsBegin = countOpenFileDescriptors();
-        _svr = new Server(_logger, _connHdlr, _epollMngr);
+        _svr = new Server(_logger, _connHdlr, _ioNotif);
         setupServer();
     }
 

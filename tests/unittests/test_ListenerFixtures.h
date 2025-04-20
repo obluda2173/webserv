@@ -2,7 +2,7 @@
 #define TEST_LISTENERFIXTURES_H
 
 #include "ConnectionHandler.h"
-#include "EPollManager.h"
+#include "EpollIONotifier.h"
 #include "IConnectionHandler.h"
 #include "Listener.h"
 #include "test_main.h"
@@ -16,7 +16,7 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
-    EPollManager* _epollMngr;
+    EpollIONotifier* _ioNotif;
     IConnectionHandler* _connHdlr;
     Listener* _listener;
     std::thread _listenerThread;
@@ -24,9 +24,9 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
 
   public:
     BaseListenerTest()
-        : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType), _epollMngr(new EPollManager(_logger)),
-          _connHdlr(new ConnectionHandler(*_logger, *_epollMngr)),
-          _listener(new Listener(*_logger, _connHdlr, _epollMngr)), _ports(GetParam()) {}
+        : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType), _ioNotif(new EpollIONotifier(_logger)),
+          _connHdlr(new ConnectionHandler(*_logger, *_ioNotif)), _listener(new Listener(*_logger, _connHdlr, _ioNotif)),
+          _ports(GetParam()) {}
 
     void SetUp() override { setupListener(); }
 

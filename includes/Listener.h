@@ -1,8 +1,8 @@
 #ifndef LISTENER_H
 #define LISTENER_H
 
-#include "EPollManager.h"
 #include "IConnectionHandler.h"
+#include "IIONotifier.h"
 #include "IListener.h"
 #include "ILogger.h"
 #include <arpa/inet.h>
@@ -22,12 +22,12 @@ class Listener : public IListener {
   private:
     ILogger& _logger;
     IConnectionHandler* _connHdlr;
-    EPollManager* _epollMngr;
+    IIONotifier* _ioNotif;
     std::vector<int> _socketfds;
     bool _isListening;
 
   public:
-    Listener(ILogger&, IConnectionHandler*, EPollManager*);
+    Listener(ILogger&, IConnectionHandler*, IIONotifier*);
     ~Listener();
     void listen();
     void processEvents();

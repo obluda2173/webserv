@@ -1,12 +1,13 @@
 #include "Server.h"
+#include "IIONotifier.h"
 #include "ILogger.h"
 #include "Listener.h"
 #include "utils.h"
 #include <cstddef>
 #include <errno.h>
 
-Server::Server(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
-    : _logger(logger), _listener(new Listener(*logger, connHdlr, epollMngr)) {}
+Server::Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotif)
+    : _logger(logger), _listener(new Listener(*logger, connHdlr, _ioNotif)) {}
 
 Server::~Server() {
     delete _logger;

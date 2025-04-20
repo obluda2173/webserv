@@ -1,8 +1,9 @@
-#include "EPollManager.h"
+#include "EpollIONotifier.h"
+#include "IIONotifier.h"
 #include <string.h>
 #include <sys/epoll.h>
 
-EPollManager::EPollManager(ILogger* logger) : _logger(logger) {
+EpollIONotifier::EpollIONotifier(ILogger* logger) : _logger(logger) {
     _epfd = epoll_create(1);
     if (_epfd == -1) {
         _logger->log("ERROR", "epoll_create: " + std::string(strerror(errno)));
@@ -10,23 +11,26 @@ EPollManager::EPollManager(ILogger* logger) : _logger(logger) {
     }
 }
 
-EPollManager::~EPollManager(void) {
+EpollIONotifier::~EpollIONotifier(void) {
     if (close(_epfd) == -1) {
         _logger->log("ERROR", "close: " + std::string(strerror(errno)));
         exit(1);
     }
 }
 
-void EPollManager::add(int socketfd, uint32_t listenEvent) {
+void EpollIONotifier::add(int socketfd, e_notif notif) {
     struct epoll_event event;
-    event.events = listenEvent; // Monitor for read events
+    if (notif == CLIENT_HUNG_UP)
+        event.events = EPOLLRDHUP;
+    if (notif == READY_TO_READ)
+        event.events = EPOLLIN;
     event.data.fd = socketfd;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, socketfd, &event);
 }
 
-void EPollManager::del(int socketfd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, socketfd, NULL); }
+void EpollIONotifier::del(int socketfd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, socketfd, NULL); }
 
-int EPollManager::wait(int* fd) {
+int EpollIONotifier::wait(int* fd) {
     struct epoll_event events[1]; // TODO: make maxEvents configurable
     int ready = epoll_wait(_epfd, events, 1, 10);
     if (ready > 0)

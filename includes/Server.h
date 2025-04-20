@@ -1,5 +1,5 @@
-#include "EPollManager.h"
 #include "IConnectionHandler.h"
+#include "IIONotifier.h"
 #include "IListener.h"
 #include "ILogger.h"
 #include <cstring>
@@ -22,7 +22,7 @@ class Server {
     void _listenEPoll(void);
 
   public:
-    explicit Server(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* _epollMngr);
+    explicit Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotif);
     ~Server();
     bool isRunning() const;
     void start(std::vector<std::string> ports);

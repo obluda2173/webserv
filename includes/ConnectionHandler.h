@@ -1,8 +1,9 @@
 #ifndef CONNECTIONHANDLER_H
 #define CONNECTIONHANDLER_H
 
-#include "EPollManager.h"
 #include "IConnectionHandler.h"
+#include "IIONotifier.h"
+#include "ILogger.h"
 #include <map>
 
 typedef enum SocketType {
@@ -20,13 +21,13 @@ class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, ConnectionInfo> _connections;
     ILogger& _logger;
-    EPollManager& _epollMngr;
+    IIONotifier& _ioNotif;
     void _addClientConnection(int conn, struct sockaddr* theirAddr);
     void _removeClientConnection(ConnectionInfo connInfo);
     void _acceptNewConnection(int socketfd);
 
   public:
-    ConnectionHandler(ILogger&, EPollManager&);
+    ConnectionHandler(ILogger&, IIONotifier&);
     ~ConnectionHandler(void);
     void handleConnection(int conn);
 };
