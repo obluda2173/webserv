@@ -148,17 +148,49 @@ bool	HttpParser::_requestLineValidation(const std::string& method, const std::st
 }
 
 bool	checkCharsetBoundary(const std::string& str) {
-	size_t pos = str.find("charset=");
+	size_t pos = str.find("charset");
 	if (pos != std::string::npos) {
-		if (str.find("boundary=") != std::string::npos) {
-			return false;
+		std::string charset = str.substr(pos + 7);
+		size_t equal = charset.find('=');
+		if (equal != std::string::npos) {
+			charset = charset.substr(equal + 1);
+			while (charset[0] == ' ') {
+				charset.erase(0, 1);
+			}
+			if (charset.empty()) {
+				return false;
+			}
+			for (size_t i = 0; i < charset.size(); i++) {
+				if (!isalnum(charset[i]) && charset[i] != '-' && charset[i] != '_' && charset[i] != '.') {
+					return false;
+				}
+			}
 		}
 	}
-	pos = str.find("boundary=");
+	else {
+		return false;
+	}
+	pos = str.find("boundary");
 	if (pos != std::string::npos) {
-		if (str.find("charset=") != std::string::npos) {
-			return false;
+		std::string boundary = str.substr(pos + 9);
+		size_t equal = boundary.find('=');
+		if (equal != std::string::npos) {
+			boundary = boundary.substr(equal + 1);
+			while (boundary[0] == ' ') {
+				boundary.erase(0, 1);
+			}
+			if (boundary.empty()) {
+				return false;
+			}
+			for (size_t i = 0; i < boundary.size(); i++) {
+				if (!isalnum(boundary[i]) && boundary[i] != '-' && boundary[i] != '_' && boundary[i] != '.') {
+					return false;
+				}
+			}
 		}
+	}
+	else {
+		return false;
 	}
 	return true;
 }
@@ -369,6 +401,9 @@ bool	isValidRange(const std::string& str) {
 				return false;
 			}
 		}
+		if (checkQValue(token2) == false) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -439,13 +474,21 @@ bool HttpParser::_headerLineValidation(const std::string& key, const std::string
 	if (key.find(' ') != std::string::npos && key.find('\t') != std::string::npos && key.find('\r') != std::string::npos && key.find('\n') != std::string::npos) {
 		return false;
 	}
-	for (size_t i = 0; i < value.size(); i++)
-	{
-		if ((value[i] == ' ' || value[i] == '\t') && (value[i - 1] != ',' || value[i - 1] != ';')) {
+	for (size_t i = 1; i < value.size(); i++) {
+		if ((value[i] == ' ' || value[i] == '\t') && (value[i - 1] != ',' && value[i - 1] != ';')) {
 			return false;
 		}
 	}
-
+	if (key == "content-length") {
+		if (_currentRequest.headers.count("transfer-encoding") > 0) {
+			return false;
+		}
+	}
+	if (key == "transfer-encoding") {
+		if (_currentRequest.headers.count("content-length") > 0) {
+			return false;
+		}
+	}
 	if (specificHeaderValidation(key, value) == false) {
 		return false;
 	}

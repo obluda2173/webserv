@@ -167,8 +167,8 @@ INSTANTIATE_TEST_SUITE_P(
         // 7 Header with No Value
         TestHttpParserParams{
             10,
-            1,
             0,
+            1,
             {
                 "GET", "/", "HTTP/1.1", 
                 {{"host", ""}}, 
@@ -322,6 +322,284 @@ INSTANTIATE_TEST_SUITE_P(
             },
             "GET / HTTP/1.1\r\n"
             "X-Very-Long-Header-Name-That-Goes-On-And-On: value\r\n"
+            "\r\n"
+        },
+
+        // 19 Header Host with Port
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost:8080"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost:8080\r\n"
+            "\r\n"
+        },
+        // 20 Header with Content-length and Transfer-Encoding
+        TestHttpParserParams{
+            5,
+            0,
+            1,
+            {},
+            "POST /upload HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Content-Length: 5\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+        },
+        // 21 Header with Content-length only
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "POST", "/upload", "HTTP/1.1",
+                {{"host", "localhost"}, {"content-length", "5"}},
+            },
+            "POST /upload HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Content-Length: 5\r\n"
+            "\r\n"
+        },
+        // 22 Header with Transfer-Encoding only
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "POST", "/upload", "HTTP/1.1",
+                {{"host", "localhost"}, {"transfer-encoding", "chunked"}},
+            },
+            "POST /upload HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+        },
+        // 23 Header with Connection: keep-alive
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"connection", "keep-alive"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Connection: keep-alive\r\n"
+            "\r\n"
+        },
+        // 24 Header with Connection: close
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"connection", "close"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+        },
+        // 25 Header with Content-Type
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "POST", "/upload", "HTTP/1.1",
+                {{"host", "localhost"}, {"content-type", "application/json"}},
+            },
+            "POST /upload HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Content-Type: application/json\r\n"
+            "\r\n"
+        },
+        // 26 Header with Accept
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept", "application/json"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept: application/json\r\n"
+            "\r\n"
+        },
+        // 27 Header with multiple Accept values
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept", "application/json, text/html"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept: application/json, text/html\r\n"
+            "\r\n"
+        },
+        // 28 Header with Accept-Encoding
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept-encoding", "gzip, deflate"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept-Encoding: gzip, deflate\r\n"
+            "\r\n"
+        },
+        // 29 Header with multiple Accept-Encoding values
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept-encoding", "gzip, deflate, br"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept-Encoding: gzip, deflate, br\r\n"
+            "\r\n"
+        },
+        // 30 Header with multiple Accept-Encoding values and qualifiers
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept-encoding", "gzip;q=0.8, deflate;q=0.5"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept-Encoding: gzip;q=0.8, deflate;q=0.5\r\n"
+            "\r\n"
+        },
+        // 31 Header with Accept-Language
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept-language", "en-US, en;q=0.5"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept-Language: en-US, en;q=0.5\r\n"
+            "\r\n"
+        },
+        // 32 Header with multiple Accept-Language values
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept-language", "en-US, fr;q=0.8"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept-Language: en-US, fr;q=0.8\r\n"
+            "\r\n"
+        },
+        // 33 Header with multiple Accept-Language values and qualifiers
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"accept-language", "en-US;q=0.8, fr;q=0.5"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Accept-Language: en-US;q=0.8, fr;q=0.5\r\n"
+            "\r\n"
+        },
+        // 34 Header with Cookie
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"cookie", "sessionId=123; userId=456"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Cookie: sessionId=123; userId=456\r\n"
+            "\r\n"
+        },
+        // 35 Header with multiple Cookie values
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/", "HTTP/1.1",
+                {{"host", "localhost"}, {"cookie", "sessionId=123; userId=456; theme=dark"}},
+            },
+            "GET / HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Cookie: sessionId=123; userId=456; theme=dark\r\n"
+            "\r\n"
+        },
+        // 36 Header with Range
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/file.txt", "HTTP/1.1",
+                {{"host", "localhost"}, {"range", "bytes=0-499"}},
+            },
+            "GET /file.txt HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Range: bytes=0-499\r\n"
+            "\r\n"
+        },
+        // 37 Header with multiple Range values
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/file.txt", "HTTP/1.1",
+                {{"host", "localhost"}, {"range", "bytes=0-499, 500-999"}},
+            },
+            "GET /file.txt HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Range: bytes=0-499, 500-999\r\n"
+            "\r\n"
+        },
+        // 38 Header with multiple Range values and qualifiers
+        TestHttpParserParams{
+            5,
+            1,
+            0,
+            {
+                "GET", "/file.txt", "HTTP/1.1",
+                {{"host", "localhost"}, {"range", "bytes=0-499;q=0.8, 500-999;q=0.5"}},
+            },
+            "GET /file.txt HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Range: bytes=0-499;q=0.8, 500-999;q=0.5\r\n"
             "\r\n"
         }
     )
