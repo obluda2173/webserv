@@ -6,10 +6,9 @@
 #include <errno.h>
 
 Server::Server(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
-    : _logger(logger), _listener(new Listener(logger, connHdlr, epollMngr)), _epollMngr(epollMngr) {}
+    : _logger(logger), _listener(new Listener(logger, connHdlr, epollMngr)) {}
 
 Server::~Server() {
-    delete _epollMngr;
     delete _logger;
     delete _listener;
 }

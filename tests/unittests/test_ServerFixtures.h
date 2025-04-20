@@ -26,13 +26,7 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
         : _openFdsBegin(0), _logger(new LoggerType()), _epollMngr(new EPollManager(_logger)),
           _connHdlr(new ConnectionHandler(_logger, _epollMngr)), _svr(nullptr), _ports(GetParam()) {}
 
-    virtual ~BaseServerTest() {
-        // Clean up in destructor
-        // delete _connHdlr;
-        // delete _epollMngr;
-        // delete _logger;
-        delete _svr;
-    }
+    virtual ~BaseServerTest() { delete _svr; }
 
     void SetUp() override {
         _openFdsBegin = countOpenFileDescriptors();
