@@ -16,7 +16,6 @@ class Server {
   private:
     ILogger* _logger;
     IListener* _listener;
-    IConnectionHandler* _connHdlr;
     EPollManager* _epollMngr;
     bool _isRunning;
     std::vector<int> _portfds;

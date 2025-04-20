@@ -8,7 +8,11 @@
 Server::Server(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* epollMngr)
     : _logger(logger), _listener(new Listener(logger, connHdlr, epollMngr)), _epollMngr(epollMngr) {}
 
-Server::~Server() { delete _listener; }
+Server::~Server() {
+    delete _epollMngr;
+    delete _logger;
+    delete _listener;
+}
 
 bool Server::isRunning() const { return _isRunning; }
 

@@ -28,10 +28,10 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
 
     virtual ~BaseServerTest() {
         // Clean up in destructor
+        // delete _connHdlr;
+        // delete _epollMngr;
+        // delete _logger;
         delete _svr;
-        delete _connHdlr;
-        delete _epollMngr;
-        delete _logger;
     }
 
     void SetUp() override {

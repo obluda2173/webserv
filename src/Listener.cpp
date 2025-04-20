@@ -11,6 +11,7 @@ Listener::Listener(ILogger* logger, IConnectionHandler* connHdlr, EPollManager* 
 Listener::~Listener() {
     for (size_t i = 0; i < _socketfds.size(); i++)
         close(_socketfds[i]);
+    delete _connHdlr;
 }
 
 void Listener::listen() {
