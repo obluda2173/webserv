@@ -3,3 +3,10 @@ title: Readme
 ---
 
 # <span class="todo TODO">TODO</span> 
+
+- [ ] Make <sub>ioNotifier</sub> not only notify for one but
+  configurable amount of events
+  ([Listener.cpp](src/Listener.cpp::int fd; // TODO: take not only one connection but #ready connections))
+- [ ] write a test for configuration and accepting multiple events
+  ([epollNotifier
+  test](tests/unittests/test_EpollIONotifier.cpp::// TODO: write a test for configuration and accepting multiple events))

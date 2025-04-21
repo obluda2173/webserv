@@ -12,8 +12,6 @@ INSTANTIATE_TEST_SUITE_P(ServerTests, ServerWithMockLoggerParametrizedPortTest,
                          ::testing::Values(std::vector<std::string>{"8080"}, std::vector<std::string>{"8080", "8081"},
                                            std::vector<std::string>{"8080", "8081", "8082"}));
 
-// // // TODO: make proper integration tests with either golang or python
-// // // No parallel stuff in CPP
 TEST_P(ServerTestWoMockLogging, connectionTest) {
     std::vector<std::string> listeningPorts = GetParam();
     for (size_t i = 0; i < listeningPorts.size(); i++)

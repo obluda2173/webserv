@@ -1,30 +1,32 @@
-// #include "EPollManager.h"
-// #include "IConnectionHandler.h"
 // #include "ILogger.h"
 // #include "Logger.h"
-// #include "utils.h"
 // #include <gtest/gtest.h>
 
-// TEST(ConnectionHandlerTest, firstTest) {
-//     ILogger* logger = new Logger();
-//     EPollManager* epollMngr = new EPollManager(logger);
+#include "ConnectionHandler.h"
+#include "EpollIONotifier.h"
+#include "test_mocks.h"
+#include "utils.h"
+TEST(ConnectionHandlerTest, firstTest) {
+    ILogger* logger = new MockLogger();
+    EpollIONotifier* epollMngr = new EpollIONotifier(*logger);
 
-//     int serverfd = newListeningSocket1(NULL, "8080");
-//     ConnectionInfo connInfo;
-//     connInfo.fd = serverfd;
-//     connInfo.type = PORT_SOCKET;
-//     // // TODO: need to add the address and port
-//     epollMngr->add(serverfd, READY_TO_READ);
+    int serverfd = newListeningSocket(NULL, "8080");
+    epollMngr->add(serverfd, READY_TO_READ);
 
-//     // IConnectionHandler* connHdlr = new ConnectionHandler(logger, epollMngr);
+    ConnectionInfo connInfo;
+    connInfo.fd = serverfd;
+    connInfo.type = PORT_SOCKET;
 
-//     int clientfd = newSocket("127.0.0.2", "8081");
+    // // TODO: need to add the address and port
+    // IConnectionHandler* connHdlr = new ConnectionHandler(logger, epollMngr);
 
-//     (void)clientfd;
-//     // // connHdlr.handleConnection
+    int clientfd = newSocket("127.0.0.2", "8081");
 
-//     close(clientfd);
-//     close(serverfd);
-//     delete epollMngr;
-//     delete logger;
-// }
+    (void)clientfd;
+    // // connHdlr.handleConnection
+
+    close(clientfd);
+    close(serverfd);
+    delete epollMngr;
+    delete logger;
+}

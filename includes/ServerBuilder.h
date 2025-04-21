@@ -12,19 +12,10 @@ class ServerBuilder {
     IIONotifier* _ioNotifer;
 
   public:
-    Server* build(void) { return new Server(_logger, _connHdlr, _ioNotifer); }
-    ServerBuilder& setLogger(ILogger* logger) {
-        _logger = logger;
-        return *this;
-    }
-    ServerBuilder& setIONotifier(IIONotifier* ioNotifier) {
-        _ioNotifer = ioNotifier;
-        return *this;
-    }
-    ServerBuilder& setConnHdlr(IConnectionHandler* connHdlr) {
-        _connHdlr = connHdlr;
-        return *this;
-    }
+    Server* build(void);
+    ServerBuilder& setLogger(ILogger* logger);
+    ServerBuilder& setIONotifier(IIONotifier* ioNotifier);
+    ServerBuilder& setConnHdlr(IConnectionHandler* connHdlr);
 };
 
 #endif // SERVERBUILDER_H

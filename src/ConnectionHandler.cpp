@@ -1,8 +1,10 @@
 #include "ConnectionHandler.h"
 #include "logging.h"
+#include <errno.h>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string.h>
+#include <unistd.h>
 
 ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
 

@@ -1,13 +1,16 @@
-// #include "ServerBuilder.h"
+#include "ConnectionHandler.h"
+#include "EpollIONotifier.h"
+#include "Logger.h"
+#include "ServerBuilder.h"
 
 int main() {
-    // ServerBuilder svrBuilder;
-    // Logger logger;
-    // Server svr(&logger);
-
-    // std::thread serverThread = std::thread(&Server::start, &svr);
-    // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    // svr.stop();
-    // serverThread.join();
+    Logger* logger = new Logger();
+    EpollIONotifier* ioNotifier = new EpollIONotifier(*logger);
+    ConnectionHandler* connHdlr = new ConnectionHandler(*logger, *ioNotifier);
+    Server* svr = ServerBuilder().setLogger(logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
+    std::vector<std::string> ports;
+    ports.push_back("8080");
+    ports.push_back("8081");
+    svr->start(ports);
     return 0;
 }

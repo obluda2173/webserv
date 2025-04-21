@@ -1,7 +1,10 @@
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
+#include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 
 EpollIONotifier::EpollIONotifier(ILogger& logger) : _logger(logger) {
     _epfd = epoll_create(1);

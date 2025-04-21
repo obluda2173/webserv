@@ -19,7 +19,14 @@ SRC_DIR := src
 BUILD_DIR := build
 RUN_DIR := run
 INCLUDES := -Iincludes
-SRC_FILES := $(SRC_DIR)/Server.cpp $(SRC_DIR)/Logger.cpp $(SRC_DIR)/logging.cpp $(SRC_DIR)/utils.cpp $(SRC_DIR)/EPollManager.cpp
+SRC_FILES :=	$(SRC_DIR)/Server.cpp \
+				$(SRC_DIR)/ServerBuilder.cpp \
+				$(SRC_DIR)/Logger.cpp \
+				$(SRC_DIR)/logging.cpp \
+				$(SRC_DIR)/Listener.cpp \
+				$(SRC_DIR)/EPollManager.cpp \
+				$(SRC_DIR)/ConnectionHandler.cpp \
+				$(SRC_DIR)/utils.cpp \
 
 NAME := webserv
 
