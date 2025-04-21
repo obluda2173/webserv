@@ -20,7 +20,7 @@ class Server {
     std::vector<int> _portfds;
 
   public:
-    explicit Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotif);
+    explicit Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotifier);
     ~Server();
     bool isRunning() const;
     void start(std::vector<std::string> ports);

@@ -5,8 +5,8 @@
 #include "utils.h"
 #include <cstddef>
 
-Server::Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotif)
-    : _logger(logger), _listener(new Listener(*logger, connHdlr, _ioNotif)) {}
+Server::Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotifier)
+    : _logger(logger), _listener(new Listener(*logger, connHdlr, _ioNotifier)) {}
 
 Server::~Server() {
     delete _logger;

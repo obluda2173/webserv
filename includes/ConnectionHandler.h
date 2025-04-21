@@ -21,7 +21,7 @@ class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, ConnectionInfo> _connections;
     ILogger& _logger;
-    IIONotifier& _ioNotif;
+    IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr* theirAddr);
     void _removeClientConnection(ConnectionInfo connInfo);
     void _acceptNewConnection(int socketfd);

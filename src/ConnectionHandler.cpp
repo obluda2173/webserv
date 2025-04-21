@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string.h>
 
-ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotif(ep) {}
+ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
     for (std::map<int, ConnectionInfo>::iterator it = _connections.begin(); it != _connections.end(); it++) {
@@ -20,12 +20,12 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr* theirAdd
     connInfo.type = CLIENT_SOCKET;
     connInfo.fd = conn;
     _connections[conn] = connInfo;
-    _ioNotif.add(conn, CLIENT_HUNG_UP);
+    _ioNotifier.add(conn, CLIENT_HUNG_UP);
 }
 
 void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
     close(connInfo.fd);
-    _ioNotif.del(connInfo.fd);
+    _ioNotifier.del(connInfo.fd);
     _connections.erase(connInfo.fd);
     logDisconnect(_logger, connInfo.addr);
 }

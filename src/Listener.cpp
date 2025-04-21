@@ -6,18 +6,18 @@
 #include <sys/epoll.h>
 
 Listener::Listener(ILogger& logger, IConnectionHandler* connHdlr, IIONotifier* epollMngr)
-    : _logger(logger), _connHdlr(connHdlr), _ioNotif(epollMngr) {}
+    : _logger(logger), _connHdlr(connHdlr), _ioNotifier(epollMngr) {}
 
 Listener::~Listener() {
     delete _connHdlr;
-    delete _ioNotif;
+    delete _ioNotifier;
 }
 
 void Listener::listen() {
     _isListening = true;
     while (_isListening) {
         int fd; // TODO: take not only one connection but #ready connections
-        int ready = _ioNotif->wait(&fd);
+        int ready = _ioNotifier->wait(&fd);
         if (ready == 0)
             continue;
         if (!_isListening)
@@ -34,6 +34,6 @@ void Listener::stop() {
 }
 
 void Listener::add(int socketfd) {
-    _ioNotif->add(socketfd, READY_TO_READ);
+    _ioNotifier->add(socketfd, READY_TO_READ);
     _socketfds.push_back(socketfd);
 }

@@ -22,7 +22,7 @@ class Listener : public IListener {
   private:
     ILogger& _logger;
     IConnectionHandler* _connHdlr;
-    IIONotifier* _ioNotif;
+    IIONotifier* _ioNotifier;
     std::vector<int> _socketfds;
     bool _isListening;
 
