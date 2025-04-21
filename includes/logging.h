@@ -2,8 +2,9 @@
 #define LOGGING_H
 
 #include "ILogger.h"
+#include <netinet/in.h>
 
-void logConnection(ILogger& l, struct sockaddr_in addr);
-void logDisconnect(ILogger& logger, sockaddr_in addr);
+void logConnection(ILogger& l, sockaddr_storage addr);
+void logDisconnect(ILogger& logger, sockaddr_storage addr);
 
 #endif // LOGGING_H

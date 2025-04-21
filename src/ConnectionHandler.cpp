@@ -15,25 +15,11 @@ ConnectionHandler::~ConnectionHandler(void) {
     }
 }
 
-void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage* theirAddr) {
-
-    // char ipstr[INET6_ADDRSTRLEN]; /* to store the ip-address */
-    // struct addrinfo* addrInfo;
-    // getSvrAddrInfo(clientIp.c_str(), clientPort.c_str(), &addrInfo);
-
-    // void* addr;
-    // const char* ipver;
-    // struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)addrInfo->ai_addr;
-    // addr = &(ipv6->sin6_addr);
-    // ipver = "IPv6";
-
-    // inet_ntop(addrInfo->ai_family, addr, ipstr, sizeof ipstr);
-    // printf("  %s: %s\n", ipver, ipstr);
-    if (theirAddr->ss_family == AF_INET) {
-        struct sockaddr_in* theirAddrIpv4 = reinterpret_cast<struct sockaddr_in*>(theirAddr);
-        logConnection(_logger, *theirAddrIpv4);
+void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage theirAddr) {
+    if (theirAddr.ss_family == AF_INET) {
+        logConnection(_logger, theirAddr);
         ConnectionInfo connInfo;
-        connInfo.addr = *(sockaddr_storage*)theirAddrIpv4;
+        connInfo.addr = theirAddr;
         connInfo.type = CLIENT_SOCKET;
         connInfo.fd = conn;
         _connections[conn] = connInfo;
@@ -45,7 +31,7 @@ void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
     close(connInfo.fd);
     _ioNotifier.del(connInfo.fd);
     _connections.erase(connInfo.fd);
-    logDisconnect(_logger, *(sockaddr_in*)(&connInfo.addr));
+    logDisconnect(_logger, connInfo.addr);
 }
 
 void ConnectionHandler::_acceptNewConnection(int socketfd) {
@@ -56,7 +42,7 @@ void ConnectionHandler::_acceptNewConnection(int socketfd) {
         _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
         exit(1);
     }
-    _addClientConnection(conn, &theirAddr);
+    _addClientConnection(conn, theirAddr);
 }
 
 void ConnectionHandler::handleConnection(int fd) {
