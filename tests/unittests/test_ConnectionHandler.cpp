@@ -1,32 +1,34 @@
-// #include "ILogger.h"
-// #include "Logger.h"
-// #include <gtest/gtest.h>
-
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
+#include "IIONotifier.h"
 #include "test_mocks.h"
 #include "utils.h"
+#include <cstddef>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <netdb.h>
+
 TEST(ConnectionHandlerTest, firstTest) {
-    ILogger* logger = new MockLogger();
-    EpollIONotifier* epollMngr = new EpollIONotifier(*logger);
+    MockLogger* logger = new MockLogger();
+    IIONotifier* ioNotifier = new EpollIONotifier(*logger);
+    ConnectionHandler* connHdlr = new ConnectionHandler(*logger, *ioNotifier);
 
+    struct addrinfo* svrAddrInfo;
+    getSvrAddrInfo(NULL, "8080", &svrAddrInfo);
     int serverfd = newListeningSocket(NULL, "8080");
-    epollMngr->add(serverfd, READY_TO_READ);
 
-    ConnectionInfo connInfo;
-    connInfo.fd = serverfd;
-    connInfo.type = PORT_SOCKET;
+    std::string clientIp = "127.0.0.2";
+    std::string clientPort = "10001";
+    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
+    ASSERT_NE(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), -1);
+    freeaddrinfo(svrAddrInfo);
 
-    // // TODO: need to add the address and port
-    // IConnectionHandler* connHdlr = new ConnectionHandler(logger, epollMngr);
-
-    int clientfd = newSocket("127.0.0.2", "8081");
-
-    (void)clientfd;
-    // // connHdlr.handleConnection
+    EXPECT_CALL(*logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
+    connHdlr->handleConnection(serverfd);
 
     close(clientfd);
     close(serverfd);
-    delete epollMngr;
+    delete connHdlr;
+    delete ioNotifier;
     delete logger;
 }

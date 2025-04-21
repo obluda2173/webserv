@@ -18,9 +18,9 @@ class EpollIONotifier : public IIONotifier {
   public:
     EpollIONotifier(ILogger& logger);
     ~EpollIONotifier(void);
-    void add(int socketfd, e_notif notif);
-    void del(int socketfd);
-    int wait(int* conn);
+    void add(int fd, e_notif notif);
+    void del(int fd);
+    int wait(int* fds);
 };
 
 #endif // EPOLLMANAGER_H

@@ -21,24 +21,24 @@ EpollIONotifier::~EpollIONotifier(void) {
     }
 }
 
-void EpollIONotifier::add(int socketfd, e_notif notif) {
+void EpollIONotifier::add(int fd, e_notif notif) {
     struct epoll_event event;
     if (notif == CLIENT_HUNG_UP)
         event.events = EPOLLRDHUP;
     if (notif == READY_TO_READ)
         event.events = EPOLLIN;
-    event.data.fd = socketfd;
-    epoll_ctl(_epfd, EPOLL_CTL_ADD, socketfd, &event);
+    event.data.fd = fd;
+    epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
 }
 
-void EpollIONotifier::del(int socketfd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, socketfd, NULL); }
+void EpollIONotifier::del(int fd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL); }
 
-int EpollIONotifier::wait(int* fd) {
+int EpollIONotifier::wait(int* fds) {
     struct epoll_event events[1]; // TODO: make maxEvents configurable
     int ready = epoll_wait(_epfd, events, 1, 10);
     if (ready > 0)
-        *fd = events[0].data.fd;
+        *fds = events[0].data.fd;
     else
-        *fd = -1;
+        *fds = -1;
     return ready;
 }
