@@ -9,7 +9,7 @@
 
 void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
                                   struct addrinfo* svrAddr) {
-    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
+    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str(), AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     EXPECT_CALL(*mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
     ASSERT_EQ(connect(clientfd, svrAddr->ai_addr, svrAddr->ai_addrlen), 0) << "connect: " << strerror(errno);
@@ -27,7 +27,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
     std::string clientIp;
 
     struct addrinfo* svrAddrInfo;
-    getSvrAddrInfo(NULL, svrPort.c_str(), &svrAddrInfo);
+    getSvrAddrInfo(NULL, svrPort.c_str(), AF_INET, &svrAddrInfo);
     int count = 0;
     while (count++ < nbrConns) {
         clientPort = std::to_string(distr1(gen));
@@ -42,7 +42,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
 }
 
 void testOneConnection(std::string& clientPort, std::string& clientIp, struct addrinfo* svrAddrInfo) {
-    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
+    int clientfd = newSocket(clientIp.c_str(), clientPort.c_str(), AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
     close(clientfd);
@@ -58,7 +58,7 @@ void testMultipleConnections(std::string svrPort, int nbrConns) {
     std::string clientIp;
 
     struct addrinfo* svrAddrInfo;
-    getSvrAddrInfo(NULL, svrPort.c_str(), &svrAddrInfo);
+    getSvrAddrInfo(NULL, svrPort.c_str(), AF_INET, &svrAddrInfo);
     int count = 0;
     while (count++ < nbrConns) {
         clientPort = std::to_string(distr1(gen));

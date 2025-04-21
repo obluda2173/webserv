@@ -9,6 +9,7 @@
 #include "test_stubs.h"
 #include "utils.h"
 #include <gtest/gtest.h>
+#include <sys/socket.h>
 #include <thread>
 
 template <typename LoggerType> class BaseListenerTest : public ::testing::TestWithParam<std::vector<int>> {
@@ -32,7 +33,7 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
         _listener = new Listener(*_logger, connHdlr, ioNotifier);
 
         for (size_t i = 0; i < _ports.size(); i++) {
-            int portfd = newListeningSocket(NULL, std::to_string(_ports[i]).c_str());
+            int portfd = newListeningSocket(NULL, std::to_string(_ports[i]).c_str(), AF_INET);
             _listener->add(portfd);
         }
         _listenerThread = std::thread(&Listener::listen, _listener);

@@ -19,7 +19,7 @@ void Server::start(std::vector<std::string> ports) {
     _logger->log("INFO", "Server is starting...");
 
     for (size_t i = 0; i < ports.size(); i++)
-        _listener->add(newListeningSocket(NULL, ports[i].c_str()));
+        _listener->add(newListeningSocket(NULL, ports[i].c_str(), AF_INET));
 
     _isRunning = true;
     _logger->log("INFO", "Server started");

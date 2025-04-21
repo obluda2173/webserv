@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string>
+#include <sys/socket.h>
 
 TEST_P(ListenerTestWithMockLogging, closingAConnection) {
     std::vector<int> ports = GetParam();
@@ -12,9 +13,9 @@ TEST_P(ListenerTestWithMockLogging, closingAConnection) {
         int port = ports[i];
         std::string clientPort = "12345";
         std::string clientIp = "127.0.0.3";
-        int clientfd = newSocket(clientIp.c_str(), clientPort.c_str());
+        int clientfd = newSocket(clientIp.c_str(), clientPort.c_str(), AF_INET);
         struct addrinfo* svrAddrInfo;
-        getSvrAddrInfo(NULL, std::to_string(port).c_str(), &svrAddrInfo);
+        getSvrAddrInfo(NULL, std::to_string(port).c_str(), AF_INET, &svrAddrInfo);
 
         EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
         ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0)

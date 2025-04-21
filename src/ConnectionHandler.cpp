@@ -16,14 +16,12 @@ ConnectionHandler::~ConnectionHandler(void) {
 }
 
 void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage theirAddr) {
-    if (theirAddr.ss_family == AF_INET) {
-        logConnection(_logger, theirAddr);
-        ConnectionInfo connInfo;
-        connInfo.addr = theirAddr;
-        connInfo.type = CLIENT_SOCKET;
-        connInfo.fd = conn;
-        _connections[conn] = connInfo;
-    }
+    logConnection(_logger, theirAddr);
+    ConnectionInfo connInfo;
+    connInfo.addr = theirAddr;
+    connInfo.type = CLIENT_SOCKET;
+    connInfo.fd = conn;
+    _connections[conn] = connInfo;
     _ioNotifier.add(conn, CLIENT_HUNG_UP);
 }
 

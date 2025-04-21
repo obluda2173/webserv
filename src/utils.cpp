@@ -12,20 +12,20 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void getSvrAddrInfo(const char* node, const char* port, struct addrinfo** addrInfo) {
+void getSvrAddrInfo(const char* node, const char* port, int protocol, struct addrinfo** addrInfo) {
     int status;
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = protocol;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     if ((status = getaddrinfo(node, port, &hints, addrInfo) == -1))
         std::cerr << "getaddrinfo error: " << gai_strerror(status);
 }
 
-int newSocket(const char* node, const char* port) {
+int newSocket(const char* node, const char* port, int protocol) {
     struct addrinfo* addrInfo;
-    getSvrAddrInfo(node, port, &addrInfo);
+    getSvrAddrInfo(node, port, protocol, &addrInfo);
 
     int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
     if (socketfd < 0) {
@@ -45,8 +45,8 @@ int newSocket(const char* node, const char* port) {
     return socketfd;
 }
 
-int newListeningSocket(const char* node, const char* port) {
-    int socketfd = newSocket(node, port);
+int newListeningSocket(const char* node, const char* port, int protocol) {
+    int socketfd = newSocket(node, port, protocol);
     if (listen(socketfd, 5) == -1) {
         perror("listen");
         exit(EXIT_FAILURE);
