@@ -13,7 +13,7 @@ typedef enum SocketType {
 } SocketType;
 
 struct ConnectionInfo {
-    struct sockaddr_in addr;
+    struct sockaddr_storage addr;
     SocketType type;
     int fd;
 };

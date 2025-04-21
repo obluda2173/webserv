@@ -33,7 +33,7 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage* 
         struct sockaddr_in* theirAddrIpv4 = reinterpret_cast<struct sockaddr_in*>(theirAddr);
         logConnection(_logger, *theirAddrIpv4);
         ConnectionInfo connInfo;
-        connInfo.addr = *theirAddrIpv4;
+        connInfo.addr = *(sockaddr_storage*)theirAddrIpv4;
         connInfo.type = CLIENT_SOCKET;
         connInfo.fd = conn;
         _connections[conn] = connInfo;
@@ -45,7 +45,7 @@ void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
     close(connInfo.fd);
     _ioNotifier.del(connInfo.fd);
     _connections.erase(connInfo.fd);
-    logDisconnect(_logger, connInfo.addr);
+    logDisconnect(_logger, *(sockaddr_in*)(&connInfo.addr));
 }
 
 void ConnectionHandler::_acceptNewConnection(int socketfd) {
