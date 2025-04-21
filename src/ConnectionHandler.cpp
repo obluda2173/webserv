@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
@@ -14,14 +15,29 @@ ConnectionHandler::~ConnectionHandler(void) {
     }
 }
 
-void ConnectionHandler::_addClientConnection(int conn, struct sockaddr* theirAddr) {
-    struct sockaddr_in* theirAddrIpv4 = reinterpret_cast<struct sockaddr_in*>(theirAddr);
-    logConnection(_logger, *theirAddrIpv4);
-    ConnectionInfo connInfo;
-    connInfo.addr = *theirAddrIpv4;
-    connInfo.type = CLIENT_SOCKET;
-    connInfo.fd = conn;
-    _connections[conn] = connInfo;
+void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage* theirAddr) {
+
+    // char ipstr[INET6_ADDRSTRLEN]; /* to store the ip-address */
+    // struct addrinfo* addrInfo;
+    // getSvrAddrInfo(clientIp.c_str(), clientPort.c_str(), &addrInfo);
+
+    // void* addr;
+    // const char* ipver;
+    // struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)addrInfo->ai_addr;
+    // addr = &(ipv6->sin6_addr);
+    // ipver = "IPv6";
+
+    // inet_ntop(addrInfo->ai_family, addr, ipstr, sizeof ipstr);
+    // printf("  %s: %s\n", ipver, ipstr);
+    if (theirAddr->ss_family == AF_INET) {
+        struct sockaddr_in* theirAddrIpv4 = reinterpret_cast<struct sockaddr_in*>(theirAddr);
+        logConnection(_logger, *theirAddrIpv4);
+        ConnectionInfo connInfo;
+        connInfo.addr = *theirAddrIpv4;
+        connInfo.type = CLIENT_SOCKET;
+        connInfo.fd = conn;
+        _connections[conn] = connInfo;
+    }
     _ioNotifier.add(conn, CLIENT_HUNG_UP);
 }
 
@@ -33,9 +49,9 @@ void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
 }
 
 void ConnectionHandler::_acceptNewConnection(int socketfd) {
-    struct sockaddr theirAddr;
+    struct sockaddr_storage theirAddr;
     int addrlen = sizeof(theirAddr);
-    int conn = accept(socketfd, &theirAddr, (socklen_t*)&addrlen);
+    int conn = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
     if (conn < 0) {
         _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
         exit(1);

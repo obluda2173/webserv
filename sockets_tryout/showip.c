@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
 	char ipstr[INET6_ADDRSTRLEN]; /* to store the ip-address */
 
 	if (argc != 2) {
-	    fprintf(stderr,"usage: showip hostname\n");
-	    return 1;
+		fprintf(stderr,"usage: showip hostname\n");
+		return 1;
 	}
 
 	memset(&hints, 0, sizeof hints); /* always set to 0 */
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
 	for(p = res;p != NULL; p = p->ai_next) {
 		void *addr;
-		char *ipver;
+		const char *ipver;
 
 		// get the pointer to the address itself,
 		// different fields in IPv4 and IPv6:
