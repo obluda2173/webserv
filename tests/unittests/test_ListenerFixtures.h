@@ -34,7 +34,7 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
 
     void setupListener() {
         for (size_t i = 0; i < _ports.size(); i++) {
-            int portfd = newListeningSocket1(NULL, std::to_string(_ports[i]).c_str());
+            int portfd = newListeningSocket(NULL, std::to_string(_ports[i]).c_str());
             _listener->add(portfd);
         }
         _listenerThread = std::thread(&Listener::listen, _listener);

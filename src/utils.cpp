@@ -42,7 +42,7 @@ int newSocket(const char* node, const char* port) {
     return socketfd;
 }
 
-int newListeningSocket1(const char* node, const char* port) {
+int newListeningSocket(const char* node, const char* port) {
     int socketfd = newSocket(node, port);
     if (listen(socketfd, 5) == -1) {
         perror("listen");

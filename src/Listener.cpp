@@ -9,8 +9,6 @@ Listener::Listener(ILogger& logger, IConnectionHandler* connHdlr, IIONotifier* e
     : _logger(logger), _connHdlr(connHdlr), _ioNotif(epollMngr) {}
 
 Listener::~Listener() {
-    for (size_t i = 0; i < _socketfds.size(); i++)
-        close(_socketfds[i]);
     delete _connHdlr;
     delete _ioNotif;
 }
@@ -18,7 +16,7 @@ Listener::~Listener() {
 void Listener::listen() {
     _isListening = true;
     while (_isListening) {
-        int fd;
+        int fd; // TODO: take not only one connection but #ready connections
         int ready = _ioNotif->wait(&fd);
         if (ready == 0)
             continue;
@@ -29,7 +27,11 @@ void Listener::listen() {
     }
 }
 
-void Listener::stop() { _isListening = false; }
+void Listener::stop() {
+    _isListening = false;
+    for (size_t i = 0; i < _socketfds.size(); i++)
+        close(_socketfds[i]);
+}
 
 void Listener::add(int socketfd) {
     _ioNotif->add(socketfd, READY_TO_READ);

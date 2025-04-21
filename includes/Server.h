@@ -18,8 +18,6 @@ class Server {
     IListener* _listener;
     bool _isRunning;
     std::vector<int> _portfds;
-    void _listenPoll(void);
-    void _listenEPoll(void);
 
   public:
     explicit Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotif);
