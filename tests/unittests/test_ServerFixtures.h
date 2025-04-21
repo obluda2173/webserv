@@ -23,13 +23,12 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
 
   public:
     BaseServerTest()
-        : _openFdsBegin(0), _logger(new LoggerType()), _ioNotif(new EpollIONotifier(*_logger)),
+        : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType()), _ioNotif(new EpollIONotifier(*_logger)),
           _connHdlr(new ConnectionHandler(*_logger, *_ioNotif)), _svr(nullptr), _ports(GetParam()) {}
 
-    virtual ~BaseServerTest() { delete _svr; }
+    virtual ~BaseServerTest() {} // only for childs
 
     void SetUp() override {
-        _openFdsBegin = countOpenFileDescriptors();
         _svr = new Server(_logger, _connHdlr, _ioNotif);
         setupServer();
     }
@@ -53,6 +52,7 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
         if (_svrThread.joinable()) {
             _svrThread.join();
         }
+        delete _svr;
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
     }
 };
@@ -81,6 +81,8 @@ class ServerWithMockLoggerParametrizedPortTest : public BaseServerTest<MockLogge
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         _svrThread.join();
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+        delete _svr;
         EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
     }
 };
