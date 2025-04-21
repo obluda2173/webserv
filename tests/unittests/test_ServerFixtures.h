@@ -3,33 +3,34 @@
 
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
+#include "IConnectionHandler.h"
+#include "IIONotifier.h"
+#include "ServerBuilder.h"
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include <Server.h>
 #include <thread>
 
 template <typename LoggerType> class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
-    EpollIONotifier* _ioNotif;
-    IConnectionHandler* _connHdlr;
     Server* _svr;
     std::thread _svrThread;
     std::vector<std::string> _ports;
 
   public:
-    BaseServerTest()
-        : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType()), _ioNotif(new EpollIONotifier(*_logger)),
-          _connHdlr(new ConnectionHandler(*_logger, *_ioNotif)), _svr(nullptr), _ports(GetParam()) {}
+    BaseServerTest() : _openFdsBegin(countOpenFileDescriptors()), _ports(GetParam()) {}
 
     virtual ~BaseServerTest() {} // only for childs
 
     void SetUp() override {
-        _svr = new Server(_logger, _connHdlr, _ioNotif);
+        _logger = new LoggerType();
+        IIONotifier* ioNotifier = new EpollIONotifier(*_logger);
+        IConnectionHandler* connHdlr = new ConnectionHandler(*_logger, *ioNotifier);
+        _svr = ServerBuilder().setLogger(_logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
         setupServer();
     }
 
