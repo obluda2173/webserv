@@ -1,16 +1,18 @@
 #include <HttpParser.h>
 
-HttpParser::HttpParser() : 
-    _state(STATE_REQUEST_LINE),
-    _totalProcessedSize(0),
-    _maxHeaderKeySize(256),
-    _maxHeaderSize(4096){}
+HttpParser::HttpParser(Logger* logger) :
+	_state(STATE_REQUEST_LINE),
+	_totalProcessedSize(0),
+	_maxHeaderKeySize(256),
+	_maxHeaderSize(4096),
+	_logger(logger){}
 
-HttpParser::HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize) :
-    _state(STATE_REQUEST_LINE),
-    _totalProcessedSize(0),
-    _maxHeaderKeySize(maxHeaderKeySize),
-    _maxHeaderSize(maxHeaderSize) {}
+HttpParser::HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize, Logger* logger) :
+	_state(STATE_REQUEST_LINE),
+	_totalProcessedSize(0),
+	_maxHeaderKeySize(maxHeaderKeySize),
+	_maxHeaderSize(maxHeaderSize),
+	_logger(logger){}
 
 HttpParser::~HttpParser() {}
 
@@ -408,9 +410,10 @@ bool	isValidRange(const std::string& str) {
 	return true;
 }
 
-bool	specificHeaderValidation(const std::string& key, const std::string& value) {		//so far, I added these functions, but if we need more, I can add them
+bool	specificHeaderValidation(const std::string& key, const std::string& value, Logger* _logger) {		//so far, I added these functions, but if we need more, I can add them
 	if (key == "Host") {
 		if (!isValidHost(value)) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Host header");
 			return false;
 		}
 	}
@@ -419,6 +422,7 @@ bool	specificHeaderValidation(const std::string& key, const std::string& value) 
 		int contentLength;
 		iss >> contentLength;
 		if (contentLength < 0) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Content-Length header");
 			return false;
 		}
 	}
@@ -426,41 +430,49 @@ bool	specificHeaderValidation(const std::string& key, const std::string& value) 
 		const std::string chunked = "chunked";
 		if (value.length() < chunked.length() ||
 			value.substr(value.length() - chunked.length()) != chunked) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Transfer-Encoding header");
 			return false;
 		}
 	}
 	if (key == "Connection") {
 		if (value != "keep-alive" && value != "close") {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Connection header");
 			return false;
 		}
 	}
 	if (key == "Content-Type") {
 		if (isValidContentType(value) == false) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Content-Type header");
 			return false;
 		}
 	}
 	if (key == "Accept") {
 		if (isValidAccept(value) == false) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Accept header");
 			return false;
 		}
 	}
 	if (key == "Accept-Encoding") {
 		if (isValidAcceptEncoding(value) == false) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Accept-Encoding header");
 			return false;
 		}
 	}
 	if (key == "Accept-Language") {
 		if (isValidAcceptLanguage(value) == false) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Accept-Language header");
 			return false;
 		}
 	}
 	if (key == "Cookie") {
 		if (isValidCookie(value) == false) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Cookie header");
 			return false;
 		}
 	}
 	if (key == "Range") {
 		if (isValidRange(value) == false) {
+			_logger->log("ERROR", "specificHeaderValidation: Invalid Range header");
 			return false;
 		}
 	}
@@ -469,27 +481,33 @@ bool	specificHeaderValidation(const std::string& key, const std::string& value) 
 
 bool HttpParser::_headerLineValidation(const std::string& key, const std::string& value) {
 	if (key.empty() || value.empty()) {
+		_logger->log("ERROR", "_headerLineValidation: Header key or value is empty");
 		return false;
 	}
 	if (key.find(' ') != std::string::npos && key.find('\t') != std::string::npos && key.find('\r') != std::string::npos && key.find('\n') != std::string::npos) {
+		_logger->log("ERROR", "_headerLineValidation: Header key contains invalid characters");
 		return false;
 	}
-	for (size_t i = 1; i < value.size(); i++) {
-		if ((value[i] == ' ' || value[i] == '\t') && (value[i - 1] != ',' && value[i - 1] != ';')) {
-			return false;
-		}
-	}
+	// this part is commented out because it is not so stayble
+	// for (size_t i = 1; i < value.size(); i++) {
+	// 	if ((value[i] == ' ' || value[i] == '\t') && (value[i - 1] != ',' && value[i - 1] != ';')) {
+	// 		_logger->log("ERROR", "_headerLineValidation: Header value contains invalid characters");
+	// 		return false;
+	// 	}
+	// }
 	if (key == "content-length") {
 		if (_currentRequest.headers.count("transfer-encoding") > 0) {
+			_logger->log("ERROR", "_headerLineValidation: Content-Length and Transfer-Encoding cannot be used together");
 			return false;
 		}
 	}
 	if (key == "transfer-encoding") {
 		if (_currentRequest.headers.count("content-length") > 0) {
+			_logger->log("ERROR", "_headerLineValidation: Transfer-Encoding and Content-Length cannot be used together");
 			return false;
 		}
 	}
-	if (specificHeaderValidation(key, value) == false) {
+	if (specificHeaderValidation(key, value, _logger) == false) {
 		return false;
 	}
     return true;
