@@ -3,7 +3,6 @@
 
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
-#include "IConnectionHandler.h"
 #include "Listener.h"
 #include "test_main.h"
 #include "test_mocks.h"
@@ -16,23 +15,22 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
-    EpollIONotifier* _ioNotif;
-    IConnectionHandler* _connHdlr;
     Listener* _listener;
     std::thread _listenerThread;
     std::vector<int> _ports;
 
   public:
-    BaseListenerTest()
-        : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType), _ioNotif(new EpollIONotifier(_logger)),
-          _connHdlr(new ConnectionHandler(*_logger, *_ioNotif)), _listener(new Listener(*_logger, _connHdlr, _ioNotif)),
-          _ports(GetParam()) {}
+    BaseListenerTest() : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType), _ports(GetParam()) {}
 
     void SetUp() override { setupListener(); }
 
     void TearDown() override { tearDownListener(); }
 
     void setupListener() {
+        EpollIONotifier* ioNotifier = new EpollIONotifier(*_logger);
+        ConnectionHandler* connHdlr = new ConnectionHandler(*_logger, *ioNotifier);
+        _listener = new Listener(*_logger, connHdlr, ioNotifier);
+
         for (size_t i = 0; i < _ports.size(); i++) {
             int portfd = newListeningSocket(NULL, std::to_string(_ports[i]).c_str());
             _listener->add(portfd);

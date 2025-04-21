@@ -3,17 +3,17 @@
 #include <string.h>
 #include <sys/epoll.h>
 
-EpollIONotifier::EpollIONotifier(ILogger* logger) : _logger(logger) {
+EpollIONotifier::EpollIONotifier(ILogger& logger) : _logger(logger) {
     _epfd = epoll_create(1);
     if (_epfd == -1) {
-        _logger->log("ERROR", "epoll_create: " + std::string(strerror(errno)));
+        _logger.log("ERROR", "epoll_create: " + std::string(strerror(errno)));
         exit(1);
     }
 }
 
 EpollIONotifier::~EpollIONotifier(void) {
     if (close(_epfd) == -1) {
-        _logger->log("ERROR", "close: " + std::string(strerror(errno)));
+        _logger.log("ERROR", "close: " + std::string(strerror(errno)));
         exit(1);
     }
 }

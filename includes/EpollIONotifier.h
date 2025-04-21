@@ -12,11 +12,11 @@
 
 class EpollIONotifier : public IIONotifier {
   private:
-    ILogger* _logger;
+    ILogger& _logger;
     int _epfd;
 
   public:
-    EpollIONotifier(ILogger* logger);
+    EpollIONotifier(ILogger& logger);
     ~EpollIONotifier(void);
     void add(int socketfd, e_notif notif);
     void del(int socketfd);
