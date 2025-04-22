@@ -1,20 +1,11 @@
-#include "ConnectionHandler.h"
-#include "EpollIONotifier.h"
-#include "IIONotifier.h"
-#include "test_mocks.h"
+#include "test_ConnectionHandlerFixture.h"
 #include "utils.h"
 #include <cstddef>
 #include <cstring>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/socket.h>
 
-TEST(ConnectionHandlerTest, firstTest) {
-    MockLogger* logger = new MockLogger();
-    IIONotifier* ioNotifier = new EpollIONotifier(*logger);
-    ConnectionHandler* connHdlr = new ConnectionHandler(*logger, *ioNotifier);
-
+TEST_F(ConnectionHdlrTestWithMockLogger, testLoggingIpV6) {
     int serverfd = newListeningSocket(NULL, "8080", AF_INET6);
     struct addrinfo* svrAddrInfo;
     getSvrAddrInfo(NULL, "8080", AF_INET6, &svrAddrInfo);
@@ -27,12 +18,9 @@ TEST(ConnectionHandlerTest, firstTest) {
         << "connect: " << std::strerror(errno) << std::endl;
     freeaddrinfo(svrAddrInfo);
 
-    EXPECT_CALL(*logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
-    connHdlr->handleConnection(serverfd);
+    EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
+    _connHdlr->handleConnection(serverfd);
 
     close(clientfd);
     close(serverfd);
-    delete connHdlr;
-    delete ioNotifier;
-    delete logger;
 }

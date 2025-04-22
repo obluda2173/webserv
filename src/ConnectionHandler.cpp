@@ -10,9 +10,8 @@
 ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
-    for (std::map<int, ConnectionInfo>::iterator it = _connections.begin(); it != _connections.end(); it++) {
+    for (std::map<int, ConnectionInfo>::iterator it = _connections.begin(); it != _connections.end(); it++)
         close(it->first);
-    }
 }
 
 void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage theirAddr) {
