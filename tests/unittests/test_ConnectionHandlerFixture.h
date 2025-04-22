@@ -21,6 +21,8 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
     IConnectionHandler* _connHdlr;
     int _serverfd;
     struct addrinfo* _svrAddrInfo;
+    int _clientfd;
+    int _conn;
 
   public:
     BaseConnectionHandlerTest() : _openFdsBegin(countOpenFileDescriptors()) {}
@@ -29,6 +31,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
         _ioNotifier = new EpollIONotifier(*_logger);
         _connHdlr = new ConnectionHandler(*_logger, *_ioNotifier);
         setupServer();
+        setupConnection();
     }
 
     virtual void setupServer() {
@@ -36,7 +39,16 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
     }
 
+    virtual void setupConnection() {
+        _clientfd = newSocket("127.0.0.2", "12345", AF_INET);
+        ASSERT_NE(connect(_clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        _conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(_clientfd, F_SETFL, O_NONBLOCK);
+    }
+
     void TearDown() override {
+        close(_clientfd);
         freeaddrinfo(_svrAddrInfo);
         close(_serverfd);
         delete _connHdlr;
@@ -50,6 +62,8 @@ class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<Mo
         getAddrInfoHelper(NULL, "8080", AF_INET6, &_svrAddrInfo);
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
     }
+
+    virtual void setupConnection() override {}
 };
 class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger> {};
 

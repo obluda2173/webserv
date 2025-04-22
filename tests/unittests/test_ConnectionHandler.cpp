@@ -20,25 +20,21 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
 }
 
 TEST_F(ConnectionHdlrTest, test1) {
-    int clientfd = newSocket("127.0.0.2", "12345", AF_INET);
-    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-        << "connect: " << std::strerror(errno) << std::endl;
-
-    int conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-
     char buffer[1024];
-    // set to non-blocking to make sure that nothing is send after first handleConnectionCall
-    fcntl(clientfd, F_SETFL, O_NONBLOCK);
     std::string msg = "GET /ping HTTP/1.1\r\n"
                       "\r\n";
-    send(clientfd, msg.c_str(), msg.length(), 0);
-    _connHdlr->handleConnection(conn, READY_TO_READ);
 
-    recv(clientfd, buffer, 1024, 0);
+    // send msg
+    send(_clientfd, msg.c_str(), msg.length(), 0);
+    _connHdlr->handleConnection(_conn, READY_TO_READ);
+
+    // check nothing is sent back
+    recv(_clientfd, buffer, 1024, 0);
     ASSERT_EQ(errno, EWOULDBLOCK);
 
-    _connHdlr->handleConnection(conn, READY_TO_WRITE);
-    ssize_t r = recv(clientfd, buffer, 1024, 0);
+    // next time around the response is sent back
+    _connHdlr->handleConnection(_conn, READY_TO_WRITE);
+    ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
                                "Content-Length: 4\r\n"
