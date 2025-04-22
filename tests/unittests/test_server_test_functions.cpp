@@ -8,7 +8,7 @@
 #include <sys/socket.h>
 #include <thread>
 
-void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
+void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientIp, std::string& clientPort,
                                   struct addrinfo* svrAddr) {
     int clientfd = newSocket(clientIp, clientPort, AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
@@ -33,7 +33,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
     while (count++ < nbrConns) {
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
-        testOneConnectionWithLogging(mLogger, clientPort, clientIp, svrAddrInfo);
+        testOneConnectionWithLogging(mLogger, clientIp, clientPort, svrAddrInfo);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -42,7 +42,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
     freeaddrinfo(svrAddrInfo);
 }
 
-void testOneConnection(std::string& clientPort, std::string& clientIp, struct addrinfo* svrAddrInfo) {
+void testOneConnection(std::string& clientIp, std::string& clientPort, struct addrinfo* svrAddrInfo) {
     int clientfd = newSocket(clientIp, clientPort, AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
@@ -64,7 +64,7 @@ void testMultipleConnections(std::string svrPort, int nbrConns) {
     while (count++ < nbrConns) {
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
-        testOneConnection(clientPort, clientIp, svrAddrInfo);
+        testOneConnection(clientIp, clientPort, svrAddrInfo);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));

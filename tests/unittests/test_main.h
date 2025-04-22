@@ -19,7 +19,7 @@ int countOpenFileDescriptors();
 void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
                                   struct addrinfo* svrAddrInfo);
 void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort, int nbrConns);
-void testOneConnection(std::string& clientPort, std::string& clientIp, struct addrinfo* svrAddrInfo);
+void testOneConnection(std::string& clientIp, std::string& clientPort, struct addrinfo* svrAddrInfo);
 void testMultipleConnections(std::string svrPort, int nbrConns);
 
 #endif // TEST_MAIN_H_
