@@ -1,7 +1,9 @@
 #include "IIONotifier.h"
 #include "test_ConnectionHandlerFixture.h"
 #include "utils.h"
+#include <cerrno>
 #include <cstring>
+#include <fcntl.h>
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -24,10 +26,16 @@ TEST_F(ConnectionHdlrTest, test1) {
 
     int conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
 
+    char buffer[1024];
+    // set to non-blocking to make sure that nothing is send after first handleConnectionCall
+    fcntl(clientfd, F_SETFL, O_NONBLOCK);
     send(clientfd, "some bytes", 10, 0);
     _connHdlr->handleConnection(conn, READY_TO_READ);
 
-    char buffer[1024];
+    recv(clientfd, buffer, 1024, 0);
+    ASSERT_EQ(errno, EWOULDBLOCK);
+
+    _connHdlr->handleConnection(conn, READY_TO_WRITE);
     ssize_t r = recv(clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
     EXPECT_STREQ(buffer, "some bytes, some other bytes");

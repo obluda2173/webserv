@@ -47,10 +47,10 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     try {
         ConnectionInfo connInfo = _connections.at(fd);
         if (notif == READY_TO_READ) {
-            send(fd, "some bytes, some other bytes", 28, 0);
-            return fd;
-        } else {
+        } else if (notif == CLIENT_HUNG_UP) {
             _removeClientConnection(connInfo);
+        } else {
+            send(fd, "some bytes, some other bytes", 28, 0);
         }
         return fd;
     } catch (std::out_of_range& e) {
