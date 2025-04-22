@@ -2,7 +2,6 @@
 #include "IIONotifier.h"
 #include "logging.h"
 #include <errno.h>
-#include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string.h>
@@ -20,7 +19,6 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     logConnection(_logger, theirAddr);
     ConnectionInfo connInfo;
     connInfo.addr = theirAddr;
-    connInfo.type = CLIENT_SOCKET;
     connInfo.fd = conn;
     _connections[conn] = connInfo;
     _ioNotifier.add(conn, CLIENT_HUNG_UP);

@@ -14,7 +14,6 @@ typedef enum SocketType {
 
 struct ConnectionInfo {
     struct sockaddr_storage addr;
-    SocketType type;
     int fd;
 };
 

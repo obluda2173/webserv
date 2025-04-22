@@ -104,6 +104,8 @@ union epoll_data {
 - ORing together EVENT_TYPES (those are returned by *epoll_wait*) and INPUT_FLAGS (affect behaviour but aren't returned)
 ***** EPOLLIN
 - The associated file is available for read(2) operations.
+***** EPOLLRDHUP
+- peer socked closed or shut down writting
 ** NOTES
 *** epoll_wait will always report certain events
 - EPOLLERR
