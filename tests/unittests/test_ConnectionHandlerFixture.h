@@ -27,6 +27,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
   public:
     BaseConnectionHandlerTest() : _openFdsBegin(countOpenFileDescriptors()) {}
     void SetUp() override {
+        _openFdsBegin = countOpenFileDescriptors();
         _logger = new LoggerType();
         _ioNotifier = new EpollIONotifier(*_logger);
         _connHdlr = new ConnectionHandler(*_logger, *_ioNotifier);
@@ -54,6 +55,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
         delete _connHdlr;
         delete _ioNotifier;
         delete _logger;
+        EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
     }
 };
 

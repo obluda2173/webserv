@@ -19,16 +19,15 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     close(clientfd);
 }
 
-TEST_F(ConnectionHdlrTest, test1) {
+TEST_F(ConnectionHdlrTest, pingTest) {
     char buffer[1024];
-    std::string msg = "GET /ping HTTP/1.1\r\n"
-                      "\r\n";
+    std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
 
     // send msg
     send(_clientfd, msg.c_str(), msg.length(), 0);
     _connHdlr->handleConnection(_conn, READY_TO_READ);
 
-    // check nothing is sent back
+    // check that nothing is sent back yet
     recv(_clientfd, buffer, 1024, 0);
     ASSERT_EQ(errno, EWOULDBLOCK);
 
