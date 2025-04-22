@@ -5,6 +5,7 @@ int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
+    // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
     // testing::GTEST_FLAG(filter) = "*ListenerTest*";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection";

@@ -1,36 +1,34 @@
+#include "IIONotifier.h"
 #include "test_ConnectionHandlerFixture.h"
 #include "utils.h"
-#include <cstddef>
 #include <cstring>
+#include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/socket.h>
 
-TEST_F(ConnectionHdlrTestWithMockLogger, testLoggingIpV6) {
-    struct addrinfo* svrAddrInfo;
-    getAddrInfoHelper(NULL, "8080", AF_INET6, &svrAddrInfo);
-    int serverfd = newListeningSocket(svrAddrInfo, 5);
-
+TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";
     std::string clientPort = "10001";
     int clientfd = newSocket(clientIp, clientPort, AF_INET6);
-
-    ASSERT_NE(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), -1)
+    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
         << "connect: " << std::strerror(errno) << std::endl;
-
     EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
-    _connHdlr->handleConnection(serverfd);
-
-    // freeaddrinfo(clientAddr);
-    freeaddrinfo(svrAddrInfo);
+    _connHdlr->handleConnection(_serverfd, READY_TO_READ);
     close(clientfd);
-    close(serverfd);
 }
 
-// TEST_F(ConnectionHdlrTest, test1) {
-//     addrinfo* svrAddrInfo;
-//     getSvrAddrInfo(NULL, "8080", AF_INET, &svrAddrInfo);
-//     int serverfd = newListeningSocket(NULL, "8080", AF_INET);
+TEST_F(ConnectionHdlrTest, test1) {
+    int clientfd = newSocket("127.0.0.2", "12345", AF_INET);
+    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+        << "connect: " << std::strerror(errno) << std::endl;
 
-//     freeaddrinfo(svrAddrInfo);
-//     close(serverfd);
-// }
+    int conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+
+    send(clientfd, "some bytes", 10, 0);
+    _connHdlr->handleConnection(conn, READY_TO_READ);
+
+    char buffer[1024];
+    ssize_t r = recv(clientfd, buffer, 1024, 0);
+    buffer[r] = '\0';
+    EXPECT_STREQ(buffer, "some bytes, some other bytes");
+}

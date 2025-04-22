@@ -17,13 +17,14 @@ void Listener::listen() {
     _isListening = true;
     while (_isListening) {
         int fd; // TODO: take not only one connection but #ready connections
-        int ready = _ioNotifier->wait(&fd);
+        e_notif notif;
+        int ready = _ioNotifier->wait(&fd, &notif);
         if (ready == 0)
             continue;
         if (!_isListening)
             break;
 
-        _connHdlr->handleConnection(fd);
+        _connHdlr->handleConnection(fd, notif);
     }
 }
 

@@ -33,12 +33,18 @@ void EpollIONotifier::add(int fd, e_notif notif) {
 
 void EpollIONotifier::del(int fd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL); }
 
-int EpollIONotifier::wait(int* fds) {
+int EpollIONotifier::wait(int* fds, e_notif* notif) {
     struct epoll_event events[1]; // TODO: make maxEvents configurable
     int ready = epoll_wait(_epfd, events, 1, 10);
-    if (ready > 0)
+    if (ready > 0) {
         *fds = events[0].data.fd;
-    else
+        if (events[0].events & EPOLLRDHUP) {
+            *notif = CLIENT_HUNG_UP;
+        }
+        if (events[0].events & EPOLLIN) {
+            *notif = READY_TO_READ;
+        }
+    } else
         *fds = -1;
     return ready;
 }

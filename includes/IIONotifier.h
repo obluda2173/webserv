@@ -8,7 +8,7 @@ class IIONotifier {
     virtual ~IIONotifier(void) {}
     virtual void add(int fd, e_notif notif) = 0;
     virtual void del(int fd) = 0;
-    virtual int wait(int* fds) = 0;
+    virtual int wait(int* fds, e_notif* notif) = 0;
 };
 
 #endif // IIONOTIFIER_H

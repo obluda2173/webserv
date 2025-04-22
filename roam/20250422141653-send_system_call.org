@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID:       9e2e2ca6-61c3-4aef-9bfd-5a968886edd0
+:END:
+#+title: send system call
+#+date: [2025-04-22 Di 14:16]
+#+startup: overview
+
+* send
+#+begin_src c
+send(int sockfd, const void* msg, int len, int flags);
+#+end_src
+** socketfd
+- socket file descriptor that you want to send the data to
+** msg
+- pointer to the data you want to send
+** len
+- lenght in bytes of what is inside msg
+** flags
+- if flags=0, then equivalent to write
+** return value
+- the number of bytes that actually have been sent out

@@ -25,12 +25,12 @@ class ConnectionHandler : public IConnectionHandler {
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     void _removeClientConnection(ConnectionInfo connInfo);
-    void _acceptNewConnection(int socketfd);
+    int _acceptNewConnection(int socketfd);
 
   public:
     ConnectionHandler(ILogger&, IIONotifier&);
     ~ConnectionHandler(void);
-    void handleConnection(int conn);
+    int handleConnection(int conn, e_notif notif);
 };
 
 #endif // CONNECTIONHANDLER_H

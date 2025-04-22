@@ -20,7 +20,7 @@ class EpollIONotifier : public IIONotifier {
     ~EpollIONotifier(void);
     void add(int fd, e_notif notif);
     void del(int fd);
-    int wait(int* fds);
+    int wait(int* fds, e_notif* notif);
 };
 
 #endif // EPOLLMANAGER_H

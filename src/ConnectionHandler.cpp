@@ -1,6 +1,8 @@
 #include "ConnectionHandler.h"
+#include "IIONotifier.h"
 #include "logging.h"
 #include <errno.h>
+#include <iostream>
 #include <netinet/in.h>
 #include <stdexcept>
 #include <string.h>
@@ -31,7 +33,7 @@ void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
     logDisconnect(_logger, connInfo.addr);
 }
 
-void ConnectionHandler::_acceptNewConnection(int socketfd) {
+int ConnectionHandler::_acceptNewConnection(int socketfd) {
     struct sockaddr_storage theirAddr;
     int addrlen = sizeof(theirAddr);
     int conn = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
@@ -40,13 +42,20 @@ void ConnectionHandler::_acceptNewConnection(int socketfd) {
         exit(1);
     }
     _addClientConnection(conn, theirAddr);
+    return conn;
 }
 
-void ConnectionHandler::handleConnection(int fd) {
+int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     try {
         ConnectionInfo connInfo = _connections.at(fd);
-        _removeClientConnection(connInfo);
+        if (notif == READY_TO_READ) {
+            send(fd, "some bytes, some other bytes", 28, 0);
+            return fd;
+        } else {
+            _removeClientConnection(connInfo);
+        }
+        return fd;
     } catch (std::out_of_range& e) {
-        _acceptNewConnection(fd);
+        return _acceptNewConnection(fd);
     }
 }

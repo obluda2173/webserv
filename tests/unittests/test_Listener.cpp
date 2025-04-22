@@ -17,7 +17,6 @@ TEST_P(ListenerTestWithMockLogging, closingAConnection) {
 
         struct addrinfo* svrAddrInfo;
         getAddrInfoHelper(NULL, std::to_string(port).c_str(), AF_INET, &svrAddrInfo);
-
         EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
         ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0)
             << "connect: " << strerror(errno);
