@@ -17,11 +17,12 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
     int _openFdsBegin;
     LoggerType* _logger;
     Listener* _listener;
+    int _backlog;
     std::thread _listenerThread;
     std::vector<int> _ports;
 
   public:
-    BaseListenerTest() : _openFdsBegin(countOpenFileDescriptors()), _ports(GetParam()) {}
+    BaseListenerTest() : _openFdsBegin(countOpenFileDescriptors()), _backlog(5), _ports(GetParam()) {}
 
     void SetUp() override { setupListener(); }
 
@@ -34,9 +35,13 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
         _listener = new Listener(*_logger, connHdlr, ioNotifier);
 
         for (size_t i = 0; i < _ports.size(); i++) {
-            int portfd = newListeningSocket(NULL, std::to_string(_ports[i]).c_str(), AF_INET);
+            struct addrinfo* svrAddrInfo;
+            getAddrInfoHelper(NULL, std::to_string(_ports[i]).c_str(), AF_INET, &svrAddrInfo);
+            int portfd = newListeningSocket(svrAddrInfo, 5);
+            freeaddrinfo(svrAddrInfo);
             _listener->add(portfd);
         }
+
         _listenerThread = std::thread(&Listener::listen, _listener);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }

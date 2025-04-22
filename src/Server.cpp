@@ -18,8 +18,13 @@ bool Server::isRunning() const { return _isRunning; }
 void Server::start(std::vector<std::string> ports) {
     _logger->log("INFO", "Server is starting...");
 
-    for (size_t i = 0; i < ports.size(); i++)
-        _listener->add(newListeningSocket(NULL, ports[i].c_str(), AF_INET));
+    for (size_t i = 0; i < ports.size(); i++) {
+        struct addrinfo* svrAddrInfo;
+        getAddrInfoHelper(NULL, ports[i].c_str(), AF_INET, &svrAddrInfo);
+        int serverfd = newListeningSocket(svrAddrInfo, 5);
+        freeaddrinfo(svrAddrInfo);
+        _listener->add(serverfd);
+    }
 
     _isRunning = true;
     _logger->log("INFO", "Server started");

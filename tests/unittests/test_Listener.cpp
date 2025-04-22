@@ -13,9 +13,13 @@ TEST_P(ListenerTestWithMockLogging, closingAConnection) {
         int port = ports[i];
         std::string clientPort = "12345";
         std::string clientIp = "127.0.0.3";
-        int clientfd = newSocket(clientIp.c_str(), clientPort.c_str(), AF_INET);
+        struct addrinfo* clientAddrInfo;
+        getAddrInfoHelper(clientIp.c_str(), clientPort.c_str(), AF_INET, &clientAddrInfo);
+        int clientfd = newSocket(clientAddrInfo);
+        freeaddrinfo(clientAddrInfo);
+
         struct addrinfo* svrAddrInfo;
-        getSvrAddrInfo(NULL, std::to_string(port).c_str(), AF_INET, &svrAddrInfo);
+        getAddrInfoHelper(NULL, std::to_string(port).c_str(), AF_INET, &svrAddrInfo);
 
         EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
         ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0)

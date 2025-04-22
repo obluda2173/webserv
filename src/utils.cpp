@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void getSvrAddrInfo(const char* node, const char* port, int protocol, struct addrinfo** addrInfo) {
+void getAddrInfoHelper(const char* node, const char* port, int protocol, struct addrinfo** addrInfo) {
     int status;
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);
@@ -23,15 +23,13 @@ void getSvrAddrInfo(const char* node, const char* port, int protocol, struct add
         std::cerr << "getaddrinfo error: " << gai_strerror(status);
 }
 
-int newSocket(const char* node, const char* port, int protocol) {
-    struct addrinfo* addrInfo;
-    getSvrAddrInfo(node, port, protocol, &addrInfo);
-
+int newSocket(addrinfo* addrInfo) {
     int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
     if (socketfd < 0) {
         perror("socket");
         exit(1);
     }
+
     int yes = 1;
     if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
         perror("setsockopt");
@@ -41,34 +39,36 @@ int newSocket(const char* node, const char* port, int protocol) {
         perror("bind");
         exit(EXIT_FAILURE);
     }
-    freeaddrinfo(addrInfo);
     return socketfd;
 }
 
-int newListeningSocket(const char* node, const char* port, int protocol) {
-    int socketfd = newSocket(node, port, protocol);
-    if (listen(socketfd, 5) == -1) {
+int newListeningSocket(addrinfo* addrInfo, int backlog) {
+    int socketfd = newSocket(addrInfo);
+    if (listen(socketfd, backlog) == -1) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
     return socketfd;
 }
 
-int newSocket1(addrinfo* addrInfo) {
-    int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
-    if (socketfd < 0) {
-        perror("socket");
-        exit(1);
-    }
+// int newSocket(const char* node, const char* port, int protocol) {
+//     struct addrinfo* addrInfo;
+//     getSvrAddrInfo(node, port, protocol, &addrInfo);
 
-    int yes = 1;
-    if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-    if (bind(socketfd, addrInfo->ai_addr, addrInfo->ai_addrlen) == -1) {
-        perror("bind");
-        exit(EXIT_FAILURE);
-    }
-    return socketfd;
-}
+//     int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
+//     if (socketfd < 0) {
+//         perror("socket");
+//         exit(1);
+//     }
+//     int yes = 1;
+//     if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+//         perror("setsockopt");
+//         exit(EXIT_FAILURE);
+//     }
+//     if (bind(socketfd, addrInfo->ai_addr, addrInfo->ai_addrlen) == -1) {
+//         perror("bind");
+//         exit(EXIT_FAILURE);
+//     }
+//     freeaddrinfo(addrInfo);
+//     return socketfd;
+// }

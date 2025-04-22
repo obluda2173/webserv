@@ -7,14 +7,14 @@
 
 TEST_F(ConnectionHdlrTestWithMockLogger, testLoggingIpV6) {
     struct addrinfo* svrAddrInfo;
-    getSvrAddrInfo(NULL, "8080", AF_INET6, &svrAddrInfo);
-    int serverfd = newListeningSocket(NULL, "8080", AF_INET6);
+    getAddrInfoHelper(NULL, "8080", AF_INET6, &svrAddrInfo);
+    int serverfd = newListeningSocket(svrAddrInfo, 5);
 
     struct addrinfo* clientAddr;
     std::string clientIp = "00:00:00:00:00:00:00:01";
     std::string clientPort = "10001";
-    getSvrAddrInfo(clientIp.c_str(), clientPort.c_str(), AF_INET6, &clientAddr);
-    int clientfd = newSocket1(clientAddr);
+    getAddrInfoHelper(clientIp.c_str(), clientPort.c_str(), AF_INET6, &clientAddr);
+    int clientfd = newSocket(clientAddr);
 
     ASSERT_NE(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), -1)
         << "connect: " << std::strerror(errno) << std::endl;
