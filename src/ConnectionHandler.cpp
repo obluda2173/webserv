@@ -50,7 +50,11 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         } else if (notif == CLIENT_HUNG_UP) {
             _removeClientConnection(connInfo);
         } else {
-            send(fd, "some bytes, some other bytes", 28, 0);
+            std::string response = "HTTP/1.1 200 OK\r\n"
+                                   "Content-Length: 4\r\n"
+                                   "\r\n"
+                                   "pong";
+            send(fd, response.c_str(), response.length(), 0);
         }
         return fd;
     } catch (std::out_of_range& e) {

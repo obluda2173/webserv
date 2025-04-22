@@ -29,7 +29,9 @@ TEST_F(ConnectionHdlrTest, test1) {
     char buffer[1024];
     // set to non-blocking to make sure that nothing is send after first handleConnectionCall
     fcntl(clientfd, F_SETFL, O_NONBLOCK);
-    send(clientfd, "some bytes", 10, 0);
+    std::string msg = "GET /ping HTTP/1.1\r\n"
+                      "\r\n";
+    send(clientfd, msg.c_str(), msg.length(), 0);
     _connHdlr->handleConnection(conn, READY_TO_READ);
 
     recv(clientfd, buffer, 1024, 0);
@@ -38,5 +40,9 @@ TEST_F(ConnectionHdlrTest, test1) {
     _connHdlr->handleConnection(conn, READY_TO_WRITE);
     ssize_t r = recv(clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
-    EXPECT_STREQ(buffer, "some bytes, some other bytes");
+    std::string wantResponse = "HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 4\r\n"
+                               "\r\n"
+                               "pong";
+    EXPECT_STREQ(buffer, wantResponse.c_str());
 }

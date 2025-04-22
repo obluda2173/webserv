@@ -5,9 +5,15 @@
 #+date: [2025-04-07 Mo 15:26]
 #+startup: overview
 
+[[https://www.rfc-editor.org/rfc/rfc9112.html#name-index][http grammar]]
 * Http message
-- is either a request or a response
 ** general
+- is either a request or a response
+  - syntactically only differ
+    - by start-line
+    - algorithm to determine the message body
+- basic/core unit of HTTP communication
+- consisting of octects (bytes)
 - uses [[id:def2d116-4283-4c69-b202-db7fa8280dc6][generic message]] format
 - consist of
   1. A start line
@@ -25,9 +31,51 @@ generic-message = start-line
                   [ message-body ]
 start-line      = Request-Line | Status-Line
 #+end_src
+** HTTP-Version
+#+begin_src bnf
+HTTP-version  = HTTP-name "/" DIGIT "." DIGIT
+HTTP-name     = %s"HTTP"
+#+end_src
+- %s means case sensitive and it should be exactly that
+** start-line
+#+begin_src bnf
+start-line     = request-line / status-line
+#+end_src
+*** request line
+#+begin_src bnf
+request-line   = method SP request-target SP HTTP-version
+#+end_src
+**** method
+#+begin_src bnf
+method         = token
+#+end_src
+**** request-target
+#+begin_src bnf
+request-target = origin-form
+               / absolute-form
+               / authority-form
+               / asterisk-form
+#+end_src
+***** origin form
+"/ping"
+*** start line
+#+begin_src bnf
+status-line = HTTP-version SP status-code SP [ reason-phrase ]
+#+end_src
+** http request
+- starts with a request line
+*** message body of http request
+- signaled by Content-Length or Transfer-Encoding (https://www.rfc-editor.org/rfc/rfc9110#section-6.4.1)
+** http response
+- starts with a status line
+*** message body of http response
+- presence depends on *request method* and *response status code*
+  - corresponds to when response content is allowed by HTTP semantics (https://www.rfc-editor.org/rfc/rfc9110#section-6.4.1)
+
 ** message headers
 - there are general-headers, request-headers, response-headers, entity-headers
-
 * SHOULDs
 - when a Request-Line is expected, the server SHOULD ignore empty lines
   - old implementations send too many CRLF's
+* syntax notation
+- SP (space)

@@ -5,6 +5,7 @@
 #+date: [2025-04-06 Sun 18:30]
 #+startup: overview
 
+[[https://www.rfc-editor.org/rfc/rfc9112.html#name-index][http grammar]]
 * Terminology
 ** connection
 - a connection is provided by the transport layer
@@ -13,8 +14,6 @@
 ** message ([[id:f30150ae-4c2e-41f5-8bc4-cc4c723909c9][http message]])
 - basic/core unit of HTTP communication
 - consisting of octects (bytes)
-*** a http response
-*** a http request
 ** resource
 - a data object or service
 - can be identified by an [[id:362e3b2f-512f-42f0-b4a0-c065ffdf5b12][URI]]
