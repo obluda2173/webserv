@@ -21,13 +21,14 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
     std::vector<int> _ports;
 
   public:
-    BaseListenerTest() : _openFdsBegin(countOpenFileDescriptors()), _logger(new LoggerType), _ports(GetParam()) {}
+    BaseListenerTest() : _openFdsBegin(countOpenFileDescriptors()), _ports(GetParam()) {}
 
     void SetUp() override { setupListener(); }
 
     void TearDown() override { tearDownListener(); }
 
     void setupListener() {
+        _logger = new LoggerType();
         EpollIONotifier* ioNotifier = new EpollIONotifier(*_logger);
         ConnectionHandler* connHdlr = new ConnectionHandler(*_logger, *ioNotifier);
         _listener = new Listener(*_logger, connHdlr, ioNotifier);

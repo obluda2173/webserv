@@ -53,3 +53,22 @@ int newListeningSocket(const char* node, const char* port, int protocol) {
     }
     return socketfd;
 }
+
+int newSocket1(addrinfo* addrInfo) {
+    int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
+    if (socketfd < 0) {
+        perror("socket");
+        exit(1);
+    }
+
+    int yes = 1;
+    if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    if (bind(socketfd, addrInfo->ai_addr, addrInfo->ai_addrlen) == -1) {
+        perror("bind");
+        exit(EXIT_FAILURE);
+    }
+    return socketfd;
+}

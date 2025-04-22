@@ -4,4 +4,5 @@
 int newListeningSocket(const char* node, const char* port, int protocol);
 void getSvrAddrInfo(const char* node, const char* port, int protocol, struct addrinfo** addrInfo);
 int newSocket(const char* node, const char* port, int protocol);
+int newSocket1(struct addrinfo* addrInfo);
 #endif // UTILS_H

@@ -4,6 +4,7 @@
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
+#include "Logger.h"
 #include "test_main.h"
 #include "test_mocks.h"
 #include <gmock/gmock.h>
@@ -32,5 +33,6 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
 };
 
 class ConnectionHdlrTestWithMockLogger : public BaseConnectionHandlerTest<MockLogger> {};
+class ConnectionHdlrTest : public BaseConnectionHandlerTest<Logger> {};
 
 #endif // TEST_CONNECTIONHANDLERTESTFIXTURE_H
