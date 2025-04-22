@@ -13,10 +13,7 @@ TEST_P(ListenerTestWithMockLogging, closingAConnection) {
         int port = ports[i];
         std::string clientPort = "12345";
         std::string clientIp = "127.0.0.3";
-        struct addrinfo* clientAddrInfo;
-        getAddrInfoHelper(clientIp.c_str(), clientPort.c_str(), AF_INET, &clientAddrInfo);
-        int clientfd = newSocket(clientAddrInfo);
-        freeaddrinfo(clientAddrInfo);
+        int clientfd = newSocket(clientIp, clientPort, AF_INET);
 
         struct addrinfo* svrAddrInfo;
         getAddrInfoHelper(NULL, std::to_string(port).c_str(), AF_INET, &svrAddrInfo);

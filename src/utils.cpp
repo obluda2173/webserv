@@ -42,8 +42,39 @@ int newSocket(addrinfo* addrInfo) {
     return socketfd;
 }
 
+int newSocket(std::string ip, std::string port, int protocol) {
+    struct addrinfo* addrInfo;
+    getAddrInfoHelper(ip.c_str(), port.c_str(), protocol, &addrInfo);
+    int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
+    if (socketfd < 0) {
+        perror("socket");
+        exit(1);
+    }
+
+    int yes = 1;
+    if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    if (bind(socketfd, addrInfo->ai_addr, addrInfo->ai_addrlen) == -1) {
+        perror("bind");
+        exit(EXIT_FAILURE);
+    }
+    freeaddrinfo(addrInfo);
+    return socketfd;
+}
+
 int newListeningSocket(addrinfo* addrInfo, int backlog) {
     int socketfd = newSocket(addrInfo);
+    if (listen(socketfd, backlog) == -1) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+    return socketfd;
+}
+
+int newListeningSocket(std::string ip, std::string port, int protocol, int backlog) {
+    int socketfd = newSocket(ip, port, protocol);
     if (listen(socketfd, backlog) == -1) {
         perror("listen");
         exit(EXIT_FAILURE);

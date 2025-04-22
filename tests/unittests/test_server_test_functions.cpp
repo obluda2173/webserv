@@ -5,14 +5,12 @@
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <random>
+#include <sys/socket.h>
 #include <thread>
 
 void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
                                   struct addrinfo* svrAddr) {
-    struct addrinfo* clientAddrInfo;
-    getAddrInfoHelper(clientIp.c_str(), clientPort.c_str(), AF_INET, &clientAddrInfo);
-    int clientfd = newSocket(clientAddrInfo);
-    freeaddrinfo(clientAddrInfo);
+    int clientfd = newSocket(clientIp, clientPort, AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     EXPECT_CALL(*mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
     ASSERT_EQ(connect(clientfd, svrAddr->ai_addr, svrAddr->ai_addrlen), 0) << "connect: " << strerror(errno);
@@ -45,10 +43,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
 }
 
 void testOneConnection(std::string& clientPort, std::string& clientIp, struct addrinfo* svrAddrInfo) {
-    struct addrinfo* clientAddrInfo;
-    getAddrInfoHelper(clientIp.c_str(), clientPort.c_str(), AF_INET, &clientAddrInfo);
-    int clientfd = newSocket(clientAddrInfo);
-    freeaddrinfo(clientAddrInfo);
+    int clientfd = newSocket(clientIp, clientPort, AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
     close(clientfd);
