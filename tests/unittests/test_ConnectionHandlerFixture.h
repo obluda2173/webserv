@@ -7,6 +7,7 @@
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
+#include "gmock/gmock.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <netdb.h>
@@ -67,6 +68,23 @@ class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<Mo
 
     virtual void setupConnection() override {}
 };
+
+class ConnectionHdlrTestWithMockLoggerIPv4 : public BaseConnectionHandlerTest<MockLogger> {
+    void setupServer() override {
+        getAddrInfoHelper(NULL, "8080", AF_INET, &_svrAddrInfo);
+        _serverfd = newListeningSocket(_svrAddrInfo, 5);
+    }
+
+    virtual void setupConnection() override {
+        _clientfd = newSocket("127.0.0.2", "12345", AF_INET);
+        ASSERT_NE(connect(_clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        EXPECT_CALL(*_logger, log("INFO", ::testing::HasSubstr("Connection accepted from IP:")));
+        _conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(_clientfd, F_SETFL, O_NONBLOCK);
+    }
+};
+
 class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger> {};
 
 #endif // TEST_CONNECTIONHANDLERTESTFIXTURE_H

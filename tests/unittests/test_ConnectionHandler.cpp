@@ -1,6 +1,7 @@
 #include "IIONotifier.h"
 #include "test_ConnectionHandlerFixture.h"
 #include "utils.h"
+#include "gmock/gmock.h"
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
@@ -17,6 +18,23 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
     _connHdlr->handleConnection(_serverfd, READY_TO_READ);
     close(clientfd);
+}
+
+TEST_F(ConnectionHdlrTestWithMockLoggerIPv4, incompleteRequestThenClose) {
+    char buffer[1024];
+    std::string msg = "GET /ping HTT";
+
+    // send msg
+    send(_clientfd, msg.c_str(), msg.length(), 0);
+    _connHdlr->handleConnection(_conn, READY_TO_READ);
+
+    // check that nothing is sent back yet
+    recv(_clientfd, buffer, 1024, 0);
+    ASSERT_EQ(errno, EWOULDBLOCK);
+
+    // now connection is closed
+    EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Disconnect IP")));
+    _connHdlr->handleConnection(_conn, CLIENT_HUNG_UP);
 }
 
 TEST_F(ConnectionHdlrTest, pingTest) {
@@ -42,9 +60,9 @@ TEST_F(ConnectionHdlrTest, pingTest) {
     EXPECT_STREQ(buffer, wantResponse.c_str());
 }
 
-// TEST_F(ConnectionHdlrTest, incompleteRequest) {
+// TEST_F(ConnectionHdlrTest, pingTestInBatches) {
 //     char buffer[1024];
-//     std::string msg = "GET /ping HTT";
+//     std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
 
 //     // send msg
 //     send(_clientfd, msg.c_str(), msg.length(), 0);
