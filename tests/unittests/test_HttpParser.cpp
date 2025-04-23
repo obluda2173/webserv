@@ -22,7 +22,7 @@ void assertEqualHttpRequest(const HttpRequest& want, const HttpRequest& got) {
 }
 
 TEST_P(TestHttpParser, Parsing) {
-    ILogger* logger = new StubLogger();
+    StubLogger logger;
     HttpParser parser(logger);
     const auto& params = GetParam();
 
@@ -38,7 +38,6 @@ TEST_P(TestHttpParser, Parsing) {
     if (parser.ready()) {
         assertEqualHttpRequest(params.wantReq, parser.getRequest());
     }
-    delete logger;
 }
 
 std::string generateLongURI(size_t segmentCount) {
@@ -579,4 +578,19 @@ INSTANTIATE_TEST_SUITE_P(
                              "GET /file.txt HTTP/1.1\r\n"
                              "Host: localhost\r\n"
                              "Range: bytes=0-499;q=0.8, 500-999;q=0.5\r\n"
-                             "\r\n"}));
+                             "\r\n"}
+        // TODO: added test from Kay
+        // TestHttpParserParams{5,
+        //                      0,
+        //                      1,
+        //                      {
+        //                          "GET",
+        //                          "/file.txt",
+        //                          "HTTP/1.1",
+        //                          {{"host", "localhost"}, {"range", "bytes=0-499, 500-999"}},
+        //                      },
+        //                      "GET /file.txt   HTTP/1.1  \r\n"
+        //                      "Host: localhost\r\n"
+        //                      "Range: bytes=0-499, 500-999\r\n"
+        //                      "\r\n"}
+        ));

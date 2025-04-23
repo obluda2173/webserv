@@ -5,7 +5,7 @@
 
 bool checkValidMethod(const std::string& method);
 bool checkValidVersion(const std::string& version);
-bool specificHeaderValidation(const std::string& key, const std::string& value, ILogger* _logger);
+bool specificHeaderValidation(const std::string& key, const std::string& value, ILogger& logger);
 bool isValidRange(const std::string& str);
 bool isValidCookie(std::string str);
 bool isValidAcceptLanguage(const std::string& str);

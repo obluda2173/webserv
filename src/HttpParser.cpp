@@ -3,11 +3,11 @@
 #include <sstream>
 #include <utils.h>
 
-HttpParser::HttpParser(ILogger* logger)
+HttpParser::HttpParser(ILogger& logger)
     : _state(STATE_REQUEST_LINE), _totalProcessedSize(0), _maxHeaderKeySize(256), _maxHeaderSize(4096),
       _logger(logger) {}
 
-HttpParser::HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize, ILogger* logger)
+HttpParser::HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize, ILogger& logger)
     : _state(STATE_REQUEST_LINE), _totalProcessedSize(0), _maxHeaderKeySize(maxHeaderKeySize),
       _maxHeaderSize(maxHeaderSize), _logger(logger) {}
 
@@ -111,25 +111,23 @@ bool HttpParser::_requestLineValidation(const std::string& method, const std::st
 
 bool HttpParser::_headerLineValidation(const std::string& key, const std::string& value) {
     if (key.empty() || value.empty()) {
-        _logger->log("ERROR", "_headerLineValidation: Header key or value is empty");
+        _logger.log("ERROR", "_headerLineValidation: Header key or value is empty");
         return false;
     }
     if (key.find(' ') != std::string::npos && key.find('\t') != std::string::npos &&
         key.find('\r') != std::string::npos && key.find('\n') != std::string::npos) {
-        _logger->log("ERROR", "_headerLineValidation: Header key contains invalid characters");
+        _logger.log("ERROR", "_headerLineValidation: Header key contains invalid characters");
         return false;
     }
     if (key == "content-length") {
         if (_currentRequest.headers.count("transfer-encoding") > 0) {
-            _logger->log("ERROR",
-                         "_headerLineValidation: Content-Length and Transfer-Encoding cannot be used together");
+            _logger.log("ERROR", "_headerLineValidation: Content-Length and Transfer-Encoding cannot be used together");
             return false;
         }
     }
     if (key == "transfer-encoding") {
         if (_currentRequest.headers.count("content-length") > 0) {
-            _logger->log("ERROR",
-                         "_headerLineValidation: Transfer-Encoding and Content-Length cannot be used together");
+            _logger.log("ERROR", "_headerLineValidation: Transfer-Encoding and Content-Length cannot be used together");
             return false;
         }
     }
