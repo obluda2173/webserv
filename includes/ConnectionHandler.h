@@ -2,6 +2,7 @@
 #define CONNECTIONHANDLER_H
 
 #include "IConnectionHandler.h"
+#include "IHttpParser.h"
 #include "IIONotifier.h"
 #include "ILogger.h"
 #include <map>
@@ -14,6 +15,7 @@ typedef enum SocketType {
 
 struct ConnectionInfo {
     struct sockaddr_storage addr;
+    IHttpParser* httpPrsr;
     int fd;
 };
 
