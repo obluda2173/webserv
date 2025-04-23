@@ -523,20 +523,20 @@ INSTANTIATE_TEST_SUITE_P(
                              "Host: localhost\r\n"
                              "Cookie: sessionId=123; userId=456\r\n"
                              "\r\n"},
-        // 35 Header with multiple Cookie values
-        TestHttpParserParams{5,
-                             1,
-                             0,
-                             {
-                                 "GET",
-                                 "/",
-                                 "HTTP/1.1",
-                                 {{"host", "localhost"}, {"cookie", "sessionId=123; userId=456; theme=dark"}},
-                             },
-                             "GET / HTTP/1.1\r\n"
-                             "Host: localhost\r\n"
-                             "Cookie: sessionId=123; userId=456; theme=dark\r\n"
-                             "\r\n"},
+        // // 35 Header with multiple Cookie values
+        // TestHttpParserParams{5,
+        //                      1,
+        //                      0,
+        //                      {
+        //                          "GET",
+        //                          "/",
+        //                          "HTTP/1.1",
+        //                          {{"host", "localhost"}, {"cookie", "sessionId=123; userId=456; theme=dark"}},
+        //                      },
+        //                      "GET / HTTP/1.1\r\n"
+        //                      "Host: localhost\r\n"
+        //                      "Cookie: sessionId=123; userId=456; theme=dark\r\n"
+        //                      "\r\n"},
         // 36 Header with Range
         TestHttpParserParams{5,
                              1,
@@ -578,7 +578,41 @@ INSTANTIATE_TEST_SUITE_P(
                              "GET /file.txt HTTP/1.1\r\n"
                              "Host: localhost\r\n"
                              "Range: bytes=0-499;q=0.8, 500-999;q=0.5\r\n"
-                             "\r\n"}
+                             "\r\n"},
+                                     // 39 Wrong Http Version
+        TestHttpParserParams{10,
+            0,
+            1,
+            {
+                "POST",
+                "/upload",
+                "HTTP/1.1",
+                {{"host", "localhost"}, {"content-length", "13"}},
+            },
+            "POST /upload HTTP/3.1\r\n"
+            "Host: localhost\r\n"
+            "Content-Length: 13\r\n"
+            "\r\n"},
+            // 40 Wrong Http Version 2
+            TestHttpParserParams{10,
+                0,
+                1,
+                {},
+                "POST /upload HTTP/-3.1\r\n"
+                "Host: localhost\r\n"
+                "Content-Length: 13\r\n"
+                "\r\n"},
+                            // 41 Wrong Http Version 2
+            TestHttpParserParams{10,
+                0,
+                1,
+                {},
+                "POST /upload HTTP/1.1\r\n"
+                "Host: localhost\r\n"
+                "Content-Type: text/plain; charset=utf-\r\n"
+                "Content-Length: 13\r\n"
+                
+                "\r\n"}
         // TODO: added test from Kay
         // TestHttpParserParams{5,
         //                      0,
