@@ -49,29 +49,38 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     return conn;
 }
 
+void ConnectionHandler::_readPipeline(int conn) {
+    IHttpParser* prsr = _parsers.at(conn);
+    char buffer[1024];
+    ssize_t r = recv(conn, buffer, 1024, 0);
+    buffer[r] = '\0';
+    prsr->feed(buffer, r);
+    std::string msg = std::string(buffer);
+    if (prsr->error()) {
+        _responses[conn] = "HTTP/1.1 400 Bad Request\r\n"
+                           "\r\n";
+    } else {
+        _responses[conn] = "HTTP/1.1 200 OK\r\n"
+                           "Content-Length: 4\r\n"
+                           "\r\n"
+                           "pong";
+    }
+    return;
+}
+
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     try {
         ConnectionInfo connInfo = _connections.at(fd);
-        IHttpParser* prsr = _parsers.at(fd);
-        if (notif == READY_TO_READ) {
-            char buffer[1024];
-            ssize_t r = recv(fd, buffer, 1024, 0);
-            buffer[r] = '\0';
-            prsr->feed(buffer, r);
-            std::string msg = std::string(buffer);
-            if (prsr->error()) {
-                _responses[fd] = "HTTP/1.1 400 Bad Request\r\n"
-                                 "\r\n";
-            } else {
-                _responses[fd] = "HTTP/1.1 200 OK\r\n"
-                                 "Content-Length: 4\r\n"
-                                 "\r\n"
-                                 "pong";
-            }
-        } else if (notif == CLIENT_HUNG_UP) {
+        switch (notif) {
+        case READY_TO_READ:
+            _readPipeline(fd);
+            break;
+        case CLIENT_HUNG_UP:
             _removeClientConnection(connInfo);
-        } else {
+            break;
+        case READY_TO_WRITE:
             send(fd, _responses[fd].c_str(), _responses[fd].length(), 0);
+            break;
         }
         return fd;
     } catch (std::out_of_range& e) {
