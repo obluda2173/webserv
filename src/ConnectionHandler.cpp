@@ -29,10 +29,11 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
 }
 
 void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
-    close(connInfo.fd);
-    _ioNotifier.del(connInfo.fd);
     _connections.erase(connInfo.fd);
+    delete _parsers[connInfo.fd];
     _parsers.erase(connInfo.fd);
+    _ioNotifier.del(connInfo.fd);
+    close(connInfo.fd);
     logDisconnect(_logger, connInfo.addr);
 }
 
