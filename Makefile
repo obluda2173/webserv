@@ -26,6 +26,7 @@ SRC_FILES :=	$(SRC_DIR)/Server.cpp \
 				$(SRC_DIR)/Listener.cpp \
 				$(SRC_DIR)/EPollManager.cpp \
 				$(SRC_DIR)/ConnectionHandler.cpp \
+				$(SRC_DIR)/HttpParser.cpp \
 				$(SRC_DIR)/utils.cpp \
 
 NAME := webserv
@@ -34,6 +35,11 @@ all: $(NAME)
 
 $(NAME): $(SRC_FILES) $(RUN_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) $(SRC_FILES) $(RUN_DIR)/main.cpp -o $(NAME) $(INCLUDES)
+
+unittest:
+	cmake -S . -B build && \
+	cmake --build build && \
+	./build/run_unittests
 
 clean:
 	rm -rf .cache
