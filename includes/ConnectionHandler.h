@@ -15,19 +15,19 @@ typedef enum SocketType {
 
 struct ConnectionInfo {
     struct sockaddr_storage addr;
-    IHttpParser* httpPrsr;
     int fd;
 };
 
 class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, ConnectionInfo> _connections;
+    std::map<int, IHttpParser*> _parsers;
+    std::map<int, std::string> _responses;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     void _removeClientConnection(ConnectionInfo connInfo);
     int _acceptNewConnection(int socketfd);
-    std::string _response;
 
   public:
     ConnectionHandler(ILogger&, IIONotifier&);

@@ -74,6 +74,8 @@ TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
     r = recv(clientfd2, buffer, 1024, 0);
     buffer[r] = '\0';
     EXPECT_STREQ(buffer, wantResponse2.c_str());
+
+    close(clientfd2);
 }
 
 TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {

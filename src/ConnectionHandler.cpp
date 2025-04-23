@@ -14,7 +14,7 @@ ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), 
 ConnectionHandler::~ConnectionHandler(void) {
     for (std::map<int, ConnectionInfo>::iterator it = _connections.begin(); it != _connections.end(); it++) {
         close(it->first);
-        delete it->second.httpPrsr;
+        delete _parsers[it->first];
     }
 }
 
@@ -23,16 +23,16 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     ConnectionInfo connInfo;
     connInfo.addr = theirAddr;
     connInfo.fd = conn;
-    connInfo.httpPrsr = new HttpParser(_logger);
     _connections[conn] = connInfo;
+    _parsers[conn] = new HttpParser(_logger);
     _ioNotifier.add(conn, CLIENT_HUNG_UP);
 }
 
 void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
     close(connInfo.fd);
-    delete connInfo.httpPrsr;
     _ioNotifier.del(connInfo.fd);
     _connections.erase(connInfo.fd);
+    _parsers.erase(connInfo.fd);
     logDisconnect(_logger, connInfo.addr);
 }
 
@@ -51,7 +51,7 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     try {
         ConnectionInfo connInfo = _connections.at(fd);
-        IHttpParser* prsr = connInfo.httpPrsr;
+        IHttpParser* prsr = _parsers.at(fd);
         if (notif == READY_TO_READ) {
             char buffer[1024];
             ssize_t r = recv(fd, buffer, 1024, 0);
@@ -59,18 +59,18 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
             prsr->feed(buffer, r);
             std::string msg = std::string(buffer);
             if (prsr->error()) {
-                _response = "HTTP/1.1 400 Bad Request\r\n"
-                            "\r\n";
+                _responses[fd] = "HTTP/1.1 400 Bad Request\r\n"
+                                 "\r\n";
             } else {
-                _response = "HTTP/1.1 200 OK\r\n"
-                            "Content-Length: 4\r\n"
-                            "\r\n"
-                            "pong";
+                _responses[fd] = "HTTP/1.1 200 OK\r\n"
+                                 "Content-Length: 4\r\n"
+                                 "\r\n"
+                                 "pong";
             }
         } else if (notif == CLIENT_HUNG_UP) {
             _removeClientConnection(connInfo);
         } else {
-            send(fd, _response.c_str(), _response.length(), 0);
+            send(fd, _responses[fd].c_str(), _responses[fd].length(), 0);
         }
         return fd;
     } catch (std::out_of_range& e) {
