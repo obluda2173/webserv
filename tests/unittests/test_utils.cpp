@@ -1,7 +1,11 @@
+#include "ConnectionHandler.h"
+#include "IConnectionHandler.h"
+#include "IIONotifier.h"
 #include "test_main.h"
 #include "gtest/gtest.h"
 #include <dirent.h>
 #include <iostream>
+#include <thread>
 #include <unistd.h>
 
 void reuseSocket(int socketfd) {
@@ -45,4 +49,17 @@ int countOpenFileDescriptors() {
         count -= 3;
     }
     return count;
+}
+
+void sendMsgInChunks(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int chunkSize,
+                     char buffer[1024]) {
+    // cutting the msg into parts and send
+    std::vector<std::string> chunks;
+    for (std::size_t i = 0; i < msg.length(); i += chunkSize) {
+        send(clientfd, msg.substr(i, chunkSize).c_str(), msg.substr(i, chunkSize).length(), 0);
+        connHdlr.handleConnection(conn, READY_TO_READ);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        recv(clientfd, buffer, 1024, 0);
+        ASSERT_EQ(errno, EWOULDBLOCK);
+    }
 }

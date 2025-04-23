@@ -1,7 +1,9 @@
 #include "IIONotifier.h"
 #include "test_ConnectionHandlerFixture.h"
+#include "test_main.h"
 #include "utils.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <cerrno>
 #include <chrono>
 #include <cstring>
@@ -9,7 +11,6 @@
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <thread>
 
 TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";
@@ -22,12 +23,14 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     close(clientfd);
 }
 
-TEST_F(ConnectionHdlrTest, pingTest) {
+TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
+    reqRespParam params = GetParam();
     char buffer[1024];
-    std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
+    std::string request = params.request;
+    std::string wantResponse = params.wantResponse;
 
     // send msg
-    send(_clientfd, msg.c_str(), msg.length(), 0);
+    send(_clientfd, request.c_str(), request.length(), 0);
     _connHdlr->handleConnection(_conn, READY_TO_READ);
 
     // check that nothing is sent back yet
@@ -38,49 +41,25 @@ TEST_F(ConnectionHdlrTest, pingTest) {
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
-    std::string wantResponse = "HTTP/1.1 200 OK\r\n"
-                               "Content-Length: 4\r\n"
-                               "\r\n"
-                               "pong";
     EXPECT_STREQ(buffer, wantResponse.c_str());
 }
 
-TEST_F(ConnectionHdlrTest, WrongRequest) {
-    char buffer[1024];
-    std::string msg = "GET \r\n\r\n";
+INSTANTIATE_TEST_SUITE_P(testingInOneBatchRequestRespons, ConnectionHdlrTestWithParamReqResp,
+                         ::testing::Values(reqRespParam{"GET \r\n\r\n", "HTTP/1.1 400 Bad Request\r\n"
+                                                                        "\r\n"},
+                                           reqRespParam{"GET /ping HTTP/1.1\r\n\r\n", "HTTP/1.1 200 OK\r\n"
+                                                                                      "Content-Length: 4\r\n"
+                                                                                      "\r\n"
+                                                                                      "pong"}));
 
-    // send msg
-    send(_clientfd, msg.c_str(), msg.length(), 0);
-    _connHdlr->handleConnection(_conn, READY_TO_READ);
-
-    // check that nothing is sent back yet
-    recv(_clientfd, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
-
-    // next time around the response is sent back
-    _connHdlr->handleConnection(_conn, READY_TO_WRITE);
-    ssize_t r = recv(_clientfd, buffer, 1024, 0);
-    buffer[r] = '\0';
-    std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
-                               "\r\n";
-    EXPECT_STREQ(buffer, wantResponse.c_str());
-}
-
-TEST_F(ConnectionHdlrTest, pingTestInBatches) {
+TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
+    int batchSize = GetParam();
     char buffer[1024];
     std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
 
     // cutting the msg into parts and send
-    std::vector<std::string> chunks;
-    for (std::size_t i = 0; i < msg.length(); i += 2) {
-        send(_clientfd, msg.substr(i, 2).c_str(), msg.substr(i, 2).length(), 0);
-        _connHdlr->handleConnection(_conn, READY_TO_READ);
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        recv(_clientfd, buffer, 1024, 0);
-        ASSERT_EQ(errno, EWOULDBLOCK);
-    }
 
-    // next time around the response is sent back
+    sendMsgInChunks(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
@@ -90,6 +69,9 @@ TEST_F(ConnectionHdlrTest, pingTestInBatches) {
                                "pong";
     EXPECT_STREQ(buffer, wantResponse.c_str());
 }
+
+INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
+                         ::testing::Values(1, 2, 11, 21, 22, 23));
 
 // TODO: the next two test do change nothing at the current code
 // TEST_F(ConnectionHdlrTestWithMockLoggerIPv4, incompleteRequestThenClose) {
