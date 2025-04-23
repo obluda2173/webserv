@@ -5,7 +5,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cerrno>
-#include <chrono>
 #include <cstring>
 #include <fcntl.h>
 #include <gtest/gtest.h>
@@ -58,8 +57,7 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
     std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
 
     // cutting the msg into parts and send
-
-    sendMsgInChunks(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
+    sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
