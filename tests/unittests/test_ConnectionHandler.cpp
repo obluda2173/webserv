@@ -24,6 +24,11 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
 
 TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
     char buffer[1024];
+    int clientfd1 = _clientfds[0];
+    int conn1 = _conns[0];
+    int clientfd2 = _clientfds[1];
+    int conn2 = _conns[1];
+
     std::string request1 = "GET \r\n\r\n";
     std::string request2 = "GET /ping HTTP/1.1\r\n\r\n";
     std::string wantResponse1 = "HTTP/1.1 400 Bad Request\r\n"
@@ -33,16 +38,10 @@ TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
                                 "\r\n"
                                 "pong";
 
-    int clientfd2 = newSocket("127.0.0.2", "54321", AF_INET);
-    ASSERT_NE(connect(clientfd2, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-        << "connect: " << std::strerror(errno) << std::endl;
-    int conn2 = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-    fcntl(clientfd2, F_SETFL, O_NONBLOCK);
-
     // send first half of request1
-    send(_clientfd, request1.substr(0, 3).c_str(), request1.substr(0, 3).length(), 0);
-    _connHdlr->handleConnection(_conn, READY_TO_READ);
-    recv(_clientfd, buffer, 1024, 0);
+    send(clientfd1, request1.substr(0, 3).c_str(), request1.substr(0, 3).length(), 0);
+    _connHdlr->handleConnection(conn1, READY_TO_READ);
+    recv(clientfd1, buffer, 1024, 0);
     ASSERT_EQ(errno, EWOULDBLOCK);
 
     // send first half of request2
@@ -52,9 +51,9 @@ TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
     ASSERT_EQ(errno, EWOULDBLOCK);
 
     // send second half of request1
-    send(_clientfd, request1.substr(3).c_str(), request1.substr(3).length(), 0);
-    _connHdlr->handleConnection(_conn, READY_TO_READ);
-    recv(_clientfd, buffer, 1024, 0);
+    send(clientfd1, request1.substr(3).c_str(), request1.substr(3).length(), 0);
+    _connHdlr->handleConnection(conn1, READY_TO_READ);
+    recv(clientfd1, buffer, 1024, 0);
     ASSERT_EQ(errno, EWOULDBLOCK);
 
     // send second half of request2
@@ -64,8 +63,8 @@ TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
     ASSERT_EQ(errno, EWOULDBLOCK);
 
     // check that it received the right responses (response1)
-    _connHdlr->handleConnection(_conn, READY_TO_WRITE);
-    ssize_t r = recv(_clientfd, buffer, 1024, 0);
+    _connHdlr->handleConnection(conn1, READY_TO_WRITE);
+    ssize_t r = recv(clientfd1, buffer, 1024, 0);
     buffer[r] = '\0';
     EXPECT_STREQ(buffer, wantResponse1.c_str());
 
