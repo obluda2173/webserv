@@ -82,24 +82,10 @@ int newListeningSocket(std::string ip, std::string port, int protocol, int backl
     return socketfd;
 }
 
-// int newSocket(const char* node, const char* port, int protocol) {
-//     struct addrinfo* addrInfo;
-//     getSvrAddrInfo(node, port, protocol, &addrInfo);
-
-//     int socketfd = socket(addrInfo->ai_family, addrInfo->ai_socktype, addrInfo->ai_protocol);
-//     if (socketfd < 0) {
-//         perror("socket");
-//         exit(1);
-//     }
-//     int yes = 1;
-//     if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-//         perror("setsockopt");
-//         exit(EXIT_FAILURE);
-//     }
-//     if (bind(socketfd, addrInfo->ai_addr, addrInfo->ai_addrlen) == -1) {
-//         perror("bind");
-//         exit(EXIT_FAILURE);
-//     }
-//     freeaddrinfo(addrInfo);
-//     return socketfd;
-// }
+std::string toLower(const std::string& str) {
+    std::string result = str;
+    for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
+        *ptr = static_cast<char>(tolower(*ptr));
+    }
+    return result;
+}
