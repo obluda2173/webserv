@@ -24,10 +24,10 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
 
 TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
     char buffer[1024];
-    int clientfd1 = _clientfds[0];
-    int conn1 = _conns[0];
-    int clientfd2 = _clientfds[1];
-    int conn2 = _conns[1];
+    int clientfd1 = _clientfdsAndConns[0].first;
+    int conn1 = _clientfdsAndConns[0].second;
+    int clientfd2 = _clientfdsAndConns[1].first;
+    int conn2 = _clientfdsAndConns[1].second;
 
     std::string request1 = "GET \r\n\r\n";
     std::string request2 = "GET /ping HTTP/1.1\r\n\r\n";
@@ -38,6 +38,11 @@ TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
                                 "\r\n"
                                 "pong";
 
+    // while (/* still something to be sent */ true) {
+    //     for (std::pair<int, int>::iterator; it != it.begin(); it++) {
+    //         // send next bit of information over the connection
+    //     }
+    // }
     // send first half of request1
     send(clientfd1, request1.substr(0, 3).c_str(), request1.substr(0, 3).length(), 0);
     _connHdlr->handleConnection(conn1, READY_TO_READ);
@@ -127,6 +132,7 @@ INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamIn
                          ::testing::Values(1, 2, 11, 21, 22, 23));
 
 // TODO: the next two test do change nothing at the current code
+// TODO: maybe handle some specific timeout on a connection, probably responsibility of the Listener
 // TEST_F(ConnectionHdlrTestWithMockLoggerIPv4, incompleteRequestThenClose) {
 //     char buffer[1024];
 //     std::string msg = "GET /ping HTT";

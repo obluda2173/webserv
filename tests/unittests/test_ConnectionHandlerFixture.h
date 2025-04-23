@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <utility>
 #include <utils.h>
 
 template <typename LoggerType> class BaseConnectionHandlerTest : public ::testing::Test {
@@ -22,8 +23,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
     IConnectionHandler* _connHdlr;
     int _serverfd;
     struct addrinfo* _svrAddrInfo;
-    std::vector<int> _clientfds;
-    std::vector<int> _conns;
+    std::vector<std::pair<int, int>> _clientfdsAndConns;
 
   public:
     BaseConnectionHandlerTest() : _openFdsBegin(countOpenFileDescriptors()) {}
@@ -51,17 +51,15 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
                 << "connect: " << std::strerror(errno) << std::endl;
             conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
             fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientfds.push_back(clientfd);
-            _conns.push_back(conn);
+            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
             port++;
         }
     }
 
     void TearDown() override {
-        for (size_t i = 0; i < _clientfds.size(); i++) {
-            close(_clientfds[i]);
+        for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
+            close(_clientfdsAndConns[i].first);
         }
-        std::cout << "here" << std::endl;
         freeaddrinfo(_svrAddrInfo);
         close(_serverfd);
         delete _connHdlr;
@@ -97,8 +95,7 @@ class ConnectionHdlrTestWithMockLoggerIPv4 : public BaseConnectionHandlerTest<Mo
             EXPECT_CALL(*_logger, log("INFO", ::testing::HasSubstr("Connection accepted from IP:")));
             conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
             fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientfds.push_back(clientfd);
-            _conns.push_back(conn);
+            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
             port++;
         }
         // _clientfd = newSocket("127.0.0.2", "12345", AF_INET);
