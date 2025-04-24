@@ -53,6 +53,8 @@ int EpollIONotifier::wait(int* fds, e_notif* notifs) {
             *notifs = READY_TO_READ;
         if (events[0].events & EPOLLOUT)
             *notifs = READY_TO_WRITE;
+        if (events[0].events & EPOLLHUP)
+            *notifs = BROKEN_CONNECTION;
     } else
         *fds = -1;
     return ready;

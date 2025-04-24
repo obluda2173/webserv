@@ -4,6 +4,7 @@
 int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
     testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
+    testing::GTEST_FLAG(filter) = "*TestIONotifier*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest.send2MsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
