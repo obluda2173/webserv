@@ -92,11 +92,7 @@ TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
     _connHdlr->handleConnection(_conn, READY_TO_READ);
 
     // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    int fds;
-    e_notif notif;
-    _ioNotifier->wait(&fds, &notif);
-    ASSERT_EQ(fds, _conn);
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, _conn);
 
     // check that nothing is sent back yet
     recv(_clientfd, buffer, 1024, 0);
@@ -126,11 +122,7 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
     sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
 
     // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    int fds;
-    e_notif notif;
-    _ioNotifier->wait(&fds, &notif);
-    ASSERT_EQ(fds, _conn);
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, _conn);
 
     // handle teh
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);

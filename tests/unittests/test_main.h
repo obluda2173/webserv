@@ -26,4 +26,7 @@ void testMultipleConnections(std::string svrPort, int nbrConns);
 void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int chunkSize,
                       char buffer[1024]);
 bool allZero(std::vector<std::string> msgs);
+
+void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
+
 #endif // TEST_MAIN_H_

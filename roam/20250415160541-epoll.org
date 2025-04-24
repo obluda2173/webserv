@@ -102,18 +102,22 @@ union epoll_data {
 - man epoll_ctl(2)
 - bit mask
 - ORing together EVENT_TYPES (those are returned by *epoll_wait*) and INPUT_FLAGS (affect behaviour but aren't returned)
-***** EPOLLIN
+***** Flags the epoll_wait returns in events
+****** EPOLLIN
 - The associated file is available for read(2) operations.
-***** EPOLLRDHUP (reading will be closed after everything has read, writing still possible)
+****** EPOLLERR !!!always!!!
+- Error condition happened  on  the  associated  file  descriptor.
+- This event is also reported for the write end of a pipe when the read end has been closed.
+****** EPOLLRDHUP (reading will be closed after everything has read, writing still possible)
 - https://stackoverflow.com/questions/51833215/why-do-we-need-epollrdhup-when-epollhup-seems-enough
 - peer socked closed or shut down writting
 - can read from the fd until the end and can still write to it
-***** EPOLLHUP (no more operations possible other than reading; no more writing)
+****** EPOLLHUP !!!always!!! (no more operations possible other than reading; no more writing)
 - https://stackoverflow.com/questions/51833215/why-do-we-need-epollrdhup-when-epollhup-seems-enough
 - peer socked closed or shut down writting
 - Hang up happened on the associated file descriptor.
 - can only read from fd, but can't write anymore
-***** EPOLLOUT
+****** EPOLLOUT
 - the associated file is available for write
 
 ** NOTES

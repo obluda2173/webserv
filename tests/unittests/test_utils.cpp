@@ -70,3 +70,12 @@ bool allZero(std::vector<std::string> msgs) {
     }
     return true;
 }
+
+void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn) {
+    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
+    int fds;
+    e_notif notif;
+    ioNotifier->wait(&fds, &notif);
+    ASSERT_EQ(fds, conn);
+    ASSERT_EQ(notif, READY_TO_WRITE);
+}
