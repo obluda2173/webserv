@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <stdexcept>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <vector>
 
@@ -124,9 +125,34 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
     EXPECT_STREQ(buffer, wantResponse.c_str());
 }
 
+TEST_P(ConnectionHdlrTestWithParamInt, testThatNotifierReturnsREADY_TO_WRITE) {
+    int batchSize = GetParam();
+    char buffer[1024];
+    std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
+
+    // cutting the msg into parts and send
+    sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
+
+    int fds;
+    e_notif notif;
+    _ioNotifier->wait(&fds, &notif);
+    ASSERT_EQ(fds, _conn);
+    ASSERT_EQ(notif, READY_TO_WRITE);
+    // _connHdlr->handleConnection(_conn, READY_TO_WRITE);
+    // ssize_t r = recv(_clientfd, buffer, 1024, 0);
+    // buffer[r] = '\0';
+    // std::string wantResponse = "HTTP/1.1 200 OK\r\n"
+    //                            "Content-Length: 4\r\n"
+    //                            "\r\n"
+    //                            "pong";
+    // EXPECT_STREQ(buffer, wantResponse.c_str());
+}
+
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
                          ::testing::Values(1, 2, 11, 21, 22, 23));
 
+// TODO: write a test that verifies that notifier notif is set to READY_TO_WRITE
+//
 // TODO: the next two test do change nothing at the current code
 // TODO: maybe handle some specific timeout on a connection, probably responsibility of the Listener
 // TEST_F(ConnectionHdlrTestWithMockLoggerIPv4, incompleteRequestThenClose) {
