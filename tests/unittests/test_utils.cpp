@@ -1,4 +1,3 @@
-#include "ConnectionHandler.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
 #include "test_main.h"
@@ -62,4 +61,12 @@ void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandle
         recv(clientfd, buffer, 1024, 0);
         ASSERT_EQ(errno, EWOULDBLOCK);
     }
+}
+
+bool allZero(std::vector<std::string> msgs) {
+    for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); it++) {
+        if ((*it).length() > 0)
+            return false;
+    }
+    return true;
 }

@@ -75,8 +75,10 @@ class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger, ParamsCo
     virtual void setupClientConnections() {
         int clientfd;
         int conn;
-        int port = 11111;
-        for (int i = 0; i < 2; i++) {
+        int port = 12345;
+        ParamsConnectionHdlrTestAsync params = GetParam();
+        int nbrRequests = params.requests.size();
+        for (int i = 0; i < nbrRequests; i++) {
             clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
             ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
                 << "connect: " << std::strerror(errno) << std::endl;

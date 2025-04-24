@@ -10,6 +10,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <vector>
 
 class MockLogger;
 
@@ -24,5 +25,5 @@ void testOneConnection(std::string& clientIp, std::string& clientPort, struct ad
 void testMultipleConnections(std::string svrPort, int nbrConns);
 void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int chunkSize,
                       char buffer[1024]);
-
+bool allZero(std::vector<std::string> msgs);
 #endif // TEST_MAIN_H_
