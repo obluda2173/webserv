@@ -78,35 +78,6 @@ class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<Mo
     virtual void setupConnection() override {}
 };
 
-class ConnectionHdlrTestWithMockLoggerIPv4 : public BaseConnectionHandlerTest<MockLogger> {
-    void setupServer() override {
-        getAddrInfoHelper(NULL, "8080", AF_INET, &_svrAddrInfo);
-        _serverfd = newListeningSocket(_svrAddrInfo, 5);
-    }
-
-    virtual void setupConnection() override {
-        int clientfd;
-        int conn;
-        int port = 11111;
-        for (int i = 0; i < 2; i++) {
-            clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
-            ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-                << "connect: " << std::strerror(errno) << std::endl;
-            EXPECT_CALL(*_logger, log("INFO", ::testing::HasSubstr("Connection accepted from IP:")));
-            conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-            fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
-            port++;
-        }
-        // _clientfd = newSocket("127.0.0.2", "12345", AF_INET);
-        // ASSERT_NE(connect(_clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-        //     << "connect: " << std::strerror(errno) << std::endl;
-        // EXPECT_CALL(*_logger, log("INFO", ::testing::HasSubstr("Connection accepted from IP:")));
-        // _conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-        // fcntl(_clientfd, F_SETFL, O_NONBLOCK);
-    }
-};
-
 class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger> {};
 
 ///////////////////////
