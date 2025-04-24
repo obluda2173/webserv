@@ -137,22 +137,3 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
                          ::testing::Values(1, 2, 11, 21, 22, 23)); // these are Fuzzy-tests for the most part
-
-// TODO: the next two test do change nothing at the current code
-// TODO: maybe handle some specific timeout on a connection, probably responsibility of the Listener
-// TEST_F(ConnectionHdlrTestWithMockLoggerIPv4, incompleteRequestThenClose) {
-//     char buffer[1024];
-//     std::string msg = "GET /ping HTT";
-
-//     // send msg
-//     send(_clientfd, msg.c_str(), msg.length(), 0);
-//     _connHdlr->handleConnection(_conn, READY_TO_READ);
-
-//     // check that nothing is sent back yet
-//     recv(_clientfd, buffer, 1024, 0);
-//     ASSERT_EQ(errno, EWOULDBLOCK);
-
-//     // now connection is closed
-//     EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Disconnect IP")));
-//     _connHdlr->handleConnection(_conn, CLIENT_HUNG_UP);
-// }

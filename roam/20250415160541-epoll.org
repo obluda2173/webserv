@@ -114,7 +114,7 @@ union epoll_data {
 - can read from the fd until the end and can still write to it
 ****** EPOLLHUP !!!always!!! (no more operations possible other than reading; no more writing)
 - https://stackoverflow.com/questions/51833215/why-do-we-need-epollrdhup-when-epollhup-seems-enough
-- peer socked closed or shut down writting
+- peer socked closed or shut down writting (man 2 shutdown)
 - Hang up happened on the associated file descriptor.
 - can only read from fd, but can't write anymore
 ****** EPOLLOUT

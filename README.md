@@ -9,3 +9,7 @@
   - \[ \] send two httpMessage one after the other without cutting tcp
     connection
   - \[ \] make sure to treat EPOLLRDHUP and EPOLLHUP appropriately
+  - \[ \] build server with some configurations
+  - \[ \] figure out stategie for error reporting (system call errors)
+  - \[ \] make the test<sub>fixtures</sub> more TypeAgnostic
+      - add more templates (IIONotifier, IConnectionHandler) and so on
