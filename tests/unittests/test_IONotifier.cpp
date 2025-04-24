@@ -7,50 +7,34 @@
 #include <sys/socket.h>
 #include <utils.h>
 
-TEST(TestIONotifier, testBrokenConnection) {
-    ILogger* logger = new StubLogger();
-    IIONotifier* ioNotifier = new EpollIONotifier(*logger);
+// test a closed connection
+TEST(IONotifierTest, DetectsBrokenConnection) {
+    StubLogger logger;
+    EpollIONotifier ioNotifier(logger);
 
-    struct addrinfo* svrAddrInfo;
-    getAddrInfoHelper(NULL, "8080", AF_INET, &svrAddrInfo);
-    int fd = newListeningSocket(svrAddrInfo, 5);
-    freeaddrinfo(svrAddrInfo);
+    // Create a socket pair for testing
+    int sockets[2];
+    ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sockets), 0) << "socketpair failed: " << strerror(errno);
 
-    ioNotifier->add(fd, READY_TO_READ);
+    int serverSocket = sockets[0];
+    int clientSocket = sockets[1];
 
-    shutdown(fd, SHUT_RDWR);
+    // Add the server socket to the notifier
+    ioNotifier.add(serverSocket, READY_TO_READ);
 
-    int fds;
-    e_notif notifs;
-    ioNotifier->wait(&fds, &notifs);
+    // Now close the client side to simulate a broken connection
+    close(clientSocket);
 
-    ASSERT_EQ(BROKEN_CONNECTION, notifs);
+    // Wait for the notification
+    int fd;
+    e_notif notification;
+    int ready = ioNotifier.wait(&fd, &notification);
 
-    delete ioNotifier;
-    delete logger;
-}
+    // Check that we got the correct notification
+    ASSERT_GT(ready, 0) << "No events detected";
+    EXPECT_EQ(fd, serverSocket);
+    EXPECT_EQ(notification, BROKEN_CONNECTION);
 
-TEST(TestIONotifier, testBeingAbleToReadButBrokenConnection) {
-    ILogger* logger = new StubLogger();
-    IIONotifier* ioNotifier = new EpollIONotifier(*logger);
-
-    struct addrinfo* svrAddrInfo;
-    getAddrInfoHelper(NULL, "8080", AF_INET, &svrAddrInfo);
-    int fd = newListeningSocket(svrAddrInfo, 5);
-    freeaddrinfo(svrAddrInfo);
-
-    std::string msg = "A message written into fd";
-    send;
-    ioNotifier->add(fd, READY_TO_READ);
-
-    shutdown(fd, SHUT_RDWR);
-
-    int fds;
-    e_notif notifs;
-    ioNotifier->wait(&fds, &notifs);
-
-    ASSERT_EQ(BROKEN_CONNECTION, notifs);
-
-    delete ioNotifier;
-    delete logger;
+    // Clean up
+    close(serverSocket);
 }
