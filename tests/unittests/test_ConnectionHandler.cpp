@@ -24,9 +24,9 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     close(clientfd);
 }
 
-bool allZero(std::vector<std::string*> msgs) {
-    for (std::vector<std::string*>::iterator it = msgs.begin(); it != msgs.end(); it++) {
-        if ((*it)->length() > 0)
+bool allZero(std::vector<std::string> msgs) {
+    for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); it++) {
+        if ((*it).length() > 0)
             return false;
     }
     return true;
@@ -43,14 +43,15 @@ TEST_F(ConnectionHdlrTest, send2MsgsAsync) {
                                               "\r\n"
                                               "pong"};
 
-    std::vector<std::string*> msgs = std::vector<std::string*>{&request1, &request2};
+    std::vector<std::string> msgs = std::vector<std::string>{request1, request2};
     int batchSize = 3;
     while (!allZero(msgs)) {
         int count = 0;
-        for (std::vector<std::string*>::iterator it = msgs.begin(); it != msgs.end(); it++) {
-            if ((*it)->length() == 0)
+        for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); it++) {
+            if ((*it).length() == 0)
                 continue;
-            std::string toBeSent = (*it)->substr(0, batchSize);
+            // sent substring
+            std::string toBeSent = (*it).substr(0, batchSize);
             int clientfd = _clientfdsAndConns[count].first;
             int conn = _clientfdsAndConns[count].second;
 
@@ -59,10 +60,11 @@ TEST_F(ConnectionHdlrTest, send2MsgsAsync) {
             recv(clientfd, buffer, 1024, 0);
             ASSERT_EQ(errno, EWOULDBLOCK);
 
+            // update the string with what is remaining
             try {
-                *(*it) = (*it)->substr(batchSize);
+                (*it) = (*it).substr(batchSize);
             } catch (const std::out_of_range&) {
-                (*it)->clear();
+                (*it).clear();
             }
 
             count++;
