@@ -9,7 +9,9 @@
 #include <fcntl.h>
 #include <gtest/gtest.h>
 #include <netdb.h>
+#include <stdexcept>
 #include <sys/socket.h>
+#include <vector>
 
 TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";
@@ -22,64 +24,58 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     close(clientfd);
 }
 
-TEST_F(ConnectionHdlrTest, send2MsgsParallel) {
-    char buffer[1024];
-    int clientfd1 = _clientfdsAndConns[0].first;
-    int conn1 = _clientfdsAndConns[0].second;
-    int clientfd2 = _clientfdsAndConns[1].first;
-    int conn2 = _clientfdsAndConns[1].second;
+bool allZero(std::vector<std::string*> msgs) {
+    for (std::vector<std::string*>::iterator it = msgs.begin(); it != msgs.end(); it++) {
+        if ((*it)->length() > 0)
+            return false;
+    }
+    return true;
+}
 
+TEST_F(ConnectionHdlrTest, send2MsgsAsync) {
+    char buffer[1024];
     std::string request1 = "GET \r\n\r\n";
     std::string request2 = "GET /ping HTTP/1.1\r\n\r\n";
-    std::string wantResponse1 = "HTTP/1.1 400 Bad Request\r\n"
-                                "\r\n";
-    std::string wantResponse2 = "HTTP/1.1 200 OK\r\n"
-                                "Content-Length: 4\r\n"
-                                "\r\n"
-                                "pong";
+    std::vector<std::string> wantResponses = {"HTTP/1.1 400 Bad Request\r\n"
+                                              "\r\n",
+                                              "HTTP/1.1 200 OK\r\n"
+                                              "Content-Length: 4\r\n"
+                                              "\r\n"
+                                              "pong"};
 
-    // while (/* still something to be sent */ true) {
-    //     for (std::pair<int, int>::iterator; it != it.begin(); it++) {
-    //         // send next bit of information over the connection
-    //     }
-    // }
-    // send first half of request1
-    send(clientfd1, request1.substr(0, 3).c_str(), request1.substr(0, 3).length(), 0);
-    _connHdlr->handleConnection(conn1, READY_TO_READ);
-    recv(clientfd1, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
+    std::vector<std::string*> msgs = std::vector<std::string*>{&request1, &request2};
+    int batchSize = 3;
+    while (!allZero(msgs)) {
+        int count = 0;
+        for (std::vector<std::string*>::iterator it = msgs.begin(); it != msgs.end(); it++) {
+            if ((*it)->length() == 0)
+                continue;
+            std::string toBeSent = (*it)->substr(0, batchSize);
+            int clientfd = _clientfdsAndConns[count].first;
+            int conn = _clientfdsAndConns[count].second;
 
-    // send first half of request2
-    send(clientfd2, request2.substr(0, 4).c_str(), request2.substr(0, 4).length(), 0);
-    _connHdlr->handleConnection(conn2, READY_TO_READ);
-    recv(clientfd2, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
+            send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
+            _connHdlr->handleConnection(conn, READY_TO_READ);
+            recv(clientfd, buffer, 1024, 0);
+            ASSERT_EQ(errno, EWOULDBLOCK);
 
-    // send second half of request1
-    send(clientfd1, request1.substr(3).c_str(), request1.substr(3).length(), 0);
-    _connHdlr->handleConnection(conn1, READY_TO_READ);
-    recv(clientfd1, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
+            try {
+                *(*it) = (*it)->substr(batchSize);
+            } catch (const std::out_of_range&) {
+                (*it)->clear();
+            }
 
-    // send second half of request2
-    send(clientfd2, request2.substr(4).c_str(), request2.substr(4).length(), 0);
-    _connHdlr->handleConnection(conn2, READY_TO_READ);
-    recv(clientfd2, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
-
-    // check that it received the right responses (response1)
-    _connHdlr->handleConnection(conn1, READY_TO_WRITE);
-    ssize_t r = recv(clientfd1, buffer, 1024, 0);
-    buffer[r] = '\0';
-    EXPECT_STREQ(buffer, wantResponse1.c_str());
-
-    // check that it received the right responses (response2)
-    _connHdlr->handleConnection(conn2, READY_TO_WRITE);
-    r = recv(clientfd2, buffer, 1024, 0);
-    buffer[r] = '\0';
-    EXPECT_STREQ(buffer, wantResponse2.c_str());
-
-    close(clientfd2);
+            count++;
+        }
+    }
+    for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
+        int clientfd = _clientfdsAndConns[i].first;
+        int conn = _clientfdsAndConns[i].second;
+        _connHdlr->handleConnection(conn, READY_TO_WRITE);
+        ssize_t r = recv(clientfd, buffer, 1024, 0);
+        buffer[r] = '\0';
+        EXPECT_STREQ(buffer, wantResponses[i].c_str());
+    }
 }
 
 TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
