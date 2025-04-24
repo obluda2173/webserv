@@ -61,14 +61,14 @@ void ConnectionHandler::_readPipeline(int conn) {
                            "\r\n";
 
         _ioNotifier.modify(conn, READY_TO_WRITE);
-    } else {
+    }
+    if (prsr->ready()) {
         _responses[conn] = "HTTP/1.1 200 OK\r\n"
                            "Content-Length: 4\r\n"
                            "\r\n"
                            "pong";
-    }
-    if (prsr->ready())
         _ioNotifier.modify(conn, READY_TO_WRITE);
+    }
     return;
 }
 

@@ -36,8 +36,10 @@ TEST_P(ConnectionHdlrTest, send2MsgsAsync) {
     while (!allZero(requests)) {
         int count = 0;
         for (std::vector<std::string>::iterator it = requests.begin(); it != requests.end(); it++) {
-            if ((*it).length() == 0)
+            if ((*it).length() == 0) {
+                count++;
                 continue;
+            }
             // sent substring
             std::string toBeSent = (*it).substr(0, batchSize);
             int clientfd = _clientfdsAndConns[count].first;
