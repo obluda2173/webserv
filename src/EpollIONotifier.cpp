@@ -21,12 +21,9 @@ EpollIONotifier::~EpollIONotifier(void) {
     }
 }
 
-void EpollIONotifier::add(int fd, e_notif notif) {
+void EpollIONotifier::add(int fd) {
     struct epoll_event event;
-    if (notif == CLIENT_HUNG_UP)
-        event.events = EPOLLRDHUP;
-    if (notif == READY_TO_READ)
-        event.events = EPOLLIN;
+    event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
 }
@@ -45,16 +42,17 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
 int EpollIONotifier::wait(int* fds, e_notif* notifs) {
     struct epoll_event events[1]; // TODO: make maxEvents configurable
     int ready = epoll_wait(_epfd, events, 1, 10);
+
     if (ready > 0) {
         *fds = events[0].data.fd;
-        if (events[0].events & EPOLLRDHUP)
-            *notifs = CLIENT_HUNG_UP;
-        if (events[0].events & EPOLLIN)
-            *notifs = READY_TO_READ;
-        if (events[0].events & EPOLLOUT)
-            *notifs = READY_TO_WRITE;
         if (events[0].events & EPOLLHUP)
             *notifs = BROKEN_CONNECTION;
+        else if (events[0].events & EPOLLRDHUP)
+            *notifs = CLIENT_HUNG_UP;
+        else if (events[0].events & EPOLLIN)
+            *notifs = READY_TO_READ;
+        else if (events[0].events & EPOLLOUT)
+            *notifs = READY_TO_WRITE;
     } else
         *fds = -1;
     return ready;

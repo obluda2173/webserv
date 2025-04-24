@@ -18,7 +18,7 @@ class EpollIONotifier : public IIONotifier {
   public:
     EpollIONotifier(ILogger& logger);
     ~EpollIONotifier(void);
-    void add(int fd, e_notif notif);
+    void add(int fd);
     void modify(int fd, e_notif notif);
     void del(int fd);
     int wait(int* fds, e_notif* notif);

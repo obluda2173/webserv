@@ -25,7 +25,7 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     connInfo.fd = conn;
     _connections[conn] = connInfo;
     _parsers[conn] = new HttpParser(_logger);
-    _ioNotifier.add(conn, CLIENT_HUNG_UP);
+    _ioNotifier.add(conn);
 }
 
 void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
