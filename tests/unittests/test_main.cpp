@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
-    // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
+    testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";

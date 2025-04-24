@@ -59,6 +59,8 @@ void ConnectionHandler::_readPipeline(int conn) {
     if (prsr->error()) {
         _responses[conn] = "HTTP/1.1 400 Bad Request\r\n"
                            "\r\n";
+
+        _ioNotifier.modify(conn, READY_TO_WRITE);
     } else {
         _responses[conn] = "HTTP/1.1 200 OK\r\n"
                            "Content-Length: 4\r\n"

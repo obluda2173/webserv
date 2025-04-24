@@ -89,6 +89,13 @@ TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
     send(_clientfd, request.c_str(), request.length(), 0);
     _connHdlr->handleConnection(_conn, READY_TO_READ);
 
+    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
+    int fds;
+    e_notif notif;
+    _ioNotifier->wait(&fds, &notif);
+    ASSERT_EQ(fds, _conn);
+    ASSERT_EQ(notif, READY_TO_WRITE);
+
     // check that nothing is sent back yet
     recv(_clientfd, buffer, 1024, 0);
     ASSERT_EQ(errno, EWOULDBLOCK);
@@ -115,6 +122,15 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
 
     // cutting the msg into parts and send
     sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
+
+    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
+    int fds;
+    e_notif notif;
+    _ioNotifier->wait(&fds, &notif);
+    ASSERT_EQ(fds, _conn);
+    ASSERT_EQ(notif, READY_TO_WRITE);
+
+    // handle teh
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
@@ -123,20 +139,6 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
                                "\r\n"
                                "pong";
     EXPECT_STREQ(buffer, wantResponse.c_str());
-}
-
-TEST_P(ConnectionHdlrTestWithParamInt, testThatNotifierReturnsREADY_TO_WRITE) {
-    int batchSize = GetParam();
-    char buffer[1024];
-    std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
-
-    sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
-
-    int fds;
-    e_notif notif;
-    _ioNotifier->wait(&fds, &notif);
-    ASSERT_EQ(fds, _conn);
-    ASSERT_EQ(notif, READY_TO_WRITE);
 }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
