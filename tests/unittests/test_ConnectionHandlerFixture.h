@@ -7,7 +7,6 @@
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
-#include "gmock/gmock.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <netdb.h>
@@ -15,7 +14,8 @@
 #include <utility>
 #include <utils.h>
 
-template <typename LoggerType> class BaseConnectionHandlerTest : public ::testing::Test {
+template <typename LoggerType, typename ParamType = int>
+class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
@@ -23,6 +23,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
     IConnectionHandler* _connHdlr;
     int _serverfd;
     struct addrinfo* _svrAddrInfo;
+    int _nbrConns;
     std::vector<std::pair<int, int>> _clientfdsAndConns;
 
   public:
@@ -33,7 +34,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
         _ioNotifier = new EpollIONotifier(*_logger);
         _connHdlr = new ConnectionHandler(*_logger, *_ioNotifier);
         setupServer();
-        setupConnection();
+        setupClientConnections();
     }
 
     virtual void setupServer() {
@@ -41,20 +42,7 @@ template <typename LoggerType> class BaseConnectionHandlerTest : public ::testin
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
     }
 
-    virtual void setupConnection() {
-        int clientfd;
-        int conn;
-        int port = 11111;
-        for (int i = 0; i < 2; i++) {
-            clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
-            ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-                << "connect: " << std::strerror(errno) << std::endl;
-            conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-            fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
-            port++;
-        }
-    }
+    virtual void setupClientConnections() = 0;
 
     void TearDown() override {
         for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
@@ -75,10 +63,30 @@ class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<Mo
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
     }
 
-    virtual void setupConnection() override {}
+    virtual void setupClientConnections() override {}
 };
 
-class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger> {};
+struct ParamsConnectionHdlrTestAsync {
+    std::vector<std::string> requests;
+    std::vector<std::string> wantResponses;
+};
+
+class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestAsync> {
+    virtual void setupClientConnections() {
+        int clientfd;
+        int conn;
+        int port = 11111;
+        for (int i = 0; i < 2; i++) {
+            clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+            ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+                << "connect: " << std::strerror(errno) << std::endl;
+            conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+            fcntl(clientfd, F_SETFL, O_NONBLOCK);
+            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
+            port++;
+        }
+    }
+};
 
 ///////////////////////
 // parametrized test //
