@@ -85,6 +85,8 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         case READY_TO_WRITE:
             send(fd, _responses[fd].c_str(), _responses[fd].length(), 0);
             break;
+        case BROKEN_CONNECTION:
+            break;
         }
         return fd;
     } catch (std::out_of_range& e) {

@@ -1,7 +1,7 @@
 #ifndef IIONOTIFIER_H
 #define IIONOTIFIER_H
 
-typedef enum e_notif { CLIENT_HUNG_UP, READY_TO_READ, READY_TO_WRITE } e_notif;
+typedef enum e_notif { CLIENT_HUNG_UP, READY_TO_READ, READY_TO_WRITE, BROKEN_CONNECTION } e_notif;
 
 class IIONotifier {
   public:
