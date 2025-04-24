@@ -106,6 +106,8 @@ union epoll_data {
 - The associated file is available for read(2) operations.
 ***** EPOLLRDHUP
 - peer socked closed or shut down writting
+***** EPOLLOUT
+- the associated file is available for write
 ** NOTES
 *** epoll_wait will always report certain events
 - EPOLLERR

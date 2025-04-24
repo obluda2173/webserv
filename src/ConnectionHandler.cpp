@@ -65,7 +65,8 @@ void ConnectionHandler::_readPipeline(int conn) {
                            "\r\n"
                            "pong";
     }
-    // _ioNotifier.add(, e_notif notif)
+    if (prsr->ready())
+        _ioNotifier.modify(conn, READY_TO_WRITE);
     return;
 }
 

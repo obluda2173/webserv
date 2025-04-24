@@ -130,7 +130,6 @@ TEST_P(ConnectionHdlrTestWithParamInt, testThatNotifierReturnsREADY_TO_WRITE) {
     char buffer[1024];
     std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
 
-    // cutting the msg into parts and send
     sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
 
     int fds;
@@ -138,14 +137,6 @@ TEST_P(ConnectionHdlrTestWithParamInt, testThatNotifierReturnsREADY_TO_WRITE) {
     _ioNotifier->wait(&fds, &notif);
     ASSERT_EQ(fds, _conn);
     ASSERT_EQ(notif, READY_TO_WRITE);
-    // _connHdlr->handleConnection(_conn, READY_TO_WRITE);
-    // ssize_t r = recv(_clientfd, buffer, 1024, 0);
-    // buffer[r] = '\0';
-    // std::string wantResponse = "HTTP/1.1 200 OK\r\n"
-    //                            "Content-Length: 4\r\n"
-    //                            "\r\n"
-    //                            "pong";
-    // EXPECT_STREQ(buffer, wantResponse.c_str());
 }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
