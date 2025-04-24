@@ -4,4 +4,5 @@
 - [X] Rename from socketfd/conn to fd ([[file:includes/EpollIONotifier.h::void add(int socketfd, e_notif notif);][EpollNotifier]])
 - [X] Do implement Ipv6 alongside Ipv4
 - [ ] Make _ioNotifier not only notify for one but configurable amount of events ([[file:src/Listener.cpp::int fd; // TODO: take not only one connection but #ready connections][Listener.cpp]])
-- [ ] write a test for configuration and accepting multiple events ([[file:tests/unittests/test_EpollIONotifier.cpp::// TODO: write a test for configuration and accepting multiple events][epollNotifier test]])
+- [ ] send two httpMessage one after the other without cutting tcp connection
+- [ ] make sure to treat EPOLLRDHUP and EPOLLHUP appropriately

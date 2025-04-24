@@ -144,10 +144,8 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
 }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
-                         ::testing::Values(1, 2, 11, 21, 22, 23));
+                         ::testing::Values(1, 2, 11, 21, 22, 23)); // these are Fuzzy-tests for the most part
 
-// TODO: write a test that verifies that notifier notif is set to READY_TO_WRITE
-//
 // TODO: the next two test do change nothing at the current code
 // TODO: maybe handle some specific timeout on a connection, probably responsibility of the Listener
 // TEST_F(ConnectionHdlrTestWithMockLoggerIPv4, incompleteRequestThenClose) {
