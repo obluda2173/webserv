@@ -59,10 +59,10 @@ void ConnectionHandler::_readPipeline(int conn) {
     while (*b) {
         prsr->feed(b, 1);
         if (prsr->error()) {
+            prsr->resetPublic();
             _responses[conn] += "HTTP/1.1 400 Bad Request\r\n"
                                 "\r\n";
             _ioNotifier.modify(conn, READY_TO_WRITE);
-            return;
         }
         if (prsr->ready()) {
             prsr->resetPublic();

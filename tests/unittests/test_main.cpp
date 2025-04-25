@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest.send2MsgsAsync*";
 
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
-    testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestOneConnection.TestPersistenceSendInOneMsg*";
+    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestOneConnection.TestPersistenceSendInOneMsg*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
