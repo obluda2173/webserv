@@ -81,6 +81,7 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
             break;
         case READY_TO_WRITE:
             send(fd, _responses[fd].c_str(), _responses[fd].length(), 0);
+            _ioNotifier.modify(fd, READY_TO_READ);
             break;
         case CLIENT_HUNG_UP:
             _removeClientConnection(connInfo);

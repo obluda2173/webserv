@@ -34,7 +34,11 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
     (void)notif;
 
     struct epoll_event event;
-    event.events = EPOLLOUT;
+    if (notif == READY_TO_WRITE) {
+        event.events = EPOLLOUT;
+    } else if (notif == READY_TO_READ) {
+        event.events = EPOLLIN | CLIENT_HUNG_UP;
+    }
     event.data.fd = fd;
     epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event);
 }

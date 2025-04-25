@@ -28,5 +28,6 @@ void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandle
 bool allZero(std::vector<std::string> msgs);
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
+void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 
 #endif // TEST_MAIN_H_

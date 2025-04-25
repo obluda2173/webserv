@@ -57,6 +57,8 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
     }
 };
 
+class ConnectionHdlrTestBase : public BaseConnectionHandlerTest<StubLogger, int> {};
+
 class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<MockLogger> {
     void setupServer() override {
         getAddrInfoHelper(NULL, "8080", AF_INET6, &_svrAddrInfo);
@@ -71,7 +73,7 @@ struct ParamsConnectionHdlrTestAsync {
     std::vector<std::string> wantResponses;
 };
 
-class ConnectionHdlrTest : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestAsync> {
+class ConnectionHdlrTestAsync : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestAsync> {
     virtual void setupClientConnections() {
         int clientfd;
         int conn;

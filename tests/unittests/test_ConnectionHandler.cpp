@@ -25,7 +25,67 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     close(clientfd);
 }
 
-TEST_P(ConnectionHdlrTest, sendMsgsAsync) {
+TEST_F(ConnectionHdlrTestBase, TestPersistence) {
+    int clientfd;
+    int conn;
+    int port = 23456;
+    clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+        << "connect: " << std::strerror(errno) << std::endl;
+    conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+    fcntl(clientfd, F_SETFL, O_NONBLOCK);
+
+    char buffer[1024];
+    std::string request = "GET \r\n\r\n";
+    std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
+                               "\r\n";
+    // send msg
+    send(clientfd, request.c_str(), request.length(), 0);
+    _connHdlr->handleConnection(conn, READY_TO_READ);
+
+    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
+    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
+
+    // check that nothing is sent back yet
+    recv(clientfd, buffer, 1024, 0);
+    ASSERT_EQ(errno, EWOULDBLOCK);
+
+    // next time around the response is sent back
+    _connHdlr->handleConnection(conn, READY_TO_WRITE);
+    ssize_t r = recv(clientfd, buffer, 1024, 0);
+    buffer[r] = '\0';
+    EXPECT_STREQ(buffer, wantResponse.c_str());
+
+    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
+    // send a byte
+    request = "GET /ping HTTP/1.1\r\n\r\n";
+    wantResponse = "HTTP/1.1 200 OK\r\n"
+                   "Content-Length: 4\r\n"
+                   "\r\n"
+                   "pong";
+    // send msg
+    send(clientfd, request.c_str(), request.length(), 0);
+    verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(_ioNotifier, conn);
+    _connHdlr->handleConnection(conn, READY_TO_READ);
+
+    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
+    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
+
+    // check that nothing is sent back yet
+    recv(clientfd, buffer, 1024, 0);
+    ASSERT_EQ(errno, EWOULDBLOCK);
+
+    // next time around the response is sent back
+    _connHdlr->handleConnection(conn, READY_TO_WRITE);
+    r = recv(clientfd, buffer, 1024, 0);
+    buffer[r] = '\0';
+    EXPECT_STREQ(buffer, wantResponse.c_str());
+
+    // verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(_ioNotifier, conn);
+    close(clientfd);
+}
+
+TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
     char buffer[1024];
     struct ParamsConnectionHdlrTestAsync params = GetParam();
     std::vector<std::string> requests = params.requests;
@@ -64,6 +124,7 @@ TEST_P(ConnectionHdlrTest, sendMsgsAsync) {
     for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
         int clientfd = _clientfdsAndConns[i].first;
         int conn = _clientfdsAndConns[i].second;
+        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
         _connHdlr->handleConnection(conn, READY_TO_WRITE);
         ssize_t r = recv(clientfd, buffer, 1024, 0);
         buffer[r] = '\0';
@@ -72,7 +133,7 @@ TEST_P(ConnectionHdlrTest, sendMsgsAsync) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTest,
+INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestAsync,
                          ::testing::Values(ParamsConnectionHdlrTestAsync{{"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
                                                                          {"HTTP/1.1 400 Bad Request\r\n"
                                                                           "\r\n",

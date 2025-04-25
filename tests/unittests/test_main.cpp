@@ -6,7 +6,7 @@ int main(int argc, char* argv[]) {
     testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest.send2MsgsAsync*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
+    testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
