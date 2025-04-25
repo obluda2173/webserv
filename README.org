@@ -3,10 +3,12 @@
 * TODO
 - [X] Rename from socketfd/conn to fd ([[file:includes/EpollIONotifier.h::void add(int socketfd, e_notif notif);][EpollNotifier]])
 - [X] Do implement Ipv6 alongside Ipv4
+- [ ] Persistence: send two httpMessage one after the other without cutting tcp connection
+  - [ ] make sure that no information is lost (http in series, but cut at an inappropriate point)
+  - [ ] there is a security problem (what happens if the request is sent byte by byte and it only end CLRFs )
+- [ ] handle maximum amount of connections
 - [ ] Make _ioNotifier not only notify for one but configurable amount of events ([[file:src/Listener.cpp::int fd; // TODO: take not only one connection but #ready connections][Listener.cpp]])
 - [ ] Have a check on how many file-descriptors (connections) can be added
-- [ ] send two httpMessage one after the other without cutting tcp connection
-  - [ ] make sure that no information is lost (http in series, but cut at an inappropriate point)
 - [ ] make sure to treat EPOLLRDHUP and EPOLLHUP appropriately
   - [ ] implement a timeout mechanism
   - [ ] writing

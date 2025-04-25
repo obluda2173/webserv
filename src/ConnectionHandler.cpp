@@ -25,6 +25,7 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     connInfo.fd = conn;
     _connections[conn] = connInfo;
     _parsers[conn] = new HttpParser(_logger);
+    _responses[conn] = "";
     _ioNotifier.add(conn);
 }
 
@@ -54,25 +55,31 @@ void ConnectionHandler::_readPipeline(int conn) {
     char buffer[1024];
     ssize_t r = recv(conn, buffer, 1024, 0);
     buffer[r] = '\0';
-    prsr->feed(buffer, r);
-    if (prsr->error()) {
-        _responses[conn] = "HTTP/1.1 400 Bad Request\r\n"
-                           "\r\n";
-
-        _ioNotifier.modify(conn, READY_TO_WRITE);
-    }
-    if (prsr->ready()) {
-        _responses[conn] = "HTTP/1.1 200 OK\r\n"
-                           "Content-Length: 4\r\n"
-                           "\r\n"
-                           "pong";
-        _ioNotifier.modify(conn, READY_TO_WRITE);
+    char* b = buffer;
+    while (*b) {
+        prsr->feed(b, 1);
+        if (prsr->error()) {
+            _responses[conn] += "HTTP/1.1 400 Bad Request\r\n"
+                                "\r\n";
+            _ioNotifier.modify(conn, READY_TO_WRITE);
+            return;
+        }
+        if (prsr->ready()) {
+            prsr->resetPublic();
+            _responses[conn] += "HTTP/1.1 200 OK\r\n"
+                                "Content-Length: 4\r\n"
+                                "\r\n"
+                                "pong";
+            _ioNotifier.modify(conn, READY_TO_WRITE);
+        }
+        b++;
     }
     return;
 }
 
 void ConnectionHandler::_sendPipeline(int conn) {
     send(conn, _responses[conn].c_str(), _responses[conn].length(), 0);
+    _responses[conn].clear();
     _ioNotifier.modify(conn, READY_TO_READ);
     delete _parsers[conn];
     _parsers[conn] = new HttpParser(_logger);
