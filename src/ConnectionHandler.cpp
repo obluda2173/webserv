@@ -55,7 +55,6 @@ void ConnectionHandler::_readPipeline(int conn) {
     ssize_t r = recv(conn, buffer, 1024, 0);
     buffer[r] = '\0';
     prsr->feed(buffer, r);
-    std::string msg = std::string(buffer);
     if (prsr->error()) {
         _responses[conn] = "HTTP/1.1 400 Bad Request\r\n"
                            "\r\n";

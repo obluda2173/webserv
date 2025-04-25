@@ -31,8 +31,6 @@ void EpollIONotifier::add(int fd) {
 void EpollIONotifier::del(int fd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL); }
 
 void EpollIONotifier::modify(int fd, e_notif notif) {
-    (void)notif;
-
     struct epoll_event event;
     if (notif == READY_TO_WRITE) {
         event.events = EPOLLOUT;

@@ -14,6 +14,41 @@
 #include <sys/socket.h>
 #include <vector>
 
+// TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
+//     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
+//     int clientfd = _clientfdsAndConns[0].first;
+//     int conn = _clientfdsAndConns[0].second;
+
+//     char buffer[1024];
+//     std::vector<std::string> requests = params.requests;
+//     std::vector<std::string> wantResponses = params.wantResponses;
+//     // send msg
+//     for (size_t i = 0; i < requests.size(); i++) {
+//         std::string request = requests[i];
+//         std::string wantResponse = wantResponses[i];
+//         sendMsgInBatches(request, conn, clientfd, *_connHdlr, 2, buffer);
+//         // send(clientfd, request.c_str(), request.length(), 0);
+//         _connHdlr->handleConnection(conn, READY_TO_READ);
+
+//         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
+//         // initiate)
+//         verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
+
+//         // check that nothing is sent back yet
+//         recv(clientfd, buffer, 1024, 0);
+//         ASSERT_EQ(errno, EWOULDBLOCK);
+
+//         // next time around the response is sent back
+//         _connHdlr->handleConnection(conn, READY_TO_WRITE);
+//         ssize_t r = recv(clientfd, buffer, 1024, 0);
+//         buffer[r] = '\0';
+//         EXPECT_STREQ(buffer, wantResponse.c_str());
+//     }
+
+//     // verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(_ioNotifier, conn);
+//     close(clientfd);
+// }
+
 TEST_P(ConnectionHdlrTestOneConnection, TestPersistence) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
     int clientfd = _clientfdsAndConns[0].first;
@@ -183,6 +218,32 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
                                "pong";
     EXPECT_STREQ(buffer, wantResponse.c_str());
 }
+
+// TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
+//     int batchSize = GetParam();
+//     char buffer[1024];
+//     std::string msg = "GET /ping HTTP/1.1\r\n\r\nGET /ping HTTP/1.1\r\n\r\n";
+
+//     // cutting the msg into parts and send
+//     sendMsgInBatches(msg, _conn, _clientfd, *_connHdlr, batchSize, buffer);
+
+//     // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
+//     initiate) verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, _conn);
+
+//     // handle teh
+//     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
+//     ssize_t r = recv(_clientfd, buffer, 1024, 0);
+//     buffer[r] = '\0';
+//     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
+//                                "Content-Length: 4\r\n"
+//                                "\r\n"
+//                                "pong"
+//                                "HTTP/1.1 200 OK\r\n"
+//                                "Content-Length: 4\r\n"
+//                                "\r\n"
+//                                "pong";
+//     EXPECT_STREQ(buffer, wantResponse.c_str());
+// }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
                          ::testing::Values(1, 2, 11, 21, 22, 23)); // these are Fuzzy-tests for the most part
