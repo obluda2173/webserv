@@ -79,11 +79,11 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         case READY_TO_READ:
             _readPipeline(fd);
             break;
-        case CLIENT_HUNG_UP:
-            _removeClientConnection(connInfo);
-            break;
         case READY_TO_WRITE:
             send(fd, _responses[fd].c_str(), _responses[fd].length(), 0);
+            break;
+        case CLIENT_HUNG_UP:
+            _removeClientConnection(connInfo);
             break;
         case BROKEN_CONNECTION:
             break;

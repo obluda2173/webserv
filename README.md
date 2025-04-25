@@ -10,6 +10,8 @@ title: Readme
 - [ ] Make <sub>ioNotifier</sub> not only notify for one but
   configurable amount of events
   ([Listener.cpp](src/Listener.cpp::int fd; // TODO: take not only one connection but #ready connections))
+- [ ] Have a check on how many file-descriptors (connections) can be
+  added
 - [ ] send two httpMessage one after the other without cutting tcp
   connection
 - [ ] make sure to treat EPOLLRDHUP and EPOLLHUP appropriately

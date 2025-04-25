@@ -4,6 +4,7 @@
 #include <cstring>
 #include <gtest/gtest.h>
 #include <netdb.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <utils.h>
 
@@ -24,7 +25,6 @@ TEST(IONotifierTest, DetectsBrokenConnection) {
 
     // Now close the client side to simulate a broken connection
     close(clientSocket);
-    // shutdown(clientSocket, SHUT_WR);
 
     // Wait for the notification
     int fd;
@@ -56,7 +56,6 @@ TEST(IONotifierTest, DetectsBrokenConnection2) {
     ioNotifier.add(serverSocket);
 
     // Now close the client side to simulate a broken connection
-    // close(clientSocket);
     shutdown(clientSocket, SHUT_RDWR);
 
     // Wait for the notification
@@ -74,7 +73,7 @@ TEST(IONotifierTest, DetectsBrokenConnection2) {
 }
 
 // test shutdown write
-TEST(IONotifierTest, DetectsBrokenConnection3) {
+TEST(IONotifierTest, DetectsClientHungUp) {
     StubLogger logger;
     EpollIONotifier ioNotifier(logger);
 
@@ -89,7 +88,6 @@ TEST(IONotifierTest, DetectsBrokenConnection3) {
     ioNotifier.add(serverSocket);
 
     // Now close the client side to simulate a broken connection
-    // close(clientSocket);
     shutdown(clientSocket, SHUT_WR);
 
     // Wait for the notification
@@ -105,36 +103,3 @@ TEST(IONotifierTest, DetectsBrokenConnection3) {
     // Clean up
     close(serverSocket);
 }
-
-// test shutdown write
-// TEST(IONotifierTest, DetectsBrokenConnection4) {
-//     StubLogger logger;
-//     EpollIONotifier ioNotifier(logger);
-
-//     // Create a socket pair for testing
-//     int sockets[2];
-//     ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sockets), 0) << "socketpair failed: " << strerror(errno);
-
-//     int serverSocket = sockets[0];
-//     int clientSocket = sockets[1];
-
-//     // Add the server socket to the notifier
-//     ioNotifier.add(serverSocket, READY_TO_READ);
-
-//     // Now close the client side to simulate a broken connection
-//     // close(clientSocket);
-//     shutdown(clientSocket, SHUT_RD);
-
-//     // Wait for the notification
-//     int fd;
-//     e_notif notification;
-//     int ready = ioNotifier.wait(&fd, &notification);
-
-//     // Check that we got the correct notification
-//     ASSERT_GT(ready, 0) << "No events detected";
-//     EXPECT_EQ(fd, serverSocket);
-//     EXPECT_EQ(notification, BROKEN_CONNECTION);
-
-//     // Clean up
-//     close(serverSocket);
-// }

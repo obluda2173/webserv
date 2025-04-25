@@ -25,7 +25,7 @@ TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     close(clientfd);
 }
 
-TEST_P(ConnectionHdlrTest, send2MsgsAsync) {
+TEST_P(ConnectionHdlrTest, sendMsgsAsync) {
     char buffer[1024];
     struct ParamsConnectionHdlrTestAsync params = GetParam();
     std::vector<std::string> requests = params.requests;

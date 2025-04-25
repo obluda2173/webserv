@@ -42,7 +42,7 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
     }
 
-    virtual void setupClientConnections() = 0;
+    virtual void setupClientConnections() {};
 
     void TearDown() override {
         for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
