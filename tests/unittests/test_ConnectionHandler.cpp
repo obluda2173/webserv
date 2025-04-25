@@ -14,80 +14,67 @@
 #include <sys/socket.h>
 #include <vector>
 
-TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
-    std::string clientIp = "00:00:00:00:00:00:00:01";
-    std::string clientPort = "10001";
-    int clientfd = newSocket(clientIp, clientPort, AF_INET6);
-    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-        << "connect: " << std::strerror(errno) << std::endl;
-    EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
-    _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-    close(clientfd);
-}
-
-TEST_F(ConnectionHdlrTestBase, TestPersistence) {
-    int clientfd;
-    int conn;
-    int port = 23456;
-    clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
-    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-        << "connect: " << std::strerror(errno) << std::endl;
-    conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-    fcntl(clientfd, F_SETFL, O_NONBLOCK);
+TEST_P(ConnectionHdlrTestOneConnection, TestPersistence) {
+    ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
+    int clientfd = _clientfdsAndConns[0].first;
+    int conn = _clientfdsAndConns[0].second;
 
     char buffer[1024];
-    std::string request = "GET \r\n\r\n";
-    std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
-                               "\r\n";
+    std::vector<std::string> requests = params.requests;
+    std::vector<std::string> wantResponses = params.wantResponses;
     // send msg
-    send(clientfd, request.c_str(), request.length(), 0);
-    _connHdlr->handleConnection(conn, READY_TO_READ);
+    for (size_t i = 0; i < requests.size(); i++) {
+        std::string request = requests[i];
+        std::string wantResponse = wantResponses[i];
+        send(clientfd, request.c_str(), request.length(), 0);
+        _connHdlr->handleConnection(conn, READY_TO_READ);
 
-    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
+        // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
+        // initiate)
+        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
 
-    // check that nothing is sent back yet
-    recv(clientfd, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
+        // check that nothing is sent back yet
+        recv(clientfd, buffer, 1024, 0);
+        ASSERT_EQ(errno, EWOULDBLOCK);
 
-    // next time around the response is sent back
-    _connHdlr->handleConnection(conn, READY_TO_WRITE);
-    ssize_t r = recv(clientfd, buffer, 1024, 0);
-    buffer[r] = '\0';
-    EXPECT_STREQ(buffer, wantResponse.c_str());
-
-    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    // send a byte
-    request = "GET /ping HTTP/1.1\r\n\r\n";
-    wantResponse = "HTTP/1.1 200 OK\r\n"
-                   "Content-Length: 4\r\n"
-                   "\r\n"
-                   "pong";
-    // send msg
-    send(clientfd, request.c_str(), request.length(), 0);
-    verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(_ioNotifier, conn);
-    _connHdlr->handleConnection(conn, READY_TO_READ);
-
-    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
-
-    // check that nothing is sent back yet
-    recv(clientfd, buffer, 1024, 0);
-    ASSERT_EQ(errno, EWOULDBLOCK);
-
-    // next time around the response is sent back
-    _connHdlr->handleConnection(conn, READY_TO_WRITE);
-    r = recv(clientfd, buffer, 1024, 0);
-    buffer[r] = '\0';
-    EXPECT_STREQ(buffer, wantResponse.c_str());
+        // next time around the response is sent back
+        _connHdlr->handleConnection(conn, READY_TO_WRITE);
+        ssize_t r = recv(clientfd, buffer, 1024, 0);
+        buffer[r] = '\0';
+        EXPECT_STREQ(buffer, wantResponse.c_str());
+    }
 
     // verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(_ioNotifier, conn);
     close(clientfd);
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    sendMsgsAsync, ConnectionHdlrTestOneConnection,
+    ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{{"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
+                                                                      {"HTTP/1.1 400 Bad Request\r\n"
+                                                                       "\r\n",
+                                                                       "HTTP/1.1 200 OK\r\n"
+                                                                       "Content-Length: 4\r\n"
+                                                                       "\r\n"
+                                                                       "pong"}},
+                      ParamsConnectionHdlrTestVectorRequestsResponses{
+                          {"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
+                          {"HTTP/1.1 400 Bad Request\r\n"
+                           "\r\n",
+                           "HTTP/1.1 200 OK\r\n"
+                           "Content-Length: 4\r\n"
+                           "\r\n"
+                           "pong",
+                           "HTTP/1.1 200 OK\r\n"
+                           "Content-Length: 4\r\n"
+                           "\r\n"
+                           "pong"}}
+
+                      ));
+
 TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
     char buffer[1024];
-    struct ParamsConnectionHdlrTestAsync params = GetParam();
+    struct ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
     std::vector<std::string> requests = params.requests;
     std::vector<std::string> wantResponses = params.wantResponses;
 
@@ -134,13 +121,14 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
 }
 
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestAsync,
-                         ::testing::Values(ParamsConnectionHdlrTestAsync{{"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
-                                                                         {"HTTP/1.1 400 Bad Request\r\n"
-                                                                          "\r\n",
-                                                                          "HTTP/1.1 200 OK\r\n"
-                                                                          "Content-Length: 4\r\n"
-                                                                          "\r\n"
-                                                                          "pong"}}));
+                         ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{
+                             {"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
+                             {"HTTP/1.1 400 Bad Request\r\n"
+                              "\r\n",
+                              "HTTP/1.1 200 OK\r\n"
+                              "Content-Length: 4\r\n"
+                              "\r\n"
+                              "pong"}}));
 
 TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
     reqRespParam params = GetParam();
@@ -198,3 +186,14 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
                          ::testing::Values(1, 2, 11, 21, 22, 23)); // these are Fuzzy-tests for the most part
+
+TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
+    std::string clientIp = "00:00:00:00:00:00:00:01";
+    std::string clientPort = "10001";
+    int clientfd = newSocket(clientIp, clientPort, AF_INET6);
+    ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+        << "connect: " << std::strerror(errno) << std::endl;
+    EXPECT_CALL(*_logger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
+    _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+    close(clientfd);
+}

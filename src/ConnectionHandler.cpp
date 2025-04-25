@@ -72,6 +72,13 @@ void ConnectionHandler::_readPipeline(int conn) {
     return;
 }
 
+void ConnectionHandler::_sendPipeline(int conn) {
+    send(conn, _responses[conn].c_str(), _responses[conn].length(), 0);
+    _ioNotifier.modify(conn, READY_TO_READ);
+    delete _parsers[conn];
+    _parsers[conn] = new HttpParser(_logger);
+}
+
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     try {
         ConnectionInfo connInfo = _connections.at(fd);
@@ -80,8 +87,7 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
             _readPipeline(fd);
             break;
         case READY_TO_WRITE:
-            send(fd, _responses[fd].c_str(), _responses[fd].length(), 0);
-            _ioNotifier.modify(fd, READY_TO_READ);
+            _sendPipeline(fd);
             break;
         case CLIENT_HUNG_UP:
             _removeClientConnection(connInfo);

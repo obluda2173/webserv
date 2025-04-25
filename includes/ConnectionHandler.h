@@ -29,6 +29,7 @@ class ConnectionHandler : public IConnectionHandler {
     void _removeClientConnection(ConnectionInfo connInfo);
     int _acceptNewConnection(int socketfd);
     void _readPipeline(int conn);
+    void _sendPipeline(int conn);
 
   public:
     ConnectionHandler(ILogger&, IIONotifier&);

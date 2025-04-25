@@ -57,8 +57,6 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
     }
 };
 
-class ConnectionHdlrTestBase : public BaseConnectionHandlerTest<StubLogger, int> {};
-
 class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<MockLogger> {
     void setupServer() override {
         getAddrInfoHelper(NULL, "8080", AF_INET6, &_svrAddrInfo);
@@ -68,17 +66,33 @@ class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<Mo
     virtual void setupClientConnections() override {}
 };
 
-struct ParamsConnectionHdlrTestAsync {
+struct ParamsConnectionHdlrTestVectorRequestsResponses {
     std::vector<std::string> requests;
     std::vector<std::string> wantResponses;
 };
 
-class ConnectionHdlrTestAsync : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestAsync> {
-    virtual void setupClientConnections() {
+class ConnectionHdlrTestOneConnection
+    : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestVectorRequestsResponses> {
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int conn;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
+    }
+};
+
+class ConnectionHdlrTestAsync
+    : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestVectorRequestsResponses> {
+    virtual void setupClientConnections() override {
         int clientfd;
         int conn;
         int port = 12345;
-        ParamsConnectionHdlrTestAsync params = GetParam();
+        ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
         int nbrRequests = params.requests.size();
         for (int i = 0; i < nbrRequests; i++) {
             clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
