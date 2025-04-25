@@ -86,29 +86,27 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
 
 INSTANTIATE_TEST_SUITE_P(
     sendMsgsAsync, ConnectionHdlrTestOneConnection,
-    ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{{"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
-                                                                      {"HTTP/1.1 400 Bad Request\r\n"
-                                                                       "\r\n"
-                                                                       "HTTP/1.1 400 Bad Request\r\n"
-                                                                       "\r\n",
-                                                                       "HTTP/1.1 200 OK\r\n"
-                                                                       "Content-Length: 4\r\n"
-                                                                       "\r\n"
-                                                                       "pong"}},
+    ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
+                                                                      {
+                                                                          "HTTP/1.1 200 OK\r\n"
+                                                                          "Content-Length: 4\r\n"
+                                                                          "\r\n"
+                                                                          "pong",
+                                                                          "HTTP/1.1 400 Bad Request\r\n"
+                                                                          "\r\n",
+                                                                      }},
                       ParamsConnectionHdlrTestVectorRequestsResponses{
-                          {"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
-                          {"HTTP/1.1 400 Bad Request\r\n"
-                           "\r\n"
-                           "HTTP/1.1 400 Bad Request\r\n"
-                           "\r\n",
-                           "HTTP/1.1 200 OK\r\n"
+                          {"GET /ping HTTP/1.1\r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
+                          {"HTTP/1.1 200 OK\r\n"
                            "Content-Length: 4\r\n"
                            "\r\n"
                            "pong",
                            "HTTP/1.1 200 OK\r\n"
                            "Content-Length: 4\r\n"
                            "\r\n"
-                           "pong"}}
+                           "pong",
+                           "HTTP/1.1 400 Bad Request\r\n"
+                           "\r\n"}}
 
                       ));
 
@@ -162,12 +160,9 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
 
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestAsync,
                          ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{
-                             {"GET \r\n\r\n",
-                              "GET /ping HTTP/1.1\r\n\r\n"}, // I'm sending in batch size of 3, therefore GET \r\n\r\n
-                                                             // provokes 2 Bad requests
+                             {"GET \r\n", "GET /ping HTTP/1.1\r\n\r\n"}, // I'm sending in batch size of 3, therefore
+                                                                         // GET \r\n\r\n provokes 2 Bad requests
                              {"HTTP/1.1 400 Bad Request\r\n"
-                              "\r\n"
-                              "HTTP/1.1 400 Bad Request\r\n"
                               "\r\n",
 
                               "HTTP/1.1 200 OK\r\n"
@@ -200,10 +195,8 @@ TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
 }
 
 INSTANTIATE_TEST_SUITE_P(testingInOneBatchRequestRespons, ConnectionHdlrTestWithParamReqResp,
-                         ::testing::Values(reqRespParam{"GET \r\n\r\n", "HTTP/1.1 400 Bad Request\r\n"
-                                                                        "\r\n"
-                                                                        "HTTP/1.1 400 Bad Request\r\n"
-                                                                        "\r\n"},
+                         ::testing::Values(reqRespParam{"GET \r\n", "HTTP/1.1 400 Bad Request\r\n"
+                                                                    "\r\n"},
                                            reqRespParam{"GET /ping HTTP/1.1\r\n\r\n", "HTTP/1.1 200 OK\r\n"
                                                                                       "Content-Length: 4\r\n"
                                                                                       "\r\n"
@@ -220,7 +213,6 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
     // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
     verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, _conn);
 
-    // handle teh
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
