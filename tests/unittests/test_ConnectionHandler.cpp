@@ -23,12 +23,14 @@
 //     std::vector<std::string> requests = params.requests;
 //     std::vector<std::string> wantResponses = params.wantResponses;
 //     // send msg
+//     int batchSize = 2;
 //     for (size_t i = 0; i < requests.size(); i++) {
 //         std::string request = requests[i];
 //         std::string wantResponse = wantResponses[i];
-//         sendMsgInBatches(request, conn, clientfd, *_connHdlr, 2, buffer);
+//         sendMsgInBatches(request, conn, clientfd, *_connHdlr, batchSize, buffer);
 //         // send(clientfd, request.c_str(), request.length(), 0);
-//         _connHdlr->handleConnection(conn, READY_TO_READ);
+//         // _connHdlr->handleConnection(conn, READY_TO_READ);
+//         std::cout << "here " << i << std::endl;
 
 //         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
 //         // initiate)
@@ -49,7 +51,7 @@
 //     close(clientfd);
 // }
 
-TEST_P(ConnectionHdlrTestOneConnection, TestPersistence) {
+TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
     int clientfd = _clientfdsAndConns[0].first;
     int conn = _clientfdsAndConns[0].second;
@@ -87,6 +89,8 @@ INSTANTIATE_TEST_SUITE_P(
     sendMsgsAsync, ConnectionHdlrTestOneConnection,
     ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{{"GET \r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n"},
                                                                       {"HTTP/1.1 400 Bad Request\r\n"
+                                                                       "\r\n"
+                                                                       "HTTP/1.1 400 Bad Request\r\n"
                                                                        "\r\n",
                                                                        "HTTP/1.1 200 OK\r\n"
                                                                        "Content-Length: 4\r\n"
