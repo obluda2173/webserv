@@ -9,6 +9,7 @@
         cut at an inappropriate point)
       - \[ \] there is a security problem (what happens if the request
         is sent byte by byte and it only end CLRFs )
+      - \[ \] be sure to close the connection after an invalid request
   - \[ \] handle maximum amount of connections
   - \[ \] Make <sub>ioNotifier</sub> not only notify for one but
     configurable amount of events

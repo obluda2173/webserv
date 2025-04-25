@@ -30,7 +30,6 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
         sendMsgInBatches(request, conn, clientfd, *_connHdlr, batchSize, buffer);
         // send(clientfd, request.c_str(), request.length(), 0);
         // _connHdlr->handleConnection(conn, READY_TO_READ);
-        std::cout << "here " << i << std::endl;
 
         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
         // initiate)
