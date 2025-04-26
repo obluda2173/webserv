@@ -14,6 +14,28 @@
 #include <sys/socket.h>
 #include <vector>
 
+TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
+    int clientfd = _clientfdsAndConns[0].first;
+    int conn = _clientfdsAndConns[0].second;
+
+    char buffer[1024];
+    std::string request = "GET \r\n\r\n";
+    std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
+                               "\r\n";
+    // send msg
+    send(clientfd, request.c_str(), request.length(), 0);
+    _connHdlr->handleConnection(conn, READY_TO_READ);
+
+    ASSERT_FALSE(fcntl(conn, F_GETFD) != -1 || errno != EBADF) << "Connection is still open";
+
+    _connHdlr->handleConnection(conn, READY_TO_WRITE);
+    ssize_t r = recv(clientfd, buffer, 1024, 0);
+    buffer[r] = '\0';
+    EXPECT_STREQ(buffer, wantResponse.c_str());
+
+    close(clientfd);
+}
+
 TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
     int clientfd = _clientfdsAndConns[0].first;
@@ -28,8 +50,6 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
         std::string request = requests[i];
         std::string wantResponse = wantResponses[i];
         sendMsgInBatches(request, conn, clientfd, *_connHdlr, batchSize, buffer);
-        // send(clientfd, request.c_str(), request.length(), 0);
-        // _connHdlr->handleConnection(conn, READY_TO_READ);
 
         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
         // initiate)

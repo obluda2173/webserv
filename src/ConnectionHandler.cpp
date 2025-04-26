@@ -63,6 +63,7 @@ void ConnectionHandler::_readPipeline(int conn) {
             _responses[conn] += "HTTP/1.1 400 Bad Request\r\n"
                                 "\r\n";
             _ioNotifier.modify(conn, READY_TO_WRITE);
+            return;
         }
         if (prsr->ready()) {
             prsr->resetPublic();
