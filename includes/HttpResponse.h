@@ -21,6 +21,7 @@ typedef struct HttpResponse
 	std::string contentLength;
 	std::string contentLanguage;
 	bool isRange = false;
+	bool isChunked = false;
 } HttpResponseMessage;
 
 

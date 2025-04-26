@@ -311,6 +311,12 @@ std::string checkContentLength(HttpRequest& request, Logger& logger, HttpRespons
 	return result;
 }
 
+void checkTransferEncoding(Logger& logger, HttpResponseMessage& _responseMessage)
+{
+	logger.log("INFO", "checkTransferEncoding: Transfer-Encoding: chunked");
+	_responseMessage.isChunked = true;
+}
+
 std::string headerResponse(HttpRequest& request, Logger& logger, HttpResponseMessage& _responseMessage)
 {
 	std::string result;
@@ -365,7 +371,16 @@ std::string headerResponse(HttpRequest& request, Logger& logger, HttpResponseMes
 				return checkContentLength(request, logger, _responseMessage);
 			}
 		}
-		
+		if (it->first == "transfer-encoding") {
+			checkTransferEncoding(logger, _responseMessage);
+		}
+		if (it->first == "expect") {
+			;//WE DO NOT SUPPORT EXPECT SO FAR BUT WE CAN ADD IT IF WE NEED TO
+		}
+		if (it->first == "cookie") {
+			;//WE DO NOT SUPPORT COOKIE SO FAR BUT WE CAN ADD IT IF WE NEED TO
+		}
+		// THE NEXT STEP IS TO GENERATE THE RESPONSE MESSAGE
 	}
 }
 
