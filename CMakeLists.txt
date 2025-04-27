@@ -19,7 +19,7 @@ file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(REMOVE_ITEM SOURCES "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
 if(BUILD_TEST)
-  file(GLOB UNITTEST_FILES "tests/test_config_*")
+  file(GLOB UNITTEST_FILES "tests/unittests/*")
   set(UNITTEST_EXECUTABLE "run_unittests")
 
   add_executable(${UNITTEST_EXECUTABLE} ${SOURCES} ${UNITTEST_FILES})
