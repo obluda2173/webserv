@@ -2,16 +2,15 @@
 #define ROUTER_H
 
 #include "HttpRequest.h"
-#include "ConfigStructure.h"
 
 class Router {
   private:
-    const std::vector<ServerConfig>& _servers;
-    std::map<int, std::vector<const ServerConfig*>> _byPort;
-  
+    int _port;
+    const std::map<std::string, std::vector<std::string>> _svrNameToLocPrefixes;
+
   public:
-    Router(const std::vector<ServerConfig>& servers);
-    std::pair<const ServerConfig*, const LocationConfig*> match(const HttpRequest& request, int );
+    Router(std::map<std::string, std::vector<std::string>> svrNameToLocPrefixes);
+    std::pair<std::string, std::string> match(const HttpRequest& request);
 };
 
 #endif // ROUTER_H
