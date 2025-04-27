@@ -1,18 +1,18 @@
 #include "ValidationRules.h"
 
-ValidationRules::ValidationRules(const ServerConfig& server, const LocationConfig* location)
-    : _server(server), _location(location) {}
+ValidationRules::ValidationRules(std::vector<std::string> _locAllowedMethods,
+                                 std::vector<std::string> svrAllowedMethods, size_t locClientMaxBody,
+                                 size_t _svrClientMaxBody)
+
+    : _locationAllowedMethods(_locAllowedMethods), _serverAllowedMethods(svrAllowedMethods),
+      _locClientMaxBody(locClientMaxBody), _svrClientMaxBody(_svrClientMaxBody) {}
 
 ValidationRules::~ValidationRules() {}
 
 const std::vector<std::string>& ValidationRules::getAllowedMethods() {
-    return (_location && !_location->common.allowMethods.empty())
-        ? _location->common.allowMethods
-        : _server.common.allowMethods;
+    return !_locationAllowedMethods.empty() ? _locationAllowedMethods : _serverAllowedMethods;
 }
 
 size_t ValidationRules::getClientMaxBodySize() {
-    return (_location && _location->common.clientMaxBody != 0)
-        ? _location->common.clientMaxBody
-        : _server.common.clientMaxBody;
+    return (_locClientMaxBody != 0) ? _locClientMaxBody : _svrClientMaxBody;
 }
