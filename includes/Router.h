@@ -1,16 +1,17 @@
-#ifndef IROUTER_H
-#define IROUTER_H
+#ifndef ROUTER_H
+#define ROUTER_H
 
-// #include <>
+#include "HttpRequest.h"
+#include "ConfigStructure.h"
 
 class Router {
-  const std::vector<ServerConfig>& _servers;  
+  private:
+    const std::vector<ServerConfig>& _servers;
+    std::map<int, std::vector<const ServerConfig*>> _byPort;
+  
   public:
-    Router(const std::vector<ServerConfig>& servers) : _servers(servers) {}
-
-    std::pair<const ServerConfig&, const LocationConfig*> match(const Request& req) {
-        return {matched_server, matched_location};
-    }
+    Router(const std::vector<ServerConfig>& servers);
+    std::pair<const ServerConfig*, const LocationConfig*> match(const HttpRequest& request, int );
 };
 
-#endif // IROUTER_H
+#endif // ROUTER_H
