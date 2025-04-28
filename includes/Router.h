@@ -10,7 +10,7 @@ class Router {
 
   public:
     Router(std::map<std::string, std::vector<std::string>> svrNameToLocPrefixes);
-    std::pair<std::string, std::string> match(const HttpRequest& request);
+    std::string match(const HttpRequest& request);
 };
 
 #endif // ROUTER_H

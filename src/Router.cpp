@@ -3,7 +3,7 @@
 Router::Router(std::map<std::string, std::vector<std::string>> svrNameToLocPrefixes)
     : _svrNameToLocPrefixes(svrNameToLocPrefixes) {}
 
-std::pair<std::string, std::string> Router::match(const HttpRequest& request) {
+std::string Router::match(const HttpRequest& request) {
     std::string host = request.headers.find("host")->second;
     std::vector locPrefixes = _svrNameToLocPrefixes.at(host);
 
@@ -20,5 +20,5 @@ std::pair<std::string, std::string> Router::match(const HttpRequest& request) {
         }
     }
 
-    return std::make_pair(host, bestLoc);
+    return bestLoc;
 }
