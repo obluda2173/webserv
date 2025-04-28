@@ -2,6 +2,7 @@
 #define ROUTER_H
 
 #include "HttpRequest.h"
+#include <iostream>
 #include <string>
 
 class GetHandler {
@@ -21,7 +22,13 @@ class Router {
   public:
     Router();
     Router(std::map<std::string, std::string> svrCfg) : svrMap(svrCfg) {}
-    GetHandler match(HttpRequest req) { return GetHandler(svrMap[req.headers["host"]] + req.uri); }
+    GetHandler match(HttpRequest req) {
+        std::string url = req.headers["host"] + req.uri;
+        if (svrMap[url].empty()) {
+            url = req.headers["host"] + "/";
+        }
+        return GetHandler(svrMap[url] + req.uri);
+    }
 };
 
 #endif // ROUTER_H

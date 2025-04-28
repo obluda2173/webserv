@@ -15,11 +15,12 @@ TEST_P(RouterTest, pathTests) {
     HttpRequest request = params.req;
     std::string wantPath = params.wantPath;
 
-    Router router(std::map<std::string, std::string>{
-        {"example.com", "/var/www/html"},
-        {"test.com", "/var/www/images"},
-        {"test2.com", "/var/www/photos"},
-    });
+    Router router(std::map<std::string, std::string>{{"example.com/", "/var/www/html"},
+                                                     {"example.com/images/", "/data"},
+                                                     {"example.com/css/", "/data/static"},
+                                                     {"test.com/", "/var/www/secure"},
+                                                     {"test.com/js/", "/data/scripts"},
+                                                     {"test2.com/", "/usr/share/nginx/html"}});
 
     GetHandler getHdlr = router.match(request);
     EXPECT_EQ(wantPath, getHdlr.getPath());
@@ -28,35 +29,17 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
-        // RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "unknown.com"}}}, "/var/www/html/"},
-        RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/static/css/"},
+        // RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "unknown.com"}}},
+        // "/var/www/html/"}, the next Request does not fully match location /css/, there fore
+        // /var/www/html/css RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host",
+        // "example.com"}}}, "/var/www/html/css"}, the next Request fully matches location /css/
+        // RouterTestParams{HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}}, "/data/scripts/js/"},
+        // RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}},
+        // "/var/www/secure/images/"}, RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host",
+        // "example.com"}}}, "/data/images/"},
+        // RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/static/css/"},
+        RouterTestParams{HttpRequest{"GET", "/index.html", "HTTP/1.1", {{"host", "example.com"}}},
+                         "/var/www/html/index.html"},
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example.com"}}}, "/var/www/html/"},
-        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}},
-                         "/var/www/html/images/"},
-        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/images/"},
-        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test2.com"}}}, "/var/www/photos/"}));
-
-class RouterTest2 : public ::testing::TestWithParam<RouterTestParams> {};
-
-TEST_P(RouterTest2, pathTests) {
-    RouterTestParams params = GetParam();
-    HttpRequest request = params.req;
-    std::string wantPath = params.wantPath;
-
-    Router router(std::map<std::string, std::string>{
-        {"test.de", "/var/www/images"},
-        {"test2.de", "/var/www/photos"},
-        {"example.de", "/var/www/html"},
-    });
-
-    GetHandler getHdlr = router.match(request);
-    EXPECT_EQ(wantPath, getHdlr.getPath());
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    pathTests, RouterTest2,
-    ::testing::Values(
-        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example.de"}}}, "/var/www/html/"},
-        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.de"}}}, "/var/www/html/images/"},
-        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test.de"}}}, "/var/www/images/"},
-        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test2.de"}}}, "/var/www/photos/"}));
+        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/secure/"},
+        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test2.com"}}}, "/usr/share/nginx/html/"}));
