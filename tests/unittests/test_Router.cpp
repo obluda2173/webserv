@@ -40,22 +40,3 @@ INSTANTIATE_TEST_SUITE_P(
                                        ""}
 
                       ));
-// TEST(RouterTests, firstTests) {
-//     std::map<std::string, std::vector<std::string>> svrNameToLocPrefixes;
-//     svrNameToLocPrefixes["example.com"] = std::vector<std::string>{};
-//     Router router(svrNameToLocPrefixes);
-
-//     HttpRequest request;
-//     request.method = "GET";
-//     request.version = "1.1";
-//     request.headers["host"] = "example.com";
-//     std::string wantLoc = "";
-
-//     std::string gotLoc = router.match(request);
-//     EXPECT_STREQ(wantLoc.c_str(), gotLoc.c_str());
-
-//     svrNameToLocPrefixes["test.com"] = std::vector<std::string>{};
-//     gotLoc = router.match(request);
-//     Router newRouter(svrNameToLocPrefixes);
-//     EXPECT_STREQ(wantLoc.c_str(), gotLoc.c_str());
-// }
