@@ -28,16 +28,10 @@ class Router {
     GetHandler match(HttpRequest req) {
         std::string url = req.headers["host"] + req.uri;
 
-        if (req.uri == "/css/themes/") {
-            url = req.headers["host"] + "/css/";
-        }
-
-        if (req.uri == "/images/themes/") {
-            url = req.headers["host"] + "/images/";
-        }
-
-        if (req.uri == "/images/screenshots/") {
-            url = req.headers["host"] + "/images/";
+        for (size_t i = 0; i < locs.size(); i++) {
+            if (req.uri.compare(0, locs[i].length(), locs[i]) == 0) {
+                url = req.headers["host"] + locs[i];
+            }
         }
 
         if (_svrMap[url].empty()) {
