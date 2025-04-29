@@ -3,6 +3,7 @@
 
 #include "HttpRequest.h"
 #include <iostream>
+#include <set>
 #include <string>
 
 class GetHandler {
@@ -17,17 +18,36 @@ class GetHandler {
 
 class Router {
   private:
-    std::map<std::string, std::string> svrMap;
+    std::map<std::string, std::string> _svrMap;
+    std::vector<std::string> locs = {"/css/", "/images/"};
 
   public:
     Router();
-    Router(std::map<std::string, std::string> svrCfg) : svrMap(svrCfg) {}
+    Router(std::map<std::string, std::string> svrCfg) : _svrMap(svrCfg) {}
+
     GetHandler match(HttpRequest req) {
         std::string url = req.headers["host"] + req.uri;
-        if (svrMap[url].empty()) {
-            url = req.headers["host"] + "/";
+
+        if (req.uri == "/css/themes/") {
+            url = req.headers["host"] + "/css/";
         }
-        return GetHandler(svrMap[url] + req.uri);
+
+        if (req.uri == "/images/themes/") {
+            url = req.headers["host"] + "/images/";
+        }
+
+        if (req.uri == "/images/screenshots/") {
+            url = req.headers["host"] + "/images/";
+        }
+
+        if (_svrMap[url].empty()) {
+            url = req.headers["host"] + "/";
+            if (_svrMap[url].empty()) {
+                req.headers["host"] = _svrMap["default"];
+                return match(req);
+            }
+        }
+        return GetHandler(_svrMap[url] + req.uri);
     }
 };
 

@@ -1,4 +1,3 @@
-#include "ConfigStructure.h"
 #include "HttpRequest.h"
 #include "gtest/gtest.h"
 #include <Router.h>
@@ -15,7 +14,8 @@ TEST_P(RouterTest, pathTests) {
     HttpRequest request = params.req;
     std::string wantPath = params.wantPath;
 
-    Router router(std::map<std::string, std::string>{{"example.com/", "/var/www/html"},
+    Router router(std::map<std::string, std::string>{{"default", "example.com"},
+                                                     {"example.com/", "/var/www/html"},
                                                      {"example.com/images/", "/data"},
                                                      {"example.com/css/", "/data/static"},
                                                      {"test.com/", "/var/www/secure"},
@@ -29,15 +29,18 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
-        // RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "unknown.com"}}},
-        // "/var/www/html/"}, the next Request does not fully match location /css/, there fore
-        // /var/www/html/css RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host",
-        // "example.com"}}}, "/var/www/html/css"}, the next Request fully matches location /css/
-        // RouterTestParams{HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}}, "/data/scripts/js/"},
-        // RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}},
-        // "/var/www/secure/images/"}, RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host",
-        // "example.com"}}}, "/data/images/"},
-        // RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/static/css/"},
+        RouterTestParams{HttpRequest{"GET", "/images/screenshots/", "HTTP/1.1", {{"host", "example.com"}}},
+                         "/data/images/screenshots/"},
+        RouterTestParams{HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
+                         "/data/images/themes/"},
+        RouterTestParams{HttpRequest{"GET", "/css/themes/", "HTTP/1.1", {{"host", "example.com"}}},
+                         "/data/static/css/themes/"},
+        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "unknown.com"}}}, "/var/www/html/"},
+        RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host", "example.com"}}}, "/var/www/html/css"},
+        RouterTestParams{HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}}, "/data/scripts/js/"},
+        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/secure/images/"},
+        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/images/"},
+        RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/static/css/"},
         RouterTestParams{HttpRequest{"GET", "/index.html", "HTTP/1.1", {{"host", "example.com"}}},
                          "/var/www/html/index.html"},
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example.com"}}}, "/var/www/html/"},
