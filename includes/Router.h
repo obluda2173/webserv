@@ -5,14 +5,9 @@
 #include "HttpRequest.h"
 #include <string>
 
-class GetHandler {
-  private:
-    std::string _path;
-    std::string _defaultPath;
-
-  public:
-    GetHandler(std::string path) : _path(path) {}
-    std::string getPath() { return _path; }
+struct ExecutionInfo {
+    std::string path;
+    std::string execType;
 };
 
 class Router {
@@ -26,7 +21,7 @@ class Router {
         _allLocs[svrName].push_back(prefix);
     }
 
-    std::string match(HttpRequest req);
+    ExecutionInfo match(HttpRequest req);
     void printSvrMap();
 };
 

@@ -2,10 +2,10 @@
 #include "ConfigStructure.h"
 #include <algorithm>
 
-std::string Router::match(HttpRequest req) {
+ExecutionInfo Router::match(HttpRequest req) {
     std::string url = req.headers["host"] + req.uri;
     if (!_svrMap[url].empty())
-        return _svrMap[url] + req.uri;
+        return ExecutionInfo{_svrMap[url] + req.uri, "GET"};
 
     std::vector<std::string> matches;
     std::vector<std::string> _locs = _allLocs[req.headers["host"]];
@@ -16,12 +16,12 @@ std::string Router::match(HttpRequest req) {
     if (!matches.empty()) {
         url = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
         if (!_svrMap[url].empty())
-            return _svrMap[url] + req.uri;
+            return ExecutionInfo{_svrMap[url] + req.uri, "GET"};
     }
 
     url = req.headers["host"] + "/";
     if (!_svrMap[url].empty())
-        return _svrMap[url] + req.uri;
+        return ExecutionInfo{_svrMap[url] + req.uri, "GET"};
 
     req.headers["host"] = _svrMap["default"];
     return match(req);
