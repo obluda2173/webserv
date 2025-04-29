@@ -27,28 +27,18 @@ GetHandler Router::match(HttpRequest req) {
     return match(req);
 }
 
-Router newRouter2(std::vector<ServerConfig> svrCfgs) {
+Router newRouter(std::vector<ServerConfig> svrCfgs) {
     Router r;
     for (std::vector<ServerConfig>::iterator it = svrCfgs.begin(); it != svrCfgs.end(); ++it) {
         ServerConfig svrCfg = *it;
+        if (it == svrCfgs.begin()) {
+            r.add("default", "", svrCfg.serverNames[0]);
+        }
+        r.add(svrCfg.serverNames[0], "/", svrCfg.common.root);
         for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end();
              ++itLoc) {
-            r.add(svrCfg.serverNames[0], itLoc->prefix);
+            r.add(svrCfg.serverNames[0], itLoc->prefix, itLoc->common.root);
         }
     }
     return r;
-}
-
-Router newRouter() {
-    return Router(std::map<std::string, std::string>{{"default", "example.com"},
-                                                     {"example.com/", "/var/www/html"},
-                                                     {"example.com/images/", "/data"},
-                                                     {"example.com/css/scripts/", "/data/scripts"},
-                                                     {"example.com/css/", "/data/static"},
-                                                     {"example.com/css/styles/", "/data/extra"},
-                                                     {"test.com/", "/var/www/secure"},
-                                                     {"test.com/css/", "/data/static"},
-                                                     {"test.com/js/", "/data/scripts"},
-                                                     {"test.com/images/", "/data2"},
-                                                     {"test2.com/", "/usr/share/nginx/html"}});
 }

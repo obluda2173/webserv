@@ -1,6 +1,7 @@
 #ifndef ROUTER_H
 #define ROUTER_H
 
+#include "ConfigStructure.h"
 #include "HttpRequest.h"
 #include <string>
 
@@ -20,16 +21,15 @@ class Router {
     std::map<std::string, std::vector<std::string>> _allLocs;
 
   public:
-    Router();
-    Router(std::map<std::string, std::string> svrCfg) : _svrMap(svrCfg) {
-        _allLocs["example.com"] = {"/images/", "/css/scripts/", "/css/", "/css/styles/"};
-        _allLocs["test.com"] = {"/css/", "/js/", "/images/"};
+    void add(std::string svrName, std::string prefix, std::string root) {
+        _svrMap[svrName + prefix] = root;
+        _allLocs[svrName].push_back(prefix);
     }
-    void add(std::string url, std::string root) { _svrMap[url] = root; }
 
     GetHandler match(HttpRequest req);
+    void printSvrMap();
 };
 
-Router newRouter();
+Router newRouter(std::vector<ServerConfig>);
 
 #endif // ROUTER_H

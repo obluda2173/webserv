@@ -1,4 +1,4 @@
-#include "ConfigStructure.h"
+#include "ConfigParser.h"
 #include "HttpRequest.h"
 #include "gtest/gtest.h"
 #include <Router.h>
@@ -16,16 +16,14 @@ TEST_P(RouterTest, pathTests) {
     std::string wantPath = params.wantPath;
 
     // rather use the ConfigParser
-    std::vector<ServerConfig> svrCfgs;
-    ServerConfig svrCfg1;
-    svrCfg1.serverNames = {"example.com"};
-    svrCfg1.common.root = {"/var/www/html"};
-    svrCfg1.serverNames = {"example.com"};
-    svrCfg1.serverNames = {"example.com"};
+    IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
+    cfgPrsr->getServersConfig();
 
-    Router router = newRouter();
+    Router router = newRouter(cfgPrsr->getServersConfig());
+
     GetHandler getHdlr = router.match(request);
     EXPECT_EQ(wantPath, getHdlr.getPath());
+    delete cfgPrsr;
 }
 
 INSTANTIATE_TEST_SUITE_P(
