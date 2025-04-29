@@ -18,6 +18,7 @@ TEST_P(RouterTest, pathTests) {
                                                      {"example.com/", "/var/www/html"},
                                                      {"example.com/images/", "/data"},
                                                      {"example.com/css/", "/data/static"},
+                                                     {"example.com/css/styles/", "/data/extra"},
                                                      {"test.com/", "/var/www/secure"},
                                                      {"test.com/js/", "/data/scripts"},
                                                      {"test2.com/", "/usr/share/nginx/html"}});
@@ -29,6 +30,8 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
+        RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "example.com"}}},
+                         "/data/extra/css/styles/"},
         RouterTestParams{HttpRequest{"GET", "/images/screenshots/", "HTTP/1.1", {{"host", "example.com"}}},
                          "/data/images/screenshots/"},
         RouterTestParams{HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
