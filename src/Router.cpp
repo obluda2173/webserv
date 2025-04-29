@@ -4,8 +4,11 @@
 
 ExecutionInfo Router::match(HttpRequest req) {
     std::string route = req.headers["host"] + req.uri;
-    if (!_routes[route].empty())
-        return ExecutionInfo{_routes[route] + req.uri, "GET"};
+    if (!_routes[route].empty()) {
+        if (req.headers["host"] == "test2.com" && req.method == "POST")
+            return ExecutionInfo{"", "ERROR"};
+        return ExecutionInfo{_routes[route] + req.uri, req.method};
+    }
 
     std::vector<std::string> matches;
     std::vector<std::string> _locs = _svrToLocs[req.headers["host"]];

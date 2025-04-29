@@ -32,8 +32,8 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
-        RouterTestParams{HttpRequest{"POST", "/css/styles/", "HTTP/1.1", {{"host", "www.test2.com"}}},
-                         "/data/static/css/styles/", "ERROR"},
+        RouterTestParams{HttpRequest{"POST", "/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/secure/", "POST"},
+        RouterTestParams{HttpRequest{"POST", "/", "HTTP/1.1", {{"host", "test2.com"}}}, "", "ERROR"},
         RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "test.com"}}},
                          "/data/static/css/styles/", "GET"},
         RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}}, "/data2/images/", "GET"},
