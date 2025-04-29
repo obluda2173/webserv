@@ -2,6 +2,8 @@
 #define ROUTER_H
 
 #include "HttpRequest.h"
+#include <algorithm>
+#include <iostream>
 #include <string>
 
 class GetHandler {
@@ -17,7 +19,7 @@ class GetHandler {
 class Router {
   private:
     std::map<std::string, std::string> _svrMap;
-    std::vector<std::string> locs = {"/css/", "/images/", "/css/styles/"};
+    std::vector<std::string> _locs = {"/images/", "/css/scripts/", "/css/", "/css/styles/"};
 
   public:
     Router();
@@ -28,13 +30,20 @@ class Router {
         if (!_svrMap[url].empty())
             return GetHandler(_svrMap[url] + req.uri);
 
-        for (size_t i = 0; i < locs.size(); i++) {
-            if (req.uri.compare(0, locs[i].length(), locs[i]) == 0) {
-                url = req.headers["host"] + locs[i];
+        std::vector<std::string> locs;
+
+        for (size_t i = 0; i < _locs.size(); i++) {
+            std::cout << "hello" << std::endl;
+            if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0) {
+                locs.push_back(_locs[i]);
+                std::cout << _locs[i] << std::endl;
             }
         }
-        if (!_svrMap[url].empty())
-            return GetHandler(_svrMap[url] + req.uri);
+        if (!locs.empty()) {
+            url = req.headers["host"] + *std::max_element(locs.begin(), locs.end());
+            if (!_svrMap[url].empty())
+                return GetHandler(_svrMap[url] + req.uri);
+        }
 
         url = req.headers["host"] + "/";
         if (!_svrMap[url].empty())

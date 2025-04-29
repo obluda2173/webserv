@@ -17,6 +17,7 @@ TEST_P(RouterTest, pathTests) {
     Router router(std::map<std::string, std::string>{{"default", "example.com"},
                                                      {"example.com/", "/var/www/html"},
                                                      {"example.com/images/", "/data"},
+                                                     {"example.com/css/scripts/", "/data/scripts"},
                                                      {"example.com/css/", "/data/static"},
                                                      {"example.com/css/styles/", "/data/extra"},
                                                      {"test.com/", "/var/www/secure"},
@@ -30,6 +31,8 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
+        RouterTestParams{HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
+                         "/data/scripts/css/scripts/script.js"},
         RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "example.com"}}},
                          "/data/extra/css/styles/"},
         RouterTestParams{HttpRequest{"GET", "/images/screenshots/", "HTTP/1.1", {{"host", "example.com"}}},
