@@ -21,7 +21,9 @@ TEST_P(RouterTest, pathTests) {
                                                      {"example.com/css/", "/data/static"},
                                                      {"example.com/css/styles/", "/data/extra"},
                                                      {"test.com/", "/var/www/secure"},
+                                                     {"test.com/css/", "/data/static"},
                                                      {"test.com/js/", "/data/scripts"},
+                                                     {"test.com/images/", "/data2"},
                                                      {"test2.com/", "/usr/share/nginx/html"}});
 
     GetHandler getHdlr = router.match(request);
@@ -31,6 +33,8 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
+        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}}, "/data2/images/"},
+        RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "test.com"}}}, "/data/static/css/"},
         RouterTestParams{HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
                          "/data/scripts/css/scripts/script.js"},
         RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "example.com"}}},
@@ -44,7 +48,7 @@ INSTANTIATE_TEST_SUITE_P(
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "unknown.com"}}}, "/var/www/html/"},
         RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host", "example.com"}}}, "/var/www/html/css"},
         RouterTestParams{HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}}, "/data/scripts/js/"},
-        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/secure/images/"},
+        RouterTestParams{HttpRequest{"GET", "/keys/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/secure/keys/"},
         RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/images/"},
         RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/static/css/"},
         RouterTestParams{HttpRequest{"GET", "/index.html", "HTTP/1.1", {{"host", "example.com"}}},

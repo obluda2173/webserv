@@ -30,17 +30,13 @@ class Router {
         if (!_svrMap[url].empty())
             return GetHandler(_svrMap[url] + req.uri);
 
-        std::vector<std::string> locs;
-
+        std::vector<std::string> matches;
         for (size_t i = 0; i < _locs.size(); i++) {
-            std::cout << "hello" << std::endl;
-            if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0) {
-                locs.push_back(_locs[i]);
-                std::cout << _locs[i] << std::endl;
-            }
+            if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0)
+                matches.push_back(_locs[i]);
         }
-        if (!locs.empty()) {
-            url = req.headers["host"] + *std::max_element(locs.begin(), locs.end());
+        if (!matches.empty()) {
+            url = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
             if (!_svrMap[url].empty())
                 return GetHandler(_svrMap[url] + req.uri);
         }
