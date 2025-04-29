@@ -27,18 +27,24 @@ GetHandler Router::match(HttpRequest req) {
     return match(req);
 }
 
+void addSvrToRouter(Router& r, ServerConfig svrCfg) {
+    std::vector<std::string> srvNames = svrCfg.serverNames;
+    for (std::vector<std::string>::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
+        r.add(*itSvrName, "/", svrCfg.common.root);
+        for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end();
+             ++itLoc) {
+            r.add(*itSvrName, itLoc->prefix, itLoc->common.root);
+        }
+    }
+}
+
 Router newRouter(std::vector<ServerConfig> svrCfgs) {
     Router r;
     for (std::vector<ServerConfig>::iterator it = svrCfgs.begin(); it != svrCfgs.end(); ++it) {
         ServerConfig svrCfg = *it;
-        if (it == svrCfgs.begin()) {
+        if (it == svrCfgs.begin())
             r.add("default", "", svrCfg.serverNames[0]);
-        }
-        r.add(svrCfg.serverNames[0], "/", svrCfg.common.root);
-        for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end();
-             ++itLoc) {
-            r.add(svrCfg.serverNames[0], itLoc->prefix, itLoc->common.root);
-        }
+        addSvrToRouter(r, svrCfg);
     }
     return r;
 }

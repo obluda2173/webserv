@@ -29,6 +29,8 @@ TEST_P(RouterTest, pathTests) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
+        RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "www.test.com"}}},
+                         "/data/static/css/styles/"},
         RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "test.com"}}},
                          "/data/static/css/styles/"},
         RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}}, "/data2/images/"},
