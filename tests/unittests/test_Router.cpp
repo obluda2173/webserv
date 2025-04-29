@@ -21,8 +21,8 @@ TEST_P(RouterTest, pathTests) {
 
     Router router = newRouter(cfgPrsr->getServersConfig());
 
-    GetHandler getHdlr = router.match(request);
-    EXPECT_EQ(wantPath, getHdlr.getPath());
+    std::string gotPath = router.match(request);
+    EXPECT_EQ(wantPath, gotPath);
     delete cfgPrsr;
 }
 

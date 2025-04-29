@@ -26,7 +26,7 @@ class Router {
         _allLocs[svrName].push_back(prefix);
     }
 
-    GetHandler match(HttpRequest req);
+    std::string match(HttpRequest req);
     void printSvrMap();
 };
 
