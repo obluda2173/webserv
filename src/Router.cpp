@@ -3,27 +3,27 @@
 #include <algorithm>
 
 ExecutionInfo Router::match(HttpRequest req) {
-    std::string url = req.headers["host"] + req.uri;
-    if (!_svrMap[url].empty())
-        return ExecutionInfo{_svrMap[url] + req.uri, "GET"};
+    std::string route = req.headers["host"] + req.uri;
+    if (!_routes[route].empty())
+        return ExecutionInfo{_routes[route] + req.uri, "GET"};
 
     std::vector<std::string> matches;
-    std::vector<std::string> _locs = _allLocs[req.headers["host"]];
+    std::vector<std::string> _locs = _svrToLocs[req.headers["host"]];
     for (size_t i = 0; i < _locs.size(); i++) {
         if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0)
             matches.push_back(_locs[i]);
     }
     if (!matches.empty()) {
-        url = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
-        if (!_svrMap[url].empty())
-            return ExecutionInfo{_svrMap[url] + req.uri, "GET"};
+        route = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
+        if (!_routes[route].empty())
+            return ExecutionInfo{_routes[route] + req.uri, "GET"};
     }
 
-    url = req.headers["host"] + "/";
-    if (!_svrMap[url].empty())
-        return ExecutionInfo{_svrMap[url] + req.uri, "GET"};
+    route = req.headers["host"] + "/";
+    if (!_routes[route].empty())
+        return ExecutionInfo{_routes[route] + req.uri, "GET"};
 
-    req.headers["host"] = _svrMap["default"];
+    req.headers["host"] = _routes["default"];
     return match(req);
 }
 

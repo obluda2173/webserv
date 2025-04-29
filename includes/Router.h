@@ -12,13 +12,13 @@ struct ExecutionInfo {
 
 class Router {
   private:
-    std::map<std::string, std::string> _svrMap;
-    std::map<std::string, std::vector<std::string>> _allLocs;
+    std::map<std::string, std::string> _routes;
+    std::map<std::string, std::vector<std::string>> _svrToLocs;
 
   public:
     void add(std::string svrName, std::string prefix, std::string root) {
-        _svrMap[svrName + prefix] = root;
-        _allLocs[svrName].push_back(prefix);
+        _routes[svrName + prefix] = root;
+        _svrToLocs[svrName].push_back(prefix);
     }
 
     ExecutionInfo match(HttpRequest req);
