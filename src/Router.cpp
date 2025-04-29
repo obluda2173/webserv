@@ -14,6 +14,7 @@ ExecutionInfo Router::match(HttpRequest req) {
     std::vector<std::string> matches;
     std::vector<std::string> _locs = _svrToLocs[req.headers["host"]];
     for (size_t i = 0; i < _locs.size(); i++) {
+        std::cout << _locs[i] << std::endl;
         if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0)
             matches.push_back(_locs[i]);
     }
@@ -27,10 +28,6 @@ ExecutionInfo Router::match(HttpRequest req) {
         }
     }
 
-    route = req.headers["host"] + "/";
-    if (!_routes[route].empty())
-        return ExecutionInfo{_routes[route] + req.uri, "GET"};
-
     req.headers["host"] = _routes["default"];
     return match(req);
 }
@@ -38,7 +35,8 @@ ExecutionInfo Router::match(HttpRequest req) {
 void addSvrToRouter(Router& r, ServerConfig svrCfg) {
     std::vector<std::string> srvNames = svrCfg.serverNames;
     for (std::vector<std::string>::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
-        r.add(*itSvrName, "/", svrCfg.common.root, svrCfg.common.allowMethods);
+        r.add(*itSvrName, "/", svrCfg.common.root,
+              svrCfg.common.allowMethods); // TODO: need to put in a configuration without root on server_level
         for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end();
              ++itLoc) {
             r.add(*itSvrName, itLoc->prefix, itLoc->common.root, itLoc->common.allowMethods);
