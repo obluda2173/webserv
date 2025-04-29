@@ -1,3 +1,4 @@
+#include "ConfigStructure.h"
 #include "HttpRequest.h"
 #include "gtest/gtest.h"
 #include <Router.h>
@@ -14,18 +15,15 @@ TEST_P(RouterTest, pathTests) {
     HttpRequest request = params.req;
     std::string wantPath = params.wantPath;
 
-    Router router(std::map<std::string, std::string>{{"default", "example.com"},
-                                                     {"example.com/", "/var/www/html"},
-                                                     {"example.com/images/", "/data"},
-                                                     {"example.com/css/scripts/", "/data/scripts"},
-                                                     {"example.com/css/", "/data/static"},
-                                                     {"example.com/css/styles/", "/data/extra"},
-                                                     {"test.com/", "/var/www/secure"},
-                                                     {"test.com/css/", "/data/static"},
-                                                     {"test.com/js/", "/data/scripts"},
-                                                     {"test.com/images/", "/data2"},
-                                                     {"test2.com/", "/usr/share/nginx/html"}});
+    // rather use the ConfigParser
+    std::vector<ServerConfig> svrCfgs;
+    ServerConfig svrCfg1;
+    svrCfg1.serverNames = {"example.com"};
+    svrCfg1.common.root = {"/var/www/html"};
+    svrCfg1.serverNames = {"example.com"};
+    svrCfg1.serverNames = {"example.com"};
 
+    Router router = newRouter();
     GetHandler getHdlr = router.match(request);
     EXPECT_EQ(wantPath, getHdlr.getPath());
 }
