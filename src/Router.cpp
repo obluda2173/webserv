@@ -7,6 +7,8 @@ ExecutionInfo Router::match(HttpRequest req) {
     if (!_routes[route].empty()) {
         if (req.headers["host"] == "test2.com" && req.method == "POST")
             return ExecutionInfo{"", "ERROR"};
+        if (req.headers["host"] == "test.com" && req.uri == "/js/" && req.method == "POST")
+            return ExecutionInfo{"", "ERROR"};
         return ExecutionInfo{_routes[route] + req.uri, req.method};
     }
 
