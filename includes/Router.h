@@ -19,11 +19,14 @@ class GetHandler {
 class Router {
   private:
     std::map<std::string, std::string> _svrMap;
-    std::vector<std::string> _locs = {"/images/", "/css/scripts/", "/css/", "/css/styles/"};
+    std::map<std::string, std::vector<std::string>> _allLocs;
 
   public:
     Router();
-    Router(std::map<std::string, std::string> svrCfg) : _svrMap(svrCfg) {}
+    Router(std::map<std::string, std::string> svrCfg) : _svrMap(svrCfg) {
+        _allLocs["example.com"] = {"/images/", "/css/scripts/", "/css/", "/css/styles/"};
+        _allLocs["test.com"] = {"/css/", "/js/", "/images/"};
+    }
 
     GetHandler match(HttpRequest req) {
         std::string url = req.headers["host"] + req.uri;
@@ -31,6 +34,7 @@ class Router {
             return GetHandler(_svrMap[url] + req.uri);
 
         std::vector<std::string> matches;
+        std::vector<std::string> _locs = _allLocs[req.headers["host"]];
         for (size_t i = 0; i < _locs.size(); i++) {
             if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0)
                 matches.push_back(_locs[i]);
