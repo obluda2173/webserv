@@ -3,6 +3,7 @@
 
 #include "ConfigStructure.h"
 #include "HttpRequest.h"
+#include <set>
 #include <string>
 
 struct ExecutionInfo {
@@ -13,11 +14,18 @@ struct ExecutionInfo {
 class Router {
   private:
     std::map<std::string, std::string> _routes;
+    std::map<std::string, std::set<std::string>> _routeAllowedMethods;
     std::map<std::string, std::vector<std::string>> _svrToLocs;
 
   public:
-    void add(std::string svrName, std::string prefix, std::string root) {
+    void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
         _routes[svrName + prefix] = root;
+        _routeAllowedMethods[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
+        if (allowedMethods.empty()) {
+            _routeAllowedMethods[svrName + prefix].insert("GET");
+            _routeAllowedMethods[svrName + prefix].insert("POST");
+            _routeAllowedMethods[svrName + prefix].insert("DELETE");
+        }
         _svrToLocs[svrName].push_back(prefix);
     }
 
