@@ -30,6 +30,8 @@ ExecutionInfo Router::match(HttpRequest req) {
     return match(req);
 }
 void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
+    // if (_routes.find(svrName + prefix) != _routes.end())
+    //     return; // don't consider doubled route
     _routes[svrName + prefix] = root;
     _routeAllowedMethods[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
     if (allowedMethods.empty()) {

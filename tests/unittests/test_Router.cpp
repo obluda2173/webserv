@@ -1,3 +1,4 @@
+#include "ConfigParser.h"
 #include "HttpRequest.h"
 #include "gtest/gtest.h"
 #include <Router.h>
@@ -17,20 +18,21 @@ TEST_P(RouterTest, pathTests) {
     std::string wantExecType = params.wantExecType;
 
     // // rather use the ConfigParser
-    // IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
-    // cfgPrsr->getServersConfig();
+    IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
+    cfgPrsr->getServersConfig();
 
-    // Router router = newRouter(cfgPrsr->getServersConfig());
-    Router router = newRouterTest();
+    Router router = newRouter(cfgPrsr->getServersConfig());
+    // Router router = newRouterTest();
     struct ExecutionInfo execInfo = router.match(request);
     EXPECT_EQ(wantPath, execInfo.path);
     EXPECT_EQ(wantExecType, execInfo.execType);
-    // delete cfgPrsr;
+    delete cfgPrsr;
 }
 
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
+        RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test3.com"}}}, "/test3/www/html/", "GET"},
         RouterTestParams{HttpRequest{"POST", "/index.html", "HTTP/1.1", {{"host", "example.com"}}}, "",
                          "ERROR"}, // Fuzzy test but it pointed me to an issue with server that don't have a root
         RouterTestParams{HttpRequest{"POST", "/js/something", "HTTP/1.1", {{"host", "test.com"}}}, "", "ERROR"},

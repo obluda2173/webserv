@@ -33,6 +33,7 @@ Router newRouterTest() {
         {"test.com", {"/", "/css/", "/js/", "/images/"}},
         {"www.test.com", {"/", "/css/", "/js/", "/images/"}},
         {"test2.com", {"/"}},
+        {"test3.com", {"/"}},
 
     };
 
@@ -54,6 +55,9 @@ Router newRouterTest() {
         {"www.test.com/images/", "/data2"},
 
         {"test2.com/", "/usr/share/nginx/html"},
+
+        {"test3.com/", "/test3/www/html"},
+
     };
 
     routeAllowedMethods = {
@@ -73,6 +77,8 @@ Router newRouterTest() {
         {"www.test.com/images/", {"GET", "POST", "DELETE"}},
 
         {"test2.com/", {"GET"}},
+
+        {"test3.com/", {"GET", "POST", "DELETE"}},
     };
 
     return Router(routes, routeAllowedMethods, svrToLocs);
