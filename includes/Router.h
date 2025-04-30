@@ -19,6 +19,7 @@ class Router {
     std::map<std::string, std::set<std::string>> _routeToAllowedMethod;
     std::map<std::string, std::set<std::string>> _svrToLocs;
     ExecutionInfo _checkAllowedMethods(std::string route, HttpRequest req);
+    std::string _matchLocations(HttpRequest req);
 
   public:
     Router() {}

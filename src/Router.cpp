@@ -9,6 +9,19 @@ ExecutionInfo Router::_checkAllowedMethods(std::string route, HttpRequest req) {
     return ExecutionInfo{_routeToDirPath[route] + req.uri, req.method};
 }
 
+std::string Router::_matchLocations(HttpRequest req) {
+    std::string route = "";
+    std::vector<std::string> matches;
+    std::set<std::string> _locs = _svrToLocs[req.headers["host"]];
+    for (std::set<std::string>::iterator itLoc = _locs.begin(); itLoc != _locs.end(); itLoc++) {
+        if (req.uri.compare(0, itLoc->length(), *itLoc) == 0)
+            matches.push_back(*itLoc);
+    }
+    if (!matches.empty())
+        route = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
+    return route;
+}
+
 ExecutionInfo Router::match(HttpRequest req) {
     std::string host = req.headers["host"];
     if (_svrs.find(host) == _svrs.end())
@@ -18,18 +31,9 @@ ExecutionInfo Router::match(HttpRequest req) {
     if (!_routeToDirPath[route].empty())
         return _checkAllowedMethods(route, req);
 
-    std::vector<std::string> matches;
-    std::set<std::string> _locs = _svrToLocs[req.headers["host"]];
-    for (std::set<std::string>::iterator itLoc = _locs.begin(); itLoc != _locs.end(); itLoc++) {
-        if (req.uri.compare(0, itLoc->length(), *itLoc) == 0)
-            matches.push_back(*itLoc);
-    }
-    if (!matches.empty()) {
-        route = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
-        if (!_routeToDirPath[route].empty()) {
-            return _checkAllowedMethods(route, req);
-        }
-    }
+    route = _matchLocations(req);
+    if (!_routeToDirPath[route].empty())
+        return _checkAllowedMethods(route, req);
 
     route = host;
     return _checkAllowedMethods(route, req);
