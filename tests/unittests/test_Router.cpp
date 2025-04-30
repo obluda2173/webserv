@@ -18,15 +18,15 @@ TEST_P(RouterTest, pathTests) {
     std::string wantExecType = params.wantExecType;
 
     // // rather use the ConfigParser
-    IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
-    cfgPrsr->getServersConfig();
+    // IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
+    // cfgPrsr->getServersConfig();
 
-    Router router = newRouter(cfgPrsr->getServersConfig());
-    // Router router = newRouterTest();
+    // Router router = newRouter(cfgPrsr->getServersConfig());
+    Router router = newRouterTest();
     struct ExecutionInfo execInfo = router.match(request);
     EXPECT_EQ(wantPath, execInfo.path);
     EXPECT_EQ(wantExecType, execInfo.execType);
-    delete cfgPrsr;
+    // delete cfgPrsr;
 }
 
 INSTANTIATE_TEST_SUITE_P(

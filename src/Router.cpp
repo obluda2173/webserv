@@ -2,6 +2,10 @@
 #include <algorithm>
 
 ExecutionInfo Router::match(HttpRequest req) {
+    std::string host = req.headers["host"];
+    if (_svrs.find(host) == _svrs.end())
+        host = _defaultSvr;
+
     std::string route = req.headers["host"] + req.uri;
     if (!_routes[route].empty()) {
         if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
@@ -26,8 +30,11 @@ ExecutionInfo Router::match(HttpRequest req) {
         }
     }
 
-    req.headers["host"] = _routes["default"];
-    return match(req);
+    route = host + "/";
+    if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
+        return ExecutionInfo{"", "ERROR"};
+    }
+    return ExecutionInfo{_routes[route] + req.uri, "GET"};
 }
 void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
     // if (_routes.find(svrName + prefix) != _routes.end())

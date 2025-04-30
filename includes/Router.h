@@ -13,15 +13,19 @@ struct ExecutionInfo {
 
 class Router {
   private:
+    std::string _defaultSvr;
     std::map<std::string, std::string> _routes;
     std::map<std::string, std::set<std::string>> _routeAllowedMethods;
+    std::set<std::string> _svrs;
     std::map<std::string, std::vector<std::string>> _svrToLocs;
 
   public:
     Router() {}
-    Router(std::map<std::string, std::string> routes, std::map<std::string, std::set<std::string>> routeAllowedMethods,
+    Router(std::string defaultSvr, std::map<std::string, std::string> routes,
+           std::map<std::string, std::set<std::string>> routeAllowedMethods, std::set<std::string> svrs,
            std::map<std::string, std::vector<std::string>> svrToLocs)
-        : _routes(routes), _routeAllowedMethods(routeAllowedMethods), _svrToLocs(svrToLocs) {};
+        : _defaultSvr(defaultSvr), _routes(routes), _routeAllowedMethods(routeAllowedMethods), _svrs(svrs),
+          _svrToLocs(svrToLocs) {};
 
     void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods);
     ExecutionInfo match(HttpRequest req);

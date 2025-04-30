@@ -24,21 +24,26 @@ Router newRouter(std::vector<ServerConfig> svrCfgs) {
 }
 
 Router newRouterTest() {
+    std::string defaultSvr;
     std::map<std::string, std::vector<std::string>> svrToLocs;
     std::map<std::string, std::string> routes;
     std::map<std::string, std::set<std::string>> routeAllowedMethods;
+    std::set<std::string> svrs;
+
+    defaultSvr = "example.com";
+
+    svrs = {"example.com", "test.com", "www.test.com", "test2.com", "test3.com"};
 
     svrToLocs = {
-        {"example.com", {"/", "/images/", "/css/scripts/", "/css/", "/css/styles/"}},
-        {"test.com", {"/", "/css/", "/js/", "/images/"}},
-        {"www.test.com", {"/", "/css/", "/js/", "/images/"}},
-        {"test2.com", {"/"}},
+        {"example.com", {"/images/", "/css/scripts/", "/css/", "/css/styles/"}},
+        {"test.com", {"/css/", "/js/", "/images/"}},
+        {"www.test.com", {"/css/", "/js/", "/images/"}},
+        {"test2.com", {}},
         {"test3.com", {"/"}},
 
     };
 
     routes = {
-        {"default", "example.com"},
         {"example.com/", "/var/www/html"},
         {"example.com/images/", "/data"},
         {"example.com/css/scripts/", "/data/scripts"},
@@ -81,5 +86,5 @@ Router newRouterTest() {
         {"test3.com/", {"GET", "POST", "DELETE"}},
     };
 
-    return Router(routes, routeAllowedMethods, svrToLocs);
+    return Router(defaultSvr, routes, routeAllowedMethods, svrs, svrToLocs);
 }
