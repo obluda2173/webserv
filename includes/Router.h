@@ -23,17 +23,7 @@ class Router {
            std::map<std::string, std::vector<std::string>> svrToLocs)
         : _routes(routes), _routeAllowedMethods(routeAllowedMethods), _svrToLocs(svrToLocs) {};
 
-    void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
-        _routes[svrName + prefix] = root;
-        _routeAllowedMethods[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
-        if (allowedMethods.empty()) {
-            _routeAllowedMethods[svrName + prefix].insert("GET");
-            _routeAllowedMethods[svrName + prefix].insert("POST");
-            _routeAllowedMethods[svrName + prefix].insert("DELETE");
-        }
-        _svrToLocs[svrName].push_back(prefix);
-    }
-
+    void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods);
     ExecutionInfo match(HttpRequest req);
     void printSvrMap();
 };
