@@ -25,7 +25,7 @@ Router newRouter(std::vector<ServerConfig> svrCfgs) {
 
 Router newRouterTest() {
     std::string defaultSvr;
-    std::map<std::string, std::vector<std::string>> svrToLocs;
+    std::map<std::string, std::set<std::string>> svrToLocs;
     std::map<std::string, std::string> routes;
     std::map<std::string, std::set<std::string>> routeAllowedMethods;
     std::set<std::string> svrs;

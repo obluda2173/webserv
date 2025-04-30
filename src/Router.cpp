@@ -15,10 +15,10 @@ ExecutionInfo Router::match(HttpRequest req) {
     }
 
     std::vector<std::string> matches;
-    std::vector<std::string> _locs = _svrToLocs[req.headers["host"]];
-    for (size_t i = 0; i < _locs.size(); i++) {
-        if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0)
-            matches.push_back(_locs[i]);
+    std::set<std::string> _locs = _svrToLocs[req.headers["host"]];
+    for (std::set<std::string>::iterator itLoc = _locs.begin(); itLoc != _locs.end(); itLoc++) {
+        if (req.uri.compare(0, itLoc->length(), *itLoc) == 0)
+            matches.push_back(*itLoc);
     }
     if (!matches.empty()) {
         route = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
@@ -46,5 +46,5 @@ void Router::add(std::string svrName, std::string prefix, std::string root, std:
         _routeAllowedMethods[svrName + prefix].insert("POST");
         _routeAllowedMethods[svrName + prefix].insert("DELETE");
     }
-    _svrToLocs[svrName].push_back(prefix);
+    _svrToLocs[svrName].insert(prefix);
 }

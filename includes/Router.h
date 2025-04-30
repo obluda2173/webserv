@@ -17,13 +17,13 @@ class Router {
     std::map<std::string, std::string> _routes;
     std::map<std::string, std::set<std::string>> _routeAllowedMethods;
     std::set<std::string> _svrs;
-    std::map<std::string, std::vector<std::string>> _svrToLocs;
+    std::map<std::string, std::set<std::string>> _svrToLocs;
 
   public:
     Router() {}
     Router(std::string defaultSvr, std::map<std::string, std::string> routes,
            std::map<std::string, std::set<std::string>> routeAllowedMethods, std::set<std::string> svrs,
-           std::map<std::string, std::vector<std::string>> svrToLocs)
+           std::map<std::string, std::set<std::string>> svrToLocs)
         : _defaultSvr(defaultSvr), _routes(routes), _routeAllowedMethods(routeAllowedMethods), _svrs(svrs),
           _svrToLocs(svrToLocs) {};
 
