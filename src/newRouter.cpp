@@ -3,7 +3,7 @@
 void addSvrToRouter(Router& r, ServerConfig svrCfg) {
     std::vector<std::string> srvNames = svrCfg.serverNames;
     for (std::vector<std::string>::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
-        r.add(*itSvrName, "/", svrCfg.common.root,
+        r.add(*itSvrName, "", svrCfg.common.root,
               svrCfg.common.allowMethods); // TODO: need to put in a configuration without root on server_level
         for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end();
              ++itLoc) {
@@ -16,8 +16,6 @@ Router newRouter(std::vector<ServerConfig> svrCfgs) {
     Router r;
     for (std::vector<ServerConfig>::iterator it = svrCfgs.begin(); it != svrCfgs.end(); ++it) {
         ServerConfig svrCfg = *it;
-        if (it == svrCfgs.begin())
-            r.add("default", "", svrCfg.serverNames[0], svrCfg.common.allowMethods);
         addSvrToRouter(r, svrCfg);
     }
     return r;
