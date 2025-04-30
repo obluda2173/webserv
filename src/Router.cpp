@@ -23,11 +23,10 @@ std::string Router::_matchLocations(HttpRequest req) {
 }
 
 ExecutionInfo Router::match(HttpRequest req) {
-    std::string host = req.headers["host"];
-    if (_svrs.find(host) == _svrs.end())
-        host = _defaultSvr;
+    if (_svrs.find(req.headers["host"]) == _svrs.end())
+        req.headers["host"] = _defaultSvr;
 
-    std::string route = host + req.uri;
+    std::string route = req.headers["host"] + req.uri;
     if (!_routeToDirPath[route].empty())
         return _checkAllowedMethods(route, req);
 
@@ -35,8 +34,7 @@ ExecutionInfo Router::match(HttpRequest req) {
     if (!_routeToDirPath[route].empty())
         return _checkAllowedMethods(route, req);
 
-    route = host;
-    return _checkAllowedMethods(route, req);
+    return _checkAllowedMethods(req.headers["host"], req);
 }
 void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
     if (_defaultSvr.empty())
