@@ -30,11 +30,11 @@ ExecutionInfo Router::match(HttpRequest req) {
         }
     }
 
-    route = host + "/";
+    route = host;
     if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
         return ExecutionInfo{"", "ERROR"};
     }
-    return ExecutionInfo{_routes[route] + req.uri, "GET"};
+    return ExecutionInfo{_routes[route] + req.uri, req.method};
 }
 void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
     // if (_routes.find(svrName + prefix) != _routes.end())

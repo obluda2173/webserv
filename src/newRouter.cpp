@@ -44,35 +44,36 @@ Router newRouterTest() {
     };
 
     routes = {
-        {"example.com/", "/var/www/html"},
+        {"example.com", "/var/www/html"},
         {"example.com/images/", "/data"},
         {"example.com/css/scripts/", "/data/scripts"},
         {"example.com/css/", "/data/static"},
         {"example.com/css/styles/", "/data/extra"},
 
-        {"test.com/", "/var/www/secure"},
+        {"test.com", "/var/www/secure"},
         {"test.com/css/", "/data/static"},
         {"test.com/js/", "/data/scripts"},
         {"test.com/images/", "/data2"},
-        {"www.test.com/", "/var/www/secure"},
+        {"www.test.com", "/var/www/secure"},
         {"www.test.com/cs/", "/data/static"},
         {"www.test.com/js/", "/data/scripts"},
         {"www.test.com/images/", "/data2"},
 
-        {"test2.com/", "/usr/share/nginx/html"},
+        {"test2.com", "/usr/share/nginx/html"},
 
+        {"test3.com", "/to/be/overwritten"},
         {"test3.com/", "/test3/www/html"},
 
     };
 
     routeAllowedMethods = {
-        {"example.com/", {"GET"}},
+        {"example.com", {"GET"}},
         {"example.com/images/", {"GET", "POST", "DELETE"}},
         {"example.com/css/scripts/", {"GET", "POST", "DELETE"}},
         {"example.com/css/", {"GET", "POST", "DELETE"}},
         {"example.com/css/styles/", {"GET", "POST", "DELETE"}},
 
-        {"test.com/", {"GET", "POST", "DELETE"}},
+        {"test.com", {"GET", "POST", "DELETE"}},
         {"test.com/css/", {"GET", "POST", "DELETE"}},
         {"test.com/js/", {"GET"}},
         {"test.com/images/", {"GET", "POST", "DELETE"}},
@@ -81,7 +82,7 @@ Router newRouterTest() {
         {"www.test.com/js/", {"GET", "POST", "DELETE"}},
         {"www.test.com/images/", {"GET", "POST", "DELETE"}},
 
-        {"test2.com/", {"GET"}},
+        {"test2.com", {"GET"}},
 
         {"test3.com/", {"GET", "POST", "DELETE"}},
     };
