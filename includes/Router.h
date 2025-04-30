@@ -14,9 +14,9 @@ struct ExecutionInfo {
 class Router {
   private:
     std::string _defaultSvr;
-    std::map<std::string, std::string> _routes;
-    std::map<std::string, std::set<std::string>> _routeAllowedMethods;
     std::set<std::string> _svrs;
+    std::map<std::string, std::string> _uriToDirPath;
+    std::map<std::string, std::set<std::string>> _uriToAllowedMethod;
     std::map<std::string, std::set<std::string>> _svrToLocs;
 
   public:
@@ -24,7 +24,7 @@ class Router {
     Router(std::string defaultSvr, std::map<std::string, std::string> routes,
            std::map<std::string, std::set<std::string>> routeAllowedMethods, std::set<std::string> svrs,
            std::map<std::string, std::set<std::string>> svrToLocs)
-        : _defaultSvr(defaultSvr), _routes(routes), _routeAllowedMethods(routeAllowedMethods), _svrs(svrs),
+        : _defaultSvr(defaultSvr), _svrs(svrs), _uriToDirPath(routes), _uriToAllowedMethod(routeAllowedMethods),
           _svrToLocs(svrToLocs) {};
 
     void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods);

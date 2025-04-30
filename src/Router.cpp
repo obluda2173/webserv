@@ -6,12 +6,12 @@ ExecutionInfo Router::match(HttpRequest req) {
     if (_svrs.find(host) == _svrs.end())
         host = _defaultSvr;
 
-    std::string route = req.headers["host"] + req.uri;
-    if (!_routes[route].empty()) {
-        if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
+    std::string route = host + req.uri;
+    if (!_uriToDirPath[route].empty()) {
+        if (_uriToAllowedMethod[route].find(req.method) == _uriToAllowedMethod[route].end()) {
             return ExecutionInfo{"", "ERROR"};
         }
-        return ExecutionInfo{_routes[route] + req.uri, req.method};
+        return ExecutionInfo{_uriToDirPath[route] + req.uri, req.method};
     }
 
     std::vector<std::string> matches;
@@ -22,34 +22,34 @@ ExecutionInfo Router::match(HttpRequest req) {
     }
     if (!matches.empty()) {
         route = req.headers["host"] + *std::max_element(matches.begin(), matches.end());
-        if (!_routes[route].empty()) {
-            if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
+        if (!_uriToDirPath[route].empty()) {
+            if (_uriToAllowedMethod[route].find(req.method) == _uriToAllowedMethod[route].end()) {
                 return ExecutionInfo{"", "ERROR"};
             }
-            return ExecutionInfo{_routes[route] + req.uri, req.method};
+            return ExecutionInfo{_uriToDirPath[route] + req.uri, req.method};
         }
     }
 
     route = host;
-    if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
+    if (_uriToAllowedMethod[route].find(req.method) == _uriToAllowedMethod[route].end()) {
         return ExecutionInfo{"", "ERROR"};
     }
-    return ExecutionInfo{_routes[route] + req.uri, req.method};
+    return ExecutionInfo{_uriToDirPath[route] + req.uri, req.method};
 }
 void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
     if (_defaultSvr.empty())
         _defaultSvr = svrName;
     if (_svrs.find(svrName) == _svrs.end())
         _svrs.insert(svrName);
-
-    if (_routes.find(svrName + prefix) != _routes.end())
+    if (_uriToDirPath.find(svrName + prefix) != _uriToDirPath.end())
         return;
-    _routes[svrName + prefix] = root;
-    _routeAllowedMethods[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
+
+    _uriToDirPath[svrName + prefix] = root;
+    _uriToAllowedMethod[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
     if (allowedMethods.empty()) {
-        _routeAllowedMethods[svrName + prefix].insert("GET");
-        _routeAllowedMethods[svrName + prefix].insert("POST");
-        _routeAllowedMethods[svrName + prefix].insert("DELETE");
+        _uriToAllowedMethod[svrName + prefix].insert("GET");
+        _uriToAllowedMethod[svrName + prefix].insert("POST");
+        _uriToAllowedMethod[svrName + prefix].insert("DELETE");
     }
     _svrToLocs[svrName].insert(prefix);
 }

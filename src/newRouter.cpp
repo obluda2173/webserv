@@ -23,10 +23,10 @@ Router newRouter(std::vector<ServerConfig> svrCfgs) {
 
 Router newRouterTest() {
     std::string defaultSvr;
-    std::map<std::string, std::set<std::string>> svrToLocs;
-    std::map<std::string, std::string> routes;
-    std::map<std::string, std::set<std::string>> routeAllowedMethods;
     std::set<std::string> svrs;
+    std::map<std::string, std::set<std::string>> svrToLocs;
+    std::map<std::string, std::string> uriToDirPath;
+    std::map<std::string, std::set<std::string>> uriToAllowedMethods;
 
     defaultSvr = "example.com";
 
@@ -41,7 +41,7 @@ Router newRouterTest() {
 
     };
 
-    routes = {
+    uriToDirPath = {
         {"example.com", "/var/www/html"},
         {"example.com/images/", "/data"},
         {"example.com/css/scripts/", "/data/scripts"},
@@ -64,7 +64,7 @@ Router newRouterTest() {
 
     };
 
-    routeAllowedMethods = {
+    uriToAllowedMethods = {
         {"example.com", {"GET"}},
         {"example.com/images/", {"GET", "POST", "DELETE"}},
         {"example.com/css/scripts/", {"GET", "POST", "DELETE"}},
@@ -85,5 +85,5 @@ Router newRouterTest() {
         {"test3.com/", {"GET", "POST", "DELETE"}},
     };
 
-    return Router(defaultSvr, routes, routeAllowedMethods, svrs, svrToLocs);
+    return Router(defaultSvr, uriToDirPath, uriToAllowedMethods, svrs, svrToLocs);
 }
