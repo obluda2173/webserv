@@ -3,9 +3,8 @@
 #include <algorithm>
 
 ExecutionInfo Router::_checkAllowedMethods(std::string route, HttpRequest req) {
-    if (_routeToAllowedMethod[route].find(req.method) == _routeToAllowedMethod[route].end()) {
+    if (_routeToAllowedMethod[route].find(req.method) == _routeToAllowedMethod[route].end())
         return ExecutionInfo{"", "ERROR"};
-    }
     return ExecutionInfo{_routeToDirPath[route] + req.uri, req.method};
 }
 

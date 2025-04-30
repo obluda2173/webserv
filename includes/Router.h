@@ -6,10 +6,20 @@
 #include <set>
 #include <string>
 
-struct ExecutionInfo {
-    std::string path;
-    std::string execType;
+class ExecutionInfo {
+  private:
+    std::string _dirPath;
+    std::string _execType;
+
+  public:
+    ExecutionInfo(std::string dirPath, std::string execType) : _dirPath(dirPath), _execType(execType) {}
+    std::string getDirPath() { return _dirPath; }
+    std::string getExecType() { return _execType; }
 };
+
+// class ExecutionInfo : public IExecutionInfo {};
+
+// class ErrorExecutionInfo : public IExecutionInfo {};
 
 class Router {
   private:

@@ -23,23 +23,22 @@ TEST_P(RouterTest, pathTests) {
 
     Router router = newRouter(cfgPrsr->getServersConfig());
     // Router router = newRouterTest();
-    struct ExecutionInfo execInfo = router.match(request);
-    EXPECT_EQ(wantPath, execInfo.path);
-    EXPECT_EQ(wantExecType, execInfo.execType);
+    ExecutionInfo execInfo = router.match(request);
+    EXPECT_EQ(wantPath, execInfo.getDirPath());
+    EXPECT_EQ(wantExecType, execInfo.getExecType());
     delete cfgPrsr;
 }
 
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
-
         RouterTestParams{HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "unknown.com"}}},
                          "/data/scripts/css/scripts/script.js", "GET"},
         RouterTestParams{HttpRequest{"POST", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
                          "/data/scripts/css/scripts/script.js", "POST"},
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test3.com"}}}, "/test3/www/html/", "GET"},
         RouterTestParams{HttpRequest{"POST", "/index.html", "HTTP/1.1", {{"host", "example.com"}}}, "",
-                         "ERROR"}, // Fuzzy test but it pointed me to an issue with server that don't have a root
+                         "ERROR"}, // Fuzzy test but it pointed me to an issue with servers that don't have a root
         RouterTestParams{HttpRequest{"POST", "/js/something", "HTTP/1.1", {{"host", "test.com"}}}, "", "ERROR"},
         RouterTestParams{HttpRequest{"POST", "/js/", "HTTP/1.1", {{"host", "test.com"}}}, "", "ERROR"},
         RouterTestParams{HttpRequest{"POST", "/", "HTTP/1.1", {{"host", "test.com"}}}, "/var/www/secure/", "POST"},
