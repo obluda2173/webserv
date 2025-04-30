@@ -14,7 +14,6 @@ ExecutionInfo Router::match(HttpRequest req) {
     std::vector<std::string> matches;
     std::vector<std::string> _locs = _svrToLocs[req.headers["host"]];
     for (size_t i = 0; i < _locs.size(); i++) {
-        std::cout << _locs[i] << std::endl;
         if (req.uri.compare(0, _locs[i].length(), _locs[i]) == 0)
             matches.push_back(_locs[i]);
     }
@@ -53,4 +52,59 @@ Router newRouter(std::vector<ServerConfig> svrCfgs) {
         addSvrToRouter(r, svrCfg);
     }
     return r;
+}
+
+Router newRouterTest() {
+    std::map<std::string, std::vector<std::string>> svrToLocs;
+    std::map<std::string, std::string> routes;
+    std::map<std::string, std::set<std::string>> routeAllowedMethods;
+
+    svrToLocs = {
+        {"example.com", {"/", "/images/", "/css/scripts/", "/css/", "/css/styles/"}},
+        {"test.com", {"/", "/css/", "/js/", "/images/"}},
+        {"www.test.com", {"/", "/css/", "/js/", "/images/"}},
+        {"test2.com", {"/"}},
+
+    };
+
+    routes = {
+        {"default", "example.com"},
+        {"example.com/", "/var/www/html"},
+        {"example.com/images/", "/data"},
+        {"example.com/css/scripts/", "/data/scripts"},
+        {"example.com/css/", "/data/static"},
+        {"example.com/css/styles/", "/data/extra"},
+
+        {"test.com/", "/var/www/secure"},
+        {"test.com/css/", "/data/static"},
+        {"test.com/js/", "/data/scripts"},
+        {"test.com/images/", "/data2"},
+        {"www.test.com/", "/var/www/secure"},
+        {"www.test.com/cs/", "/data/static"},
+        {"www.test.com/js/", "/data/scripts"},
+        {"www.test.com/images/", "/data2"},
+
+        {"test2.com/", "/usr/share/nginx/html"},
+    };
+
+    routeAllowedMethods = {
+        {"example.com/", {"GET"}},
+        {"example.com/images/", {"GET", "POST", "DELETE"}},
+        {"example.com/css/scripts/", {"GET", "POST", "DELETE"}},
+        {"example.com/css/", {"GET", "POST", "DELETE"}},
+        {"example.com/css/styles/", {"GET", "POST", "DELETE"}},
+
+        {"test.com/", {"GET", "POST", "DELETE"}},
+        {"test.com/css/", {"GET", "POST", "DELETE"}},
+        {"test.com/js/", {"GET"}},
+        {"test.com/images/", {"GET", "POST", "DELETE"}},
+        {"www.test.com/", {"GET", "POST", "DELETE"}},
+        {"www.test.com/css/", {"GET", "POST", "DELETE"}},
+        {"www.test.com/js/", {"GET", "POST", "DELETE"}},
+        {"www.test.com/images/", {"GET", "POST", "DELETE"}},
+
+        {"test2.com/", {"GET"}},
+    };
+
+    return Router(routes, routeAllowedMethods, svrToLocs);
 }

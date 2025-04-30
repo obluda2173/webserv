@@ -18,6 +18,11 @@ class Router {
     std::map<std::string, std::vector<std::string>> _svrToLocs;
 
   public:
+    Router() {}
+    Router(std::map<std::string, std::string> routes, std::map<std::string, std::set<std::string>> routeAllowedMethods,
+           std::map<std::string, std::vector<std::string>> svrToLocs)
+        : _routes(routes), _routeAllowedMethods(routeAllowedMethods), _svrToLocs(svrToLocs) {};
+
     void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
         _routes[svrName + prefix] = root;
         _routeAllowedMethods[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
@@ -34,5 +39,6 @@ class Router {
 };
 
 Router newRouter(std::vector<ServerConfig>);
+Router newRouterTest();
 
 #endif // ROUTER_H
