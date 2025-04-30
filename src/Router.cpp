@@ -26,7 +26,7 @@ ExecutionInfo Router::match(HttpRequest req) {
             if (_routeAllowedMethods[route].find(req.method) == _routeAllowedMethods[route].end()) {
                 return ExecutionInfo{"", "ERROR"};
             }
-            return ExecutionInfo{_routes[route] + req.uri, "GET"};
+            return ExecutionInfo{_routes[route] + req.uri, req.method};
         }
     }
 
