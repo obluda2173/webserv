@@ -32,7 +32,7 @@ Route Router::match(HttpRequest req) {
     return _routeToRoutes[req.headers["host"]];
 }
 
-void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> index, std::vector<std::string> allowedMethods) {
+void Router::add(std::string svrName, std::string prefix, std::vector<std::string> allowedMethods, std::string root, std::vector<std::string> index) {
     if (_defaultSvr.empty())
         _defaultSvr = svrName;
     if (_svrs.find(svrName) == _svrs.end())
