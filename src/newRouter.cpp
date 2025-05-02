@@ -3,9 +3,11 @@
 void addSvrToRouter(Router& r, ServerConfig svrCfg) {
     std::vector<std::string> srvNames = svrCfg.serverNames;
     for (std::vector<std::string>::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
-        r.add(*itSvrName, "", svrCfg.common.allowMethods, svrCfg.common.root, svrCfg.common.index);
+        RouteConfig cfg = {svrCfg.common.root, svrCfg.common.index};
+        r.add(*itSvrName, "", svrCfg.common.allowMethods, cfg);
         for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end(); ++itLoc) {
-            r.add(*itSvrName, itLoc->prefix, itLoc->common.allowMethods, itLoc->common.root, itLoc->common.index);
+            RouteConfig cfg = {itLoc->common.root, itLoc->common.index};
+            r.add(*itSvrName, itLoc->prefix, itLoc->common.allowMethods, cfg);
         }
     }
 }
