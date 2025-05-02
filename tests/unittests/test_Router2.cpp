@@ -22,14 +22,24 @@ Router newRouterTest() {
     };
 
     routeToRoot = {
-        {"example.com", "/var/www/html"},       {"example.com/images/", "/data"},           {"example.com/css/scripts/", "/data/scripts"},
-        {"example.com/css/", "/data/static"},   {"example.com/css/styles/", "/data/extra"},
+        {"example.com", "/var/www/html"},
+        {"example.com/images/", "/data"},
+        {"example.com/css/scripts/", "/data/scripts"},
+        {"example.com/css/", "/data/static"},
+        {"example.com/css/styles/", "/data/extra"},
 
-        {"test.com", "/var/www/secure"},        {"test.com/css/", "/data/static"},          {"test.com/js/", "/data/scripts"},
-        {"test.com/images/", "/data2"},         {"www.test.com", "/var/www/secure"},        {"www.test.com/cs/", "/data/static"},
-        {"www.test.com/js/", "/data/scripts"},  {"www.test.com/images/", "/data2"},
+        {"test.com", "/var/www/secure"},
+        {"test.com/css/", "/data/static"},
+        {"test.com/js/", "/data/scripts"},
+        {"test.com/images/", "/data2"},
+        {"www.test.com", "/var/www/secure"},
+        {"www.test.com/cs/", "/data/static"},
+        {"www.test.com/js/", "/data/scripts"},
+        {"www.test.com/images/", "/data2"},
 
-        {"test2.com", "/usr/share/nginx/html"}, {"test3.com", "/to/be/overwritten"},        {"test3.com/", "/test3/www/html"},
+        {"test2.com", "/usr/share/nginx/html"},
+        {"test3.com", "/to/be/overwritten"},
+        {"test3.com/", "/test3/www/html"},
 
     };
 
@@ -41,12 +51,16 @@ Router newRouterTest() {
 
     std::map<std::string, Route> routeToRoutes;
     routeToRoutes = {
-        {"test.com/js/", {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {}}}},
-        {"example.com/images/", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}}, {"/data", {}}}},
-        {"example.com/css/", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/data/static", {}}}},
-        {"example.com", {{{"GET", hdlrs["GET"]}}, {"/var/www/html", {}}}},
-        {"test.com", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}}, {"/var/www/secure", {"index.html", "index.htm"}}}},
-        {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html", {}}}}};
+        {"test.com/js/", {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {}, {}, 1024, false}}},
+        {"example.com/images/",
+         {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
+          {"/data", {}, {}, 1024, false}}},
+        {"example.com/css/", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/data/static", {}, {}, 1024, false}}},
+        {"example.com", {{{"GET", hdlrs["GET"]}}, {"/var/www/html", {}, {}, 1024, false}}},
+        {"test.com",
+         {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
+          {"/var/www/secure", {"index.html", "index.htm"}, {}, 1024, false}}},
+        {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html", {}, {}, 1024, false}}}};
 
     return Router(hdlrs, defaultSvr, routeToRoot, svrs, svrToLocs, routeToRoutes);
 }

@@ -3,10 +3,14 @@
 void addSvrToRouter(Router& r, ServerConfig svrCfg) {
     std::vector<std::string> srvNames = svrCfg.serverNames;
     for (std::vector<std::string>::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
-        RouteConfig cfg = {svrCfg.common.root, svrCfg.common.index};
+
+        RouteConfig cfg = {svrCfg.common.root, svrCfg.common.index, svrCfg.common.errorPage,
+                           svrCfg.common.clientMaxBody, svrCfg.common.autoindex};
         r.add(*itSvrName, "", svrCfg.common.allowMethods, cfg);
-        for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end(); ++itLoc) {
-            RouteConfig cfg = {itLoc->common.root, itLoc->common.index};
+        for (std::vector<LocationConfig>::iterator itLoc = svrCfg.locations.begin(); itLoc != svrCfg.locations.end();
+             ++itLoc) {
+            RouteConfig cfg = {itLoc->common.root, itLoc->common.index, itLoc->common.errorPage,
+                               itLoc->common.clientMaxBody, itLoc->common.autoindex};
             r.add(*itSvrName, itLoc->prefix, itLoc->common.allowMethods, cfg);
         }
     }

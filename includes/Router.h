@@ -10,8 +10,9 @@
 struct RouteConfig {
     std::string root;
     std::vector<std::string> index;
-    // std::map<int, std::string> errorPage;
-    // bool autoindex;
+    std::map<int, std::string> errorPage;
+    size_t clientMaxBody;
+    bool autoindex;
 };
 
 class Response {};
@@ -49,9 +50,11 @@ class Router {
         _hdlrs["DELETE"] = delHdlr;
     }
 
-    Router(std::map<std::string, IHandler*> hdlrs, std::string defaultSvr, std::map<std::string, std::string> routes, std::set<std::string> svrs,
-           std::map<std::string, std::set<std::string>> svrToLocs, std::map<std::string, Route> routeToRoutes)
-        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _routeToRoot(routes), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
+    Router(std::map<std::string, IHandler*> hdlrs, std::string defaultSvr, std::map<std::string, std::string> routes,
+           std::set<std::string> svrs, std::map<std::string, std::set<std::string>> svrToLocs,
+           std::map<std::string, Route> routeToRoutes)
+        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _routeToRoot(routes), _svrToLocs(svrToLocs),
+          _routeToRoutes(routeToRoutes) {};
 
     void add(std::string svrName, std::string prefix, std::vector<std::string> allowedMethods, RouteConfig cfg);
     Route match(HttpRequest req);
