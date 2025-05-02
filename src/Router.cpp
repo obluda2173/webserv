@@ -5,7 +5,7 @@
 ExecutionInfo Router::_checkAllowedMethods(std::string route, HttpRequest req) {
     if (_routeToAllowedMethod[route].find(req.method) == _routeToAllowedMethod[route].end())
         return ExecutionInfo{"", "ERROR"};
-    return ExecutionInfo{_routeToDirPath[route] + req.uri, req.method};
+    return ExecutionInfo{_routeToRoot[route] + req.uri, req.method};
 }
 
 std::string Router::_matchLocations(HttpRequest req) {
@@ -26,11 +26,11 @@ ExecutionInfo Router::match(HttpRequest req) {
         req.headers["host"] = _defaultSvr;
 
     std::string route = req.headers["host"] + req.uri;
-    if (!_routeToDirPath[route].empty())
+    if (!_routeToRoot[route].empty())
         return _checkAllowedMethods(route, req);
 
     route = _matchLocations(req);
-    if (!_routeToDirPath[route].empty())
+    if (!_routeToRoot[route].empty())
         return _checkAllowedMethods(route, req);
 
     return _checkAllowedMethods(req.headers["host"], req);
@@ -40,10 +40,10 @@ void Router::add(std::string svrName, std::string prefix, std::string root, std:
         _defaultSvr = svrName;
     if (_svrs.find(svrName) == _svrs.end())
         _svrs.insert(svrName);
-    if (_routeToDirPath.find(svrName + prefix) != _routeToDirPath.end())
+    if (_routeToRoot.find(svrName + prefix) != _routeToRoot.end())
         return;
 
-    _routeToDirPath[svrName + prefix] = root;
+    _routeToRoot[svrName + prefix] = root;
     _routeToAllowedMethod[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
     if (allowedMethods.empty()) {
         _routeToAllowedMethod[svrName + prefix].insert("GET");

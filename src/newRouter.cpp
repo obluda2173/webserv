@@ -25,7 +25,7 @@ Router newRouterTest() {
     std::string defaultSvr;
     std::set<std::string> svrs;
     std::map<std::string, std::set<std::string>> svrToLocs;
-    std::map<std::string, std::string> uriToDirPath;
+    std::map<std::string, std::string> routeToRoot;
     std::map<std::string, std::set<std::string>> uriToAllowedMethods;
 
     defaultSvr = "example.com";
@@ -41,7 +41,7 @@ Router newRouterTest() {
 
     };
 
-    uriToDirPath = {
+    routeToRoot = {
         {"example.com", "/var/www/html"},
         {"example.com/images/", "/data"},
         {"example.com/css/scripts/", "/data/scripts"},
@@ -85,5 +85,5 @@ Router newRouterTest() {
         {"test3.com/", {"GET", "POST", "DELETE"}},
     };
 
-    return Router(defaultSvr, uriToDirPath, uriToAllowedMethods, svrs, svrToLocs);
+    return Router(defaultSvr, routeToRoot, uriToAllowedMethods, svrs, svrToLocs);
 }

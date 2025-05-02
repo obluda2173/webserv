@@ -24,7 +24,7 @@ TEST_P(RouterTest, pathTests) {
     Router router = newRouter(cfgPrsr->getServersConfig());
     // Router router = newRouterTest();
     ExecutionInfo execInfo = router.match(request);
-    EXPECT_EQ(wantPath, execInfo.getDirPath());
+    EXPECT_EQ(wantPath, execInfo.getRoot());
     EXPECT_EQ(wantExecType, execInfo.getExecType());
     delete cfgPrsr;
 }
