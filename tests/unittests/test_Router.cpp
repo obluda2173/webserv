@@ -42,7 +42,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
     // for (size_t i = 0; i < wantCfg.index.size(); i++) {
     //     EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
     // }
-    // EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
+    EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
     EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
     delete cfgPrsr;
