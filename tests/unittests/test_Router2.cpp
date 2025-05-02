@@ -33,13 +33,16 @@ Router newRouterTest() {
 
     };
 
-    StubHandler GetHandler("GET");
-    StubHandler PostHandler("POST");
-    StubHandler DeleteHandler("DELETE");
-    std::map<std::string, Route> routeToRoutes;
-    routeToRoutes = {{"example.com", {{{"GET", GetHandler}, {"POST", PostHandler}, {"DELETE", DeleteHandler}}, {"/var/www/html"}}},
-                     {"test.com", {{{"GET", GetHandler}, {"POST", PostHandler}, {"DELETE", DeleteHandler}}, {"/var/www/secure"}}},
-                     {"test2.com", {{{"GET", GetHandler}}, {"/usr/share/nginx/html"}}}};
+    std::map<std::string, IHandler*> hdlrs = {
+        {"GET", new StubHandler("GET")},
+        {"POST", new StubHandler("POST")},
+        {"DELETE", new StubHandler("DELETE")},
+    };
 
-    return Router(defaultSvr, routeToRoot, svrs, svrToLocs, routeToRoutes);
+    std::map<std::string, Route> routeToRoutes;
+    routeToRoutes = {{"example.com", {{{"GET", hdlrs["GET"]}}, {"/var/www/html"}}},
+                     {"test.com", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}}, {"/var/www/secure"}}},
+                     {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html"}}}};
+
+    return Router(hdlrs, defaultSvr, routeToRoot, svrs, svrToLocs, routeToRoutes);
 }

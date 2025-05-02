@@ -23,7 +23,7 @@ class IHandler {
 };
 
 struct Route {
-    std::unordered_map<std::string, IHandler&> hdlrs;
+    std::unordered_map<std::string, IHandler*> hdlrs;
     RouteConfig cfg;
 };
 
@@ -42,14 +42,16 @@ class Router {
         for (std::map<std::string, IHandler*>::iterator it = _hdlrs.begin(); it != _hdlrs.end(); it++)
             delete it->second;
     }
+
     Router(IHandler* getHdlr, IHandler* postHdlr, IHandler* delHdlr) {
         _hdlrs["GET"] = getHdlr;
         _hdlrs["POST"] = postHdlr;
         _hdlrs["DELETE"] = delHdlr;
     }
-    Router(std::string defaultSvr, std::map<std::string, std::string> routes, std::set<std::string> svrs,
+
+    Router(std::map<std::string, IHandler*> hdlrs, std::string defaultSvr, std::map<std::string, std::string> routes, std::set<std::string> svrs,
            std::map<std::string, std::set<std::string>> svrToLocs, std::map<std::string, Route> routeToRoutes)
-        : _defaultSvr(defaultSvr), _svrs(svrs), _routeToRoot(routes), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
+        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _routeToRoot(routes), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
 
     void add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods);
     Route match(HttpRequest req);

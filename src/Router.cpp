@@ -42,11 +42,11 @@ void Router::add(std::string svrName, std::string prefix, std::string root, std:
     _routeToRoot[svrName + prefix] = root;
 
     if (allowedMethods.size() == 1) {
-        _routeToRoutes[svrName + prefix] = {{{"GET", *_hdlrs["GET"]}}, {root}};
+        _routeToRoutes[svrName + prefix] = {{{"GET", _hdlrs["GET"]}}, {root}};
     }
 
     if (allowedMethods.size() == 0) {
-        _routeToRoutes[svrName + prefix] = {{{"GET", *_hdlrs["GET"]}, {"POST", *_hdlrs["POST"]}, {"DELETE", *_hdlrs["DELETE"]}}, {root}};
+        _routeToRoutes[svrName + prefix] = {{{"GET", _hdlrs["GET"]}, {"POST", _hdlrs["POST"]}, {"DELETE", _hdlrs["DELETE"]}}, {root}};
     }
 
     _svrToLocs[svrName].insert(prefix);
