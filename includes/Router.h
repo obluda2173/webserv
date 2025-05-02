@@ -7,6 +7,8 @@
 #include <string>
 #include <unordered_map>
 
+const size_t oneMB = 1 * 1024 * 1024;
+
 struct RouteConfig {
     std::string root;
     std::vector<std::string> index;

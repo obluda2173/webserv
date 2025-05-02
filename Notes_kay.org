@@ -25,3 +25,4 @@
   #+begin_src conf
 index       index.html index.htm
   #+end_src
+- [ ] oneMB as default if clientMaxBody is not set

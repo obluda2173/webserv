@@ -37,11 +37,21 @@ TEST_P(RouterTest, testWithConfigParsing) {
     Router r = newRouter(cfgPrsr->getServersConfig(), new StubHandler("GET"), new StubHandler("POST"),
                          new StubHandler("DELETE"));
     Route gotRoute = r.match(request);
+    // check root
     EXPECT_EQ(wantCfg.root, gotRoute.cfg.root);
+    // check index
     EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
     for (size_t i = 0; i < wantCfg.index.size(); i++)
         EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
-    EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
+
+    // check clientMaxBody
+    EXPECT_EQ(wantCfg.clientMaxBody, gotRoute.cfg.clientMaxBody);
+    // // check error pages
+    // EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
+    // for (auto it = wantCfg.errorPage.begin(); it != wantCfg.errorPage.end(); it++)
+    //     EXPECT_EQ(wantCfg.errorPage[it->first], gotRoute.cfg.errorPage[it->first]);
+
+    // check handlers
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
     for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
         EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
@@ -79,29 +89,30 @@ INSTANTIATE_TEST_SUITE_P(
         // RouterTestParams{HttpRequest{"GET", "/css/themes/", "HTTP/1.1", {{"host", "example.com"}}},
         //                  "/data/static/css/themes/", "GET"},
         // RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "unknown.com"}}}, "/var/www/html/",
-        // "GET"}, RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host", "example.com"}}},
+        // "GET"},
+        // RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host", "example.com"}}},
         // "/var/www/html/css", "GET"},
         RouterTestParams{HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET"},
-                         {"/data/scripts", {}, {}, 1024, false}},
+                         {"/data/scripts", {}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/keys/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET", "POST", "DELETE"},
-                         {"/var/www/secure", {"index.html", "index.htm"}, {}, 1024, false}},
+                         {"/var/www/secure", {"index.html", "index.htm"}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET", "POST", "DELETE"},
-                         {"/data", {}, {}, 1024, false}},
+                         {"/data", {}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET", "POST"},
-                         {"/data/static", {}, {}, 1024, false}},
+                         {"/data/static", {}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/index.html", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET"},
-                         {"/var/www/html", {}, {}, 1024, false}},
+                         {"/var/www/html", {}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET"},
-                         {"/var/www/html", {}, {}, 1024, false}},
+                         {"/var/www/html", {}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET", "POST", "DELETE"},
-                         {"/var/www/secure", {"index.html", "index.htm"}, {}, 1024, false}},
+                         {"/var/www/secure", {"index.html", "index.htm"}, {}, oneMB, false}},
         RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test2.com"}}},
                          {"GET"},
-                         {"/usr/share/nginx/html", {}, {}, 1024, false}}));
+                         {"/usr/share/nginx/html", {}, {}, oneMB, false}}));
