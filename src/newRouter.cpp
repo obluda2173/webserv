@@ -10,8 +10,8 @@ void addSvrToRouter(Router& r, ServerConfig svrCfg) {
     }
 }
 
-Router newRouter(std::vector<ServerConfig> svrCfgs) {
-    Router r;
+Router newRouter(std::vector<ServerConfig> svrCfgs, IHandler* getHdlr, IHandler* postHdlr, IHandler* delHdlr) {
+    Router r(getHdlr, postHdlr, delHdlr);
     for (std::vector<ServerConfig>::iterator it = svrCfgs.begin(); it != svrCfgs.end(); ++it) {
         ServerConfig svrCfg = *it;
         addSvrToRouter(r, svrCfg);

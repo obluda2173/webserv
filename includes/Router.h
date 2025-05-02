@@ -22,14 +22,6 @@ class IHandler {
     virtual Response handle(const HttpRequest& req, const RouteConfig& config) = 0;
 };
 
-class Handler : public IHandler {
-  public:
-    Handler(std::string type) : type(type) {}
-    ~Handler() {}
-    std::string type;
-    virtual Response handle(const HttpRequest&, const RouteConfig&) { return Response{}; };
-};
-
 struct Route {
     std::unordered_map<std::string, IHandler&> hdlrs;
     RouteConfig cfg;
@@ -50,10 +42,10 @@ class Router {
         for (std::map<std::string, IHandler*>::iterator it = _hdlrs.begin(); it != _hdlrs.end(); it++)
             delete it->second;
     }
-    Router() {
-        _hdlrs["GET"] = new Handler("GET");
-        _hdlrs["POST"] = new Handler("POST");
-        _hdlrs["DELETE"] = new Handler("DELETE");
+    Router(IHandler* getHdlr, IHandler* postHdlr, IHandler* delHdlr) {
+        _hdlrs["GET"] = getHdlr;
+        _hdlrs["POST"] = postHdlr;
+        _hdlrs["DELETE"] = delHdlr;
     }
     Router(std::string defaultSvr, std::map<std::string, std::string> routes, std::set<std::string> svrs,
            std::map<std::string, std::set<std::string>> svrToLocs, std::map<std::string, Route> routeToRoutes)
@@ -64,7 +56,7 @@ class Router {
     void printSvrMap();
 };
 
-Router newRouter(std::vector<ServerConfig>);
+Router newRouter(std::vector<ServerConfig> svrCfgs, IHandler* getHdlr, IHandler* postHdlr, IHandler* delHdlr);
 Router newRouterTest();
 
 #endif // ROUTER_H

@@ -1,3 +1,4 @@
+#include "test_stubs.h"
 #include <Router.h>
 
 Router newRouterTest() {
@@ -32,11 +33,12 @@ Router newRouterTest() {
 
     };
 
-    Handler GetHandler("GET");
-    Handler PostHandler("POST");
-    Handler DeleteHandler("DELETE");
+    StubHandler GetHandler("GET");
+    StubHandler PostHandler("POST");
+    StubHandler DeleteHandler("DELETE");
     std::map<std::string, Route> routeToRoutes;
-    routeToRoutes = {{"test.com", {{{"GET", GetHandler}, {"POST", PostHandler}, {"DELETE", DeleteHandler}}, {"/var/www/secure"}}},
+    routeToRoutes = {{"example.com", {{{"GET", GetHandler}, {"POST", PostHandler}, {"DELETE", DeleteHandler}}, {"/var/www/html"}}},
+                     {"test.com", {{{"GET", GetHandler}, {"POST", PostHandler}, {"DELETE", DeleteHandler}}, {"/var/www/secure"}}},
                      {"test2.com", {{{"GET", GetHandler}}, {"/usr/share/nginx/html"}}}};
 
     return Router(defaultSvr, routeToRoot, svrs, svrToLocs, routeToRoutes);
