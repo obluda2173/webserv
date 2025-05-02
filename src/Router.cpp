@@ -32,7 +32,7 @@ Route Router::match(HttpRequest req) {
     return _routeToRoutes[req.headers["host"]];
 }
 
-void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
+void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> index, std::vector<std::string> allowedMethods) {
     if (_defaultSvr.empty())
         _defaultSvr = svrName;
     if (_svrs.find(svrName) == _svrs.end())
@@ -43,14 +43,14 @@ void Router::add(std::string svrName, std::string prefix, std::string root, std:
     _routeToRoot[svrName + prefix] = root;
 
     if (allowedMethods.size() == 0) {
-        _routeToRoutes[svrName + prefix] = {{{"GET", _hdlrs["GET"]}, {"POST", _hdlrs["POST"]}, {"DELETE", _hdlrs["DELETE"]}}, {root}};
+        _routeToRoutes[svrName + prefix] = {{{"GET", _hdlrs["GET"]}, {"POST", _hdlrs["POST"]}, {"DELETE", _hdlrs["DELETE"]}}, {root, index}};
     } else {
         std::unordered_map<std::string, IHandler*> hdlrs;
         for (size_t i = 0; i < allowedMethods.size(); i++) {
             std::string method = allowedMethods[i];
             hdlrs[method] = _hdlrs[method];
         }
-        _routeToRoutes[svrName + prefix] = {hdlrs, {root}};
+        _routeToRoutes[svrName + prefix] = {hdlrs, {root, index}};
     }
 
     _svrToLocs[svrName].insert(prefix);
