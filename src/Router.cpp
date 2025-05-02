@@ -1,12 +1,7 @@
 #include "Router.h"
 #include "HttpRequest.h"
 #include <algorithm>
-
-ExecutionInfo Router::_checkAllowedMethods(std::string route, HttpRequest req) {
-    if (_routeToAllowedMethod[route].find(req.method) == _routeToAllowedMethod[route].end())
-        return ExecutionInfo{"", "ERROR"};
-    return ExecutionInfo{_routeToRoot[route] + req.uri, req.method};
-}
+#include <map>
 
 std::string Router::_matchLocations(HttpRequest req) {
     std::string route = "";
@@ -21,20 +16,21 @@ std::string Router::_matchLocations(HttpRequest req) {
     return route;
 }
 
-ExecutionInfo Router::match(HttpRequest req) {
+Route Router::match(HttpRequest req) {
     if (_svrs.find(req.headers["host"]) == _svrs.end())
         req.headers["host"] = _defaultSvr;
 
     std::string route = req.headers["host"] + req.uri;
     if (!_routeToRoot[route].empty())
-        return _checkAllowedMethods(route, req);
+        return _routeToRoutes[req.headers["host"]];
 
     route = _matchLocations(req);
     if (!_routeToRoot[route].empty())
-        return _checkAllowedMethods(route, req);
+        return _routeToRoutes[req.headers["host"]];
 
-    return _checkAllowedMethods(req.headers["host"], req);
+    return _routeToRoutes[req.headers["host"]];
 }
+
 void Router::add(std::string svrName, std::string prefix, std::string root, std::vector<std::string> allowedMethods) {
     if (_defaultSvr.empty())
         _defaultSvr = svrName;
@@ -44,11 +40,14 @@ void Router::add(std::string svrName, std::string prefix, std::string root, std:
         return;
 
     _routeToRoot[svrName + prefix] = root;
-    _routeToAllowedMethod[svrName + prefix] = std::set(allowedMethods.begin(), allowedMethods.end());
-    if (allowedMethods.empty()) {
-        _routeToAllowedMethod[svrName + prefix].insert("GET");
-        _routeToAllowedMethod[svrName + prefix].insert("POST");
-        _routeToAllowedMethod[svrName + prefix].insert("DELETE");
+
+    if (allowedMethods.size() == 1) {
+        _routeToRoutes[svrName + prefix] = {{{"GET", *_hdlrs["GET"]}}, {root}};
     }
+
+    if (allowedMethods.size() == 0) {
+        _routeToRoutes[svrName + prefix] = {{{"GET", *_hdlrs["GET"]}, {"POST", *_hdlrs["POST"]}, {"DELETE", *_hdlrs["DELETE"]}}, {root}};
+    }
+
     _svrToLocs[svrName].insert(prefix);
 }

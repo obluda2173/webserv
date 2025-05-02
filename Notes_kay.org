@@ -1,21 +1,23 @@
 #+title: Notes Kay
 
 - [ ] change throwing of std::runtime_error to something that makes sense
-- [ ] have a complete Equal check function of ServerConfig
+- [X] have a complete Equal check function of ServerConfig
 
-- [ ] all of the tests probably fit into maximum of 2 tests (those which throw error and those where you test for equalness)
-- [ ] the same for test_config_ast.cpp and test_config_events.cpp
+- [X] all of the tests probably fit into maximum of 2 tests (those which throw error and those where you test for equalness)
+- [X] the same for test_config_ast.cpp and test_config_events.cpp
 
-- [ ] Naming
-  - [ ] test_Router.cpp (not test_http_routing)
+- [X] Naming
+  - [X] test_Router.cpp (not test_http_routing)
 
-  - [ ] ValidationRules sounds like a struct but not like a class
-    - [ ] what is it supposed to do (why is it not requestValidator?)
+  - [X] ValidationRules sounds like a struct but not like a class
+    - [X] what is it supposed to do (why is it not requestValidator?)
 
-- [ ] why is there a buildAST function in the tests (why is getAst public in the parser? If nobody is supposed to use it?)
+- [X] why is there a buildAST function in the tests (why is getAst public in the parser? If nobody is supposed to use it?)
 
-- [ ] the CommonConfig constructor is needless
+- [X] the CommonConfig constructor is needless
 
-- [ ] why does the router match return the host (which is actually part of the request)?
+- [X] why does the router match return the host (which is actually part of the request)?
 
-- [ ] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
+- [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
+
+- [ ] restrict config allowedMethods to GET, POST, DELETE
