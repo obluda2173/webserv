@@ -34,17 +34,17 @@ TEST_P(RouterTest, testWithConfigParsing) {
     std::set<std::string> wantHdlrs = params.wantHdlrs;
 
     IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
-    cfgPrsr->getServersConfig();
     Router r = newRouter(cfgPrsr->getServersConfig(), new StubHandler("GET"), new StubHandler("POST"),
                          new StubHandler("DELETE"));
     Route gotRoute = r.match(request);
     EXPECT_EQ(wantCfg.root, gotRoute.cfg.root);
-    // for (size_t i = 0; i < wantCfg.index.size(); i++) {
-    //     EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
-    // }
     EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
+    for (size_t i = 0; i < wantCfg.index.size(); i++)
+        EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
     EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
+    for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
+        EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
     delete cfgPrsr;
 }
 
