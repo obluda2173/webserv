@@ -2,6 +2,7 @@
 #include "HttpRequest.h"
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 
 std::string Router::_matchLocations(HttpRequest req) {
     std::string route = "";
@@ -22,11 +23,11 @@ Route Router::match(HttpRequest req) {
 
     std::string route = req.headers["host"] + req.uri;
     if (!_routeToRoot[route].empty())
-        return _routeToRoutes[req.headers["host"]];
+        return _routeToRoutes[route];
 
     route = _matchLocations(req);
     if (!_routeToRoot[route].empty())
-        return _routeToRoutes[req.headers["host"]];
+        return _routeToRoutes[route];
 
     return _routeToRoutes[req.headers["host"]];
 }
@@ -41,12 +42,15 @@ void Router::add(std::string svrName, std::string prefix, std::string root, std:
 
     _routeToRoot[svrName + prefix] = root;
 
-    if (allowedMethods.size() == 1) {
-        _routeToRoutes[svrName + prefix] = {{{"GET", _hdlrs["GET"]}}, {root}};
-    }
-
     if (allowedMethods.size() == 0) {
         _routeToRoutes[svrName + prefix] = {{{"GET", _hdlrs["GET"]}, {"POST", _hdlrs["POST"]}, {"DELETE", _hdlrs["DELETE"]}}, {root}};
+    } else {
+        std::unordered_map<std::string, IHandler*> hdlrs;
+        for (size_t i = 0; i < allowedMethods.size(); i++) {
+            std::string method = allowedMethods[i];
+            hdlrs[method] = _hdlrs[method];
+        }
+        _routeToRoutes[svrName + prefix] = {hdlrs, {root}};
     }
 
     _svrToLocs[svrName].insert(prefix);

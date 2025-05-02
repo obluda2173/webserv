@@ -40,7 +40,9 @@ Router newRouterTest() {
     };
 
     std::map<std::string, Route> routeToRoutes;
-    routeToRoutes = {{"example.com", {{{"GET", hdlrs["GET"]}}, {"/var/www/html"}}},
+    routeToRoutes = {{"example.com/images/", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}}, {"/data"}}},
+                     {"example.com/css/", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/data/static"}}},
+                     {"example.com", {{{"GET", hdlrs["GET"]}}, {"/var/www/html"}}},
                      {"test.com", {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}}, {"/var/www/secure"}}},
                      {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html"}}}};
 

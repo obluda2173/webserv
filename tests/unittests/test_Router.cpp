@@ -76,15 +76,9 @@ INSTANTIATE_TEST_SUITE_P(pathTests, RouterTest,
                              // "GET"}, RouterTestParams{HttpRequest{"GET", "/keys/", "HTTP/1.1", {{"host", "test.com"}}},
                              // "/var/www/secure/keys/",
                              //                  "GET"},
-                             // RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}}, "/data/images/",
-                             // "GET"}, RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}},
-                             // "/data/static/css/",
-                             //                  "GET"},
-                             // RouterTestParams{HttpRequest{"GET", "/index.html", "HTTP/1.1", {{"host", "example.com"}}},
-                             //                  "/var/www/html/index.html", "GET"},
-                             // RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example.com"}}}, "/var/www/html/", "GET"},
+                             RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}}, {"GET", "POST", "DELETE"}, {"/data"}},
+                             RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}}, {"GET", "POST"}, {"/data/static"}},
+                             RouterTestParams{HttpRequest{"GET", "/index.html", "HTTP/1.1", {{"host", "example.com"}}}, {"GET"}, {"/var/www/html"}},
                              RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example.com"}}}, {"GET"}, {"/var/www/html"}},
                              RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test.com"}}}, {"GET", "POST", "DELETE"}, {"/var/www/secure"}},
-                             RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test2.com"}}}, {"GET"}, {"/usr/share/nginx/html"}}
-
-                             ));
+                             RouterTestParams{HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "test2.com"}}}, {"GET"}, {"/usr/share/nginx/html"}}));
