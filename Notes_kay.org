@@ -21,7 +21,7 @@
 - [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
 
 - [ ] restrict config allowedMethods to GET, POST, DELETE
-- [ ] no error is thrown when there is no ";"
+- [ ] no error is thrown when there is no ";" in
   #+begin_src conf
 index       index.html index.htm
   #+end_src

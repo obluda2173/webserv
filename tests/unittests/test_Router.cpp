@@ -23,8 +23,24 @@ TEST_P(RouterTest, testWithArtificialConfig) {
 
     Router r = newRouterTest();
     Route gotRoute = r.match(request);
+    // check root
     EXPECT_EQ(wantCfg.root, gotRoute.cfg.root);
+    // check index
+    EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
+    for (size_t i = 0; i < wantCfg.index.size(); i++)
+        EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
+
+    // check clientMaxBody
+    EXPECT_EQ(wantCfg.clientMaxBody, gotRoute.cfg.clientMaxBody);
+    // check error pages
+    EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
+    for (auto it = wantCfg.errorPage.begin(); it != wantCfg.errorPage.end(); it++)
+        EXPECT_EQ(wantCfg.errorPage[it->first], gotRoute.cfg.errorPage[it->first]);
+
+    // check handlers
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
+    for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
+        EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
 }
 
 TEST_P(RouterTest, testWithConfigParsing) {
@@ -46,10 +62,10 @@ TEST_P(RouterTest, testWithConfigParsing) {
 
     // check clientMaxBody
     EXPECT_EQ(wantCfg.clientMaxBody, gotRoute.cfg.clientMaxBody);
-    // // check error pages
-    // EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
-    // for (auto it = wantCfg.errorPage.begin(); it != wantCfg.errorPage.end(); it++)
-    //     EXPECT_EQ(wantCfg.errorPage[it->first], gotRoute.cfg.errorPage[it->first]);
+    // check error pages
+    EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
+    for (auto it = wantCfg.errorPage.begin(); it != wantCfg.errorPage.end(); it++)
+        EXPECT_EQ(wantCfg.errorPage[it->first], gotRoute.cfg.errorPage[it->first]);
 
     // check handlers
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
@@ -61,6 +77,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
+        // TODO: need to add a test for the default page
         // RouterTestParams{HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "unknown.com"}}},
         //                  "/data/scripts/css/scripts/script.js", "GET"},
         // RouterTestParams{HttpRequest{"POST", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
@@ -75,8 +92,7 @@ INSTANTIATE_TEST_SUITE_P(
         // "POST"}, RouterTestParams{HttpRequest{"POST", "/", "HTTP/1.1", {{"host", "test2.com"}}}, "", "ERROR"},
         // RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "test.com"}}},
         //                  "/data/static/css/styles/", "GET"},
-        // RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}}, "/data2/images/",
-        // "GET"}, RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "test.com"}}},
+        // , RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "test.com"}}},
         // "/data/static/css/", "GET"}, RouterTestParams{HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1",
         // {{"host", "example.com"}}},
         //                  "/data/scripts/css/scripts/script.js", "GET"},
@@ -92,6 +108,17 @@ INSTANTIATE_TEST_SUITE_P(
         // "GET"},
         // RouterTestParams{HttpRequest{"GET", "/css", "HTTP/1.1", {{"host", "example.com"}}},
         // "/var/www/html/css", "GET"},
+        RouterTestParams{HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}},
+                         {"GET", "POST", "DELETE"},
+                         {"/data2",
+                          {},
+                          {{404, "/custom_404.html"},
+                           {500, "/custom_50x.html"},
+                           {502, "/custom_50x.html"},
+                           {503, "/custom_50x.html"},
+                           {504, "/custom_50x.html"}},
+                          oneMB,
+                          false}},
         RouterTestParams{HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET"},
                          {"/data/scripts", {}, {}, oneMB, false}},
