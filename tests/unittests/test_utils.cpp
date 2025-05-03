@@ -50,17 +50,11 @@ int countOpenFileDescriptors() {
     return count;
 }
 
-void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int batchSize) {
+void sendMsgInBatches(std::string msg, int clientfd, int batchSize) {
     // cutting the msg into parts and send
-    (void)conn;
-    (void)connHdlr;
     std::vector<std::string> chunks;
     for (std::size_t i = 0; i < msg.length(); i += batchSize) {
         send(clientfd, msg.substr(i, batchSize).c_str(), msg.substr(i, batchSize).length(), 0);
-        // connHdlr.handleConnection(conn, READY_TO_READ);
-        // std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        // recv(clientfd, buffer, 1024, 0);
-        // ASSERT_EQ(errno, EWOULDBLOCK);
     }
 }
 
@@ -107,7 +101,7 @@ std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _c
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     r = recv(_clientfd, buffer, 1024, 0);
     if (r == -1) {
-        std::cout << "recv: " << std::strerror(errno);
+        std::cout << "recv: " << std::strerror(errno) << std::endl;
         exit(1);
     }
     buffer[r] = '\0';

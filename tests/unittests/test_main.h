@@ -24,7 +24,7 @@ void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, 
 void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort, int nbrConns);
 void testOneConnection(std::string& clientIp, std::string& clientPort, struct addrinfo* svrAddrInfo);
 void testMultipleConnections(std::string svrPort, int nbrConns);
-void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int chunkSize);
+void sendMsgInBatches(std::string msg, int clientfd, int batchSize);
 bool allZero(std::vector<std::string> msgs);
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
