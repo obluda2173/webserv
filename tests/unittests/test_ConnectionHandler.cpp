@@ -20,7 +20,6 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     // testing that a bad request is going to close the connection
     int clientfd = _clientfdsAndConns[0].first;
     int conn = _clientfdsAndConns[0].second;
-
     char buffer[1024];
     std::string request = "GET \r\n\r\n";
     std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"

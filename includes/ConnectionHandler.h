@@ -14,7 +14,9 @@ typedef enum SocketType {
     CLIENT_SOCKET,
 } SocketType;
 
-struct Connection {
+class Connection {
+  public:
+    Connection(struct sockaddr_storage addr, int fd) : addr(addr), fd(fd) {}
     struct sockaddr_storage addr;
     std::string buf;
     int fd;
@@ -22,7 +24,7 @@ struct Connection {
 
 class ConnectionHandler : public IConnectionHandler {
   private:
-    std::map<int, Connection> _connections;
+    std::map<int, Connection*> _connections;
     std::map<int, IHttpParser*> _parsers;
     std::map<int, HttpResponse> _responses;
     ILogger& _logger;

@@ -4,7 +4,6 @@
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>
-#include <stdexcept>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -12,17 +11,18 @@
 ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
-    for (std::map<int, Connection>::iterator it = _connections.begin(); it != _connections.end(); it++) {
+    for (std::map<int, Connection*>::iterator it = _connections.begin(); it != _connections.end(); it++) {
         close(it->first);
         delete _parsers[it->first];
+        delete it->second;
     }
 }
 
 void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
-    Connection connInfo;
-    connInfo.addr = theirAddr;
-    connInfo.fd = conn;
+    Connection* connInfo = new Connection(theirAddr, conn);
+    // connInfo.addr = theirAddr;
+    // connInfo.fd = conn;
     _connections[conn] = connInfo;
     _parsers[conn] = new HttpParser(_logger);
     _responses[conn] = HttpResponse{0, "", "", false, "", "", ""};
@@ -30,14 +30,15 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
 }
 
 void ConnectionHandler::_removeClientConnection(int conn) {
-    Connection connInfo = _connections[conn];
-    _connections.erase(connInfo.fd);
-    _responses.erase(connInfo.fd); // TODO: secure all the raises agains exceptions being thrown
-    delete _parsers[connInfo.fd];
-    _parsers.erase(connInfo.fd);
-    _ioNotifier.del(connInfo.fd);
-    close(connInfo.fd);
-    logDisconnect(_logger, connInfo.addr);
+    Connection* connInfo = _connections[conn];
+    _connections.erase(connInfo->fd);
+    _responses.erase(connInfo->fd); // TODO: secure all the raises agains exceptions being thrown
+    delete _parsers[connInfo->fd];
+    _parsers.erase(connInfo->fd);
+    _ioNotifier.del(connInfo->fd);
+    close(connInfo->fd);
+    logDisconnect(_logger, connInfo->addr);
+    delete connInfo;
 }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
@@ -60,7 +61,7 @@ void ConnectionHandler::_readFromConn(Connection* connInfo) {
 }
 
 void ConnectionHandler::_onSocketRead(int conn, bool withRead) {
-    Connection* connInfo = &_connections[conn];
+    Connection* connInfo = _connections[conn];
     IHttpParser* prsr = _parsers.at(conn);
     if (withRead)
         _readFromConn(connInfo);
@@ -102,7 +103,7 @@ void ConnectionHandler::_sendPipeline(int conn) {
         _removeClientConnection(conn);
     } else {
         _responses[conn].response.clear();
-        if (!_connections[conn].buf.empty()) {
+        if (!_connections[conn]->buf.empty()) {
             _onSocketRead(conn, false);
             return;
         }
