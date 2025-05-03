@@ -18,6 +18,7 @@ std::string Router::_matchLocations(HttpRequest req) {
 }
 
 Route Router::match(HttpRequest req) {
+    // when host is not known, make it defaultSvr
     if (_svrs.find(req.headers["host"]) == _svrs.end())
         req.headers["host"] = _defaultSvr;
 

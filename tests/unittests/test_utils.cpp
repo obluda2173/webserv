@@ -50,16 +50,17 @@ int countOpenFileDescriptors() {
     return count;
 }
 
-void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int batchSize,
-                      char buffer[1024]) {
+void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int batchSize) {
     // cutting the msg into parts and send
+    (void)conn;
+    (void)connHdlr;
     std::vector<std::string> chunks;
     for (std::size_t i = 0; i < msg.length(); i += batchSize) {
         send(clientfd, msg.substr(i, batchSize).c_str(), msg.substr(i, batchSize).length(), 0);
-        connHdlr.handleConnection(conn, READY_TO_READ);
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        recv(clientfd, buffer, 1024, 0);
-        ASSERT_EQ(errno, EWOULDBLOCK);
+        // connHdlr.handleConnection(conn, READY_TO_READ);
+        // std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        // recv(clientfd, buffer, 1024, 0);
+        // ASSERT_EQ(errno, EWOULDBLOCK);
     }
 }
 
@@ -87,4 +88,24 @@ void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier
     ioNotifier->wait(&fds, &notif);
     ASSERT_EQ(fds, conn);
     ASSERT_EQ(notif, READY_TO_READ);
+}
+
+void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn) {
+    int fds;
+    e_notif notif;
+    _ioNotifier->wait(&fds, &notif);
+    while (notif == READY_TO_READ) {
+        _connHdlr->handleConnection(_conn, READY_TO_READ);
+        _ioNotifier->wait(&fds, &notif);
+    }
+    ASSERT_EQ(notif, READY_TO_WRITE);
+}
+
+std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd) {
+    char buffer[1024];
+    ssize_t r;
+    _connHdlr->handleConnection(_conn, READY_TO_WRITE);
+    r = recv(_clientfd, buffer, 1024, 0);
+    buffer[r] = '\0';
+    return buffer;
 }

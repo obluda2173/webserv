@@ -29,10 +29,12 @@
 - [ ] probably change IHandler handle interface (add ConnectionInfo to it)
 - [ ] Idea: have a file descriptor inside the HttpResponse from which the HttpResponseWrite could read, which hopefully would also work for the cgi
 * notes configuration
-- [ ] change throwing of std::runtime_error to something that makes sense
+- [X] change throwing of std::runtime_error to something that makes sense
 - [ ] restrict config allowedMethods to GET, POST, DELETE
+
 - [ ] no error is thrown when there is no ";" in
   #+begin_src conf
 index       index.html index.htm
   #+end_src
 - [ ] oneMB as default if clientMaxBody is not set
+- [ ] cgi - only on location level

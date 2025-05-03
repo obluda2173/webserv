@@ -44,14 +44,17 @@ TEST_P(RouterTest, testWithArtificialConfig) {
 }
 
 TEST_P(RouterTest, testWithConfigParsing) {
+    // Parameters
     RouterTestParams params = GetParam();
     HttpRequest request = params.req;
     RouteConfig wantCfg = params.wantRouteCfg;
     std::set<std::string> wantHdlrs = params.wantHdlrs;
 
+    // Building the router
     IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
     Router r = newRouter(cfgPrsr->getServersConfig(), new StubHandler("GET"), new StubHandler("POST"),
                          new StubHandler("DELETE"));
+
     Route gotRoute = r.match(request);
     // check root
     EXPECT_EQ(wantCfg.root, gotRoute.cfg.root);
@@ -76,7 +79,10 @@ TEST_P(RouterTest, testWithConfigParsing) {
 
 INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
-    ::testing::Values(RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "www.test.com"}}},
+    ::testing::Values(RouterTestParams{HttpRequest{"GET", "asdf", "HTTP/1.1", {{"host", "example.com"}}},
+                                       {"GET"},
+                                       {"/var/www/html", {}, {}, oneMB, false}},
+                      RouterTestParams{HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "www.test.com"}}},
                                        {"GET", "POST", "DELETE"},
                                        {"/data/static", {}, {}, oneMB, false}},
                       RouterTestParams{HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "www.test.com"}}},

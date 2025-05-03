@@ -24,12 +24,13 @@ void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, 
 void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort, int nbrConns);
 void testOneConnection(std::string& clientIp, std::string& clientPort, struct addrinfo* svrAddrInfo);
 void testMultipleConnections(std::string svrPort, int nbrConns);
-void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int chunkSize,
-                      char buffer[1024]);
+void sendMsgInBatches(std::string msg, int conn, int clientfd, IConnectionHandler& connHdlr, int chunkSize);
 bool allZero(std::vector<std::string> msgs);
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
+void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
+std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
 Router newRouterTest();
 
 #endif // TEST_MAIN_H_

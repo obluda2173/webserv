@@ -16,6 +16,7 @@ typedef enum SocketType {
 
 struct ConnectionInfo {
     struct sockaddr_storage addr;
+    std::string buf;
     int fd;
 };
 
@@ -28,7 +29,7 @@ class ConnectionHandler : public IConnectionHandler {
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
-    void _readPipeline(int conn);
+    void _readPipeline(int conn, bool withRead);
     void _sendPipeline(int conn);
     void _removeClientConnection(int conn);
 
