@@ -29,7 +29,8 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     _ioNotifier.add(conn);
 }
 
-void ConnectionHandler::_removeClientConnection(ConnectionInfo connInfo) {
+void ConnectionHandler::_removeClientConnection(int conn) {
+    ConnectionInfo connInfo = _connections[conn];
     _connections.erase(connInfo.fd);
     delete _parsers[connInfo.fd];
     _parsers.erase(connInfo.fd);
@@ -80,15 +81,21 @@ void ConnectionHandler::_readPipeline(int conn) {
 
 void ConnectionHandler::_sendPipeline(int conn) {
     send(conn, _responses[conn].c_str(), _responses[conn].length(), 0);
-    _responses[conn].clear();
-    _ioNotifier.modify(conn, READY_TO_READ);
-    delete _parsers[conn];
-    _parsers[conn] = new HttpParser(_logger);
+
+    std::string Response4xx = "HTTP/1.1 4";
+    if (_responses[conn].compare(0, Response4xx.size(), Response4xx) == 0) {
+        _responses[conn].clear();
+        _removeClientConnection(conn);
+    } else {
+        _responses[conn].clear();
+        _ioNotifier.modify(conn, READY_TO_READ);
+        delete _parsers[conn];
+        _parsers[conn] = new HttpParser(_logger);
+    }
 }
 
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     try {
-        ConnectionInfo connInfo = _connections.at(fd);
         switch (notif) {
         case READY_TO_READ:
             _readPipeline(fd);
@@ -97,7 +104,7 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
             _sendPipeline(fd);
             break;
         case CLIENT_HUNG_UP:
-            _removeClientConnection(connInfo);
+            _removeClientConnection(fd);
             break;
         case BROKEN_CONNECTION:
             break;

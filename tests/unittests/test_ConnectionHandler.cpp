@@ -12,9 +12,12 @@
 #include <stdexcept>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <thread>
+#include <unistd.h>
 #include <vector>
 
 TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
+    // testing that a bad request is going to close the connection
     int clientfd = _clientfdsAndConns[0].first;
     int conn = _clientfdsAndConns[0].second;
 
@@ -22,16 +25,27 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     std::string request = "GET \r\n\r\n";
     std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
                                "\r\n";
-    // send msg
+
+    // Send malformed request
     send(clientfd, request.c_str(), request.length(), 0);
+
+    // Handle the read event - server should process the bad request
     _connHdlr->handleConnection(conn, READY_TO_READ);
 
-    ASSERT_FALSE(fcntl(conn, F_GETFD) != -1 || errno != EBADF) << "Connection is still open";
-
+    // Handle the write event - server should send the 400 response
     _connHdlr->handleConnection(conn, READY_TO_WRITE);
+
+    // Receive and verify the response
     ssize_t r = recv(clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
     EXPECT_STREQ(buffer, wantResponse.c_str());
+
+    // Now verify that the server closed the connection after sending the response
+    // Small delay to allow for connection closure
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    // Check if connection is closed
+    ASSERT_FALSE(fcntl(conn, F_GETFD) != -1 || errno != EBADF) << "Connection is still open";
 
     close(clientfd);
 }

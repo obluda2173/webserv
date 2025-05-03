@@ -26,10 +26,10 @@ class ConnectionHandler : public IConnectionHandler {
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
-    void _removeClientConnection(ConnectionInfo connInfo);
     int _acceptNewConnection(int socketfd);
     void _readPipeline(int conn);
     void _sendPipeline(int conn);
+    void _removeClientConnection(int conn);
 
   public:
     ConnectionHandler(ILogger&, IIONotifier&);
