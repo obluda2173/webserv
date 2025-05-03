@@ -25,13 +25,14 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     connInfo.fd = conn;
     _connections[conn] = connInfo;
     _parsers[conn] = new HttpParser(_logger);
-    _responses[conn] = "";
+    _responses[conn] = {"", 0};
     _ioNotifier.add(conn);
 }
 
 void ConnectionHandler::_removeClientConnection(int conn) {
     ConnectionInfo connInfo = _connections[conn];
     _connections.erase(connInfo.fd);
+    _responses.erase(connInfo.fd); // TODO: secure all the raises agains exceptions being thrown
     delete _parsers[connInfo.fd];
     _parsers.erase(connInfo.fd);
     _ioNotifier.del(connInfo.fd);
@@ -61,17 +62,20 @@ void ConnectionHandler::_readPipeline(int conn) {
         prsr->feed(b, 1);
         if (prsr->error()) {
             prsr->resetPublic();
-            _responses[conn] += "HTTP/1.1 400 Bad Request\r\n"
-                                "\r\n";
+            _responses[conn].response += "HTTP/1.1 400 Bad Request\r\n"
+                                         "\r\n";
+
+            _responses[conn].statusCode = 400;
             _ioNotifier.modify(conn, READY_TO_WRITE);
             return;
         }
         if (prsr->ready()) {
             prsr->resetPublic();
-            _responses[conn] += "HTTP/1.1 200 OK\r\n"
-                                "Content-Length: 4\r\n"
-                                "\r\n"
-                                "pong";
+            _responses[conn].response += "HTTP/1.1 200 OK\r\n"
+                                         "Content-Length: 4\r\n"
+                                         "\r\n"
+                                         "pong";
+            _responses[conn].statusCode = 200;
             _ioNotifier.modify(conn, READY_TO_WRITE);
         }
         b++;
@@ -80,14 +84,13 @@ void ConnectionHandler::_readPipeline(int conn) {
 }
 
 void ConnectionHandler::_sendPipeline(int conn) {
-    send(conn, _responses[conn].c_str(), _responses[conn].length(), 0);
+    send(conn, _responses[conn].response.c_str(), _responses[conn].response.length(), 0);
 
     std::string Response4xx = "HTTP/1.1 4";
-    if (_responses[conn].compare(0, Response4xx.size(), Response4xx) == 0) {
-        _responses[conn].clear();
+    if (_responses[conn].statusCode == 400) {
         _removeClientConnection(conn);
     } else {
-        _responses[conn].clear();
+        _responses[conn].response.clear();
         _ioNotifier.modify(conn, READY_TO_READ);
         delete _parsers[conn];
         _parsers[conn] = new HttpParser(_logger);

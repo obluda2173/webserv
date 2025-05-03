@@ -1,6 +1,7 @@
 #ifndef CONNECTIONHANDLER_H
 #define CONNECTIONHANDLER_H
 
+#include "HttpResponse.h"
 #include "IConnectionHandler.h"
 #include "IHttpParser.h"
 #include "IIONotifier.h"
@@ -22,7 +23,7 @@ class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, ConnectionInfo> _connections;
     std::map<int, IHttpParser*> _parsers;
-    std::map<int, std::string> _responses;
+    std::map<int, HttpResponse> _responses;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
