@@ -52,18 +52,20 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     return conn;
 }
 
+void ConnectionHandler::_readFromConn(ConnectionInfo* connInfo) {
+    char buf[1024];
+    ssize_t r = recv(connInfo->fd, buf, 1024, 0);
+    buf[r] = '\0';
+    connInfo->buf += buf;
+}
+
 void ConnectionHandler::_readPipeline(int conn, bool withRead) {
     ConnectionInfo* connInfo = &_connections[conn];
     IHttpParser* prsr = _parsers.at(conn);
-    if (withRead) {
-        char buf[1024];
-        ssize_t r = recv(conn, buf, 1024, 0);
-        buf[r] = '\0';
-        connInfo->buf += buf;
-    }
+    if (withRead)
+        _readFromConn(connInfo);
     char* b = (char*)connInfo->buf.c_str();
     while (*b) {
-        // TODO: another request might not get the notification for ready to read
         prsr->feed(b, 1);
         if (prsr->error() || prsr->ready()) {
             _ioNotifier.modify(conn, READY_TO_WRITE);
@@ -102,12 +104,10 @@ void ConnectionHandler::_sendPipeline(int conn) {
         _responses[conn].response.clear();
         ConnectionInfo connInfo = _connections[conn];
         if (!connInfo.buf.empty()) {
-            return _readPipeline(conn, false);
+            _readPipeline(conn, false);
+            return;
         }
         _ioNotifier.modify(conn, READY_TO_READ);
-
-        // delete _parsers[conn];
-        // _parsers[conn] = new HttpParser(_logger);
     }
 }
 

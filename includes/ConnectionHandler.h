@@ -30,6 +30,7 @@ class ConnectionHandler : public IConnectionHandler {
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
     void _readPipeline(int conn, bool withRead);
+    void _readFromConn(ConnectionInfo* connInfo);
     void _sendPipeline(int conn);
     void _removeClientConnection(int conn);
 
