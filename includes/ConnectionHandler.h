@@ -17,6 +17,12 @@ typedef enum SocketType {
 class Connection {
   public:
     Connection(struct sockaddr_storage addr, int fd) : addr(addr), fd(fd) {}
+    void readIntoBuf() {
+        char newbuf[1024];
+        ssize_t r = recv(fd, newbuf, 1024, 0);
+        newbuf[r] = '\0';
+        buf += newbuf;
+    }
     struct sockaddr_storage addr;
     std::string buf;
     int fd;

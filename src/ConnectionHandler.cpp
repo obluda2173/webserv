@@ -21,8 +21,6 @@ ConnectionHandler::~ConnectionHandler(void) {
 void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
     Connection* connInfo = new Connection(theirAddr, conn);
-    // connInfo.addr = theirAddr;
-    // connInfo.fd = conn;
     _connections[conn] = connInfo;
     _parsers[conn] = new HttpParser(_logger);
     _responses[conn] = HttpResponse{0, "", "", false, "", "", ""};
@@ -64,7 +62,8 @@ void ConnectionHandler::_onSocketRead(int conn, bool withRead) {
     Connection* connInfo = _connections[conn];
     IHttpParser* prsr = _parsers.at(conn);
     if (withRead)
-        _readFromConn(connInfo);
+        connInfo->readIntoBuf();
+    // _readFromConn(connInfo);
     char* b = (char*)connInfo->buf.c_str();
     while (*b) {
         prsr->feed(b, 1);
