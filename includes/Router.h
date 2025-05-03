@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 const size_t oneMB = 1 * 1024 * 1024;
+const size_t oneKB = 1 * 1024;
 
 struct RouteConfig {
     std::string root;
@@ -35,7 +36,6 @@ class Router {
     std::map<std::string, IHandler*> _hdlrs;
     std::string _defaultSvr;
     std::set<std::string> _svrs;
-    std::map<std::string, std::string> _routeToRoot;
     std::map<std::string, std::set<std::string>> _svrToLocs;
     std::map<std::string, Route> _routeToRoutes;
     std::string _matchLocations(HttpRequest req);
@@ -52,11 +52,9 @@ class Router {
         _hdlrs["DELETE"] = delHdlr;
     }
 
-    Router(std::map<std::string, IHandler*> hdlrs, std::string defaultSvr, std::map<std::string, std::string> routes,
-           std::set<std::string> svrs, std::map<std::string, std::set<std::string>> svrToLocs,
-           std::map<std::string, Route> routeToRoutes)
-        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _routeToRoot(routes), _svrToLocs(svrToLocs),
-          _routeToRoutes(routeToRoutes) {};
+    Router(std::map<std::string, IHandler*> hdlrs, std::string defaultSvr, std::set<std::string> svrs,
+           std::map<std::string, std::set<std::string>> svrToLocs, std::map<std::string, Route> routeToRoutes)
+        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
 
     void add(std::string svrName, std::string prefix, std::vector<std::string> allowedMethods, RouteConfig cfg);
     Route match(HttpRequest req);

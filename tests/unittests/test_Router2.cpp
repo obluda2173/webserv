@@ -5,7 +5,6 @@ Router newRouterTest() {
     std::string defaultSvr;
     std::set<std::string> svrs;
     std::map<std::string, std::set<std::string>> svrToLocs;
-    std::map<std::string, std::string> routeToRoot;
     std::map<std::string, std::set<std::string>> routeToAllowedMethods;
 
     defaultSvr = "example.com";
@@ -21,28 +20,6 @@ Router newRouterTest() {
 
     };
 
-    routeToRoot = {
-        {"example.com", "/var/www/html"},
-        {"example.com/images/", "/data"},
-        {"example.com/css/scripts/", "/data/scripts"},
-        {"example.com/css/", "/data/static"},
-        {"example.com/css/styles/", "/data/extra"},
-
-        {"test.com", "/var/www/secure"},
-        {"test.com/css/", "/data/static"},
-        {"test.com/js/", "/data/scripts"},
-        {"test.com/images/", "/data2"},
-        {"www.test.com", "/var/www/secure"},
-        {"www.test.com/cs/", "/data/static"},
-        {"www.test.com/js/", "/data/scripts"},
-        {"www.test.com/images/", "/data2"},
-
-        {"test2.com", "/usr/share/nginx/html"},
-        {"test3.com", "/to/be/overwritten"},
-        {"test3.com/", "/test3/www/html"},
-
-    };
-
     std::map<std::string, IHandler*> hdlrs = {
         {"GET", new StubHandler("GET")},
         {"POST", new StubHandler("POST")},
@@ -50,7 +27,16 @@ Router newRouterTest() {
     };
 
     std::map<std::string, Route> routeToRoutes;
-    routeToRoutes = {{"test.com/images/",
+    routeToRoutes = {{"www.test.com/css/",
+                      {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
+                       {"/data/static", {}, {}, oneMB, false}}},
+
+                     {"example.com/css/scripts/",
+                      {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
+                       {"/data/scripts", {}, {}, 12 * oneMB, false}}},
+                     {"example.com/css/styles/", {{{"GET", hdlrs["GET"]}}, {"/data/extra", {}, {}, oneKB, false}}},
+                     {"test3.com/", {{{"DELETE", hdlrs["DELETE"]}}, {"/test3/www/html", {}, {}, oneMB, false}}},
+                     {"test.com/images/",
                       {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
                        {"/data2",
                         {},
@@ -73,5 +59,5 @@ Router newRouterTest() {
                        {"/var/www/secure", {"index.html", "index.htm"}, {}, oneMB, false}}},
                      {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html", {}, {}, oneMB, false}}}};
 
-    return Router(hdlrs, defaultSvr, routeToRoot, svrs, svrToLocs, routeToRoutes);
+    return Router(hdlrs, defaultSvr, svrs, svrToLocs, routeToRoutes);
 }
