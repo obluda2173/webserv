@@ -56,32 +56,22 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
     int clientfd = _clientfdsAndConns[0].first;
     int conn = _clientfdsAndConns[0].second;
 
-    char buffer[1024];
     std::vector<std::string> requests = params.requests;
     std::vector<std::string> wantResponses = params.wantResponses;
     // send msg
+    std::string request;
+    std::string wantResponse;
+    std::string gotResponse;
     int batchSize = 2;
     for (size_t i = 0; i < requests.size(); i++) {
-        std::string request = requests[i];
-        std::string wantResponse = wantResponses[i];
+        request = requests[i];
+        wantResponse = wantResponses[i];
         sendMsgInBatches(request, conn, clientfd, *_connHdlr, batchSize);
-
-        // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
-        // initiate)
-        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
-
-        // check that nothing is sent back yet
-        recv(clientfd, buffer, 1024, 0);
-        ASSERT_EQ(errno, EWOULDBLOCK);
-
-        // next time around the response is sent back
-        _connHdlr->handleConnection(conn, READY_TO_WRITE);
-        ssize_t r = recv(clientfd, buffer, 1024, 0);
-        buffer[r] = '\0';
-        EXPECT_STREQ(buffer, wantResponse.c_str());
+        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, conn);
+        gotResponse = getResponseConnHdlr(conn, _connHdlr, clientfd);
+        EXPECT_STREQ(wantResponse.c_str(), gotResponse.c_str());
     }
 
-    // verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(_ioNotifier, conn);
     close(clientfd);
 }
 

@@ -106,6 +106,10 @@ std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _c
     ssize_t r;
     _connHdlr->handleConnection(_conn, READY_TO_WRITE);
     r = recv(_clientfd, buffer, 1024, 0);
+    if (r == -1) {
+        std::cout << "recv: " << std::strerror(errno);
+        exit(1);
+    }
     buffer[r] = '\0';
     return buffer;
 }
