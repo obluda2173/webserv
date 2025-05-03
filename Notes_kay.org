@@ -1,0 +1,28 @@
+#+title: Notes Kay
+
+- [ ] change throwing of std::runtime_error to something that makes sense
+- [X] have a complete Equal check function of ServerConfig
+
+- [X] all of the tests probably fit into maximum of 2 tests (those which throw error and those where you test for equalness)
+- [X] the same for test_config_ast.cpp and test_config_events.cpp
+
+- [X] Naming
+  - [X] test_Router.cpp (not test_http_routing)
+
+  - [X] ValidationRules sounds like a struct but not like a class
+    - [X] what is it supposed to do (why is it not requestValidator?)
+
+- [X] why is there a buildAST function in the tests (why is getAst public in the parser? If nobody is supposed to use it?)
+
+- [X] the CommonConfig constructor is needless
+
+- [X] why does the router match return the host (which is actually part of the request)?
+
+- [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
+
+- [ ] restrict config allowedMethods to GET, POST, DELETE
+- [ ] no error is thrown when there is no ";" in
+  #+begin_src conf
+index       index.html index.htm
+  #+end_src
+- [ ] oneMB as default if clientMaxBody is not set

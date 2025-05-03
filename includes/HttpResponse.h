@@ -4,8 +4,15 @@
 #include <string>
 
 typedef struct HttpResponse {
-    std::string response;
     int statusCode;
-} HttpResponse;
+    std::string response;
+    std::string statusMessage;
+    bool isClosed = false;
+    std::string contentType;
+    std::string contentLength;
+    std::string contentLanguage;
+    bool isRange = false;
+    bool isChunked = false;
+} HttpResponseMessage;
 
-#endif // HTTPRESPONSE_H
+#endif

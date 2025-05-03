@@ -25,7 +25,7 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
     connInfo.fd = conn;
     _connections[conn] = connInfo;
     _parsers[conn] = new HttpParser(_logger);
-    _responses[conn] = {"", 0};
+    _responses[conn] = HttpResponse{0, "", "", false, "", "", ""};
     _ioNotifier.add(conn);
 }
 

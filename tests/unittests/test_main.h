@@ -2,6 +2,7 @@
 #define TEST_MAIN_H_
 
 #include "IConnectionHandler.h"
+#include "Router.h"
 #include <arpa/inet.h>
 #include <cstring>
 #include <fcntl.h>
@@ -29,5 +30,6 @@ bool allZero(std::vector<std::string> msgs);
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
+Router newRouterTest();
 
 #endif // TEST_MAIN_H_
