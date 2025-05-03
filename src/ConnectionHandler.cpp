@@ -12,7 +12,7 @@
 ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
-    for (std::map<int, ConnectionInfo>::iterator it = _connections.begin(); it != _connections.end(); it++) {
+    for (std::map<int, Connection>::iterator it = _connections.begin(); it != _connections.end(); it++) {
         close(it->first);
         delete _parsers[it->first];
     }
@@ -20,7 +20,7 @@ ConnectionHandler::~ConnectionHandler(void) {
 
 void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
-    ConnectionInfo connInfo;
+    Connection connInfo;
     connInfo.addr = theirAddr;
     connInfo.fd = conn;
     _connections[conn] = connInfo;
@@ -30,7 +30,7 @@ void ConnectionHandler::_addClientConnection(int conn, struct sockaddr_storage t
 }
 
 void ConnectionHandler::_removeClientConnection(int conn) {
-    ConnectionInfo connInfo = _connections[conn];
+    Connection connInfo = _connections[conn];
     _connections.erase(connInfo.fd);
     _responses.erase(connInfo.fd); // TODO: secure all the raises agains exceptions being thrown
     delete _parsers[connInfo.fd];
@@ -52,15 +52,15 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     return conn;
 }
 
-void ConnectionHandler::_readFromConn(ConnectionInfo* connInfo) {
+void ConnectionHandler::_readFromConn(Connection* connInfo) {
     char buf[1024];
     ssize_t r = recv(connInfo->fd, buf, 1024, 0);
     buf[r] = '\0';
     connInfo->buf += buf;
 }
 
-void ConnectionHandler::_readPipeline(int conn, bool withRead) {
-    ConnectionInfo* connInfo = &_connections[conn];
+void ConnectionHandler::_onSocketRead(int conn, bool withRead) {
+    Connection* connInfo = &_connections[conn];
     IHttpParser* prsr = _parsers.at(conn);
     if (withRead)
         _readFromConn(connInfo);
@@ -102,9 +102,8 @@ void ConnectionHandler::_sendPipeline(int conn) {
         _removeClientConnection(conn);
     } else {
         _responses[conn].response.clear();
-        ConnectionInfo connInfo = _connections[conn];
-        if (!connInfo.buf.empty()) {
-            _readPipeline(conn, false);
+        if (!_connections[conn].buf.empty()) {
+            _onSocketRead(conn, false);
             return;
         }
         _ioNotifier.modify(conn, READY_TO_READ);
@@ -112,22 +111,21 @@ void ConnectionHandler::_sendPipeline(int conn) {
 }
 
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
-    try {
-        switch (notif) {
-        case READY_TO_READ:
-            _readPipeline(fd, true);
-            break;
-        case READY_TO_WRITE:
-            _sendPipeline(fd);
-            break;
-        case CLIENT_HUNG_UP:
-            _removeClientConnection(fd);
-            break;
-        case BROKEN_CONNECTION:
-            break;
-        }
-        return fd;
-    } catch (std::out_of_range& e) {
+    if (_connections.find(fd) == _connections.end())
         return _acceptNewConnection(fd);
+
+    switch (notif) {
+    case READY_TO_READ:
+        _onSocketRead(fd, true);
+        break;
+    case READY_TO_WRITE:
+        _sendPipeline(fd);
+        break;
+    case CLIENT_HUNG_UP:
+        _removeClientConnection(fd);
+        break;
+    case BROKEN_CONNECTION:
+        break;
     }
+    return fd;
 }

@@ -14,7 +14,7 @@ typedef enum SocketType {
     CLIENT_SOCKET,
 } SocketType;
 
-struct ConnectionInfo {
+struct Connection {
     struct sockaddr_storage addr;
     std::string buf;
     int fd;
@@ -22,15 +22,15 @@ struct ConnectionInfo {
 
 class ConnectionHandler : public IConnectionHandler {
   private:
-    std::map<int, ConnectionInfo> _connections;
+    std::map<int, Connection> _connections;
     std::map<int, IHttpParser*> _parsers;
     std::map<int, HttpResponse> _responses;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
-    void _readPipeline(int conn, bool withRead);
-    void _readFromConn(ConnectionInfo* connInfo);
+    void _onSocketRead(int conn, bool withRead);
+    void _readFromConn(Connection* connInfo);
     void _sendPipeline(int conn);
     void _removeClientConnection(int conn);
 
