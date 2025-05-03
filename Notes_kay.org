@@ -1,6 +1,5 @@
 #+title: Notes Kay
 
-- [ ] change throwing of std::runtime_error to something that makes sense
 - [X] have a complete Equal check function of ServerConfig
 
 - [X] all of the tests probably fit into maximum of 2 tests (those which throw error and those where you test for equalness)
@@ -19,7 +18,18 @@
 - [X] why does the router match return the host (which is actually part of the request)?
 
 - [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
-
+* TODO
+** overall
+- [ ] build the server with the config and the Router
+** listener
+- [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
+- [ ] ioNotifier.wait fills up multiples descriptors and notifications
+** connection Handling (architecture)
+- [ ] BrokenConnection just removes the connection
+- [ ] probably change IHandler handle interface (add ConnectionInfo to it)
+- [ ] Idea: have a file descriptor inside the HttpResponse from which the HttpResponseWrite could read, which hopefully would also work for the cgi
+* notes configuration
+- [ ] change throwing of std::runtime_error to something that makes sense
 - [ ] restrict config allowedMethods to GET, POST, DELETE
 - [ ] no error is thrown when there is no ";" in
   #+begin_src conf
