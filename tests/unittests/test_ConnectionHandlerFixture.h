@@ -90,7 +90,7 @@ class ConnectionHdlrTestAsync
     : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestVectorRequestsResponses> {
     virtual void setupClientConnections() override {
         int clientfd;
-        int conn;
+        int connfd;
         int port = 12345;
         ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
         int nbrRequests = params.requests.size();
@@ -98,9 +98,9 @@ class ConnectionHdlrTestAsync
             clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
             ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
                 << "connect: " << std::strerror(errno) << std::endl;
-            conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+            connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
             fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
+            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, connfd});
             port++;
         }
     }
@@ -124,7 +124,7 @@ class BaseConnectionHandlerTestWithParam : public ::testing::TestWithParam<Param
     int _serverfd;
     struct addrinfo* _svrAddrInfo;
     int _clientfd;
-    int _conn;
+    int _connfd;
 
   public:
     BaseConnectionHandlerTestWithParam() : _openFdsBegin(countOpenFileDescriptors()) {}
@@ -146,7 +146,7 @@ class BaseConnectionHandlerTestWithParam : public ::testing::TestWithParam<Param
         _clientfd = newSocket("127.0.0.2", "12345", AF_INET);
         ASSERT_NE(connect(_clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
             << "connect: " << std::strerror(errno) << std::endl;
-        _conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        _connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(_clientfd, F_SETFL, O_NONBLOCK);
     }
 

@@ -19,7 +19,7 @@
 TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     // testing that a bad request is going to close the connection
     int clientfd = _clientfdsAndConns[0].first;
-    int conn = _clientfdsAndConns[0].second;
+    int connfd = _clientfdsAndConns[0].second;
     char buffer[1024];
     std::string request = "GET \r\n\r\n";
     std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
@@ -29,10 +29,10 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     send(clientfd, request.c_str(), request.length(), 0);
 
     // Handle the read event - server should process the bad request
-    _connHdlr->handleConnection(conn, READY_TO_READ);
+    _connHdlr->handleConnection(connfd, READY_TO_READ);
 
     // Handle the write event - server should send the 400 response
-    _connHdlr->handleConnection(conn, READY_TO_WRITE);
+    _connHdlr->handleConnection(connfd, READY_TO_WRITE);
 
     // Receive and verify the response
     ssize_t r = recv(clientfd, buffer, 1024, 0);
@@ -45,7 +45,7 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     // Check if connection is closed
-    ASSERT_FALSE(fcntl(conn, F_GETFD) != -1 || errno != EBADF) << "Connection is still open";
+    ASSERT_FALSE(fcntl(connfd, F_GETFD) != -1 || errno != EBADF) << "Connection is still open";
 
     close(clientfd);
 }
@@ -53,7 +53,7 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
 TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
     int clientfd = _clientfdsAndConns[0].first;
-    int conn = _clientfdsAndConns[0].second;
+    int connfd = _clientfdsAndConns[0].second;
 
     std::vector<std::string> requests = params.requests;
     std::vector<std::string> wantResponses = params.wantResponses;
@@ -68,8 +68,8 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
         std::thread batchSenderThread(
             [request, clientfd, batchSize]() { sendMsgInBatches(request, clientfd, batchSize); });
         batchSenderThread.detach();
-        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, conn);
-        gotResponse = getResponseConnHdlr(conn, _connHdlr, clientfd);
+        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
+        gotResponse = getResponseConnHdlr(connfd, _connHdlr, clientfd);
         EXPECT_STREQ(wantResponse.c_str(), gotResponse.c_str());
     }
 
@@ -79,7 +79,7 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
 TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
     int clientfd = _clientfdsAndConns[0].first;
-    int conn = _clientfdsAndConns[0].second;
+    int connfd = _clientfdsAndConns[0].second;
 
     char buffer[1024];
     std::vector<std::string> requests = params.requests;
@@ -89,18 +89,18 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
         std::string request = requests[i];
         std::string wantResponse = wantResponses[i];
         send(clientfd, request.c_str(), request.length(), 0);
-        _connHdlr->handleConnection(conn, READY_TO_READ);
+        _connHdlr->handleConnection(connfd, READY_TO_READ);
 
         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
         // initiate)
-        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
+        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, connfd);
 
         // check that nothing is sent back yet
         recv(clientfd, buffer, 1024, 0);
         ASSERT_EQ(errno, EWOULDBLOCK);
 
         // next time around the response is sent back
-        _connHdlr->handleConnection(conn, READY_TO_WRITE);
+        _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         ssize_t r = recv(clientfd, buffer, 1024, 0);
         buffer[r] = '\0';
         EXPECT_STREQ(buffer, wantResponse.c_str());
@@ -154,10 +154,10 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
             // sent substring
             std::string toBeSent = (*it).substr(0, batchSize);
             int clientfd = _clientfdsAndConns[count].first;
-            int conn = _clientfdsAndConns[count].second;
+            int connfd = _clientfdsAndConns[count].second;
 
             send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
-            _connHdlr->handleConnection(conn, READY_TO_READ);
+            _connHdlr->handleConnection(connfd, READY_TO_READ);
             recv(clientfd, buffer, 1024, 0);
             ASSERT_EQ(errno, EWOULDBLOCK);
 
@@ -174,9 +174,9 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
     // receiving
     for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
         int clientfd = _clientfdsAndConns[i].first;
-        int conn = _clientfdsAndConns[i].second;
-        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, conn);
-        _connHdlr->handleConnection(conn, READY_TO_WRITE);
+        int connfd = _clientfdsAndConns[i].second;
+        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, connfd);
+        _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         ssize_t r = recv(clientfd, buffer, 1024, 0);
         buffer[r] = '\0';
 
@@ -204,17 +204,17 @@ TEST_P(ConnectionHdlrTestWithParamReqResp, sendMsgInOneBatch) {
 
     // send msg
     send(_clientfd, request.c_str(), request.length(), 0);
-    _connHdlr->handleConnection(_conn, READY_TO_READ);
+    _connHdlr->handleConnection(_connfd, READY_TO_READ);
 
     // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, _conn);
+    verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, _connfd);
 
     // check that nothing is sent back yet
     recv(_clientfd, buffer, 1024, 0);
     ASSERT_EQ(errno, EWOULDBLOCK);
 
     // next time around the response is sent back
-    _connHdlr->handleConnection(_conn, READY_TO_WRITE);
+    _connHdlr->handleConnection(_connfd, READY_TO_WRITE);
     ssize_t r = recv(_clientfd, buffer, 1024, 0);
     buffer[r] = '\0';
     EXPECT_STREQ(buffer, wantResponse.c_str());
@@ -237,9 +237,9 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
     std::thread batchSenderThread([msg, clientfd, batchSize]() { sendMsgInBatches(msg, clientfd, batchSize); });
     batchSenderThread.detach();
 
-    readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, _conn);
+    readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, _connfd);
 
-    std::string gotResponse = getResponseConnHdlr(_conn, _connHdlr, _clientfd);
+    std::string gotResponse = getResponseConnHdlr(_connfd, _connHdlr, _clientfd);
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
                                "Content-Length: 4\r\n"
                                "\r\n"
@@ -264,8 +264,8 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
 
     int count = 0;
     while (count++ < nbrMsgs) {
-        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, _conn);
-        std::string gotResponse = getResponseConnHdlr(_conn, _connHdlr, _clientfd);
+        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, _connfd);
+        std::string gotResponse = getResponseConnHdlr(_connfd, _connHdlr, _clientfd);
         EXPECT_STREQ(wantResponse.c_str(), gotResponse.c_str());
     }
 }

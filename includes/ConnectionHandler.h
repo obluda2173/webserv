@@ -37,8 +37,7 @@ class ConnectionHandler : public IConnectionHandler {
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
-    void _onSocketRead(int conn, bool withRead);
-    void _readFromConn(Connection* connInfo);
+    void _onSocketRead(int fd, bool withRead);
     void _sendPipeline(int conn);
     void _removeClientConnection(int conn);
 
