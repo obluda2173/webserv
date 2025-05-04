@@ -23,7 +23,10 @@ class Connection {
 
   public:
     int _state;
-    ~Connection() { delete _prsr; }
+    ~Connection() {
+        close(_fd);
+        delete _prsr;
+    }
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {}
     void readIntoBuf() {
         char newbuf[1024];
@@ -59,7 +62,6 @@ class Connection {
 class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, Connection*> _connections;
-    std::map<int, IHttpParser*> _parsers;
     std::map<int, HttpResponse> _responses;
     ILogger& _logger;
     IIONotifier& _ioNotifier;

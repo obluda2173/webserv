@@ -12,8 +12,6 @@ ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), 
 
 ConnectionHandler::~ConnectionHandler(void) {
     for (std::map<int, Connection*>::iterator it = _connections.begin(); it != _connections.end(); it++) {
-        close(it->first);
-        delete _parsers[it->first];
         delete it->second;
     }
 }
@@ -22,21 +20,16 @@ void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage
     logConnection(_logger, theirAddr);
     Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
     _connections[connfd] = conn;
-    _parsers[connfd] = new HttpParser(_logger);
     _responses[connfd] = HttpResponse{0, "", "", false, "", "", ""};
     _ioNotifier.add(connfd);
 }
 
 void ConnectionHandler::_removeClientConnection(int connfd) {
-    Connection* conn = _connections[connfd];
+    logDisconnect(_logger, _connections[connfd]->getAddr());
+    delete _connections[connfd];
     _connections.erase(connfd);
     _responses.erase(connfd); // TODO: secure all the raises agains exceptions being thrown
-    delete _parsers[connfd];
-    _parsers.erase(connfd);
     _ioNotifier.del(connfd);
-    close(connfd);
-    logDisconnect(_logger, conn->getAddr());
-    delete conn;
 }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
@@ -53,8 +46,6 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 
 void ConnectionHandler::_onSocketRead(int connfd, bool withRead) {
     Connection* conn = _connections[connfd];
-    IHttpParser* prsr = _parsers.at(connfd);
-    (void)prsr;
     if (withRead)
         conn->readIntoBuf();
     if (conn->parseBuf() == 1)
@@ -65,7 +56,6 @@ void ConnectionHandler::_onSocketRead(int connfd, bool withRead) {
 }
 
 void ConnectionHandler::_sendPipeline(int connfd) {
-    // IHttpParser* prsr = _parsers.at(connfd);
     Connection* conn = _connections[connfd];
     if (conn->_state == 2) {
         _responses[connfd].response += "HTTP/1.1 400 Bad Request\r\n"
@@ -80,7 +70,6 @@ void ConnectionHandler::_sendPipeline(int connfd) {
                                        "pong";
         _responses[connfd].statusCode = 200;
     }
-    // prsr->resetPublic();
 
     send(connfd, _responses[connfd].response.c_str(), _responses[connfd].response.length(), 0);
 
