@@ -34,7 +34,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
         testOneConnectionWithLogging(mLogger, clientIp, clientPort, svrAddrInfo);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
     // Add a delay after all connections to ensure all operations complete
@@ -65,7 +65,7 @@ void testMultipleConnections(std::string svrPort, int nbrConns) {
         clientPort = std::to_string(distr1(gen));
         clientIp = "127.0.0." + std::to_string(distr2(gen));
         testOneConnection(clientIp, clientPort, svrAddrInfo);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     freeaddrinfo(svrAddrInfo);

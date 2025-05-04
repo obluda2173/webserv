@@ -51,7 +51,7 @@ template <typename LoggerType> class BaseListenerTest : public ::testing::TestWi
         if (_listenerThread.joinable())
             _listenerThread.join();
         // Add a small delay to ensure all pending operations complete
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         delete _listener;
         delete _logger;
 
