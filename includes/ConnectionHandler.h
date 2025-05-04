@@ -25,8 +25,7 @@ class ConnectionHandler : public IConnectionHandler {
     void _onSocketRead(int fd);
     void _onSocketWrite(int conn);
     void _onClientHungUp(int conn);
-
-    void _updateNotifier(int connfd);
+    void _updateNotifier(Connection* conn);
 
   public:
     ConnectionHandler(ILogger&, IIONotifier&);

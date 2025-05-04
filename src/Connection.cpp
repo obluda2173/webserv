@@ -29,16 +29,17 @@ void Connection::parseBuf() {
         _prsr->feed(b, 1);
         if (_prsr->error() || _prsr->ready()) {
             _buf = b + 1;
-            if (_prsr->error()) {
+            if (_prsr->error())
                 _state = WritingError;
-            } else {
+            else
                 _state = WritingResponse;
-            }
             return;
         }
         b++;
     }
     _buf = b;
 }
+
+int Connection::getFileDes() const { return _fd; }
 
 struct sockaddr_storage Connection::getAddr() const { return _addr; }

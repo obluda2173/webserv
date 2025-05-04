@@ -1,7 +1,6 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-
 #include "IHttpParser.h"
 #include <sys/socket.h>
 #include <unistd.h>
@@ -23,6 +22,7 @@ class Connection {
     STATE getState() const;
     void readIntoBuf();
     void parseBuf();
+    int getFileDes() const;
     sockaddr_storage getAddr() const;
 };
 

@@ -44,8 +44,9 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     return fd;
 }
 
-void ConnectionHandler::_updateNotifier(int connfd) {
-    switch (_connections[connfd]->getState()) {
+void ConnectionHandler::_updateNotifier(Connection* conn) {
+    int connfd = conn->getFileDes();
+    switch (conn->getState()) {
     case Connection::ReadingHeaders:
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
@@ -60,21 +61,22 @@ void ConnectionHandler::_updateNotifier(int connfd) {
 
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
-    bool needMoreData = false;
-    while (!needMoreData) {
+    bool continueProcessing = true;
+    while (continueProcessing) {
         Connection::STATE currentState = _connections[connfd]->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
             conn->readIntoBuf();
             conn->parseBuf();
-            needMoreData = (conn->getState() == currentState);
+            // when the state has changed, continue processing
+            continueProcessing = (conn->getState() != currentState);
             break;
         default:
-            needMoreData = true;
+            continueProcessing = false;
             break;
         }
     }
-    _updateNotifier(connfd);
+    _updateNotifier(conn);
     return;
 }
 
@@ -101,7 +103,7 @@ void ConnectionHandler::_onSocketWrite(int connfd) {
     } else {
         _responses[connfd].response.clear();
         _connections[connfd]->parseBuf();
-        _updateNotifier(connfd);
+        _updateNotifier(conn);
         return;
     }
 }
