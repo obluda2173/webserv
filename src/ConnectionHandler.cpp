@@ -76,6 +76,25 @@ class BadRequestHandler : public IHandler {
     };
 };
 
+class PingHandler : public IHandler {
+    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
+        (void)req;
+        (void)config;
+        HttpResponse resp;
+        resp.statusCode = 200;
+        resp.statusMessage = "OK";
+        resp.contentLength = 4;
+        resp.body = "pong";
+        resp.version = "HTTP/1.1";
+        conn->_response = resp; // "HTTP/1.1 200 OK\r\n"
+                                // "Content-Length: 4\r\n"
+                                // "\r\n"
+                                // "pong";
+        conn->setStateToSendResponse();
+        return;
+    };
+};
+
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
     bool continueProcessing = true;
@@ -87,29 +106,19 @@ void ConnectionHandler::_onSocketRead(int connfd) {
         case Connection::ReadingHeaders:
             conn->readIntoBuf();
             conn->parseBuf();
-            // when the state has changed, continue processing
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Handling:
-            resp.statusCode = 200;
-            resp.statusMessage = "OK";
-            resp.contentLength = 4;
-            resp.body = "pong";
-            resp.version = "HTTP/1.1";
-            conn->_response = resp; // "HTTP/1.1 200 OK\r\n"
-                                    // "Content-Length: 4\r\n"
-                                    // "\r\n"
-                                    // "pong";
-            conn->setStateToSendResponse();
+            hdlr = new PingHandler();
+            hdlr->handle(conn, {}, {});
+            delete hdlr;
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:
-            // conn->_response = "HTTP/1.1 400 Bad Request\r\n"
             hdlr = new BadRequestHandler();
             hdlr->handle(conn, {}, {});
             delete hdlr;
             continueProcessing = (conn->getState() != currentState);
-
             break;
         default:
             continueProcessing = false;
