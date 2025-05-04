@@ -22,7 +22,8 @@ class Connection {
     IHttpParser* _prsr;
 
   public:
-    int _state;
+    enum STATE { ReadingHeaders, WritingResponse, WritingError };
+    STATE _state;
     ~Connection() {
         close(_fd);
         delete _prsr;
@@ -35,7 +36,7 @@ class Connection {
         _buf += newbuf;
     }
 
-    int parseBuf() {
+    void parseBuf() {
         if (_prsr->error() || _prsr->ready())
             _prsr->resetPublic();
         char* b = (char*)_buf.c_str();
@@ -44,17 +45,16 @@ class Connection {
             if (_prsr->error() || _prsr->ready()) {
                 _buf = b + 1;
                 if (_prsr->error()) {
-                    _state = 2;
+                    _state = WritingError;
                 } else {
-                    _state = 1;
+                    _state = WritingResponse;
                 }
-                return 1;
+                return;
             }
             b++;
         }
         _buf = b;
-        _state = 0;
-        return 0;
+        _state = ReadingHeaders;
     }
     sockaddr_storage getAddr() const { return _addr; }
 };

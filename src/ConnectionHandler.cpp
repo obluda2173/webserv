@@ -48,22 +48,30 @@ void ConnectionHandler::_onSocketRead(int connfd, bool withRead) {
     Connection* conn = _connections[connfd];
     if (withRead)
         conn->readIntoBuf();
-    if (conn->parseBuf() == 1)
-        _ioNotifier.modify(connfd, READY_TO_WRITE);
-    else
+    conn->parseBuf();
+    switch (_connections[connfd]->_state) {
+    case Connection::ReadingHeaders:
         _ioNotifier.modify(connfd, READY_TO_READ);
+        break;
+    case Connection::WritingResponse:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    case Connection::WritingError:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    }
     return;
 }
 
 void ConnectionHandler::_sendPipeline(int connfd) {
     Connection* conn = _connections[connfd];
-    if (conn->_state == 2) {
+    if (conn->_state == Connection::WritingError) {
         _responses[connfd].response += "HTTP/1.1 400 Bad Request\r\n"
                                        "\r\n";
 
         _responses[connfd].statusCode = 400;
     }
-    if (conn->_state == 1) {
+    if (conn->_state == Connection::WritingResponse) {
         _responses[connfd].response += "HTTP/1.1 200 OK\r\n"
                                        "Content-Length: 4\r\n"
                                        "\r\n"
@@ -77,10 +85,18 @@ void ConnectionHandler::_sendPipeline(int connfd) {
         _removeClientConnection(connfd);
     } else {
         _responses[connfd].response.clear();
-        if (_connections[connfd]->parseBuf() == 1)
-            _ioNotifier.modify(connfd, READY_TO_WRITE);
-        else
+        _connections[connfd]->parseBuf();
+        switch (_connections[connfd]->_state) {
+        case Connection::ReadingHeaders:
             _ioNotifier.modify(connfd, READY_TO_READ);
+            break;
+        case Connection::WritingResponse:
+            _ioNotifier.modify(connfd, READY_TO_WRITE);
+            break;
+        case Connection::WritingError:
+            _ioNotifier.modify(connfd, READY_TO_WRITE);
+            break;
+        }
         return;
     }
 }
