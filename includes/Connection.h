@@ -1,6 +1,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include "HttpResponse.h"
 #include "IHttpParser.h"
 #include <string>
 #include <sys/socket.h>
@@ -25,8 +26,7 @@ class Connection {
     void parseBuf();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
-    std::string _response;
-    int _statusCode;
+    HttpResponse _response;
     void setStateToSendResponse() { _state = SendResponse; }
 };
 

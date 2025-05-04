@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -64,6 +65,7 @@ void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
     bool continueProcessing = true;
     while (continueProcessing) {
+        HttpResponse resp;
         Connection::STATE currentState = _connections[connfd]->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
@@ -73,20 +75,26 @@ void ConnectionHandler::_onSocketRead(int connfd) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::WritingResponse:
-            conn->_response = "HTTP/1.1 200 OK\r\n"
-                              "Content-Length: 4\r\n"
-                              "\r\n"
-                              "pong";
+            resp.statusCode = 200;
+            resp.statusMessage = "OK";
+            resp.contentLength = 4;
+            resp.body = "pong";
+            resp.version = "HTTP/1.1";
+            conn->_response = resp; // "HTTP/1.1 200 OK\r\n"
+                                    // "Content-Length: 4\r\n"
+                                    // "\r\n"
+                                    // "pong";
             conn->setStateToSendResponse();
             continueProcessing = (conn->getState() != currentState);
-            conn->_statusCode = 200;
             break;
         case Connection::WritingError:
-            conn->_response = "HTTP/1.1 400 Bad Request\r\n"
-                              "\r\n";
+            // conn->_response = "HTTP/1.1 400 Bad Request\r\n"
+            resp.version = "HTTP/1.1";
+            resp.statusCode = 400;
+            resp.statusMessage = "Bad Request";
+            conn->_response = resp;
             conn->setStateToSendResponse();
             continueProcessing = (conn->getState() != currentState);
-            conn->_statusCode = 400;
 
             break;
         default:
@@ -98,11 +106,21 @@ void ConnectionHandler::_onSocketRead(int connfd) {
     return;
 }
 
+std::string constructResponse(HttpResponse resp) {
+    std::string clrf = "\r\n";
+    if (resp.statusCode == 400) {
+        return resp.version + " " + std::to_string(resp.statusCode) + " " + resp.statusMessage + clrf + clrf;
+    }
+    return resp.version + " " + std::to_string(resp.statusCode) + " " + resp.statusMessage + "\r\n" +
+           "Content-Length: " + std::to_string(resp.contentLength) + clrf + clrf + resp.body;
+}
+
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
-    send(connfd, conn->_response.c_str(), conn->_response.length(), 0);
+    std::string response = constructResponse(conn->_response);
+    send(connfd, response.c_str(), response.length(), 0);
 
-    if (conn->_statusCode == 400) {
+    if (conn->_response.statusCode == 400) {
         _onClientHungUp(connfd);
     } else {
         _connections[connfd]->parseBuf();

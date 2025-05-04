@@ -5,11 +5,12 @@
 
 typedef struct HttpResponse {
     int statusCode;
-    std::string response;
+    std::string version;
+    std::string body;
     std::string statusMessage;
     bool isClosed = false;
     std::string contentType;
-    std::string contentLength;
+    int contentLength;
     std::string contentLanguage;
     bool isRange = false;
     bool isChunked = false;
