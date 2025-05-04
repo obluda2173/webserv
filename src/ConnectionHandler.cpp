@@ -1,6 +1,8 @@
 #include "ConnectionHandler.h"
+#include "BadRequestHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
+#include "PingHandler.h"
 #include "Router.h"
 #include "logging.h"
 #include <errno.h>
@@ -61,39 +63,6 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         break;
     }
 }
-
-class BadRequestHandler : public IHandler {
-    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
-        (void)req;
-        (void)config;
-        HttpResponse resp;
-        resp.version = "HTTP/1.1";
-        resp.statusCode = 400;
-        resp.statusMessage = "Bad Request";
-        conn->_response = resp;
-        conn->setStateToSendResponse();
-        return;
-    };
-};
-
-class PingHandler : public IHandler {
-    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
-        (void)req;
-        (void)config;
-        HttpResponse resp;
-        resp.statusCode = 200;
-        resp.statusMessage = "OK";
-        resp.contentLength = 4;
-        resp.body = "pong";
-        resp.version = "HTTP/1.1";
-        conn->_response = resp; // "HTTP/1.1 200 OK\r\n"
-                                // "Content-Length: 4\r\n"
-                                // "\r\n"
-                                // "pong";
-        conn->setStateToSendResponse();
-        return;
-    };
-};
 
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];

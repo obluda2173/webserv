@@ -41,3 +41,4 @@ index       index.html index.htm
 - [ ] oneMB as default if clientMaxBody is not set
 - [ ] cgi - only on location level
 - [ ] talk to Eric about oneMB const
+- [ ] make reset public on HttpParser

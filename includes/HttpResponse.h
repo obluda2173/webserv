@@ -14,6 +14,6 @@ typedef struct HttpResponse {
     std::string contentLanguage;
     bool isRange = false;
     bool isChunked = false;
-} HttpResponseMessage;
+} HttpResponse;
 
 #endif
