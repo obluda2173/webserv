@@ -20,7 +20,7 @@ ConnectionHandler::~ConnectionHandler(void) {
 
 void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
-    Connection* conn = new Connection(theirAddr, connfd);
+    Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
     _connections[connfd] = conn;
     _parsers[connfd] = new HttpParser(_logger);
     _responses[connfd] = HttpResponse{0, "", "", false, "", "", ""};
@@ -54,9 +54,10 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 void ConnectionHandler::_onSocketRead(int connfd, bool withRead) {
     Connection* conn = _connections[connfd];
     IHttpParser* prsr = _parsers.at(connfd);
+    (void)prsr;
     if (withRead)
         conn->readIntoBuf();
-    if (conn->parseBuf(prsr) == 1)
+    if (conn->parseBuf() == 1)
         _ioNotifier.modify(connfd, READY_TO_WRITE);
     else
         _ioNotifier.modify(connfd, READY_TO_READ);
@@ -64,21 +65,22 @@ void ConnectionHandler::_onSocketRead(int connfd, bool withRead) {
 }
 
 void ConnectionHandler::_sendPipeline(int connfd) {
-    IHttpParser* prsr = _parsers.at(connfd);
-    if (prsr->error()) {
+    // IHttpParser* prsr = _parsers.at(connfd);
+    Connection* conn = _connections[connfd];
+    if (conn->_state == 2) {
         _responses[connfd].response += "HTTP/1.1 400 Bad Request\r\n"
                                        "\r\n";
 
         _responses[connfd].statusCode = 400;
     }
-    if (prsr->ready()) {
+    if (conn->_state == 1) {
         _responses[connfd].response += "HTTP/1.1 200 OK\r\n"
                                        "Content-Length: 4\r\n"
                                        "\r\n"
                                        "pong";
         _responses[connfd].statusCode = 200;
     }
-    prsr->resetPublic();
+    // prsr->resetPublic();
 
     send(connfd, _responses[connfd].response.c_str(), _responses[connfd].response.length(), 0);
 
@@ -86,7 +88,7 @@ void ConnectionHandler::_sendPipeline(int connfd) {
         _removeClientConnection(connfd);
     } else {
         _responses[connfd].response.clear();
-        if (_connections[connfd]->parseBuf(prsr) == 1)
+        if (_connections[connfd]->parseBuf() == 1)
             _ioNotifier.modify(connfd, READY_TO_WRITE);
         else
             _ioNotifier.modify(connfd, READY_TO_READ);

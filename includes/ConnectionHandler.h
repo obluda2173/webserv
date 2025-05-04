@@ -19,9 +19,12 @@ class Connection {
     sockaddr_storage _addr;
     std::string _buf;
     int _fd;
+    IHttpParser* _prsr;
 
   public:
-    Connection(struct sockaddr_storage addr, int fd) : _addr(addr), _fd(fd) {}
+    int _state;
+    ~Connection() { delete _prsr; }
+    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {}
     void readIntoBuf() {
         char newbuf[1024];
         ssize_t r = recv(_fd, newbuf, 1024, 0);
@@ -29,17 +32,25 @@ class Connection {
         _buf += newbuf;
     }
 
-    int parseBuf(IHttpParser* prsr) {
+    int parseBuf() {
+        if (_prsr->error() || _prsr->ready())
+            _prsr->resetPublic();
         char* b = (char*)_buf.c_str();
         while (*b) {
-            prsr->feed(b, 1);
-            if (prsr->error() || prsr->ready()) {
+            _prsr->feed(b, 1);
+            if (_prsr->error() || _prsr->ready()) {
                 _buf = b + 1;
+                if (_prsr->error()) {
+                    _state = 2;
+                } else {
+                    _state = 1;
+                }
                 return 1;
             }
             b++;
         }
         _buf = b;
+        _state = 0;
         return 0;
     }
     sockaddr_storage getAddr() const { return _addr; }
