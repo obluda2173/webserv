@@ -60,13 +60,19 @@ void ConnectionHandler::_updateNotifier(int connfd) {
 
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
-    switch (_connections[connfd]->getState()) {
-    case Connection::ReadingHeaders:
-        conn->readIntoBuf();
-        conn->parseBuf();
-        break;
-    default:
-        break;
+    bool needMoreData = false;
+    while (!needMoreData) {
+        Connection::STATE currentState = _connections[connfd]->getState();
+        switch (currentState) {
+        case Connection::ReadingHeaders:
+            conn->readIntoBuf();
+            conn->parseBuf();
+            needMoreData = (conn->getState() == currentState);
+            break;
+        default:
+            needMoreData = true;
+            break;
+        }
     }
     _updateNotifier(connfd);
     return;

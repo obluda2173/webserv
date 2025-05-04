@@ -19,8 +19,11 @@ void Connection::readIntoBuf() {
 }
 
 void Connection::parseBuf() {
-    if (_prsr->error() || _prsr->ready())
+    if (_prsr->error() || _prsr->ready()) {
         _prsr->resetPublic();
+        _state = ReadingHeaders;
+    }
+
     char* b = (char*)_buf.c_str();
     while (*b) {
         _prsr->feed(b, 1);
@@ -36,7 +39,6 @@ void Connection::parseBuf() {
         b++;
     }
     _buf = b;
-    _state = ReadingHeaders;
 }
 
 struct sockaddr_storage Connection::getAddr() const { return _addr; }

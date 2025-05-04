@@ -2,8 +2,9 @@
 #define ROUTER_H
 
 #include "ConfigStructure.h"
-#include "ConnectionHandler.h"
+#include "Connection.h"
 #include "HttpRequest.h"
+#include "HttpResponse.h"
 #include <set>
 #include <string>
 #include <unordered_map>
