@@ -4,6 +4,8 @@
 int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
+    // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
+    // testing::GTEST_FLAG(filter) = "-*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // ::testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
@@ -22,7 +24,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
-    testing::GTEST_FLAG(filter) = "*ListenerTest*";
+    // testing::GTEST_FLAG(filter) = "*ListenerTest*";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection:ListenerTest.multiplePortsTestWoLogging";
     // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";

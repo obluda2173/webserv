@@ -2,6 +2,7 @@
 #define ROUTER_H
 
 #include "ConfigStructure.h"
+#include "ConnectionHandler.h"
 #include "HttpRequest.h"
 #include <set>
 #include <string>
@@ -18,12 +19,10 @@ struct RouteConfig {
     bool autoindex;
 };
 
-class Response {};
-
 class IHandler {
   public:
     virtual ~IHandler() {}
-    virtual Response handle(const HttpRequest& req, const RouteConfig& config) = 0;
+    virtual HttpResponse handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) = 0;
 };
 
 struct Route {

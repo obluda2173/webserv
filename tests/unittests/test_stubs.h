@@ -15,7 +15,7 @@ class StubHandler : public IHandler {
     StubHandler(std::string type) : type(type) {}
     ~StubHandler() {}
     std::string type;
-    virtual Response handle(const HttpRequest&, const RouteConfig&) { return Response{}; };
+    virtual HttpResponse handle(Connection*, const HttpRequest&, const RouteConfig&) { return HttpResponse{}; };
 };
 
 #endif // TEST_STUBS_H
