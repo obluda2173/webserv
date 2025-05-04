@@ -26,6 +26,7 @@
 - [ ] ioNotifier.wait fills up multiples descriptors and notifications
 ** connection Handling (architecture)
 - [ ] BrokenConnection just removes the connection
+  - [ ] check how ClientHungUp affects the behavior
 - [ ] probably change IHandler handle interface (add ConnectionInfo to it)
 - [ ] Idea: have a file descriptor inside the HttpResponse from which the HttpResponseWrite could read, which hopefully would also work for the cgi
 * notes configuration

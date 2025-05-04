@@ -2,11 +2,6 @@
 #define ICONNECTIONHANDLER_H
 
 #include "IIONotifier.h"
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 class IConnectionHandler {
   public:
