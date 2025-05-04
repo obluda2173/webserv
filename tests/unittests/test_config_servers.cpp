@@ -41,7 +41,7 @@ TEST_F(ServerConfigTest, ServerWithLocationBlock) {
         "    root /var/www/html;\n"
         "    location /images/ {\n"
         "        root /var/www/images;\n"
-        "        allow_methods GET HEAD;\n"
+        "        allow_methods GET;\n"
         "    }\n"
         "}\n"
     );
@@ -54,7 +54,7 @@ TEST_F(ServerConfigTest, ServerWithLocationBlock) {
     const LocationConfig& loc = config[0].locations[0];
     EXPECT_EQ(loc.prefix, "/images/");
     EXPECT_EQ(loc.common.root, "/var/www/images");
-    ASSERT_THAT(loc.common.allowMethods, testing::ElementsAre("GET", "HEAD"));
+    ASSERT_THAT(loc.common.allowMethods, testing::ElementsAre("GET"));
 }
 
 TEST_F(ServerConfigTest, HandlesClientMaxBodySize) {
@@ -613,4 +613,62 @@ TEST_F(ServerConfigTest, CaseSensitiveExtensions) {
 
     EXPECT_EQ(config[0].cgi[".PHP"], "/usr/bin/php-cgi");
     EXPECT_EQ(config[0].cgi[".py"], "/usr/bin/python");
+}
+
+
+TEST_F(ServerConfigTest, InvalidHttpMethod) {
+    EXPECT_THROW(
+        parseConfig(
+            "server {\n"
+            "    listen 80;\n"
+            "    server_name example.com;\n"
+            "    root /var/www;\n"
+            "    allow_methods HEAD;"
+            "}\n"
+        ),
+        std::runtime_error
+    );
+}
+
+TEST_F(ServerConfigTest, KaysAccidentTest) {
+    EXPECT_THROW(
+        parseConfig(
+        "server {\n"
+        "    server_name test.com www.test.com;\n"
+        "    listen      8081;\n"
+        "    root        /var/www/secure;\n"
+        "    index       index.html index.htm\n"
+        ""
+        "    location /css/ {\n"
+        "           root /data/static;\n"
+        "    }\n"
+        ""
+        "    location /js/ {\n"
+        "           root /data/scripts;\n"
+        "           allow_methods GET;\n"
+        "    }"
+        ""
+        "    location /images/ {\n"
+        "           root /data2;\n"
+        "           error_page 404 /custom_404.html;\n"
+        "           error_page 500 502 503 504 /custom_50x.html;\n"
+        "    }\n"
+        "}\n" ),
+        std::runtime_error
+    );
+}
+
+TEST_F(ServerConfigTest, DefaultClientMaxBodySize) {
+    std::vector<ServerConfig> config = parseConfig(
+        "server {\n"
+        "    listen 80;\n"
+        "    root /var/www/html;\n"
+        "    server_name example.com;\n"
+        "}\n"
+    );
+
+    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
 }

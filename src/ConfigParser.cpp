@@ -22,7 +22,9 @@ void ConfigParser::_parseDirectiveOrBlock(TokenStream& tokenStream, Context& cur
     terminators.insert("{");
     terminators.insert(";");
     terminators.insert("}");
-    std::vector<std::string> args = tokenStream.collectArguments(terminators);
+    std::vector<std::string> invalidArgs = {"server", "location", "listen", "server_name", "cgi_ext", "root", "allow_methods", \
+                                            "index", "client_max_body", "error_page", "autoindex", "worker_connections", "use"};
+    std::vector<std::string> args = tokenStream.collectArguments(terminators, invalidArgs);
     if (!tokenStream.hasMore()) {
         throw std::runtime_error("Unexpected end of file");
     }
@@ -40,7 +42,7 @@ void ConfigParser::_parseDirectiveOrBlock(TokenStream& tokenStream, Context& cur
         }
         currentBlock.children.push_back(child);
     } else if (punctToken.value == ";") {
-        tokenStream.next(); // Consume ';'
+        tokenStream.next();
         Directive dir;
         dir.name = nameToken.value;
         dir.args = args;

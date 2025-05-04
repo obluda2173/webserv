@@ -126,12 +126,17 @@ void TokenStream::expect(TokenType ttype, const std::string& tvalue) {
     next();
 }
 
-std::vector<std::string> TokenStream::collectArguments(const std::set<std::string>& terminators) {
+std::vector<std::string> TokenStream::collectArguments(const std::set<std::string>& terminators, std::vector<std::string> invalidArgs) {
     std::vector<std::string> args;
     while (hasMore()) {
         Token token = peek();
         if (token.type == PUNCT && terminators.count(token.value)) {
             break;
+        }
+        for (std::vector<std::string>::size_type i = 0; i < invalidArgs.size(); ++i) {
+            if (invalidArgs[i] == token.value) {
+                throw std::runtime_error("Invalid directive argument");
+            }
         }
         args.push_back(next().value);
     }

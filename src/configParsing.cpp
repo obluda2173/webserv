@@ -97,9 +97,9 @@ void ConfigParser::_parseClientMaxBodySize(const Directive& directive, CommonCon
             throw std::runtime_error("Invalid unit in client_max_body_size: " + std::string(end));
         }
         unit = tolower(unit);
-        if (unit == 'k') value *= 1024;
-        else if (unit == 'm') value *= 1024 * 1024;
-        else if (unit == 'g') value *= 1024 * 1024 * 1024;
+        if (unit == 'k') value *= KB;
+        else if (unit == 'm') value *= MB;
+        else if (unit == 'g') value *= GB;
         else throw std::runtime_error("Invalid unit in client_max_body_size: " + std::string(1, unit));
     }
     config.clientMaxBody = static_cast<size_t>(value);
@@ -110,8 +110,7 @@ void ConfigParser::_parseAllowMethods(const Directive& directive, CommonConfig& 
         throw std::runtime_error("allow_methods requires more than 0 arguments");
     }
     for (size_t i = 0; i < directive.args.size(); ++i) {
-        if (directive.args[i] != "GET" && directive.args[i] != "POST" && directive.args[i] != "DELETE" \
-            && directive.args[i] != "HEAD" && directive.args[i] != "PUT" && directive.args[i] != "OPTIONS") {
+        if (directive.args[i] != "GET" && directive.args[i] != "POST" && directive.args[i] != "DELETE") {
             throw std::runtime_error("invalid http method: " + directive.args[i]);
         }
         config.allowMethods.push_back(directive.args[i]);

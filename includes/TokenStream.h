@@ -40,7 +40,7 @@ class TokenStream {
     bool hasMore() const;
     bool accept(TokenType ttype, const std::string& tvalue = "");
     void expect(TokenType ttype, const std::string& tvalue = "");
-    std::vector<std::string> collectArguments(const std::set<std::string>& terminators);
+    std::vector<std::string> collectArguments(const std::set<std::string>& terminators, std::vector<std::string> invalidArgs);
 };
 
 std::string toString(int value);
