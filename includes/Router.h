@@ -23,7 +23,7 @@ struct RouteConfig {
 class IHandler {
   public:
     virtual ~IHandler() {}
-    virtual HttpResponse handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) = 0;
+    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) = 0;
 };
 
 struct Route {

@@ -1,6 +1,7 @@
 #include "ConnectionHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
+#include "Router.h"
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>
@@ -61,11 +62,26 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     }
 }
 
+class BadRequestHandler : public IHandler {
+    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
+        (void)req;
+        (void)config;
+        HttpResponse resp;
+        resp.version = "HTTP/1.1";
+        resp.statusCode = 400;
+        resp.statusMessage = "Bad Request";
+        conn->_response = resp;
+        conn->setStateToSendResponse();
+        return;
+    };
+};
+
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
     bool continueProcessing = true;
     while (continueProcessing) {
         HttpResponse resp;
+        IHandler* hdlr;
         Connection::STATE currentState = _connections[connfd]->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
@@ -89,11 +105,9 @@ void ConnectionHandler::_onSocketRead(int connfd) {
             break;
         case Connection::HandleBadRequest:
             // conn->_response = "HTTP/1.1 400 Bad Request\r\n"
-            resp.version = "HTTP/1.1";
-            resp.statusCode = 400;
-            resp.statusMessage = "Bad Request";
-            conn->_response = resp;
-            conn->setStateToSendResponse();
+            hdlr = new BadRequestHandler();
+            hdlr->handle(conn, {}, {});
+            delete hdlr;
             continueProcessing = (conn->getState() != currentState);
 
             break;
