@@ -15,32 +15,34 @@ typedef enum SocketType {
 } SocketType;
 
 class Connection {
+  private:
+    sockaddr_storage _addr;
+    std::string _buf;
+    int _fd;
+
   public:
-    Connection(struct sockaddr_storage addr, int fd) : addr(addr), fd(fd) {}
+    Connection(struct sockaddr_storage addr, int fd) : _addr(addr), _fd(fd) {}
     void readIntoBuf() {
         char newbuf[1024];
-        ssize_t r = recv(fd, newbuf, 1024, 0);
+        ssize_t r = recv(_fd, newbuf, 1024, 0);
         newbuf[r] = '\0';
-        buf += newbuf;
+        _buf += newbuf;
     }
 
     int parseBuf(IHttpParser* prsr) {
-        char* b = (char*)buf.c_str();
+        char* b = (char*)_buf.c_str();
         while (*b) {
             prsr->feed(b, 1);
             if (prsr->error() || prsr->ready()) {
-                buf = b + 1;
+                _buf = b + 1;
                 return 1;
             }
             b++;
         }
-        buf = b;
+        _buf = b;
         return 0;
     }
-
-    struct sockaddr_storage addr;
-    std::string buf;
-    int fd;
+    sockaddr_storage getAddr() const { return _addr; }
 };
 
 class ConnectionHandler : public IConnectionHandler {

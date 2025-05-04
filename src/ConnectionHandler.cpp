@@ -35,7 +35,7 @@ void ConnectionHandler::_removeClientConnection(int connfd) {
     _parsers.erase(connfd);
     _ioNotifier.del(connfd);
     close(connfd);
-    logDisconnect(_logger, conn->addr);
+    logDisconnect(_logger, conn->getAddr());
     delete conn;
 }
 
