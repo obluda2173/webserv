@@ -73,6 +73,8 @@ LocationConfig ConfigParser::_parseLocationContext(const Context& locationContex
             _parseAutoindex(*it, locationConfig.common);
         } else if (it->name == "error_page"){
             _parseErrorPage(*it, locationConfig.common);
+        } else if (it->name == "cgi_ext") {
+            _parseCgiExt(*it, locationConfig);
         } else {
             throw std::runtime_error("Unknown directive in location context: " + it->name);
         }
@@ -98,8 +100,6 @@ void ConfigParser::_processServerDirectives(const Context& context, ServerConfig
             _parseAutoindex(*it, serverConfig.common);
         } else if (it->name == "error_page"){
             _parseErrorPage(*it, serverConfig.common);
-        } else if (it->name == "cgi_ext"){
-            _parseCgiExt(*it, serverConfig);
         } else {
             throw std::runtime_error("Unknown directive in server context: " + it->name);
         }

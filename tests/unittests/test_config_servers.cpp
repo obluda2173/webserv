@@ -489,14 +489,16 @@ TEST_F(ServerConfigTest, ValidPairedCGI) {
         "    listen 80;\n"
         "    server_name example.com;\n"
         "    root /var/www;\n"
-        "    cgi_ext .php /usr/bin/php-cgi;\n"
-        "    cgi_ext .py /usr/bin/python;\n"
+        "    location cg_path {\n"
+        "        cgi_ext .php /usr/bin/php-cgi;\n"
+        "        cgi_ext .py /usr/bin/python;\n"
+        "    }\n"
         "}\n"
     );
 
-    EXPECT_EQ(config[0].cgi.size(), 2);
-    EXPECT_EQ(config[0].cgi[".php"], "/usr/bin/php-cgi");
-    EXPECT_EQ(config[0].cgi[".py"], "/usr/bin/python");
+    EXPECT_EQ(config[0].locations[0].cgi.size(), 2);
+    EXPECT_EQ(config[0].locations[0].cgi[".php"], "/usr/bin/php-cgi");
+    EXPECT_EQ(config[0].locations[0].cgi[".py"], "/usr/bin/python");
 }
 
 TEST_F(ServerConfigTest, MismatchedArgumentCounts) {
@@ -606,13 +608,15 @@ TEST_F(ServerConfigTest, CaseSensitiveExtensions) {
         "    listen 80;\n"
         "    server_name example.com;\n"
         "    root /var/www;\n"
-        "    cgi_ext .PHP /usr/bin/php-cgi;\n"
-        "    cgi_ext .py /usr/bin/python;\n"
+        "    location cg_path {\n"
+        "        cgi_ext .PHP /usr/bin/php-cgi;\n"
+        "        cgi_ext .py /usr/bin/python;\n"
+        "    }\n"
         "}\n"
     );
 
-    EXPECT_EQ(config[0].cgi[".PHP"], "/usr/bin/php-cgi");
-    EXPECT_EQ(config[0].cgi[".py"], "/usr/bin/python");
+    EXPECT_EQ(config[0].locations[0].cgi[".PHP"], "/usr/bin/php-cgi");
+    EXPECT_EQ(config[0].locations[0].cgi[".py"], "/usr/bin/python");
 }
 
 
@@ -671,4 +675,18 @@ TEST_F(ServerConfigTest, DefaultClientMaxBodySize) {
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
     EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, ValidateInvalidCgi) {
+    EXPECT_THROW(
+        parseConfig(
+            "server {\n"
+            "    listen 80;\n"
+            "    root /var/www/html;\n"
+            "    server_name example.com;\n"
+            "    cgi_ext .php /usr/bin/php-cgi;\n"
+            "}\n"
+        ),
+        std::runtime_error
+    );
 }

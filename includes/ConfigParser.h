@@ -25,7 +25,7 @@ class ConfigParser : public IConfigParser {
     void _parseUse(const Directive& directive, EventsConfig& config);
     void _parseListen(const Directive& directive, ServerConfig& config);
     void _parseServerNames(const Directive& directive, ServerConfig& config);
-    void _parseCgiExt(const Directive& cgiExt, ServerConfig& config);
+    void _parseCgiExt(const Directive& cgiExt, LocationConfig& config);
     void _parseRoot(const Directive& directive, CommonConfig& config);
     void _parseClientMaxBodySize(const Directive& directive, CommonConfig& config);
     void _parseAllowMethods(const Directive& directive, CommonConfig& config);

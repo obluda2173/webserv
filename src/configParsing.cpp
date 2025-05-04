@@ -61,7 +61,7 @@ void ConfigParser::_parseServerNames(const Directive& directive, ServerConfig& c
     }
 }
 
-void ConfigParser::_parseCgiExt(const Directive& directive, ServerConfig& config) {
+void ConfigParser::_parseCgiExt(const Directive& directive, LocationConfig& config) {
     if (directive.args.size() != 2) {
         throw std::runtime_error("cgi_ext requires exactly two arguments");
     } else if (directive.args[0][0] != '.') {

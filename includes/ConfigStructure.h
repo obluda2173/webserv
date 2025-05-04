@@ -44,13 +44,13 @@ typedef struct CommonConfig {
 
 typedef struct LocationConfig {
     std::string prefix;
+    std::map<std::string, std::string> cgi;
     CommonConfig common;
 } LocationConfig;
 
 typedef struct ServerConfig {
     std::map<std::string, int> listen;
     std::vector<std::string> serverNames;
-    std::map<std::string, std::string> cgi;
     CommonConfig common;
     std::vector<LocationConfig> locations;
 } ServerConfig;
