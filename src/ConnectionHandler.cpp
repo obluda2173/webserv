@@ -56,6 +56,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     case Connection::WritingError:
         _ioNotifier.modify(connfd, READY_TO_WRITE);
         break;
+    case Connection::SendResponse:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
     }
 }
 
@@ -70,6 +73,23 @@ void ConnectionHandler::_onSocketRead(int connfd) {
             conn->parseBuf();
             // when the state has changed, continue processing
             continueProcessing = (conn->getState() != currentState);
+            break;
+        case Connection::WritingResponse:
+            conn->_response = "HTTP/1.1 200 OK\r\n"
+                              "Content-Length: 4\r\n"
+                              "\r\n"
+                              "pong";
+            conn->setStateToSendResponse();
+            continueProcessing = (conn->getState() != currentState);
+            conn->_statusCode = 200;
+            break;
+        case Connection::WritingError:
+            conn->_response = "HTTP/1.1 400 Bad Request\r\n"
+                              "\r\n";
+            conn->setStateToSendResponse();
+            continueProcessing = (conn->getState() != currentState);
+            conn->_statusCode = 400;
+
             break;
         default:
             continueProcessing = false;
@@ -96,9 +116,9 @@ void ConnectionHandler::_onSocketWrite(int connfd) {
         _responses[connfd].statusCode = 200;
     }
 
-    send(connfd, _responses[connfd].response.c_str(), _responses[connfd].response.length(), 0);
+    send(connfd, conn->_response.c_str(), conn->_response.length(), 0);
 
-    if (_responses[connfd].statusCode == 400) {
+    if (conn->_statusCode == 400) {
         _onClientHungUp(connfd);
     } else {
         _responses[connfd].response.clear();

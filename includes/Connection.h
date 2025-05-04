@@ -2,12 +2,13 @@
 #define CONNECTION_H
 
 #include "IHttpParser.h"
+#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 
 class Connection {
   public:
-    enum STATE { ReadingHeaders, WritingResponse, WritingError };
+    enum STATE { ReadingHeaders, WritingResponse, WritingError, SendResponse };
 
   private:
     STATE _state;
@@ -24,6 +25,9 @@ class Connection {
     void parseBuf();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
+    std::string _response;
+    int _statusCode;
+    void setStateToSendResponse() { _state = SendResponse; }
 };
 
 #endif // CONNECTION_H
