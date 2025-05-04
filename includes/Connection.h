@@ -9,7 +9,7 @@
 
 class Connection {
   public:
-    enum STATE { ReadingHeaders, WritingResponse, WritingError, SendResponse };
+    enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse };
 
   private:
     STATE _state;

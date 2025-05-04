@@ -30,9 +30,9 @@ void Connection::parseBuf() {
         if (_prsr->error() || _prsr->ready()) {
             _buf = b + 1;
             if (_prsr->error())
-                _state = WritingError;
+                _state = HandleBadRequest;
             else
-                _state = WritingResponse;
+                _state = Handling;
             return;
         }
         b++;

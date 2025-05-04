@@ -49,10 +49,10 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     case Connection::ReadingHeaders:
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
-    case Connection::WritingResponse:
+    case Connection::Handling:
         _ioNotifier.modify(connfd, READY_TO_WRITE);
         break;
-    case Connection::WritingError:
+    case Connection::HandleBadRequest:
         _ioNotifier.modify(connfd, READY_TO_WRITE);
         break;
     case Connection::SendResponse:
@@ -74,7 +74,7 @@ void ConnectionHandler::_onSocketRead(int connfd) {
             // when the state has changed, continue processing
             continueProcessing = (conn->getState() != currentState);
             break;
-        case Connection::WritingResponse:
+        case Connection::Handling:
             resp.statusCode = 200;
             resp.statusMessage = "OK";
             resp.contentLength = 4;
@@ -87,7 +87,7 @@ void ConnectionHandler::_onSocketRead(int connfd) {
             conn->setStateToSendResponse();
             continueProcessing = (conn->getState() != currentState);
             break;
-        case Connection::WritingError:
+        case Connection::HandleBadRequest:
             // conn->_response = "HTTP/1.1 400 Bad Request\r\n"
             resp.version = "HTTP/1.1";
             resp.statusCode = 400;
