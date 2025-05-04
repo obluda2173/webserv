@@ -23,6 +23,21 @@ class Connection {
         newbuf[r] = '\0';
         buf += newbuf;
     }
+
+    int parseBuf(IHttpParser* prsr) {
+        char* b = (char*)buf.c_str();
+        while (*b) {
+            prsr->feed(b, 1);
+            if (prsr->error() || prsr->ready()) {
+                buf = b + 1;
+                return 1;
+            }
+            b++;
+        }
+        buf = b;
+        return 0;
+    }
+
     struct sockaddr_storage addr;
     std::string buf;
     int fd;

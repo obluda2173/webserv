@@ -35,7 +35,7 @@ void ConnectionHandler::_removeClientConnection(int connfd) {
     _parsers.erase(connfd);
     _ioNotifier.del(connfd);
     close(connfd);
-    logDisconnect(_logger, conn->get_addr());
+    logDisconnect(_logger, conn->addr);
     delete conn;
 }
 
@@ -56,18 +56,10 @@ void ConnectionHandler::_onSocketRead(int connfd, bool withRead) {
     IHttpParser* prsr = _parsers.at(connfd);
     if (withRead)
         conn->readIntoBuf();
-    char* b = (char*)conn->buf.c_str();
-    while (*b) {
-        prsr->feed(b, 1);
-        if (prsr->error() || prsr->ready()) {
-            _ioNotifier.modify(connfd, READY_TO_WRITE);
-            conn->buf = b + 1;
-            return;
-        }
-        b++;
-    }
-    conn->buf = b;
-    _ioNotifier.modify(connfd, READY_TO_READ);
+    if (conn->parseBuf(prsr) == 1)
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+    else
+        _ioNotifier.modify(connfd, READY_TO_READ);
     return;
 }
 
@@ -94,11 +86,11 @@ void ConnectionHandler::_sendPipeline(int connfd) {
         _removeClientConnection(connfd);
     } else {
         _responses[connfd].response.clear();
-        if (!_connections[connfd]->buf.empty()) {
-            _onSocketRead(connfd, false);
-            return;
-        }
-        _ioNotifier.modify(connfd, READY_TO_READ);
+        if (_connections[connfd]->parseBuf(prsr) == 1)
+            _ioNotifier.modify(connfd, READY_TO_WRITE);
+        else
+            _ioNotifier.modify(connfd, READY_TO_READ);
+        return;
     }
 }
 
