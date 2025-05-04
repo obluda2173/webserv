@@ -2,7 +2,6 @@
 #define CONNECTIONHANDLER_H
 
 #include "Connection.h"
-#include "HttpResponse.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
 #include "ILogger.h"
@@ -17,7 +16,6 @@ typedef enum SocketType {
 class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, Connection*> _connections;
-    std::map<int, HttpResponse> _responses;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);

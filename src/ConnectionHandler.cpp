@@ -20,7 +20,6 @@ void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage
     logConnection(_logger, theirAddr);
     Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
     _connections[connfd] = conn;
-    _responses[connfd] = HttpResponse{0, "", "", false, "", "", ""};
     _ioNotifier.add(connfd);
 }
 
@@ -28,7 +27,6 @@ void ConnectionHandler::_onClientHungUp(int connfd) {
     logDisconnect(_logger, _connections[connfd]->getAddr());
     delete _connections[connfd];
     _connections.erase(connfd);
-    _responses.erase(connfd); // TODO: secure all the raises against exceptions being thrown
     _ioNotifier.del(connfd);
 }
 
@@ -102,26 +100,11 @@ void ConnectionHandler::_onSocketRead(int connfd) {
 
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
-    if (conn->getState() == Connection::WritingError) {
-        _responses[connfd].response += "HTTP/1.1 400 Bad Request\r\n"
-                                       "\r\n";
-
-        _responses[connfd].statusCode = 400;
-    }
-    if (conn->getState() == Connection::WritingResponse) {
-        _responses[connfd].response += "HTTP/1.1 200 OK\r\n"
-                                       "Content-Length: 4\r\n"
-                                       "\r\n"
-                                       "pong";
-        _responses[connfd].statusCode = 200;
-    }
-
     send(connfd, conn->_response.c_str(), conn->_response.length(), 0);
 
     if (conn->_statusCode == 400) {
         _onClientHungUp(connfd);
     } else {
-        _responses[connfd].response.clear();
         _connections[connfd]->parseBuf();
         _updateNotifier(conn);
         return;
