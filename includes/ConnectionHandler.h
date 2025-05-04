@@ -15,20 +15,25 @@ typedef enum SocketType {
 } SocketType;
 
 class Connection {
+  public:
+    enum STATE { ReadingHeaders, WritingResponse, WritingError };
+
   private:
+    STATE _state;
     sockaddr_storage _addr;
     std::string _buf;
     int _fd;
     IHttpParser* _prsr;
 
   public:
-    enum STATE { ReadingHeaders, WritingResponse, WritingError };
-    STATE _state;
     ~Connection() {
         close(_fd);
         delete _prsr;
     }
-    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {}
+    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {
+        _state = ReadingHeaders;
+    }
+    STATE getState() const { return _state; }
     void readIntoBuf() {
         char newbuf[1024];
         ssize_t r = recv(_fd, newbuf, 1024, 0);
@@ -67,9 +72,11 @@ class ConnectionHandler : public IConnectionHandler {
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
-    void _onSocketRead(int fd, bool withRead);
-    void _sendPipeline(int conn);
-    void _removeClientConnection(int conn);
+    void _onSocketRead(int fd);
+    void _onSocketWrite(int conn);
+    void _onClientHungUp(int conn);
+
+    void _updateNotifier(int connfd);
 
   public:
     ConnectionHandler(ILogger&, IIONotifier&);
