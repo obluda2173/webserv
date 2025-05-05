@@ -88,7 +88,7 @@ std::string generateDirectoryIndexHtml(const std::string& dirPath, const std::st
     return html.str();
 }
 
-void GetHandler::handleGoodResponce(Connection* conn, std::string pathToPut) {      // this should be a private function
+void GetHandler::handleAutoIndex(Connection* conn, std::string pathToPut) {      // this should be a private function
     HttpResponse& resp = conn->_response;
     std::string tempBody = generateDirectoryIndexHtml(pathToPut, "");
     resp.contentLength = tempBody.size();
