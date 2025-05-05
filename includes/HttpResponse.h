@@ -8,12 +8,16 @@ typedef struct HttpResponse {
     std::string version;
     std::string body;
     std::string statusMessage;
-    bool isClosed = false;
+    bool isClosed;
     std::string contentType;
     int contentLength;
     std::string contentLanguage;
-    bool isRange = false;
-    bool isChunked = false;
+    bool isRange;
+    bool isChunked;
+
+    HttpResponse()
+        : statusCode(0), version(""), body(""), statusMessage(""), isClosed(false), contentType(""), contentLength(0),
+          contentLanguage(""), isRange(false), isChunked(false) {}
 } HttpResponse;
 
 #endif

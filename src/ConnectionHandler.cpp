@@ -3,6 +3,7 @@
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "PingHandler.h"
+#include "ResponseWriter.h"
 #include "Router.h"
 #include "logging.h"
 #include <errno.h>
@@ -52,9 +53,7 @@ void ConnectionHandler::_removeConnection(int connfd) {
     _ioNotifier.del(connfd);
 }
 
-void ConnectionHandler::_onClientHungUp(int connfd) {
-    _removeConnection(connfd);
-}
+void ConnectionHandler::_onClientHungUp(int connfd) { _removeConnection(connfd); }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
     struct sockaddr_storage theirAddr;
@@ -102,8 +101,6 @@ void ConnectionHandler::_onSocketRead(int connfd) {
     return;
 }
 
-
-
 std::string constructResponse(HttpResponse resp) {
     std::string clrf = "\r\n";
     if (resp.statusCode == 400) {
@@ -115,8 +112,11 @@ std::string constructResponse(HttpResponse resp) {
 
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
-    std::string response = constructResponse(conn->_response);
+
+    IResponseWriter* wrtr = new ResponseWriter(conn->_response);
+    std::string response = wrtr->write();
     send(connfd, response.c_str(), response.length(), 0);
+    delete wrtr;
 
     if (conn->_response.statusCode == 400) {
         _removeConnection(connfd);
