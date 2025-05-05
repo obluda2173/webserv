@@ -1,4 +1,5 @@
 #include "ResponseWriter.h"
+#include <algorithm>
 #include <string.h>
 
 // Definition of the static member
@@ -6,35 +7,44 @@ const std::string ResponseWriter::CRLF = "\r\n";
 const std::string ResponseWriter::WS = " ";
 
 void ResponseWriter::_writeStatusLine() {
-    _respString += _resp.version + WS;
-    _respString += std::to_string(_resp.statusCode) + WS;
-    _respString += _resp.statusMessage;
-    _respString += CRLF;
+    _headerString += _resp.version + WS;
+    _headerString += std::to_string(_resp.statusCode) + WS;
+    _headerString += _resp.statusMessage;
+    _headerString += CRLF;
 }
 
 void ResponseWriter::_writeHeaders() {
     _writeStatusLine();
     if (_resp.contentLength > 0)
-        _respString += "Content-Length: " + std::to_string(_resp.contentLength) + CRLF;
+        _headerString += "Content-Length: " + std::to_string(_resp.contentLength) + CRLF;
 
-    _respString += CRLF;
+    _headerString += CRLF;
 }
 
-void ResponseWriter::_writeBody() {
-    char buffer[1024];
-    size_t readBytes = _resp.body->read(buffer, 1023);
-    buffer[readBytes] = '\0';
-    _respString += buffer;
-}
-
-int ResponseWriter::write(char* buffer, int maxSize) {
-    (void)maxSize;
-    _writeHeaders();
-
-    if (_resp.body) {
-        _writeBody();
+size_t ResponseWriter::write(char* buffer, size_t maxSize) {
+    if (!_headersWritten) {
+        _writeHeaders();
+        _headersWritten = true;
     }
 
-    memcpy(buffer, _respString.c_str(), _respString.length());
-    return _respString.length();
+    size_t bytesCopied = 0;
+    if (!_headersCopied) {
+
+        size_t bytesToCopy = std::min(maxSize, _headerString.size());
+        memcpy(buffer, _headerString.c_str(), bytesToCopy); // TODO: maybe have it retry if it fails
+        maxSize -= bytesToCopy;
+        if (maxSize) {
+            _headersCopied = true;
+            bytesCopied = bytesToCopy;
+        } else {
+            _headerString = _headerString.substr(bytesToCopy, _headerString.length());
+            return bytesToCopy;
+        }
+    }
+
+    if (_resp.body) {
+        size_t readBytes = _resp.body->read(buffer + bytesCopied, maxSize);
+        return readBytes + bytesCopied;
+    }
+    return bytesCopied;
 }
