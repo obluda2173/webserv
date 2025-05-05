@@ -14,7 +14,7 @@ class BadRequestHandler : public IHandler {
         resp.statusCode = 400;
         resp.statusMessage = "Bad Request";
         conn->_response = resp;
-        conn->setStateToSendResponse();
+        conn->setState(Connection::SendResponse);
         return;
     };
 };

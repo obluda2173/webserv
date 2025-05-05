@@ -27,7 +27,7 @@ class Connection {
     int getFileDes() const;
     sockaddr_storage getAddr() const;
     HttpResponse _response;
-    void setStateToSendResponse() { _state = SendResponse; }
+    void setState(Connection::STATE state) { _state = state; }
 };
 
 #endif // CONNECTION_H

@@ -15,7 +15,7 @@ class PingHandler : public IHandler {
         resp.contentLength = 4;
         resp.body = new StringBodyProvider("pong");
         resp.version = "HTTP/1.1";
-        conn->setStateToSendResponse();
+        conn->setState(Connection::SendResponse);
         return;
     };
 };
