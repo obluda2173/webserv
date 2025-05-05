@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
 
     // only run the following test
-    testing::GTEST_FLAG(filter) = "*ResponseWriterTest*";
+    // testing::GTEST_FLAG(filter) = "*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "*testingBatchSizesSending*";
     // testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";

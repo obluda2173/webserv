@@ -48,7 +48,8 @@ size_t ResponseWriter::write(char* buffer, size_t maxSize) {
             }
             break;
         case WritingBody:
-            bytesWritten += _resp.body->read(buffer + bytesWritten, maxSize);
+            if (_resp.body)
+                bytesWritten += _resp.body->read(buffer + bytesWritten, maxSize);
             continueProcessing = false;
             break;
         }

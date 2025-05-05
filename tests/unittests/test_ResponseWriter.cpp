@@ -6,7 +6,8 @@ HttpResponse newResponse(std::string body) {
     HttpResponse resp;
     resp.statusCode = 200;
     resp.statusMessage = "OK";
-    resp.body = new StringBodyProvider(body);
+    if (!body.empty())
+        resp.body = new StringBodyProvider(body);
     resp.contentLength = body.length();
     resp.version = "HTTP/1.1";
     return resp;
@@ -21,11 +22,11 @@ class ResponseWriterTest : public testing::TestWithParam<struct ResponseWriterPa
 
 TEST_P(ResponseWriterTest, firstTest) {
     ResponseWriterParams params = GetParam();
+    size_t maxSize = params.maxSize;
 
     char buffer[8192];
     HttpResponse resp = newResponse(params.body);
 
-    size_t maxSize = params.maxSize;
     std::string want = "HTTP/1.1 200 OK\r\n";
     if (params.body.length()) {
         want += "Content-Length: " + std::to_string(params.body.length()) +
