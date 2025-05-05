@@ -61,7 +61,7 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     int fd = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
     if (fd < 0) {
         _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
-        exit(1); // TODO: you probably don't want to exit
+        return -1;
     }
     _addClientConnection(fd, theirAddr);
     return fd;
