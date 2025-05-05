@@ -101,21 +101,13 @@ void ConnectionHandler::_onSocketRead(int connfd) {
     return;
 }
 
-std::string constructResponse(HttpResponse resp) {
-    std::string clrf = "\r\n";
-    if (resp.statusCode == 400) {
-        return resp.version + " " + std::to_string(resp.statusCode) + " " + resp.statusMessage + clrf + clrf;
-    }
-    return resp.version + " " + std::to_string(resp.statusCode) + " " + resp.statusMessage + "\r\n" +
-           "Content-Length: " + std::to_string(resp.contentLength) + clrf + clrf + resp.body;
-}
-
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
     IResponseWriter* wrtr = new ResponseWriter(conn->_response);
-    std::string response = wrtr->write();
-    send(connfd, response.c_str(), response.length(), 0);
+    char buffer[1024];
+    int bytesWritten = wrtr->write(buffer, 1024);
+    send(connfd, buffer, bytesWritten, 0);
     delete wrtr;
 
     if (conn->_response.statusCode == 400) {

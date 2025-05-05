@@ -1,4 +1,5 @@
 #include "ResponseWriter.h"
+#include <string.h>
 
 // Definition of the static member
 const std::string ResponseWriter::CLRF = "\r\n";
@@ -21,8 +22,11 @@ void ResponseWriter::_writeHeaders() {
 
 void ResponseWriter::_writeBody() { _respString += _resp.body; }
 
-std::string ResponseWriter::write() {
+int ResponseWriter::write(char* buffer, int maxSize) {
+    (void)maxSize;
     _writeHeaders();
     _writeBody();
-    return _respString;
+
+    memcpy(buffer, _respString.c_str(), _respString.length());
+    return _respString.length();
 }

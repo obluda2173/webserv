@@ -7,7 +7,7 @@
 class IResponseWriter {
   public:
     virtual ~IResponseWriter() {}
-    virtual std::string write() = 0;
+    virtual int write(char* buffer, int maxSize) = 0;
 };
 
 class ResponseWriter : public IResponseWriter {
@@ -21,8 +21,9 @@ class ResponseWriter : public IResponseWriter {
   public:
     static const std::string CLRF;
     static const std::string WS;
+
     ResponseWriter(HttpResponse resp) : _resp(resp) {}
-    std::string write();
+    virtual int write(char* buffer, int maxSize);
 };
 
 #endif // RESPONSEWRITER_H
