@@ -1,16 +1,5 @@
 #include "GetHandler.h"
 
-std::string toString(size_t value) {
-    std::stringstream ss;
-    ss << value;
-    return ss.str();
-}
-
-bool fileExists(const std::string& path) {
-    std::ifstream file(path.c_str());
-    return file.good();
-}
-
 bool GetHandler::_getValidation(Connection* conn, HttpRequest& request, RouteConfig& config) {
     if (request.headers.find("content-length") != request.headers.end() ||               // no body in GET method
         request.headers.find("transfer-encoding") != request.headers.end()) {

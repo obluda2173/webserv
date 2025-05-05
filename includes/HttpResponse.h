@@ -36,7 +36,7 @@ class StringBodyProvider : public IBodyProvider {
 class FileBodyProvider : public IBodyProvider {
   private:
     int _fd;
-    bool _fdOwned;
+    bool _fdOwned;        // i.e. stdout ; not supposed to close it
     bool _eofReached;
 
   public:
