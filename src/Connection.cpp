@@ -3,13 +3,12 @@
 Connection::~Connection() {
     close(_fd);
     delete _prsr;
+    delete _response.body;
 }
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {
     _state = ReadingHeaders;
 }
-
-Connection::STATE Connection::getState() const { return _state; }
 
 void Connection::readIntoBuf() {
     char newbuf[1024];
@@ -30,9 +29,9 @@ void Connection::parseBuf() {
         if (_prsr->error() || _prsr->ready()) {
             _buf = b + 1;
             if (_prsr->error())
-                _state = WritingError;
+                _state = HandleBadRequest;
             else
-                _state = WritingResponse;
+                _state = Handling;
             return;
         }
         b++;
@@ -41,5 +40,7 @@ void Connection::parseBuf() {
 }
 
 int Connection::getFileDes() const { return _fd; }
+
+Connection::STATE Connection::getState() const { return _state; }
 
 struct sockaddr_storage Connection::getAddr() const { return _addr; }

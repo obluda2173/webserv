@@ -1,6 +1,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include "HttpResponse.h"
 #include "IHttpParser.h"
 #include <string>
 #include <sys/socket.h>
@@ -8,7 +9,7 @@
 
 class Connection {
   public:
-    enum STATE { ReadingHeaders, WritingResponse, WritingError, SendResponse };
+    enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse };
 
   private:
     STATE _state;
@@ -25,8 +26,7 @@ class Connection {
     void parseBuf();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
-    std::string _response;
-    int _statusCode;
+    HttpResponse _response;
     void setStateToSendResponse() { _state = SendResponse; }
 };
 

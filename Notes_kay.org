@@ -31,6 +31,7 @@
 - [ ] Idea: have a file descriptor inside the HttpResponse from which the HttpResponseWrite could read, which hopefully would also work for the cgi
 * notes configuration
 - [X] change throwing of std::runtime_error to something that makes sense
+
 - [ ] restrict config allowedMethods to GET, POST, DELETE
 
 - [ ] no error is thrown when there is no ";" in
@@ -39,3 +40,5 @@ index       index.html index.htm
   #+end_src
 - [ ] oneMB as default if clientMaxBody is not set
 - [ ] cgi - only on location level
+- [ ] talk to Eric about oneMB const
+- [ ] make reset public on HttpParser

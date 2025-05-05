@@ -1,10 +1,15 @@
 #include "ConnectionHandler.h"
+#include "BadRequestHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
+#include "PingHandler.h"
+#include "ResponseWriter.h"
+#include "Router.h"
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -16,6 +21,24 @@ ConnectionHandler::~ConnectionHandler(void) {
     }
 }
 
+void ConnectionHandler::_updateNotifier(Connection* conn) {
+    int connfd = conn->getFileDes();
+    switch (conn->getState()) {
+    case Connection::ReadingHeaders:
+        _ioNotifier.modify(connfd, READY_TO_READ);
+        break;
+    case Connection::Handling:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    case Connection::HandleBadRequest:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    case Connection::SendResponse:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    }
+}
+
 void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
     Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
@@ -23,12 +46,14 @@ void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage
     _ioNotifier.add(connfd);
 }
 
-void ConnectionHandler::_onClientHungUp(int connfd) {
+void ConnectionHandler::_removeConnection(int connfd) {
     logDisconnect(_logger, _connections[connfd]->getAddr());
     delete _connections[connfd];
     _connections.erase(connfd);
     _ioNotifier.del(connfd);
 }
+
+void ConnectionHandler::_onClientHungUp(int connfd) { _removeConnection(connfd); }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
     struct sockaddr_storage theirAddr;
@@ -42,52 +67,30 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     return fd;
 }
 
-void ConnectionHandler::_updateNotifier(Connection* conn) {
-    int connfd = conn->getFileDes();
-    switch (conn->getState()) {
-    case Connection::ReadingHeaders:
-        _ioNotifier.modify(connfd, READY_TO_READ);
-        break;
-    case Connection::WritingResponse:
-        _ioNotifier.modify(connfd, READY_TO_WRITE);
-        break;
-    case Connection::WritingError:
-        _ioNotifier.modify(connfd, READY_TO_WRITE);
-        break;
-    case Connection::SendResponse:
-        _ioNotifier.modify(connfd, READY_TO_WRITE);
-        break;
-    }
-}
-
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
     bool continueProcessing = true;
     while (continueProcessing) {
+        HttpResponse resp;
+        IHandler* hdlr;
         Connection::STATE currentState = _connections[connfd]->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
             conn->readIntoBuf();
             conn->parseBuf();
-            // when the state has changed, continue processing
             continueProcessing = (conn->getState() != currentState);
             break;
-        case Connection::WritingResponse:
-            conn->_response = "HTTP/1.1 200 OK\r\n"
-                              "Content-Length: 4\r\n"
-                              "\r\n"
-                              "pong";
-            conn->setStateToSendResponse();
+        case Connection::Handling:
+            hdlr = new PingHandler();
+            hdlr->handle(conn, {}, {});
+            delete hdlr;
             continueProcessing = (conn->getState() != currentState);
-            conn->_statusCode = 200;
             break;
-        case Connection::WritingError:
-            conn->_response = "HTTP/1.1 400 Bad Request\r\n"
-                              "\r\n";
-            conn->setStateToSendResponse();
+        case Connection::HandleBadRequest:
+            hdlr = new BadRequestHandler();
+            hdlr->handle(conn, {}, {});
+            delete hdlr;
             continueProcessing = (conn->getState() != currentState);
-            conn->_statusCode = 400;
-
             break;
         default:
             continueProcessing = false;
@@ -100,12 +103,19 @@ void ConnectionHandler::_onSocketRead(int connfd) {
 
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
-    send(connfd, conn->_response.c_str(), conn->_response.length(), 0);
 
-    if (conn->_statusCode == 400) {
-        _onClientHungUp(connfd);
+    IResponseWriter* wrtr = new ResponseWriter(conn->_response);
+    char buffer[1024];
+    int bytesWritten = wrtr->write(buffer, 1024);
+    send(connfd, buffer, bytesWritten, 0);
+    delete wrtr;
+
+    if (conn->_response.statusCode == 400) {
+        _removeConnection(connfd);
     } else {
-        _connections[connfd]->parseBuf();
+        conn->parseBuf();
+        delete conn->_response.body;
+        conn->_response.body = NULL;
         _updateNotifier(conn);
         return;
     }
