@@ -1,13 +1,13 @@
 #include "Connection.h"
 
+Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr)
+    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL) {}
+
 Connection::~Connection() {
     close(_fd);
     delete _prsr;
+    delete _wrtr;
     delete _response.body;
-}
-
-Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {
-    _state = ReadingHeaders;
 }
 
 void Connection::readIntoBuf() {
@@ -15,6 +15,16 @@ void Connection::readIntoBuf() {
     ssize_t r = recv(_fd, newbuf, 1024, 0);
     newbuf[r] = '\0';
     _buf += newbuf;
+}
+
+void Connection::_send() {
+    if (!_wrtr)
+        _wrtr = new ResponseWriter(_response);
+
+    char buffer[1024];
+    size_t bytesWritten = _wrtr->write(buffer, 1024);
+    size_t bytesSent = send(_fd, buffer, bytesWritten, 0);
+    (void)bytesSent;
 }
 
 void Connection::parseBuf() {

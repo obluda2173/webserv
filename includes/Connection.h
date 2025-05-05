@@ -3,6 +3,7 @@
 
 #include "HttpResponse.h"
 #include "IHttpParser.h"
+#include "ResponseWriter.h"
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -17,12 +18,14 @@ class Connection {
     std::string _buf;
     int _fd;
     IHttpParser* _prsr;
+    IResponseWriter* _wrtr;
 
   public:
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr);
     STATE getState() const;
     void readIntoBuf();
+    void _send();
     void parseBuf();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
