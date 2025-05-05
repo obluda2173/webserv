@@ -27,9 +27,11 @@ TEST_P(ResponseWriterTest, firstTest) {
 
     size_t maxSize = params.maxSize;
     std::string want = "HTTP/1.1 200 OK\r\n"
-                       "Content-Length: 4\r\n"
+                       "Content-Length: " +
+                       std::to_string(params.body.length()) +
                        "\r\n"
-                       "pong";
+                       "\r\n" +
+                       params.body;
 
     IResponseWriter* wrtr = new ResponseWriter(resp);
     size_t writtenBytes = -1;
@@ -46,6 +48,31 @@ TEST_P(ResponseWriterTest, firstTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(maxSizes, ResponseWriterTest,
-                         testing::Values(
-                             // ResponseWriterParams{"pong", 1}, ResponseWriterParams{"pong", 2},
-                             ResponseWriterParams{"pong", 3}));
+                         testing::Values(ResponseWriterParams{"pong", 1}, ResponseWriterParams{"pong", 2},
+                                         ResponseWriterParams{"pong", 3}));
+
+std::string getRandomString(size_t length) {
+    const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    std::string randomString;
+
+    std::srand(static_cast<unsigned int>(std::time(0))); // Seed for random number generator
+
+    for (size_t i = 0; i < length; ++i) {
+        randomString += chars[std::rand() % chars.length()];
+    }
+
+    return randomString;
+}
+
+INSTANTIATE_TEST_SUITE_P(msg100long, ResponseWriterTest,
+                         testing::Values(ResponseWriterParams{getRandomString(100), 1},
+                                         ResponseWriterParams{getRandomString(100), 2},
+                                         ResponseWriterParams{getRandomString(100), 3}));
+
+INSTANTIATE_TEST_SUITE_P(
+    msg1000long, ResponseWriterTest,
+    testing::Values(ResponseWriterParams{getRandomString(1000), 1}, ResponseWriterParams{getRandomString(1000), 2},
+                    ResponseWriterParams{getRandomString(1000), 3}, ResponseWriterParams{getRandomString(1000), 4},
+                    ResponseWriterParams{getRandomString(1000), 10}, ResponseWriterParams{getRandomString(1000), 100},
+                    ResponseWriterParams{getRandomString(1000), 1000},
+                    ResponseWriterParams{getRandomString(1000), 2000}));
