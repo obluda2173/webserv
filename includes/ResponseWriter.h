@@ -19,7 +19,7 @@ class ResponseWriter : public IResponseWriter {
     void _writeBody();
 
   public:
-    static const std::string CLRF;
+    static const std::string CRLF;
     static const std::string WS;
 
     ResponseWriter(HttpResponse& resp) : _resp(resp) {}
