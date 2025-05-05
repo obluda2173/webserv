@@ -22,7 +22,7 @@ class ResponseWriter : public IResponseWriter {
     static const std::string CLRF;
     static const std::string WS;
 
-    ResponseWriter(HttpResponse resp) : _resp(resp) {}
+    ResponseWriter(HttpResponse& resp) : _resp(resp) {}
     virtual int write(char* buffer, int maxSize);
 };
 

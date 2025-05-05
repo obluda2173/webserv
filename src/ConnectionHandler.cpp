@@ -114,6 +114,8 @@ void ConnectionHandler::_onSocketWrite(int connfd) {
         _removeConnection(connfd);
     } else {
         conn->parseBuf();
+        delete conn->_response.body;
+        conn->_response.body = NULL;
         _updateNotifier(conn);
         return;
     }

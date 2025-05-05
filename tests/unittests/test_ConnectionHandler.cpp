@@ -132,9 +132,7 @@ INSTANTIATE_TEST_SUITE_P(
                            "\r\n"
                            "pong",
                            "HTTP/1.1 400 Bad Request\r\n"
-                           "\r\n"}}
-
-                      ));
+                           "\r\n"}}));
 
 TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
     char buffer[1024];

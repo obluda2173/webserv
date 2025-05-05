@@ -1,9 +1,9 @@
 #ifndef BADREQUESTHANDLER_H
 #define BADREQUESTHANDLER_H
 
+#include "Connection.h"
 #include "HttpResponse.h"
 #include "Router.h"
-#include "Connection.h"
 
 class BadRequestHandler : public IHandler {
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
@@ -18,7 +18,5 @@ class BadRequestHandler : public IHandler {
         return;
     };
 };
-
-
 
 #endif // BADREQUESTHANDLER_H

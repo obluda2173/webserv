@@ -20,12 +20,20 @@ void ResponseWriter::_writeHeaders() {
     _respString += CLRF;
 }
 
-void ResponseWriter::_writeBody() { _respString += _resp.body; }
+void ResponseWriter::_writeBody() {
+    char buffer[1024];
+    size_t readBytes = _resp.body->read(buffer, 1023);
+    buffer[readBytes] = '\0';
+    _respString += buffer;
+}
 
 int ResponseWriter::write(char* buffer, int maxSize) {
     (void)maxSize;
     _writeHeaders();
-    _writeBody();
+
+    if (_resp.body) {
+        _writeBody();
+    }
 
     memcpy(buffer, _respString.c_str(), _respString.length());
     return _respString.length();

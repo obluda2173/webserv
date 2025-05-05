@@ -3,6 +3,7 @@
 Connection::~Connection() {
     close(_fd);
     delete _prsr;
+    delete _response.body;
 }
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr(addr), _fd(fd), _prsr(prsr) {
