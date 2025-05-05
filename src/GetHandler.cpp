@@ -13,27 +13,18 @@ std::string toString(size_t value) {
     return ss.str();
 }
 
-void GetHandler::_generateErrorMsg(HttpResponse& httpResponse, std::string errorCodeToPut, std::string errorMessageToPut) {
-    httpResponse.statusCode = errorCodeToPut;
-    httpResponse.statusMessage = errorMessageToPut;
-
-    // httpResponse.headers["Date"] = "";
-    httpResponse.headers["Content-Type"] = "text/html; charset=UTF-8";
-
-    httpResponse.body += "<html><body>";
-    httpResponse.body += "<h1>Error " + errorCodeToPut + "</h1>";
-    httpResponse.body += "<p>" + errorMessageToPut + "</p>";
-    httpResponse.body += "</body></html>";
-
-    httpResponse.headers["Content-Length"] = toString(httpResponse.body.size());
-}
-
-HttpResponse GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& config) {
-    HttpResponse httpResponse;
+bool GetHandler::_validation(Connection* conn, HttpRequest& request, RouteConfig& config) {
     if (request.headers.find("content-length") != request.headers.end() ||
         request.headers.find("transfer-encoding") != request.headers.end()) {
-        _generateErrorMsg(httpResponse, "400", "Bad request");
-        return httpResponse;
+        return false;
+    }
+}
+
+void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& config) {
+    HttpResponse& resp = conn->_response;
+    
+    if (GetHandler::_validation(conn, request, config)) {
+        // change the state into bad request then return.
     }
 
     // std::string path = request.headers["host"] + request.uri;
