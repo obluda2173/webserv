@@ -7,44 +7,50 @@ const std::string ResponseWriter::CRLF = "\r\n";
 const std::string ResponseWriter::WS = " ";
 
 void ResponseWriter::_writeStatusLine() {
-    _headerString += _resp.version + WS;
-    _headerString += std::to_string(_resp.statusCode) + WS;
-    _headerString += _resp.statusMessage;
-    _headerString += CRLF;
+    _headers += _resp.version + WS;
+    _headers += std::to_string(_resp.statusCode) + WS;
+    _headers += _resp.statusMessage;
+    _headers += CRLF;
 }
 
-void ResponseWriter::_writeHeaders() {
+void ResponseWriter::_formatHeaders() {
     _writeStatusLine();
     if (_resp.contentLength > 0)
-        _headerString += "Content-Length: " + std::to_string(_resp.contentLength) + CRLF;
+        _headers += "Content-Length: " + std::to_string(_resp.contentLength) + CRLF;
 
-    _headerString += CRLF;
+    _headers += CRLF;
+}
+
+size_t ResponseWriter::_writeHeaders(char* buffer, size_t maxSize) {
+    size_t bytesToWrite = std::min(maxSize, _headers.size());
+    memcpy(buffer, _headers.c_str(), bytesToWrite);
+    return bytesToWrite;
 }
 
 size_t ResponseWriter::write(char* buffer, size_t maxSize) {
-    if (!_headersWritten) {
-        _writeHeaders();
-        _headersWritten = true;
-    }
-
-    size_t bytesCopied = 0;
-    if (!_headersCopied) {
-
-        size_t bytesToCopy = std::min(maxSize, _headerString.size());
-        memcpy(buffer, _headerString.c_str(), bytesToCopy); // TODO: maybe have it retry if it fails
-        maxSize -= bytesToCopy;
-        if (maxSize) {
-            _headersCopied = true;
-            bytesCopied = bytesToCopy;
-        } else {
-            _headerString = _headerString.substr(bytesToCopy, _headerString.length());
-            return bytesToCopy;
+    size_t bytesWritten = 0;
+    bool continueProcessing = true;
+    while (continueProcessing) {
+        switch (_state) {
+        case FormatHeaders:
+            _formatHeaders();
+            _state = WritingHeaders;
+            break;
+        case WritingHeaders:
+            bytesWritten = _writeHeaders(buffer, maxSize);
+            maxSize -= bytesWritten;
+            if (maxSize) {
+                _state = WritingBody;
+            } else {
+                _headers = _headers.substr(bytesWritten, _headers.length());
+                continueProcessing = false;
+            }
+            break;
+        case WritingBody:
+            bytesWritten += _resp.body->read(buffer + bytesWritten, maxSize);
+            continueProcessing = false;
+            break;
         }
     }
-
-    if (_resp.body) {
-        size_t readBytes = _resp.body->read(buffer + bytesCopied, maxSize);
-        return readBytes + bytesCopied;
-    }
-    return bytesCopied;
+    return bytesWritten;
 }
