@@ -20,32 +20,6 @@ ConnectionHandler::~ConnectionHandler(void) {
     }
 }
 
-void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
-    logConnection(_logger, theirAddr);
-    Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
-    _connections[connfd] = conn;
-    _ioNotifier.add(connfd);
-}
-
-void ConnectionHandler::_onClientHungUp(int connfd) {
-    logDisconnect(_logger, _connections[connfd]->getAddr());
-    delete _connections[connfd];
-    _connections.erase(connfd);
-    _ioNotifier.del(connfd);
-}
-
-int ConnectionHandler::_acceptNewConnection(int socketfd) {
-    struct sockaddr_storage theirAddr;
-    int addrlen = sizeof(theirAddr);
-    int fd = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
-    if (fd < 0) {
-        _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
-        exit(1); // TODO: you probably don't want to exit
-    }
-    _addClientConnection(fd, theirAddr);
-    return fd;
-}
-
 void ConnectionHandler::_updateNotifier(Connection* conn) {
     int connfd = conn->getFileDes();
     switch (conn->getState()) {
@@ -62,6 +36,36 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         _ioNotifier.modify(connfd, READY_TO_WRITE);
         break;
     }
+}
+
+void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
+    logConnection(_logger, theirAddr);
+    Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
+    _connections[connfd] = conn;
+    _ioNotifier.add(connfd);
+}
+
+void ConnectionHandler::_removeConnection(int connfd) {
+    logDisconnect(_logger, _connections[connfd]->getAddr());
+    delete _connections[connfd];
+    _connections.erase(connfd);
+    _ioNotifier.del(connfd);
+}
+
+void ConnectionHandler::_onClientHungUp(int connfd) {
+    _removeConnection(connfd);
+}
+
+int ConnectionHandler::_acceptNewConnection(int socketfd) {
+    struct sockaddr_storage theirAddr;
+    int addrlen = sizeof(theirAddr);
+    int fd = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
+    if (fd < 0) {
+        _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
+        exit(1); // TODO: you probably don't want to exit
+    }
+    _addClientConnection(fd, theirAddr);
+    return fd;
 }
 
 void ConnectionHandler::_onSocketRead(int connfd) {
@@ -98,6 +102,8 @@ void ConnectionHandler::_onSocketRead(int connfd) {
     return;
 }
 
+
+
 std::string constructResponse(HttpResponse resp) {
     std::string clrf = "\r\n";
     if (resp.statusCode == 400) {
@@ -113,9 +119,9 @@ void ConnectionHandler::_onSocketWrite(int connfd) {
     send(connfd, response.c_str(), response.length(), 0);
 
     if (conn->_response.statusCode == 400) {
-        _onClientHungUp(connfd);
+        _removeConnection(connfd);
     } else {
-        _connections[connfd]->parseBuf();
+        conn->parseBuf();
         _updateNotifier(conn);
         return;
     }

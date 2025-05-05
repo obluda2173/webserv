@@ -9,8 +9,6 @@ Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr) : _addr
     _state = ReadingHeaders;
 }
 
-Connection::STATE Connection::getState() const { return _state; }
-
 void Connection::readIntoBuf() {
     char newbuf[1024];
     ssize_t r = recv(_fd, newbuf, 1024, 0);
@@ -41,5 +39,7 @@ void Connection::parseBuf() {
 }
 
 int Connection::getFileDes() const { return _fd; }
+
+Connection::STATE Connection::getState() const { return _state; }
 
 struct sockaddr_storage Connection::getAddr() const { return _addr; }
