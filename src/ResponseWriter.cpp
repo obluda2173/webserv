@@ -28,6 +28,7 @@ size_t ResponseWriter::_writeHeaders(char* buffer, size_t maxSize) {
 }
 
 size_t ResponseWriter::write(char* buffer, size_t maxSize) {
+
     size_t bytesWritten = 0;
     bool continueProcessing = true;
     while (continueProcessing) {

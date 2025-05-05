@@ -26,12 +26,14 @@ TEST_P(ResponseWriterTest, firstTest) {
     HttpResponse resp = newResponse(params.body);
 
     size_t maxSize = params.maxSize;
-    std::string want = "HTTP/1.1 200 OK\r\n"
-                       "Content-Length: " +
-                       std::to_string(params.body.length()) +
-                       "\r\n"
-                       "\r\n" +
-                       params.body;
+    std::string want = "HTTP/1.1 200 OK\r\n";
+    if (params.body.length()) {
+        want += "Content-Length: " + std::to_string(params.body.length()) +
+                "\r\n"
+                "\r\n" +
+                params.body;
+    } else
+        want += "\r\n";
 
     IResponseWriter* wrtr = new ResponseWriter(resp);
     size_t writtenBytes = -1;
@@ -50,6 +52,8 @@ TEST_P(ResponseWriterTest, firstTest) {
 INSTANTIATE_TEST_SUITE_P(maxSizes, ResponseWriterTest,
                          testing::Values(ResponseWriterParams{"pong", 1}, ResponseWriterParams{"pong", 2},
                                          ResponseWriterParams{"pong", 3}));
+
+INSTANTIATE_TEST_SUITE_P(bodyEmpty, ResponseWriterTest, testing::Values(ResponseWriterParams{"", 1}));
 
 std::string getRandomString(size_t length) {
     const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
