@@ -2,6 +2,7 @@
 #define GETHANDLER_H
 
 #include <sstream>
+#include <fstream>
 #include <sys/stat.h>
 
 #include "Router.h"
@@ -11,7 +12,9 @@
 
 class GetHandler : public IHandler {
   private:
-    bool _validation(Connection* conn, HttpRequest& request, RouteConfig& config);
+    std::string _path;
+    struct stat _pathStat;
+    bool _getValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
   
   public:
     GetHandler();
