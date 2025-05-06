@@ -18,8 +18,7 @@ class GetHandler : public IHandler {
     struct stat _pathStat;
     static std::map<std::string, std::string> mimeTypes;
     bool _getValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
-    void _setErrorResponse(HttpResponse& resp, int code, const std::string& message);
-    void _setGoodResponse(HttpResponse& resp, std::string mimeType, int statusCode, size_t fileSize, IBodyProvider* bodyProvider);
+    void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
     std::string _normalizePath(const std::string& root, const std::string& uri);
     std::string _getMimeType(const std::string& path);
     std::string _getDirectoryListing(const std::string& path, const std::string& uri);
