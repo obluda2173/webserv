@@ -4,7 +4,6 @@
 #include "ConfigStructure.h"
 #include "Connection.h"
 #include "HttpRequest.h"
-#include "HttpResponse.h"
 #include <set>
 #include <string>
 #include <unordered_map>

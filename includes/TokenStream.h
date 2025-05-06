@@ -1,24 +1,22 @@
 #ifndef TOKENSTREAM_H
 #define TOKENSTREAM_H
 
+#include <cctype>
 #include <set>
 #include <string>
 #include <vector>
-#include <cctype>
-#include <sstream>
-#include <stdexcept>
 
 enum TokenType {
-  IDENTIFIER,
-  STRING,
-  PUNCT,
-  END_OF_FILE,
+    IDENTIFIER,
+    STRING,
+    PUNCT,
+    END_OF_FILE,
 };
 
 typedef struct Token {
-  TokenType type;
-  std::string value;
-  int line, column;
+    TokenType type;
+    std::string value;
+    int line, column;
 } Token;
 
 class TokenStream {
@@ -40,7 +38,8 @@ class TokenStream {
     bool hasMore() const;
     bool accept(TokenType ttype, const std::string& tvalue = "");
     void expect(TokenType ttype, const std::string& tvalue = "");
-    std::vector<std::string> collectArguments(const std::set<std::string>& terminators, std::vector<std::string> invalidArgs);
+    std::vector<std::string> collectArguments(const std::set<std::string>& terminators,
+                                              std::vector<std::string> invalidArgs);
 };
 
 std::string toString(int value);
