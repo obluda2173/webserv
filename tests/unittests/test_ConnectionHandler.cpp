@@ -19,8 +19,8 @@
 
 TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     // testing that a bad request is going to close the connection
-    int clientfd = _clientfdsAndConns[0].first;
-    int connfd = _clientfdsAndConns[0].second;
+    int clientfd = _clientFdsAndConnFds[0].first;
+    int connfd = _clientFdsAndConnFds[0].second;
     char buffer[1024];
     std::string request = "GET \r\n\r\n";
     std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
@@ -53,8 +53,8 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
 
 TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
-    int clientfd = _clientfdsAndConns[0].first;
-    int connfd = _clientfdsAndConns[0].second;
+    int clientfd = _clientFdsAndConnFds[0].first;
+    int connfd = _clientFdsAndConnFds[0].second;
 
     std::vector<std::string> requests = params.requests;
     std::vector<std::string> wantResponses = params.wantResponses;
@@ -79,8 +79,8 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
 
 TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
     ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
-    int clientfd = _clientfdsAndConns[0].first;
-    int connfd = _clientfdsAndConns[0].second;
+    int clientfd = _clientFdsAndConnFds[0].first;
+    int connfd = _clientFdsAndConnFds[0].second;
 
     char buffer[1024];
     std::vector<std::string> requests = params.requests;
@@ -152,8 +152,8 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
             }
             // sent substring
             std::string toBeSent = (*it).substr(0, batchSize);
-            int clientfd = _clientfdsAndConns[count].first;
-            int connfd = _clientfdsAndConns[count].second;
+            int clientfd = _clientFdsAndConnFds[count].first;
+            int connfd = _clientFdsAndConnFds[count].second;
 
             send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
             _connHdlr->handleConnection(connfd, READY_TO_READ);
@@ -171,9 +171,9 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
         }
     }
     // receiving
-    for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
-        int clientfd = _clientfdsAndConns[i].first;
-        int connfd = _clientfdsAndConns[i].second;
+    for (size_t i = 0; i < _clientFdsAndConnFds.size(); i++) {
+        int clientfd = _clientFdsAndConnFds[i].first;
+        int connfd = _clientFdsAndConnFds[i].second;
         verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, connfd);
         _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         ssize_t r = recv(clientfd, buffer, 1024, 0);
@@ -257,7 +257,7 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
                                "pong";
 
     // sending the message in batches (inside another thread so there will be multiple reads -> readUntilREADY_TO_WRITE)
-    int clientfd = _clientfd;
+    int clientfd = _clientfd; // can not use _clientfd inside a thread (it is data member of the test class)
     std::thread batchSenderThread([msg, clientfd, batchSize]() { sendMsgInBatches(msg, clientfd, batchSize); });
 
     int count = 0;
@@ -268,8 +268,8 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
     }
 
     // TODO: if we were to  detach the thread just after launching it, the clientfd might be closed (Teardown) before we
-    // got the READY_TO_WRITE notif (getting the CLIENT_HUNG_UP) notif instead this is a very interesting, which I would
-    // like to write a test for
+    // got the READY_TO_WRITE notif (getting the CLIENT_HUNG_UP instead).
+    // This is for itself a very interesting case, which I would like to write a test for
     // If we join it just after the launch, We would never simulate receiving stuff in batches (since recv()/read() can
     // read more than the actual batch)
     batchSenderThread.join();

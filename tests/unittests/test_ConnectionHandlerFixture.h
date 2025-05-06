@@ -24,7 +24,7 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
     int _serverfd;
     struct addrinfo* _svrAddrInfo;
     int _nbrConns;
-    std::vector<std::pair<int, int>> _clientfdsAndConns;
+    std::vector<std::pair<int, int>> _clientFdsAndConnFds;
 
   public:
     BaseConnectionHandlerTest() : _openFdsBegin(countOpenFileDescriptors()) {}
@@ -45,8 +45,8 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
     virtual void setupClientConnections() {};
 
     void TearDown() override {
-        for (size_t i = 0; i < _clientfdsAndConns.size(); i++) {
-            close(_clientfdsAndConns[i].first);
+        for (size_t i = 0; i < _clientFdsAndConnFds.size(); i++) {
+            close(_clientFdsAndConnFds[i].first);
         }
         freeaddrinfo(_svrAddrInfo);
         close(_serverfd);
@@ -75,14 +75,14 @@ class ConnectionHdlrTestOneConnection
     : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestVectorRequestsResponses> {
     virtual void setupClientConnections() override {
         int clientfd;
-        int conn;
+        int connfd;
         int port = 23456;
         clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
         ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
             << "connect: " << std::strerror(errno) << std::endl;
-        conn = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, conn});
+        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
     }
 };
 
@@ -100,7 +100,7 @@ class ConnectionHdlrTestAsync
                 << "connect: " << std::strerror(errno) << std::endl;
             connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
             fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientfdsAndConns.push_back(std::pair<int, int>{clientfd, connfd});
+            _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
             port++;
         }
     }
