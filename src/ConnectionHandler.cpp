@@ -69,13 +69,13 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
     bool continueProcessing = true;
+    conn->readIntoBuf();
     while (continueProcessing) {
         HttpResponse resp;
         IHandler* hdlr;
         Connection::STATE currentState = _connections[connfd]->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
-            conn->readIntoBuf();
             conn->parseBuf();
             continueProcessing = (conn->getState() != currentState);
             break;

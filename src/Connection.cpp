@@ -17,7 +17,6 @@ void Connection::reset() {
     _wrtr = NULL;
     _response = HttpResponse{};
     parseBuf(); // parse the rest of the buffer
-    _state = ReadingHeaders;
 }
 
 void Connection::readIntoBuf() {
