@@ -25,13 +25,14 @@ class Connection {
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr);
     STATE getState() const;
     void readIntoBuf();
-    void sendResponse();
     void parseBuf();
+    void sendResponse();
     void reset();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
-    HttpResponse _response;
     void setState(Connection::STATE state) { _state = state; }
+
+    HttpResponse _response;
 };
 
 #endif // CONNECTION_H

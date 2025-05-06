@@ -269,8 +269,8 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
 }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
-                         ::testing::Values(1   // , 2, 11, 21, 22, 23
-                                           )); // these are Fuzzy-tests for the most part
+                         ::testing::Values(1, 2, 3, 11 // , 21, 22, 23
+                                           ));         // these are Fuzzy-tests for the most part
 
 TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";

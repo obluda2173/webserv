@@ -42,3 +42,10 @@ index       index.html index.htm
 - [ ] oneMB as default if clientMaxBody is not set
 - [ ] talk to Eric about oneMB const
 - [ ] make reset public on HttpParser
+- [ ] insert Routing
+- [ ] test for requests with longer bodies
+  - [ ] test for overlapping headers and body
+  - [ ] make the read and send methods adjustable in buffer size
+  - [ ] rename to _headersBuf and _bodyBuf
+  - [ ] test for long responses where sent needs to happen more than once
+- [ ] Put the thing together
