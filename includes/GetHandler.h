@@ -16,10 +16,14 @@ class GetHandler : public IHandler {
   private:
     std::string _path;
     struct stat _pathStat;
+    static std::map<std::string, std::string> mimeTypes;
     bool _getValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
-    void _responseFilling(HttpResponse& resp, off_t fileSize, std::string path);
-    std::string _getDirectoryListing(std::string& path);
-  
+    void _setErrorResponse(HttpResponse& resp, int code, const std::string& message);
+    void _setGoodResponse(HttpResponse& resp, std::string mimeType, int statusCode, size_t fileSize, IBodyProvider* bodyProvider);
+    std::string _normalizePath(const std::string& root, const std::string& uri);
+    std::string _getMimeType(const std::string& path);
+    std::string _getDirectoryListing(const std::string& path, const std::string& uri);
+
   public:
     GetHandler();
     ~GetHandler();
