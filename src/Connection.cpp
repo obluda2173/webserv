@@ -20,10 +20,22 @@ void Connection::reset() {
 }
 
 void Connection::readIntoBuf() {
-    char newbuf[1024];
-    ssize_t r = recv(_fd, newbuf, 1024, 0);
-    newbuf[r] = '\0';
-    _buf += newbuf;
+    // Reserve space to minimize reallocations if receiving multiple chunks
+    if (_buf.capacity() < _buf.size() + 1024)
+        _buf.reserve(_buf.size() + 1024);
+
+    // Get position to write at and increase size
+    size_t oldSize = _buf.size();
+    _buf.resize(oldSize + 1024);
+
+    // Receive directly into string buffer
+    ssize_t r = recv(_fd, &_buf[oldSize], 1024, 0);
+
+    // Adjust size to actual bytes received
+    if (r > 0)
+        _buf.resize(oldSize + r);
+    else
+        _buf.resize(oldSize); // Restore original size if no data received
 }
 
 void Connection::sendResponse() {
