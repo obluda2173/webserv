@@ -25,8 +25,9 @@ class Connection {
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr);
     STATE getState() const;
     void readIntoBuf();
-    void _send();
+    void sendResponse();
     void parseBuf();
+    void reset();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
     HttpResponse _response;

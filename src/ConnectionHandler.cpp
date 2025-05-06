@@ -3,7 +3,6 @@
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "PingHandler.h"
-#include "ResponseWriter.h"
 #include "Router.h"
 #include "logging.h"
 #include <errno.h>
@@ -104,19 +103,11 @@ void ConnectionHandler::_onSocketRead(int connfd) {
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
-    conn->_send();
-    // IResponseWriter* wrtr = new ResponseWriter(conn->_response);
-    // char buffer[1024];
-    // int bytesWritten = wrtr->write(buffer, 1024);
-    // send(connfd, buffer, bytesWritten, 0);
-    // delete wrtr;
-
+    conn->sendResponse();
     if (conn->_response.statusCode == 400) {
         _removeConnection(connfd);
     } else {
-        conn->parseBuf();
-        delete conn->_response.body;
-        conn->_response.body = NULL;
+        conn->reset();
         _updateNotifier(conn);
         return;
     }

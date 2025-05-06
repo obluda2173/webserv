@@ -1,4 +1,5 @@
 #include "Connection.h"
+#include "HttpResponse.h"
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL) {}
@@ -10,6 +11,14 @@ Connection::~Connection() {
     delete _response.body;
 }
 
+void Connection::reset() {
+    delete _response.body;
+    delete _wrtr;
+    _wrtr = NULL;
+    _response = HttpResponse{};
+    parseBuf(); // parse the rest of the buffer
+}
+
 void Connection::readIntoBuf() {
     char newbuf[1024];
     ssize_t r = recv(_fd, newbuf, 1024, 0);
@@ -17,7 +26,7 @@ void Connection::readIntoBuf() {
     _buf += newbuf;
 }
 
-void Connection::_send() {
+void Connection::sendResponse() {
     if (!_wrtr)
         _wrtr = new ResponseWriter(_response);
 
