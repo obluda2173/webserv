@@ -258,19 +258,27 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
     // sending the message in batches (inside another thread so there will be multiple reads -> readUntilREADY_TO_WRITE)
     int clientfd = _clientfd;
     std::thread batchSenderThread([msg, clientfd, batchSize]() { sendMsgInBatches(msg, clientfd, batchSize); });
-    batchSenderThread.detach();
 
     int count = 0;
     while (count++ < nbrMsgs) {
         readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, _connfd);
         std::string gotResponse = getResponseConnHdlr(_connfd, _connHdlr, _clientfd);
-        EXPECT_STREQ(wantResponse.c_str(), gotResponse.c_str());
+        ASSERT_STREQ(wantResponse.c_str(), gotResponse.c_str());
     }
+
+    // TODO: if we were to  detach the thread just after launching it, the clientfd might be closed (Teardown) before we
+    // got the READY_TO_WRITE notif (getting the CLIENT_HUNG_UP) notif instead this is a very interesting, which I would
+    // like to write a test for
+    // If we join it just after the launch, We would never simulate receiving stuff in batches (since recv()/read() can
+    // read more than the actual batch)
+    batchSenderThread.join();
 }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
-                         ::testing::Values(1, 2, 3, 11 // , 21, 22, 23
-                                           ));         // these are Fuzzy-tests for the most part
+                         ::testing::Values( // 1, 2, 3, 11,
+                             21
+                             // , 22, 23
+                             )); // these are Fuzzy-tests for the most part
 
 TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";

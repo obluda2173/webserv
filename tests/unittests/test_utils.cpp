@@ -85,13 +85,14 @@ void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier
 }
 
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn) {
-    int fds;
+    int fds = -1;
     e_notif notif;
     _ioNotifier->wait(&fds, &notif);
     while (notif == READY_TO_READ) {
         _connHdlr->handleConnection(_conn, READY_TO_READ);
         _ioNotifier->wait(&fds, &notif);
     }
+    ASSERT_NE(fds, -1);
     ASSERT_EQ(notif, READY_TO_WRITE);
 }
 
