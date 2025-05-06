@@ -3,7 +3,9 @@
 
 #include <sstream>
 #include <fstream>
+#include <dirent.h>
 #include <sys/stat.h>
+#include <filesystem>
 
 #include "Router.h"
 #include "Connection.h"
@@ -15,6 +17,8 @@ class GetHandler : public IHandler {
     std::string _path;
     struct stat _pathStat;
     bool _getValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
+    void _responseFilling(HttpResponse& resp, off_t fileSize, std::string path);
+    std::string _getDirectoryListing(std::string& path);
   
   public:
     GetHandler();

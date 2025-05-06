@@ -1,13 +1,47 @@
 #include "GetHandler.h"
 
 bool GetHandler::_getValidation(Connection* conn, HttpRequest& request, RouteConfig& config) {
-    if (request.headers.find("content-length") != request.headers.end() ||               // no body in GET method
+    if (request.headers.find("content-length") != request.headers.end() ||
         request.headers.find("transfer-encoding") != request.headers.end()) {
-        return false;
+        return false; // to do 400 Bad Request
     } else if (stat(_path.c_str(), &_pathStat) != 0) {
-        return false;
+        return false; // to do 404 Not Found
     }
-    // check whether GET is applicable to the provided allow_methods (disscuss with Mr Kay and Mr Yao)
+}
+
+void GetHandler::_responseFilling(HttpResponse& resp, off_t fileSize, std::string path) {
+    resp.version = "HTTP/1.1";
+    resp.statusCode = 200;
+    resp.statusMessage = "OK";
+    resp.contentType = "text/html";                                                 // hardcoded, to be fixed!
+    resp.contentLanguage = "en-US";
+    resp.contentLength = fileSize;
+    resp.body = new FileBodyProvider(path.c_str());
+}
+
+std::string GetHandler::_getDirectoryListing(std::string& path) {
+    std::string directoryListing;
+    DIR* directory;
+    struct dirent* ent;
+    if (directory = opendir(path.c_str())) { // to do opendir fail case (403 Forbidden)
+        directoryListing += "<html>\n"
+                            "<body>\n"
+                            "  <h1>Index of /blog/</h1>\n"
+                            "  <h1>Index of " + path + "</h1>\n"
+                            "  <ul>\n";
+        while (ent = readdir(directory)) {
+            // to do ignore the . and .. 
+            std::string fileName = ent->d_name;
+            directoryListing += "      <li><a href=\"" + fileName + "\">" + fileName + "</a></li>\n";
+        }
+        directoryListing += "    </ul>"
+                            "  </body>"
+                            "</html>";
+        closedir(directory);
+        return directoryListing;
+    } else {
+        return "<html><body><h1>Directory Access Failed</h1></body></html>";
+    }
 }
 
 void GetHandler::handleGoodResponce(Connection* conn, std::string pathToPut) {      // this should be a private function
@@ -106,16 +140,10 @@ void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& con
     _path = config.root + request.uri;
 
     if (!_getValidation(conn, request, config)) {
-        // error message send
+        conn->setState(Connection::SendResponse);
     }
     if (S_ISREG(_pathStat.st_mode)) {                       // file
-        resp.contentLength = _pathStat.st_size;
-        resp.body = new FileBodyProvider(_path.c_str());
-        resp.statusCode = 200;
-        resp.statusMessage = "OK";
-        resp.contentType = "text/html";
-        resp.contentLanguage = "en-US";
-        resp.version = "HTTP/1.1";
+        _responseFilling(resp, _pathStat.st_size, _path);
         conn->setState(Connection::SendResponse);
         return;
     } else if (S_ISDIR(_pathStat.st_mode)) {               // directory
@@ -123,22 +151,25 @@ void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& con
             for (std::vector<std::string>::const_iterator it = config.index.begin(); it != config.index.end(); ++it) {
                 std::string indexPath = _path + *it;
                 if (stat((indexPath).c_str(), &_pathStat) == 0) {
-                    resp.contentLength = _pathStat.st_size;
-                    resp.body = new FileBodyProvider(indexPath.c_str());
-                    resp.statusCode = 200;
-                    resp.statusMessage = "OK";
-                    resp.contentType = "text/html";
-                    resp.contentLanguage = "en-US";
-                    resp.version = "HTTP/1.1";
+                    _responseFilling(resp, _pathStat.st_size, indexPath);
                     conn->setState(Connection::SendResponse);
                     return;
                 }
             }
         } 
         if (config.autoindex) {
-            // if autoindex is on, generate directory listing
+            std::string directoryListingBody = _getDirectoryListing(_path);
+            resp.version = "HTTP/1.1";
+            resp.statusCode = 200;
+            resp.statusMessage = "OK";
+            resp.contentType = "text/html";
+            resp.contentLanguage = "en-US";
+            resp.contentLength = directoryListingBody.size();
+            resp.body = new StringBodyProvider(directoryListingBody);
+            conn->setState(Connection::SendResponse);
+            return;
         } else {
-            // error message with 403 Forbidden 
+            // to do 403 Forbidden 
         }
     }
 }
