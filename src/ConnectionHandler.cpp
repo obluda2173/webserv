@@ -107,7 +107,6 @@ void ConnectionHandler::_onSocketRead(int connfd) {
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
-    std::cout << "state is: " << conn->getState() << std::endl;
     conn->sendResponse();
     if (conn->_response.statusCode == 400) {
         _removeConnection(connfd);

@@ -262,11 +262,8 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
 
     int count = 0;
     while (count++ < nbrMsgs) {
-        std::cout << "count is: " << count << std::endl;
         readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, _connfd);
-        std::cout << "here" << std::endl;
         std::string gotResponse = getResponseConnHdlr(_connfd, _connHdlr, _clientfd);
-        std::cout << gotResponse << std::endl;
         ASSERT_STREQ(wantResponse.c_str(), gotResponse.c_str());
     }
 
@@ -279,11 +276,7 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
 }
 
 INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
-                         ::testing::Values( // 1, 2, 3, 4,
-                                            // 11,
-                             21
-                             // , 22, 23
-                             )); // these are Fuzzy-tests for the most part
+                         ::testing::Values(1, 2, 3, 4, 11, 21, 22, 23)); // these are Fuzzy-tests for the most part
 
 TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";
