@@ -11,12 +11,11 @@ Connection::~Connection() {
     delete _response.body;
 }
 
-void Connection::reset() {
+void Connection::resetResponse() {
     delete _response.body;
     delete _wrtr;
     _wrtr = NULL;
     _response = HttpResponse{};
-    parseBuf(); // parse the rest of the buffer
 }
 
 void Connection::readIntoBuf() {

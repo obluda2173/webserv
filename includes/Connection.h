@@ -27,7 +27,7 @@ class Connection {
     void readIntoBuf();
     void parseBuf();
     void sendResponse();
-    void reset();
+    void resetResponse();
     int getFileDes() const;
     sockaddr_storage getAddr() const;
     void setState(Connection::STATE state) { _state = state; }

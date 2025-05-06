@@ -66,14 +66,12 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     return fd;
 }
 
-void ConnectionHandler::_onSocketRead(int connfd) {
-    Connection* conn = _connections[connfd];
+void ConnectionHandler::_handleState(Connection* conn) {
     bool continueProcessing = true;
-    conn->readIntoBuf();
     while (continueProcessing) {
         HttpResponse resp;
         IHandler* hdlr;
-        Connection::STATE currentState = _connections[connfd]->getState();
+        Connection::STATE currentState = conn->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
             conn->parseBuf();
@@ -97,18 +95,26 @@ void ConnectionHandler::_onSocketRead(int connfd) {
         }
     }
     _updateNotifier(conn);
+}
+
+void ConnectionHandler::_onSocketRead(int connfd) {
+    Connection* conn = _connections[connfd];
+    conn->readIntoBuf();
+    _handleState(conn);
     return;
 }
 
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
+    std::cout << "state is: " << conn->getState() << std::endl;
     conn->sendResponse();
     if (conn->_response.statusCode == 400) {
         _removeConnection(connfd);
     } else {
-        conn->reset();
-        _updateNotifier(conn);
+        conn->resetResponse();
+        conn->setState(Connection::ReadingHeaders);
+        _handleState(conn); // possibly data inside Connection
         return;
     }
 }

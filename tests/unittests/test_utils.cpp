@@ -92,8 +92,8 @@ void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _conn
         _connHdlr->handleConnection(_conn, READY_TO_READ);
         _ioNotifier->wait(&fds, &notif);
     }
-    ASSERT_NE(fds, -1);
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    EXPECT_NE(fds, -1);
+    EXPECT_EQ(notif, READY_TO_WRITE);
 }
 
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd) {
