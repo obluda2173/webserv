@@ -2,6 +2,40 @@
 
 std::map<std::string, std::string> GetHandler::mimeTypes = std::map<std::string, std::string>();
 
+bool GetHandler::_validateGetRequest(Connection* conn, HttpRequest& request, RouteConfig& config, std::string& errorMessage) {
+    HttpResponse& resp = conn->_response;
+    const size_t MAX_PATH_LENGTH = 4096;
+    _path = _normalizePath(config.root, request.uri);
+
+    if (request.headers.find("content-length") != request.headers.end() ||
+        request.headers.find("transfer-encoding") != request.headers.end()) {
+        errorMessage = "Bad Request: GET requests should not have a body";
+        _setResponse(resp, 400, "Bad Request", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        return false;
+    } else if (_path.empty()) {
+        errorMessage = "Forbidden";
+        _setResponse(resp, 403, "Forbidden", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        return false;
+    } else if (_path.length() > MAX_PATH_LENGTH) {
+        errorMessage = "URI Too Long";
+        _setResponse(resp, 414, "URI Too Long", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        return false;
+    } else if (stat(_path.c_str(), &_pathStat) != 0) {
+        errorMessage = "Not Found";
+        _setResponse(resp, 404, "Not Found", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        return false;
+    } else if (access(_path.c_str(), R_OK) != 0) {
+        errorMessage = "Forbidden";
+        _setResponse(resp, 403, "Forbidden", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        return false;
+    } else if (!S_ISREG(_pathStat.st_mode) && !S_ISDIR(_pathStat.st_mode)) {
+        errorMessage = "Not Found";
+        _setResponse(resp, 404, "Not Found", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        return false;
+    }
+    return true;
+}
+
 void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
     resp.version = "HTTP/1.1";
     resp.statusCode = statusCode;
@@ -113,32 +147,12 @@ std::string GetHandler::_getDirectoryListing(const std::string& dirPath, const s
 }
 
 void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& config) {
-    HttpResponse& resp = conn->_response;
-    std::string uri = request.uri;
     std::string errorMessage;
-
-    if (request.headers.find("content-length") != request.headers.end() ||
-        request.headers.find("transfer-encoding") != request.headers.end()) {
-        errorMessage = "Bad Request: GET requests should not have a body";
-        _setResponse(resp, 400, "Bad Request", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+    if (!_validateGetRequest(conn, request, config, errorMessage)) {
         conn->setState(Connection::SendResponse);
         return;
     }
-
-    _path = _normalizePath(config.root, uri);
-    if (_path.empty()) {
-        errorMessage = "Forbidden";
-        _setResponse(resp, 403, "Forbidden", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
-        conn->setState(Connection::SendResponse);
-        return;
-    }
-
-    if (stat(_path.c_str(), &_pathStat) != 0) {
-        errorMessage = "Not Found";
-        _setResponse(resp, 404, "Not Found", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
-        conn->setState(Connection::SendResponse);
-        return;
-    }
+    HttpResponse& resp = conn->_response;
 
     if (S_ISREG(_pathStat.st_mode)) {
         _setResponse(resp, 200, "OK", _getMimeType(_path), 
@@ -159,7 +173,7 @@ void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& con
             }
         }
         if (config.autoindex) {
-            std::string listing = _getDirectoryListing(_path, uri);
+            std::string listing = _getDirectoryListing(_path, request.uri);
             _setResponse(resp, 200, "OK", "text/html", 
                          listing.size(), 
                          new StringBodyProvider(listing));
