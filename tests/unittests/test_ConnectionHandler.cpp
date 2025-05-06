@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <vector>
 
-TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
+TEST_F(ConnHdlrTestWithOneConnection, TestBadRequestClosesConnection) {
     // testing that a bad request is going to close the connection
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
@@ -51,8 +51,8 @@ TEST_F(ConnectionHdlrTestOneConnection, TestBadRequestClosesConnection) {
     close(clientfd);
 }
 
-TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
-    ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
+TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInBatches) {
+    ParamsVectorRequestsResponses params = GetParam();
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
@@ -77,8 +77,8 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInBatches) {
     close(clientfd);
 }
 
-TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
-    ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
+TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
+    ParamsVectorRequestsResponses params = GetParam();
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
@@ -110,25 +110,24 @@ TEST_P(ConnectionHdlrTestOneConnection, TestPersistenceSendInOneMsg) {
     close(clientfd);
 }
 
-INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestOneConnection,
+INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
                          ::testing::Values(
 
-                             ParamsConnectionHdlrTestVectorRequestsResponses{{"GET \r\n"},
-                                                                             {"HTTP/1.1 400 Bad Request\r\n\r\n"}},
-                             ParamsConnectionHdlrTestVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n"},
-                                                                             {"HTTP/1.1 200 OK\r\n"
-                                                                              "Content-Length: 4\r\n"
-                                                                              "\r\n"
-                                                                              "pong"}},
-                             ParamsConnectionHdlrTestVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
-                                                                             {
-                                                                                 "HTTP/1.1 200 OK\r\n"
-                                                                                 "Content-Length: 4\r\n"
-                                                                                 "\r\n"
-                                                                                 "pong",
-                                                                                 "HTTP/1.1 400 Bad Request\r\n\r\n",
-                                                                             }},
-                             ParamsConnectionHdlrTestVectorRequestsResponses{
+                             ParamsVectorRequestsResponses{{"GET \r\n"}, {"HTTP/1.1 400 Bad Request\r\n\r\n"}},
+                             ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n"},
+                                                           {"HTTP/1.1 200 OK\r\n"
+                                                            "Content-Length: 4\r\n"
+                                                            "\r\n"
+                                                            "pong"}},
+                             ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
+                                                           {
+                                                               "HTTP/1.1 200 OK\r\n"
+                                                               "Content-Length: 4\r\n"
+                                                               "\r\n"
+                                                               "pong",
+                                                               "HTTP/1.1 400 Bad Request\r\n\r\n",
+                                                           }},
+                             ParamsVectorRequestsResponses{
                                  {"GET /ping HTTP/1.1\r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
                                  {"HTTP/1.1 200 OK\r\n"
                                   "Content-Length: 4\r\n"
@@ -141,9 +140,9 @@ INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestOneConnection,
                                   "HTTP/1.1 400 Bad Request\r\n"
                                   "\r\n"}}));
 
-TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
+TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
     char buffer[1024];
-    struct ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
+    struct ParamsVectorRequestsResponses params = GetParam();
     std::vector<std::string> requests = params.requests;
     std::vector<std::string> wantResponses = params.wantResponses;
 
@@ -189,8 +188,8 @@ TEST_P(ConnectionHdlrTestAsync, sendMsgsAsync) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestAsync,
-                         ::testing::Values(ParamsConnectionHdlrTestVectorRequestsResponses{
+INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnectionPerRequest,
+                         ::testing::Values(ParamsVectorRequestsResponses{
                              {"GET \r\n", "GET /ping HTTP/1.1\r\n\r\n"}, // I'm sending in batch size of 3, therefore
                                                                          // GET \r\n\r\n provokes 2 Bad requests
                              {"HTTP/1.1 400 Bad Request\r\n"
@@ -201,7 +200,7 @@ INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnectionHdlrTestAsync,
                               "\r\n"
                               "pong"}}));
 
-TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
+TEST_P(ConnHdlrTestWithIntegerAsParameter, pingTestInBatches) {
     int batchSize = GetParam();
     int _clientfd = _clientFdsAndConnFds[0].first;
     int _connfd = _clientFdsAndConnFds[0].second;
@@ -222,7 +221,7 @@ TEST_P(ConnectionHdlrTestWithParamInt, pingTestInBatches) {
     EXPECT_STREQ(gotResponse.c_str(), wantResponse.c_str());
 }
 
-TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
+TEST_P(ConnHdlrTestWithIntegerAsParameter, multipleRequestsOneConnectionInBatches) {
     int batchSize = GetParam();
     int _clientfd = _clientFdsAndConnFds[0].first;
     int _connfd = _clientFdsAndConnFds[0].second;
@@ -253,10 +252,10 @@ TEST_P(ConnectionHdlrTestWithParamInt, multipleRequestsOneConnectionInBatches) {
     batchSenderThread.join();
 }
 
-INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnectionHdlrTestWithParamInt,
+INSTANTIATE_TEST_SUITE_P(testingBatchSizesSending, ConnHdlrTestWithIntegerAsParameter,
                          ::testing::Values(1, 2, 3, 4, 11, 21, 22, 23)); // these are Fuzzy-tests for the most part
 
-TEST_F(ConnectionHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
+TEST_F(ConnHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
     std::string clientIp = "00:00:00:00:00:00:00:01";
     std::string clientPort = "10001";
     int clientfd = newSocket(clientIp, clientPort, AF_INET6);

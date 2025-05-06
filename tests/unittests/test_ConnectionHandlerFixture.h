@@ -15,7 +15,7 @@
 #include <utils.h>
 
 template <typename LoggerType, typename ParamType = int>
-class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
+class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
@@ -27,7 +27,7 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
     std::vector<std::pair<int, int>> _clientFdsAndConnFds;
 
   public:
-    BaseConnectionHandlerTest() : _openFdsBegin(countOpenFileDescriptors()) {}
+    BasConnHdlrTest() : _openFdsBegin(countOpenFileDescriptors()) {}
     void SetUp() override {
         _openFdsBegin = countOpenFileDescriptors();
         _logger = new LoggerType();
@@ -57,7 +57,7 @@ class BaseConnectionHandlerTest : public ::testing::TestWithParam<ParamType> {
     }
 };
 
-class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<MockLogger> {
+class ConnHdlrTestWithMockLoggerIPv6 : public BasConnHdlrTest<MockLogger> {
     void setupServer() override {
         getAddrInfoHelper(NULL, "8080", AF_INET6, &_svrAddrInfo);
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
@@ -66,13 +66,12 @@ class ConnectionHdlrTestWithMockLoggerIPv6 : public BaseConnectionHandlerTest<Mo
     virtual void setupClientConnections() override {}
 };
 
-struct ParamsConnectionHdlrTestVectorRequestsResponses {
+struct ParamsVectorRequestsResponses {
     std::vector<std::string> requests;
     std::vector<std::string> wantResponses;
 };
 
-class ConnectionHdlrTestOneConnection
-    : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestVectorRequestsResponses> {
+class ConnHdlrTestWithOneConnection : public BasConnHdlrTest<StubLogger, ParamsVectorRequestsResponses> {
     virtual void setupClientConnections() override {
         int clientfd;
         int connfd;
@@ -86,13 +85,12 @@ class ConnectionHdlrTestOneConnection
     }
 };
 
-class ConnectionHdlrTestAsync
-    : public BaseConnectionHandlerTest<StubLogger, ParamsConnectionHdlrTestVectorRequestsResponses> {
+class ConnHdlrTestWithOneConnectionPerRequest : public BasConnHdlrTest<StubLogger, ParamsVectorRequestsResponses> {
     virtual void setupClientConnections() override {
         int clientfd;
         int connfd;
         int port = 12345;
-        ParamsConnectionHdlrTestVectorRequestsResponses params = GetParam();
+        ParamsVectorRequestsResponses params = GetParam();
         int nbrRequests = params.requests.size();
         for (int i = 0; i < nbrRequests; i++) {
             clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
@@ -106,7 +104,7 @@ class ConnectionHdlrTestAsync
     }
 };
 
-class ConnectionHdlrTestWithParamInt : public BaseConnectionHandlerTest<StubLogger> {
+class ConnHdlrTestWithIntegerAsParameter : public BasConnHdlrTest<StubLogger> {
     virtual void setupClientConnections() override {
         int clientfd;
         int connfd;

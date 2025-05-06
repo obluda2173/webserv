@@ -8,9 +8,9 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ServerTest*";
-    // testing::GTEST_FLAG(filter) = "-*ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
+    // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
-    // testing::GTEST_FLAG(filter) = "-*ConnectionHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
+    // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     //
     // only run the following test
 
@@ -23,13 +23,13 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*RouterTest*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest.send2MsgsAsync*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestOneConnection.TestBadRequestClosesConnection*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestOneConnection.TestPersistenceSendInOneMsg*";
-    // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
-    testing::GTEST_FLAG(filter) = "*ConnectionHdlrTest*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTest.send2MsgsAsync*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestBadRequestClosesConnection*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestPersistenceSendInOneMsg*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
+    testing::GTEST_FLAG(filter) = "*ConnHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
