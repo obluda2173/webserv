@@ -6,11 +6,19 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <filesystem>
+#include <algorithm> // for std::search
+#include <iterator>  // for std::distance
 
 #include "Router.h"
 #include "Connection.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+
+typedef struct inBoundary {
+	std::string fileName;
+	std::string filePath;
+	std::vector<char> bodyContent;
+} inBoundary;
 
 class PostHandler : public IHandler {
 	private:
@@ -18,8 +26,13 @@ class PostHandler : public IHandler {
 	  struct stat _pathStat;
 	  std::vector<char> _bodyBuf;	// THIS WILL BE CHANGED IN THE FUTURE
 	  std::string _boundaryValue;
+	  std::vector<std::vector<char>> _parts;
+	  std::vector<inBoundary> _subBody;
 	  static std::map<std::string, std::string> mimeTypes;
 	  bool _getValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
+	  void divideBody(const std::vector<char>& bodyBuf, const std::string& boundary);
+	  bool putIntoStruct(void);
+	  void setPath(std::string root, std::string uri);
 	  void _setErrorResponse(HttpResponse& resp, int code, const std::string& message);
 	  void _setGoodResponse(HttpResponse& resp, std::string mimeType, int statusCode, size_t fileSize, IBodyProvider* bodyProvider);
 	  std::string _normalizePath(const std::string& root, const std::string& uri);
@@ -41,8 +54,7 @@ Real-world web frameworks (e.g., Apache, nginx, Express.js, Flask) will reject s
 // Always sanitize the path to avoid directory traversal (../).
 // Add checks so clients can’t write arbitrary data into sensitive places.
 
-/*
-✅ Step-by-Step: Parse a multipart/form-data Upload
+/*✅ Step-by-Step: Parse a multipart/form-data Upload
 1. Get the boundary from the Content-Type header
 Look in the main HTTP headers for something like this:
 
