@@ -155,18 +155,14 @@ void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& con
     HttpResponse& resp = conn->_response;
 
     if (S_ISREG(_pathStat.st_mode)) {
-        _setResponse(resp, 200, "OK", _getMimeType(_path), 
-                     _pathStat.st_size, 
-                     new FileBodyProvider(_path.c_str()));
+        _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
         conn->setState(Connection::SendResponse);
     } else if (S_ISDIR(_pathStat.st_mode)) {
         if (!config.index.empty()) {
             for (std::vector<std::string>::const_iterator it = config.index.begin(); it != config.index.end(); ++it) {
                 std::string indexPath = _path + *it;
                 if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), 
-                                 _pathStat.st_size, 
-                                 new FileBodyProvider(indexPath.c_str()));
+                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
                     conn->setState(Connection::SendResponse);
                     return;
                 }
@@ -174,9 +170,7 @@ void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& con
         }
         if (config.autoindex) {
             std::string listing = _getDirectoryListing(_path, request.uri);
-            _setResponse(resp, 200, "OK", "text/html", 
-                         listing.size(), 
-                         new StringBodyProvider(listing));
+            _setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
             conn->setState(Connection::SendResponse);
         } else {
             errorMessage = "Forbidden";
