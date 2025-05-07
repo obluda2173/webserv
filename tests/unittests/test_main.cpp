@@ -19,7 +19,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestBadRequestClosesConnection*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*ResponseWriterTest*";
-    // testing::GTEST_FLAG(filter) = "*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "*testingBatchSizesSending*";
     // testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
     // testing::GTEST_FLAG(filter) = "*multipleRequestsOneConnectionInBatches*";
@@ -40,5 +39,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection:ListenerTest.multiplePortsTestWoLogging";
     // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";
     // testing::GTEST_FLAG(filter) = "ServerTest*";
+    testing::GTEST_FLAG(filter) = "*HttpParser*";
     return RUN_ALL_TESTS();
 }
