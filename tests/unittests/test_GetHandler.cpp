@@ -43,7 +43,7 @@ class RouteConfigBuilder {
 
     public:
         RouteConfigBuilder() {
-            cfg.root = "/home/erian/Desktop/submit/webserv/tests/unittests/test_root";
+            cfg.root = "./tests/unittests/test_root";
             cfg.index = {};
             cfg.clientMaxBody = 0;
             cfg.autoindex = false;
@@ -54,6 +54,14 @@ class RouteConfigBuilder {
         }
         RouteConfigBuilder& withAutoIndex(bool autoIndex) {
             cfg.autoindex = autoIndex;
+            return *this;
+        }
+        RouteConfigBuilder& withErrorPage(std::map<int, std::string> errorPage) {
+            cfg.errorPage = errorPage;
+            return *this;
+        }
+        RouteConfigBuilder& withIndex(std::vector<std::string> index) {
+            cfg.index = index;
             return *this;
         }
         RouteConfig build() const { return cfg; }
@@ -108,6 +116,7 @@ void assertEqualHttpResponse(const HttpResponse& want, const HttpResponse& got) 
         size_t bytesWritten = got.body->read(gotBuffer, 2048);
         gotString += std::string(gotBuffer, bytesWritten);
     }
+    // std::cout << gotString << std::endl;
     EXPECT_EQ(want.contentLength, gotString.length());
 }
 
@@ -143,21 +152,52 @@ INSTANTIATE_TEST_SUITE_P(
                     .build()
         },
         TestGetHandlerParams{
-            RequestBuilder().build(),
+            RequestBuilder()
+                    .withUri("/Divine_Comedy.txt")
+                    .build(),
             RouteConfigBuilder().build(),
             ResponseBuilder()
-                .withStatusCode(200)
-                .withStatusMessage("OK")
-                .withContentLength(444)
+                    .withStatusCode(200)
+                    .withStatusMessage("OK")
+                    .withContentType("text/plain")
+                    .withContentLength(444)
+                    .build()
+        },
+        TestGetHandlerParams{
+            RequestBuilder()
+                    .withUri("/index.html")
+                    .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                    .withStatusCode(200)
+                    .withStatusMessage("OK")
+                    .withContentType("text/html")
+                    .withContentLength(1429)
+                    .build()
+        },
+        TestGetHandlerParams{
+            RequestBuilder()
+                    .withUri("/")
+                    .build(),
+            RouteConfigBuilder()
+                    .withIndex({"index.html"})
+                    .withAutoIndex(true)
+                    .build(),
+            ResponseBuilder()
+                    .withStatusCode(200)
+                    .withStatusMessage("OK")
+                    .withContentType("text/html")
+                    .withContentLength(1429)
+                    .build()
+        },
+        TestGetHandlerParams{
+            RequestBuilder().withUri("/nonexistent.txt").build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentLength(9)
                 .build()
         }
-        // TestGetHandlerParams{
-        //     RequestBuilder().withUri("/nonexistent.txt").build(),
-        //     RouteConfigBuilder().build(),
-        //     ResponseBuilder()
-        //         .withStatusCode(404)
-        //         .withStatusMessage("Not Found")
-        //         .build()
-        // }
     )
 );
