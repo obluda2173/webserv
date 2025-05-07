@@ -135,68 +135,77 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestGetHandlerParams{
             RequestBuilder().withHeader("content-length", "48").build(),
-            RouteConfigBuilder().build(),
+            RouteConfigBuilder()
+                .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
+                .build(),
             ResponseBuilder()
-                    .withStatusCode(400)
-                    .withStatusMessage("Bad Request")
-                    .withContentLength(48)
-                    .build()
+                .withStatusCode(400)
+                .withStatusMessage("Bad Request")
+                .withContentType("text/html")
+                .withContentLength(414)
+                .build()
         },
         TestGetHandlerParams{
             RequestBuilder().withHeader("transfer-encoding", "chunked").build(),
-            RouteConfigBuilder().build(),
-            ResponseBuilder()
-                    .withStatusCode(400)
-                    .withStatusMessage("Bad Request")
-                    .withContentLength(48)
-                    .build()
-        },
-        TestGetHandlerParams{
-            RequestBuilder()
-                    .withUri("/Divine_Comedy.txt")
-                    .build(),
-            RouteConfigBuilder().build(),
-            ResponseBuilder()
-                    .withStatusCode(200)
-                    .withStatusMessage("OK")
-                    .withContentType("text/plain")
-                    .withContentLength(444)
-                    .build()
-        },
-        TestGetHandlerParams{
-            RequestBuilder()
-                    .withUri("/index.html")
-                    .build(),
-            RouteConfigBuilder().build(),
-            ResponseBuilder()
-                    .withStatusCode(200)
-                    .withStatusMessage("OK")
-                    .withContentType("text/html")
-                    .withContentLength(1429)
-                    .build()
-        },
-        TestGetHandlerParams{
-            RequestBuilder()
-                    .withUri("/")
-                    .build(),
             RouteConfigBuilder()
-                    .withIndex({"index.html"})
-                    .withAutoIndex(true)
-                    .build(),
+                .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
+                .build(),
             ResponseBuilder()
-                    .withStatusCode(200)
-                    .withStatusMessage("OK")
-                    .withContentType("text/html")
-                    .withContentLength(1429)
-                    .build()
+                .withStatusCode(400)
+                .withStatusMessage("Bad Request")
+                .withContentType("text/html")
+                .withContentLength(414)
+                .build()
+        },
+        TestGetHandlerParams{
+            RequestBuilder()
+                .withUri("/Divine_Comedy.txt")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/plain")
+                .withContentLength(444)
+                .build()
+        },
+        TestGetHandlerParams{
+            RequestBuilder()
+                .withUri("/index.html")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/html")
+                .withContentLength(1429)
+                .build()
+        },
+        TestGetHandlerParams{
+            RequestBuilder()
+                .withUri("/")
+                .build(),
+            RouteConfigBuilder()
+                .withIndex({"index.html"})
+                .withAutoIndex(true)
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/html")
+                .withContentLength(1429)
+                .build()
         },
         TestGetHandlerParams{
             RequestBuilder().withUri("/nonexistent.txt").build(),
-            RouteConfigBuilder().build(),
+            RouteConfigBuilder()
+                .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
+                .build(),
             ResponseBuilder()
                 .withStatusCode(404)
                 .withStatusMessage("Not Found")
-                .withContentLength(9)
+                .withContentType("text/html")
+                .withContentLength(435)
                 .build()
         }
     )

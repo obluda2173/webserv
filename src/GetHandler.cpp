@@ -12,31 +12,39 @@ bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& reques
 
     if (request.headers.find("content-length") != request.headers.end() ||
         request.headers.find("transfer-encoding") != request.headers.end()) {
-        errorMessage = "Bad Request: GET requests should not have a body";
-        _setResponse(resp, 400, "Bad Request", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 400, "Bad Request", config, errorMessage);
         return false;
     } else if (_path.empty()) {
-        errorMessage = "Forbidden";
-        _setResponse(resp, 403, "Forbidden", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 403, "Forbidden", config, errorMessage);
         return false;
     } else if (_path.length() > MAX_PATH_LENGTH) {
-        errorMessage = "URI Too Long";
-        _setResponse(resp, 414, "URI Too Long", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 414, "URI Too Long", config, errorMessage);
         return false;
     } else if (stat(_path.c_str(), &_pathStat) != 0) {
-        errorMessage = "Not Found";
-        _setResponse(resp, 404, "Not Found", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 404, "Not Found", config, errorMessage);
         return false;
     } else if (access(_path.c_str(), R_OK) != 0) {
-        errorMessage = "Forbidden";
-        _setResponse(resp, 403, "Forbidden", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 403, "Forbidden", config, errorMessage);
         return false;
     } else if (!S_ISREG(_pathStat.st_mode) && !S_ISDIR(_pathStat.st_mode)) {
-        errorMessage = "Not Found";
-        _setResponse(resp, 404, "Not Found", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 404, "Not Found", config, errorMessage);
         return false;
     }
     return true;
+}
+
+void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config, std::string& errorMessage) {
+    std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
+    if (it != config.errorPage.end()) {
+        std::string errorPagePath = config.root + it->second;
+        struct stat fileStat;
+        if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
+            _setResponse(resp, code, message, "text/html", fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
+            return;
+        }
+    }
+    errorMessage = message;
+    _setResponse(resp, code, message, "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
 }
 
 void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
