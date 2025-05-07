@@ -95,6 +95,11 @@ void HttpParser::_parseBuffer() {
                 if (!line.empty()) {
                     _parseHeader(line);
                 } else {
+                    if (_currentRequest.headers.find("host") == _currentRequest.headers.end()) {
+                        _state = STATE_ERROR;
+                        _logger.log("ERROR", "_headerHostValidation: No Host");
+                        return;
+                    }
                     _state = STATE_DONE;
                 }
             }
