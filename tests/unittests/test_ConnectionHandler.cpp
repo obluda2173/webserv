@@ -111,34 +111,43 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
 }
 
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
-                         ::testing::Values(
-
-                             ParamsVectorRequestsResponses{{"GET \r\n"}, {"HTTP/1.1 400 Bad Request\r\n\r\n"}},
-                             ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n"},
-                                                           {"HTTP/1.1 200 OK\r\n"
-                                                            "Content-Length: 4\r\n"
-                                                            "\r\n"
-                                                            "pong"}},
-                             ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
-                                                           {
-                                                               "HTTP/1.1 200 OK\r\n"
-                                                               "Content-Length: 4\r\n"
-                                                               "\r\n"
-                                                               "pong",
-                                                               "HTTP/1.1 400 Bad Request\r\n\r\n",
-                                                           }},
-                             ParamsVectorRequestsResponses{
-                                 {"GET /ping HTTP/1.1\r\n\r\n", "GET /ping HTTP/1.1\r\n\r\n", "GET \r\n"},
-                                 {"HTTP/1.1 200 OK\r\n"
-                                  "Content-Length: 4\r\n"
-                                  "\r\n"
-                                  "pong",
-                                  "HTTP/1.1 200 OK\r\n"
-                                  "Content-Length: 4\r\n"
-                                  "\r\n"
-                                  "pong",
-                                  "HTTP/1.1 400 Bad Request\r\n"
-                                  "\r\n"}}));
+                         ::testing::Values(ParamsVectorRequestsResponses{{"GET \r\n"},
+                                                                         {"HTTP/1.1 400 Bad Request\r\n\r\n"}},
+                                           ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
+                                                                          "Host: test.com\r\n"
+                                                                          "\r\n"},
+                                                                         {"HTTP/1.1 200 OK\r\n"
+                                                                          "Content-Length: 4\r\n"
+                                                                          "\r\n"
+                                                                          "pong"}},
+                                           ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
+                                                                          "Host: test.com\r\n"
+                                                                          "\r\n",
+                                                                          "GET \r\n"},
+                                                                         {
+                                                                             "HTTP/1.1 200 OK\r\n"
+                                                                             "Content-Length: 4\r\n"
+                                                                             "\r\n"
+                                                                             "pong",
+                                                                             "HTTP/1.1 400 Bad Request\r\n\r\n",
+                                                                         }},
+                                           ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
+                                                                          "Host: test.com\r\n"
+                                                                          "\r\n",
+                                                                          "GET /ping HTTP/1.1\r\n"
+                                                                          "Host: test.com\r\n"
+                                                                          "\r\n",
+                                                                          "GET \r\n"},
+                                                                         {"HTTP/1.1 200 OK\r\n"
+                                                                          "Content-Length: 4\r\n"
+                                                                          "\r\n"
+                                                                          "pong",
+                                                                          "HTTP/1.1 200 OK\r\n"
+                                                                          "Content-Length: 4\r\n"
+                                                                          "\r\n"
+                                                                          "pong",
+                                                                          "HTTP/1.1 400 Bad Request\r\n"
+                                                                          "\r\n"}}));
 
 TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
     char buffer[1024];
@@ -190,8 +199,10 @@ TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
 
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnectionPerRequest,
                          ::testing::Values(ParamsVectorRequestsResponses{
-                             {"GET \r\n", "GET /ping HTTP/1.1\r\n\r\n"}, // I'm sending in batch size of 3, therefore
-                                                                         // GET \r\n\r\n provokes 2 Bad requests
+                             {"GET \r\n", "GET /ping HTTP/1.1\r\n"
+                                          "Host: test.com\r\n"
+                                          "\r\n"}, // I'm sending in batch size of 3, therefore
+                                                   // GET \r\n\r\n provokes 2 Bad requests
                              {"HTTP/1.1 400 Bad Request\r\n"
                               "\r\n",
 
@@ -204,7 +215,9 @@ TEST_P(ConnHdlrTestWithIntegerAsParameter, pingTestInBatches) {
     int batchSize = GetParam();
     int _clientfd = _clientFdsAndConnFds[0].first;
     int _connfd = _clientFdsAndConnFds[0].second;
-    std::string msg = "GET /ping HTTP/1.1\r\n\r\n";
+    std::string msg = "GET /ping HTTP/1.1\r\n"
+                      "Host: test.com\r\n"
+                      "\r\n";
 
     // cutting the msg into parts and send
     int clientfd = _clientfd;
@@ -226,7 +239,12 @@ TEST_P(ConnHdlrTestWithIntegerAsParameter, multipleRequestsOneConnectionInBatche
     int _clientfd = _clientFdsAndConnFds[0].first;
     int _connfd = _clientFdsAndConnFds[0].second;
     // 2 messages
-    std::string msg = "GET /ping HTTP/1.1\r\n\r\nGET /ping HTTP/1.1\r\n\r\n";
+    std::string msg = "GET /ping HTTP/1.1\r\n"
+                      "Host: test.com\r\n"
+                      "\r\n"
+                      "GET /ping HTTP/1.1\r\n"
+                      "Host: test.com\r\n"
+                      "\r\n";
     int nbrMsgs = 2;
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
                                "Content-Length: 4\r\n"

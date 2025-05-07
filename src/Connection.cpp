@@ -60,11 +60,11 @@ void Connection::parseBuf() {
         _prsr->feed(b, 1);
         if (_prsr->error() || _prsr->ready()) {
             _buf = b + 1;
-            if (_prsr->error())
-                _state = HandleBadRequest;
-            else
+            if (_prsr->ready()) {
+                _request = _prsr->getRequest();
                 _state = Handling;
-            _request = _prsr->getRequest();
+            } else
+                _state = HandleBadRequest;
             return;
         }
         b++;

@@ -36,8 +36,9 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
         _ioNotifier = new EpollIONotifier(*_logger);
 
         // router will be owned by ConnectionHandler
-        std::map<std::string, IHandler*> hdlrs = {{}};
+        std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
+        router->add("test.com", "", "GET", {});
 
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
         setupServer();
