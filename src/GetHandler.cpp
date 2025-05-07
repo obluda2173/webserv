@@ -1,8 +1,11 @@
 #include "GetHandler.h"
 
+GetHandler::GetHandler() {}
+GetHandler::~GetHandler() {}
+
 std::map<std::string, std::string> GetHandler::mimeTypes = std::map<std::string, std::string>();
 
-bool GetHandler::_validateGetRequest(Connection* conn, HttpRequest& request, RouteConfig& config, std::string& errorMessage) {
+bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config, std::string& errorMessage) {
     HttpResponse& resp = conn->_response;
     const size_t MAX_PATH_LENGTH = 4096;
     _path = _normalizePath(config.root, request.uri);
@@ -47,19 +50,18 @@ void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::str
 }
 
 std::string GetHandler::_normalizePath(const std::string& root, const std::string& uri) {
-    std::string fullPath = root + uri;
-    std::string normalized = "";
+    std::string normalized = root;
     std::vector<std::string> segments;
 
     std::string segment = "";
-    for (std::string::const_iterator it = fullPath.begin(); it != fullPath.end(); ++it) {
-        if (*it == '/') {
+    for (size_t i = 0; i < uri.size(); ++i) {
+        if (uri[i] == '/') {
             if (!segment.empty()) {
                 segments.push_back(segment);
                 segment = "";
             }
         } else {
-            segment += *it;
+            segment += uri[i];
         }
     }
     if (!segment.empty()) {
@@ -77,13 +79,12 @@ std::string GetHandler::_normalizePath(const std::string& root, const std::strin
         }
     }
 
-    if (stack.empty()) {
-        normalized = root + "/";
-    } else {
-        normalized = root;
-        for (std::vector<std::string>::const_iterator it = stack.begin(); it != stack.end(); ++it) {
-            normalized += "/" + *it;
-        }
+    for (std::vector<std::string>::const_iterator it = stack.begin(); it != stack.end(); ++it) {
+        normalized += "/" + *it;
+    }
+
+    if (uri == "/" && stack.empty()) {
+        normalized += "/";
     }
 
     if (normalized.find(root) != 0) {
@@ -146,7 +147,7 @@ std::string GetHandler::_getDirectoryListing(const std::string& dirPath, const s
     return html.str();
 }
 
-void GetHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& config) {
+void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     std::string errorMessage;
     if (!_validateGetRequest(conn, request, config, errorMessage)) {
         conn->setState(Connection::SendResponse);
