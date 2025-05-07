@@ -1,7 +1,7 @@
 #include "PostHandler.h"
 std::map<std::string, std::string> PostHandler::mimeTypes = std::map<std::string, std::string>();
 
-void PostHandler::divideBody(const std::vector<char>& bodyBuf, const std::string& boundary) {
+bool PostHandler::_divideBody(const std::vector<char>& bodyBuf, const std::string& boundary) {
     std::string dashBoundary = "--" + boundary;
     std::string endBoundary = dashBoundary + "--";
 
@@ -11,7 +11,13 @@ void PostHandler::divideBody(const std::vector<char>& bodyBuf, const std::string
     std::vector<char>::const_iterator pos = bodyBuf.begin();
     std::vector<char>::const_iterator bodyEnd = bodyBuf.end();
 
+    int count = 0;
+
     while (true) {
+        if (count > 50) {       // here to set the MAX number of the subBody
+            return false;
+        }
+
         // Search for next boundary
         std::vector<char>::const_iterator boundaryPos = std::search(pos, bodyEnd, boundaryVec.begin(), boundaryVec.end());
         if (boundaryPos == bodyEnd)
@@ -46,10 +52,12 @@ void PostHandler::divideBody(const std::vector<char>& bodyBuf, const std::string
         if (finalCheck == boundaryPos) {
             break; // reached final boundary
         }
+        count++;
     }
+    return true;
 }
 
-bool PostHandler::putIntoStruct(void) {
+bool PostHandler::_putIntoStruct(void) {
     // now put everything into the vector struct
     for (size_t i = 0; i < _parts.size(); i++)
     {
@@ -57,7 +65,7 @@ bool PostHandler::putIntoStruct(void) {
         std::string token = "filename=";
         std::vector<char> tokenVec(token.begin(), token.end());
         std::vector<char>::const_iterator tokenPos = std::search(_parts[i].begin(), _parts[i].end(), tokenVec.begin(), tokenVec.end());
-        if (tokenPos == _parts[i].end()) {
+        if (tokenPos == _parts[i].end()) {      // no "filename=" appear
             return false;
         }
         tokenPos += 9;
@@ -71,7 +79,7 @@ bool PostHandler::putIntoStruct(void) {
         token = "\r\n\r\n";
         tokenVec = std::vector<char>(token.begin(), token.end());
         tokenPos = std::search(_parts[i].begin(), _parts[i].end(), tokenVec.begin(), tokenVec.end());
-        if (tokenPos == _parts[i].end()) {
+        if (tokenPos == _parts[i].end()) {      // no "\r\n\r\n" appear
             return false;
         }
         tokenPos += 4;
@@ -93,10 +101,14 @@ bool PostHandler::putIntoStruct(void) {
     return true;
 }
 
-bool PostHandler::_getValidation(Connection* conn, HttpRequest& request, RouteConfig& config) {
+bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteConfig& config) {
+    if (request.uri.empty() || config.root.empty()) {       // uri and root should not empty
+        return false;
+    }
     if (request.uri.find("..") != std::string::npos) {      // not allow /../ appear
         return false;
     }
+    if (_bodyBuf.size())
     if (request.headers.find("content-type") == request.headers.end() || request.headers["content-type"] == "") {       // no content-type or no value
 		return false;
 	}
@@ -122,17 +134,22 @@ bool PostHandler::_getValidation(Connection* conn, HttpRequest& request, RouteCo
 	if (!strstr(_bodyBuf.data(), _boundaryValue.c_str())) {     // no boundary value found in the body
 		return false;
 	}
-    divideBody(_bodyBuf, _boundaryValue);
-    if (!putIntoStruct()) {       // parse the body to find the file name and content
+    if (!_divideBody(_bodyBuf, _boundaryValue)) {       // too much subBody
+        return false;
+    }
+    if (!_putIntoStruct()) {       // parse the body to find the file name and content
         return false;
     }
     for (size_t m = 0; m < _subBody.size(); m++)
     {
+        if (_subBody[m].fileName.empty()) {     // filename value should not empty
+            _subBody[m].pathValid = false;
+        }
         if (_subBody[m].fileName.find("..") != std::string::npos) {     // not allow /../ appear in filename
             return false;
         }
+        _subBody[m].fileType = _getMimeType(_subBody[m].fileName);
     }
-    
 }
 
 void PostHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message) {
@@ -142,56 +159,6 @@ void PostHandler::_setErrorResponse(HttpResponse& resp, int code, const std::str
     resp.contentType = "text/plain";
     resp.contentLength = message.size();
     resp.body = new StringBodyProvider(message);
-}
-
-std::string PostHandler::_normalizePath(const std::string& root, const std::string& uri) {
-    std::string fullPath = root + uri;
-    std::string normalized = "";
-    std::vector<std::string> segments;
-
-    // Split path by '/'
-    std::string segment = "";
-    for (std::string::const_iterator it = fullPath.begin(); it != fullPath.end(); ++it) {
-        if (*it == '/') {
-            if (!segment.empty()) {
-                segments.push_back(segment);
-                segment = "";
-            }
-        } else {
-            segment += *it;
-        }
-    }
-    if (!segment.empty()) {
-        segments.push_back(segment);
-    }
-
-    // Canonicalize path
-    std::vector<std::string> stack;
-    for (std::vector<std::string>::const_iterator it = segments.begin(); it != segments.end(); ++it) {
-        if (*it == "..") {
-            if (!stack.empty()) {
-                stack.pop_back();
-            }
-        } else if (*it != "." && !it->empty()) {
-            stack.push_back(*it);
-        }
-    }
-
-    // Rebuild path
-    if (stack.empty()) {
-        normalized = root + "/";
-    } else {
-        normalized = root;
-        for (std::vector<std::string>::const_iterator it = stack.begin(); it != stack.end(); ++it) {
-            normalized += "/" + *it;
-        }
-    }
-
-    // Ensure the path stays within root
-    if (normalized.find(root) != 0) {
-        return "";
-    }
-    return normalized;
 }
 
 std::string PostHandler::_getMimeType(const std::string& path) {
@@ -213,10 +180,17 @@ std::string PostHandler::_getMimeType(const std::string& path) {
     return "application/octet-stream";
 }
 
-void PostHandler::setPath(std::string root, std::string uri) {
+void PostHandler::_setPath(std::string root, std::string uri) {     // make the path to the DIR without "//" or "/./"
+    const size_t MAX_PATH_LENGTH = 4096;
     for (size_t i = 0; i < _subBody.size(); i++)
     {
-        std::string tempPath = root + "/" + uri + "/" + _subBody[i].fileName;
+        if (_subBody[i].pathValid == false) {       // if path got some error, skip
+            continue;
+        }
+        if (root.empty() || uri.empty()) {
+            _subBody[i].pathValid = false;
+        }
+        std::string tempPath = root + "/" + uri + "/";
         for (size_t i = 0; i < tempPath.size(); )
         {
             if (tempPath[i] == '/' && i + 1 < tempPath.size() && (tempPath[i + 1] == '/' || tempPath[i + 1] == '.')) {
@@ -225,25 +199,159 @@ void PostHandler::setPath(std::string root, std::string uri) {
                 i++;
             }
         }
+        if (tempPath.size() > MAX_PATH_LENGTH) {        // the path should not too long
+            _subBody[i].pathValid = false;
+        }
+        _subBody[i].noFileNamePath = tempPath;
+    }
+}
+
+void PostHandler::_setPathWithFileName(void) {      // make the path to the FILE without "//" or "/./"
+    const size_t MAX_PATH_LENGTH = 4096;
+    for (size_t i = 0; i < _subBody.size(); i++)
+    {
+        if (_subBody[i].pathValid == false) {       // if path got some error, skip
+            continue;
+        }
+        std::string tempPath = _subBody[i].noFileNamePath + "/" + _subBody[i].fileName;
+        for (size_t i = 0; i < tempPath.size(); )
+        {
+            if (tempPath[i] == '/' && i + 1 < tempPath.size() && (tempPath[i + 1] == '/' || tempPath[i + 1] == '.')) {
+                tempPath.erase(i + 1, 1);
+            } else {
+                i++;
+            }
+        }
+        if (tempPath.size() > MAX_PATH_LENGTH) {        // the path should not too long
+            _subBody[i].pathValid = false;
+        }
         _subBody[i].filePath = tempPath;
     }
+}
+
+void PostHandler::_pathValidator(void) {
+    for (size_t i = 0; i < _subBody.size(); i++) {
+        if (_subBody[i].pathValid == false) {       // if path got some error, skip
+            continue;
+        }
+        if (stat(_subBody[i].noFileNamePath.c_str(), &_pathStat) == 0) {        // the file/dir which path point to, is exist
+            _subBody[i].pathExist = true;
+        }
+        if (access(_path.c_str(), R_OK) == 0) {         // the path is accessable
+            _subBody[i].pathAccessable = true;
+        }
+        if (_subBody.size() > 1 && S_ISREG(_pathStat.st_mode)) {       // if there are multiple upload, path (root + uri) should not point to a file
+            _subBody[i].pathValid = false;
+        }
+        if (_subBody.size() == 1 && S_ISREG(_pathStat.st_mode)) {       // if there is one upload and path (root + uri) point to a file, replace the file
+            _subBody[i].replaceFile = true;
+        }
+        if (!S_ISREG(_pathStat.st_mode) && !S_ISDIR(_pathStat.st_mode)) {
+            _subBody[i].pathValid = false;
+        }
+    }
+}
+
+void PostHandler::_pathWithFileNameValidator(void) {
+    for (size_t i = 0; i < _subBody.size(); i++) {
+        if (_subBody[i].pathValid == false || _subBody[i].pathExist == false || _subBody[i].pathAccessable == false) {       // if path got some error, skip
+            continue;
+        }
+        if (stat(_subBody[i].noFileNamePath.c_str(), &_pathStat) == 0) {
+            _subBody[i].fileExist = true;       // this means there is a file/dir
+            if (S_ISREG(_pathStat.st_mode)) {
+                _subBody[i].fileValid = true;       // this means this is a file now, not a dir
+            }
+            if (access(_subBody[i].filePath.c_str(), W_OK) == 0) {      //the file is accessable
+                _subBody[i].fileAccessalbe = true;
+            }
+        }
+    }
+}
+
+void PostHandler::replaceFile(int index) {
+    if (remove(_subBody[index].noFileNamePath.c_str())) {
+        _subBody[index].uploadFailure = true;
+    }
     
+    std::string tempPath = _subBody[index].noFileNamePath;
+    int pos = tempPath.rfind('/');
+    tempPath.erase(tempPath.begin() + pos, tempPath.end());
+    tempPath += _subBody[index].fileName;
+    std::ofstream fileToCreat(tempPath);
+    if (!fileToCreat) {
+        _subBody[index].uploadFailure = true;
+    }
+    for (size_t m = 0; m < _subBody[index].bodyContent.size(); m++)
+    {
+        if (m < _subBody[index].bodyContent.size() - 1 && _subBody[index].bodyContent[m] == '\r' && _subBody[index].bodyContent[m + 1] == '\n') {
+            continue;
+        }
+        fileToCreat << _subBody[index].bodyContent[m];
+    }
+    fileToCreat.close();
+}
+
+void PostHandler::_writeIntoFile() {
+    for (size_t i = 0; i < _subBody.size(); i++)
+    {
+        if (_subBody[i].fileExist == false || _subBody[i].fileValid == false || _subBody[i].fileAccessalbe == false) {      //if the file got some error, skip
+            if (_subBody[i].replaceFile == true && _subBody[i].pathExist == true) {      // we need to replace the file
+                replaceFile(i);
+            } else if (_subBody[i].pathValid == true && _subBody[i].pathExist == true && _subBody[i].pathAccessable == true
+                && _subBody[i].fileExist == false && _subBody[i].fileValid == false && _subBody[i].fileAccessalbe == false) {       // we need to create a file
+                    std::ofstream createFile(_subBody[i].filePath);
+                    for (size_t m = 0; m < _subBody[i].bodyContent.size(); m++)
+                    {
+                        if (m < _subBody[i].bodyContent.size() - 1 && _subBody[i].bodyContent[m] == '\r' && _subBody[i].bodyContent[m + 1] == '\n') {
+                            continue;
+                        }
+                        createFile << _subBody[i].bodyContent[m];
+                    }
+            } else {        // something wrong with the file or with the accessability
+                _subBody[i].uploadFailure = true;
+                continue;
+            }
+        } else {        // everything is good
+            std::ofstream appendFile(_subBody[i].filePath, std::ios::app);      // append the body
+            if (!appendFile) {
+                _subBody[i].uploadFailure = true;
+                continue;
+            }
+            for (size_t m = 0; m < _subBody[i].bodyContent.size(); m++)
+            {
+                if (m < _subBody[i].bodyContent.size() - 1 && _subBody[i].bodyContent[m] == '\r' && _subBody[i].bodyContent[m + 1] == '\n') {
+                    continue;
+                }
+                appendFile << _subBody[i].bodyContent[m];
+            }
+        }
+    }
 }
 
 void PostHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& config) {
     HttpResponse& resp = conn->_response;
 
     // check everything necessary first
-    if (!_getValidation(conn, request, config)) {
+    if (!_postValidation(conn, request, config)) {
         _setErrorResponse(resp, 400, "Bad Request");
         conn->setState(Connection::SendResponse);
         return;
     }
 
-    setPath(config.root, request.uri);
+    _setPath(config.root, request.uri);     // also check the root and uri here
+
+    _setPathWithFileName();     // also check file name here
+
+    _pathValidator();       // here check the path (root + uri) is exist, accessable, valid or need to replace the file
+
+    _pathWithFileNameValidator();       // here check the file path (root + uri + filename) is exist, accessable or valid
+
+    _writeIntoFile();       // here write into the file, replace the file or create a file
+
+    
 
     std::string uri = request.uri;
-    _path = _normalizePath(config.root, uri);
 
     if (_path.empty()) {
         _setErrorResponse(resp, 403, "Forbidden");

@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <algorithm> // for std::search
 #include <iterator>  // for std::distance
+#include <cstdio> // for std::remove
 
 #include "Router.h"
 #include "Connection.h"
@@ -15,8 +16,23 @@
 #include "HttpResponse.h"
 
 typedef struct inBoundary {
-	std::string fileName;
-	std::string filePath;
+	std::string fileName;			// this is the filename value, file name we need
+	std::string noFileNamePath;		// this is the path without the file name (root + uri)
+	std::string filePath;			// this is the full path of the file
+	std::string fileType;			// this is the file type we need for response
+// the path under is root + uri
+	bool pathValid = true;			// if something wrong with the path, it will be false
+	bool pathExist = false;			// if the dir is exist, it will be true
+	bool pathAccessable = false;	// if the dir is accessalbe (we can create file inside it), it will be true
+
+	bool replaceFile = false;		// if the path (root + uri) point to a file, which means we need to replace it, it will be true
+
+	bool fileExist = false;			// if the file exist, it will be true
+	bool fileValid = false;			// if the file is a file not a dir, it will be true
+	bool fileAccessalbe = false;	// if we can write into the file, it will be true
+
+	bool uploadFailure = false;
+
 	std::vector<char> bodyContent;
 } inBoundary;
 
@@ -29,10 +45,20 @@ class PostHandler : public IHandler {
 	  std::vector<std::vector<char>> _parts;
 	  std::vector<inBoundary> _subBody;
 	  static std::map<std::string, std::string> mimeTypes;
-	  bool _getValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
-	  void divideBody(const std::vector<char>& bodyBuf, const std::string& boundary);
-	  bool putIntoStruct(void);
-	  void setPath(std::string root, std::string uri);
+	  bool _postValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
+
+	  bool _divideBody(const std::vector<char>& bodyBuf, const std::string& boundary);
+	  bool _putIntoStruct(void);
+
+	  void _setPath(std::string root, std::string uri);
+	  void _setPathWithFileName(void);
+
+	  void _pathValidator(void);
+	  void _pathWithFileNameValidator(void);
+
+	  void replaceFile(int index);
+	  void _writeIntoFile();
+
 	  void _setErrorResponse(HttpResponse& resp, int code, const std::string& message);
 	  void _setGoodResponse(HttpResponse& resp, std::string mimeType, int statusCode, size_t fileSize, IBodyProvider* bodyProvider);
 	  std::string _normalizePath(const std::string& root, const std::string& uri);
