@@ -6,11 +6,12 @@ int main(int argc, char* argv[]) {
     // Don't run the following tests
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
-    // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
+    testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
+    // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     //
     // only run the following test
 
@@ -19,9 +20,8 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "*testingBatchSizesSending*";
     // testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
-    // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*multipleRequestsOneConnectionInBatches*";
-    testing::GTEST_FLAG(filter) = "*RouterTest*";
+    // testing::GTEST_FLAG(filter) = "*RouterTest*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTest.send2MsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";

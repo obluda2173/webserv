@@ -1,4 +1,5 @@
 #include <ConfigParser.h>
+#include <stdexcept>
 
 void ConfigParser::_validateFilename() {
     if (_filename.size() <= 5 || _filename.find(".conf") == std::string::npos) {
@@ -20,7 +21,8 @@ void ConfigParser::_parseUse(const Directive& directive, EventsConfig& config) {
     if (directive.args.size() != 1) {
         throw std::runtime_error("use requires exactly one argument");
     }
-    if (directive.args[0] != "select" && directive.args[0] != "poll" && directive.args[0] != "epoll" && directive.args[0] != "kqueue") {
+    if (directive.args[0] != "select" && directive.args[0] != "poll" && directive.args[0] != "epoll" &&
+        directive.args[0] != "kqueue") {
         throw std::runtime_error("Unknown use method: " + directive.name);
     }
     config.kernelMethod = directive.args[0];
@@ -70,7 +72,7 @@ void ConfigParser::_parseCgiExt(const Directive& directive, LocationConfig& conf
         throw std::runtime_error("Invalid cgi_ext argument: " + directive.args[1]);
     } else if (config.cgi.find(directive.args[0]) != config.cgi.end()) {
         throw std::runtime_error("Duplicate cgi_ext extension: " + directive.args[0]);
-    } 
+    }
     config.cgi.insert(std::pair<std::string, std::string>(directive.args[0], directive.args[1]));
 }
 
@@ -97,10 +99,14 @@ void ConfigParser::_parseClientMaxBodySize(const Directive& directive, CommonCon
             throw std::runtime_error("Invalid unit in client_max_body_size: " + std::string(end));
         }
         unit = tolower(unit);
-        if (unit == 'k') value *= KB;
-        else if (unit == 'm') value *= MB;
-        else if (unit == 'g') value *= GB;
-        else throw std::runtime_error("Invalid unit in client_max_body_size: " + std::string(1, unit));
+        if (unit == 'k')
+            value *= oneKB;
+        else if (unit == 'm')
+            value *= oneMB;
+        else if (unit == 'g')
+            value *= oneGB;
+        else
+            throw std::runtime_error("Invalid unit in client_max_body_size: " + std::string(1, unit));
     }
     config.clientMaxBody = static_cast<size_t>(value);
 }
@@ -159,7 +165,8 @@ void ConfigParser::_parseErrorPage(const Directive& directive, CommonConfig& con
 void ConfigParser::_parseAutoindex(const Directive& directive, CommonConfig& config) {
     if (directive.args.size() != 1) {
         throw std::runtime_error("autoindex requires exactly one argument");
-    } if (directive.args[0] == "on") {
+    }
+    if (directive.args[0] == "on") {
         config.autoindex = true;
     } else if (directive.args[0] != "off") {
         throw std::runtime_error("Invalid autoindex argument: " + directive.args[0]);

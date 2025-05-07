@@ -1,11 +1,10 @@
 #ifndef CONFIGPARSER_H
 #define CONFIGPARSER_H
 
-#include <fstream>
 #include <fcntl.h>
 
-#include <TokenStream.h>
-#include <IConfigParser.h>
+#include "IConfigParser.h"
+#include "TokenStream.h"
 
 class ConfigParser : public IConfigParser {
   private:
@@ -34,7 +33,7 @@ class ConfigParser : public IConfigParser {
     void _parseAutoindex(const Directive& directive, CommonConfig& config);
     void _makeAst();
     void _makeConfig();
-    
+
   public:
     ConfigParser(const std::string& filename);
     ~ConfigParser();
