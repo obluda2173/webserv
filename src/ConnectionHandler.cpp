@@ -80,26 +80,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             break;
         case Connection::Handling:
             route = _router->match(conn->getRequest());
-
-            // std::cout << "host: " << conn->_request.headers["host"] << std::endl;
-            // std::cout << "route: " << route.cfg.root << std::endl;
-            // std::cout << "length: " << route.hdlrs.size() << std::endl;
-            // for (std::unordered_map<std::string, IHandler*>::iterator it = route.hdlrs.begin(); it !=
-            // route.hdlrs.end();
-            //      it++) {
-            //     std::cout << "key: " << it->first << std::endl;
-            // }
-            // std::cout << route.hdlrs["GET"] << std::endl;
-            if (route.hdlrs.find("GET") != route.hdlrs.end()) {
-                route.hdlrs["GET"]->handle(conn, {}, {});
-            } else {
-                hdlr = new BadRequestHandler();
-                hdlr->handle(conn, {}, {});
-                delete hdlr;
-            }
-            // hdlr = new PingHandler();
-            // hdlr->handle(conn, {}, {});
-            // delete hdlr;
+            route.hdlrs["GET"]->handle(conn, {}, {});
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:
