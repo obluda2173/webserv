@@ -23,10 +23,6 @@ void addLocations(std::vector<LocationConfig> locations, std::string svrName, Ro
         presentLocs.insert(itLoc->prefix);
         RouteConfig cfg = {itLoc->common.root, itLoc->common.index, itLoc->common.errorPage,
                            itLoc->common.clientMaxBody, itLoc->common.autoindex};
-
-        if (cfg.clientMaxBody == 0)
-            cfg.clientMaxBody = oneMB;
-
         addMethods(itLoc->common.allowMethods, svrName, itLoc->prefix, cfg, r);
     }
 }
@@ -36,8 +32,6 @@ void addSvrToRouter(Router& r, ServerConfig svrCfg) {
     for (std::vector<std::string>::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
         RouteConfig cfg = {svrCfg.common.root, svrCfg.common.index, svrCfg.common.errorPage,
                            svrCfg.common.clientMaxBody, svrCfg.common.autoindex};
-        if (cfg.clientMaxBody == 0)
-            cfg.clientMaxBody = oneMB;
 
         addMethods(svrCfg.common.allowMethods, *itSvrName, "", cfg, r);
         addLocations(svrCfg.locations, *itSvrName, r);

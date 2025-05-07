@@ -35,10 +35,6 @@ void Connection::readIntoBuf() {
         _buf.resize(oldSize + r);
     else
         _buf.resize(oldSize); // Restore original size if no data received
-    // char newbuf[1024];
-    // ssize_t r = recv(_fd, newbuf, 1024, 0);
-    // newbuf[r] = '\0';
-    // _buf += newbuf;
 }
 
 void Connection::sendResponse() {

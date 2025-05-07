@@ -3,7 +3,6 @@
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "PingHandler.h"
-#include "Router.h"
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>

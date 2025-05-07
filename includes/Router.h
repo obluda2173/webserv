@@ -2,35 +2,12 @@
 #define ROUTER_H
 
 #include "ConfigStructure.h"
-#include "Connection.h"
 #include "HttpRequest.h"
+#include "IRouter.h"
 #include <set>
 #include <string>
-#include <unordered_map>
 
-const size_t oneMB = 1 * 1024 * 1024;
-const size_t oneKB = 1 * 1024;
-
-struct RouteConfig {
-    std::string root;
-    std::vector<std::string> index;
-    std::map<int, std::string> errorPage;
-    size_t clientMaxBody;
-    bool autoindex;
-};
-
-class IHandler {
-  public:
-    virtual ~IHandler() {}
-    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) = 0;
-};
-
-struct Route {
-    std::unordered_map<std::string, IHandler*> hdlrs;
-    RouteConfig cfg;
-};
-
-class Router {
+class Router : public IRouter {
   private:
     std::map<std::string, IHandler*> _hdlrs;
     std::string _defaultSvr;
@@ -43,15 +20,6 @@ class Router {
     ~Router() {
         for (std::map<std::string, IHandler*>::iterator it = _hdlrs.begin(); it != _hdlrs.end(); it++)
             delete it->second;
-
-        // for (std::map<std::string, Route>::iterator it = _routeToRoutes.begin(); it != _routeToRoutes.end(); it++) {
-        //     Route route = it->second;
-        //     for (std::unordered_map<std::string, IHandler*>::iterator it = route.hdlrs.begin(); it !=
-        //     route.hdlrs.end();
-        //          it++) {
-        //         delete it->second;
-        //     }
-        // }
     }
     Router(std::map<std::string, IHandler*> hdlrs) : _hdlrs(hdlrs) {}
 
