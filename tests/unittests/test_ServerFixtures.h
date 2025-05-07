@@ -13,7 +13,8 @@
 #include "gtest/gtest.h"
 #include <thread>
 
-template <typename LoggerType> class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
+template <typename LoggerType>
+class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
@@ -29,7 +30,11 @@ template <typename LoggerType> class BaseServerTest : public ::testing::TestWith
     void SetUp() override {
         _logger = new LoggerType();
         IIONotifier* ioNotifier = new EpollIONotifier(*_logger);
-        IConnectionHandler* connHdlr = new ConnectionHandler(*_logger, *ioNotifier);
+
+        // router will be owned by Connection Handler
+        std::map<std::string, IHandler*> hdlrs = {{}};
+        IRouter* router = new Router(hdlrs);
+        IConnectionHandler* connHdlr = new ConnectionHandler(router, *_logger, *ioNotifier);
         _svr = ServerBuilder().setLogger(_logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
         setupServer();
     }

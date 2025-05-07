@@ -11,6 +11,8 @@ Connection::~Connection() {
     delete _response.body;
 }
 
+HttpRequest Connection::getRequest() { return _request; }
+
 void Connection::resetResponse() {
     delete _response.body;
     delete _wrtr;
@@ -62,6 +64,7 @@ void Connection::parseBuf() {
                 _state = HandleBadRequest;
             else
                 _state = Handling;
+            _request = _prsr->getRequest();
             return;
         }
         b++;

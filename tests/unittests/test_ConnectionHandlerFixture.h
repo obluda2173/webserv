@@ -4,6 +4,8 @@
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
+#include "PingHandler.h"
+#include "Router.h"
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
@@ -32,7 +34,12 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
         _openFdsBegin = countOpenFileDescriptors();
         _logger = new LoggerType();
         _ioNotifier = new EpollIONotifier(*_logger);
-        _connHdlr = new ConnectionHandler(*_logger, *_ioNotifier);
+
+        // router will be owned by ConnectionHandler
+        std::map<std::string, IHandler*> hdlrs = {{}};
+        IRouter* router = new Router(hdlrs);
+
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
         setupServer();
         setupClientConnections();
     }

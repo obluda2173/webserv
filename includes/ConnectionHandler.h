@@ -5,6 +5,7 @@
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
 #include "ILogger.h"
+#include "IRouter.h"
 #include <map>
 #include <sys/socket.h>
 
@@ -16,6 +17,7 @@ typedef enum SocketType {
 class ConnectionHandler : public IConnectionHandler {
   private:
     std::map<int, Connection*> _connections;
+    IRouter* _router;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
@@ -28,7 +30,7 @@ class ConnectionHandler : public IConnectionHandler {
     void _removeConnection(int connfd);
 
   public:
-    ConnectionHandler(ILogger&, IIONotifier&);
+    ConnectionHandler(IRouter*, ILogger&, IIONotifier&);
     ~ConnectionHandler(void);
     int handleConnection(int conn, e_notif notif);
 };

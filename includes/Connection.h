@@ -17,6 +17,7 @@ class Connection {
     sockaddr_storage _addr;
     std::string _buf;
     int _fd;
+    HttpRequest _request;
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
 
@@ -29,6 +30,7 @@ class Connection {
     void sendResponse();
     void resetResponse();
     int getFileDes() const;
+    HttpRequest getRequest();
     sockaddr_storage getAddr() const;
     void setState(Connection::STATE state) { _state = state; }
 

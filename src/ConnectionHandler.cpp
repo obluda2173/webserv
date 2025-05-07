@@ -2,7 +2,6 @@
 #include "BadRequestHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
-#include "PingHandler.h"
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>
@@ -11,12 +10,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
+ConnectionHandler::ConnectionHandler(IRouter* router, ILogger& l, IIONotifier& ep)
+    : _router(router), _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
     for (std::map<int, Connection*>::iterator it = _connections.begin(); it != _connections.end(); it++) {
         delete it->second;
     }
+    delete _router;
 }
 
 void ConnectionHandler::_updateNotifier(Connection* conn) {
@@ -70,6 +71,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
     while (continueProcessing) {
         HttpResponse resp;
         IHandler* hdlr;
+        Route route;
         Connection::STATE currentState = conn->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
@@ -77,17 +79,25 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Handling:
-            hdlr = new PingHandler();
-            hdlr->handle(conn, {}, {});
-            delete hdlr;
+            route = _router->match(conn->getRequest());
+            if (route.hdlrs.find("GET") != route.hdlrs.end()) {
+                route.hdlrs["GET"]->handle(conn, {}, {});
+            } else {
+                hdlr = new BadRequestHandler();
+                hdlr->handle(conn, {}, {});
+                delete hdlr;
+            }
+            // hdlr = new PingHandler();
+            // hdlr->handle(conn, {}, {});
+            // delete hdlr;
             continueProcessing = (conn->getState() != currentState);
             break;
-        case Connection::HandleBadRequest:
-            hdlr = new BadRequestHandler();
-            hdlr->handle(conn, {}, {});
-            delete hdlr;
-            continueProcessing = (conn->getState() != currentState);
-            break;
+        // case Connection::HandleBadRequest:
+        //     hdlr = new BadRequestHandler();
+        //     hdlr->handle(conn, {}, {});
+        //     delete hdlr;
+        //     continueProcessing = (conn->getState() != currentState);
+        //     break;
         default:
             continueProcessing = false;
             break;
