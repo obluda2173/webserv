@@ -15,33 +15,33 @@ struct RouterTestParams {
 
 class RouterTest : public ::testing::TestWithParam<RouterTestParams> {};
 
-// TEST_P(RouterTest, testWithArtificialConfig) {
-//     RouterTestParams params = GetParam();
-//     HttpRequest request = params.req;
-//     RouteConfig wantCfg = params.wantRouteCfg;
-//     std::set<std::string> wantHdlrs = params.wantHdlrs;
+TEST_P(RouterTest, testWithArtificialConfig) {
+    RouterTestParams params = GetParam();
+    HttpRequest request = params.req;
+    RouteConfig wantCfg = params.wantRouteCfg;
+    std::set<std::string> wantHdlrs = params.wantHdlrs;
 
-//     Router r = newRouterTest();
-//     Route gotRoute = r.match(request);
-//     // check root
-//     EXPECT_EQ(wantCfg.root, gotRoute.cfg.root);
-//     // check index
-//     EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
-//     for (size_t i = 0; i < wantCfg.index.size(); i++)
-//         EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
+    Router r = newRouterTest();
+    Route gotRoute = r.match(request);
+    // check root
+    EXPECT_EQ(wantCfg.root, gotRoute.cfg.root);
+    // check index
+    EXPECT_EQ(wantCfg.index.size(), gotRoute.cfg.index.size());
+    for (size_t i = 0; i < wantCfg.index.size(); i++)
+        EXPECT_EQ(wantCfg.index[i], gotRoute.cfg.index[i]);
 
-//     // check clientMaxBody
-//     EXPECT_EQ(wantCfg.clientMaxBody, gotRoute.cfg.clientMaxBody);
-//     // check error pages
-//     EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
-//     for (auto it = wantCfg.errorPage.begin(); it != wantCfg.errorPage.end(); it++)
-//         EXPECT_EQ(wantCfg.errorPage[it->first], gotRoute.cfg.errorPage[it->first]);
+    // check clientMaxBody
+    EXPECT_EQ(wantCfg.clientMaxBody, gotRoute.cfg.clientMaxBody);
+    // check error pages
+    EXPECT_EQ(wantCfg.errorPage.size(), gotRoute.cfg.errorPage.size());
+    for (auto it = wantCfg.errorPage.begin(); it != wantCfg.errorPage.end(); it++)
+        EXPECT_EQ(wantCfg.errorPage[it->first], gotRoute.cfg.errorPage[it->first]);
 
-//     // check handlers
-//     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
-//     for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
-//         EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
-// }
+    // check handlers
+    EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
+    for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
+        EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
+}
 
 TEST_P(RouterTest, testWithConfigParsing) {
     // Parameters

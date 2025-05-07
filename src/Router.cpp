@@ -33,12 +33,12 @@ Route Router::match(HttpRequest req) {
     return _routeToRoutes[req.headers["host"]];
 }
 
-void Router::add(std::string svrName, std::string prefix, std::string method, IHandler* hdlr, RouteConfig cfg) {
+void Router::add(std::string svrName, std::string prefix, std::string method, RouteConfig cfg) {
     if (_defaultSvr.empty())
         _defaultSvr = svrName;
     if (_svrs.find(svrName) == _svrs.end())
         _svrs.insert(svrName);
     _routeToRoutes[svrName + prefix].cfg = cfg;
-    _routeToRoutes[svrName + prefix].hdlrs[method] = hdlr;
+    _routeToRoutes[svrName + prefix].hdlrs[method] = _hdlrs[method];
     _svrToLocs[svrName].insert(prefix);
 }

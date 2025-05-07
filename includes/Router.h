@@ -65,7 +65,7 @@ class Router {
            std::map<std::string, std::set<std::string>> svrToLocs, std::map<std::string, Route> routeToRoutes)
         : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
 
-    void add(std::string svrName, std::string prefix, std::string method, IHandler* hdlr, RouteConfig cfg);
+    void add(std::string svrName, std::string prefix, std::string method, RouteConfig cfg);
     Route match(HttpRequest req);
     void printSvrMap();
 };
