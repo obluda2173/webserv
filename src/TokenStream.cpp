@@ -1,11 +1,16 @@
 #include <TokenStream.h>
+#include <sstream>
 
 std::string TokenStream::_tokenDesc(TokenType ttype, const std::string& tvalue) const {
     switch (ttype) {
-        case IDENTIFIER: return "identifier";
-        case STRING: return "string";
-        case PUNCT: return "'" + tvalue + "'";
-        case END_OF_FILE: return "end-of-file";
+    case IDENTIFIER:
+        return "identifier";
+    case STRING:
+        return "string";
+    case PUNCT:
+        return "'" + tvalue + "'";
+    case END_OF_FILE:
+        return "end-of-file";
     }
     return "";
 }
@@ -13,26 +18,30 @@ std::string TokenStream::_tokenDesc(TokenType ttype, const std::string& tvalue) 
 void TokenStream::_tokenize() {
     while (_pos < _text.size()) {
         char c = _text[_pos];
-        
-        if (c == ' ' || c == '\t' || c == '\r') {                           // whitespace
+
+        if (c == ' ' || c == '\t' || c == '\r') { // whitespace
             _advance();
-        } else if (c == '\n') {                                             // newline
+        } else if (c == '\n') { // newline
             _advance();
-            _line++; _col = 1;
-        } else if (c == '#') {                                              // comments
+            _line++;
+            _col = 1;
+        } else if (c == '#') { // comments
             while (_pos < _text.size() && _text[_pos] != '\n')
                 _advance();
-        } else if (isalnum(c) || c == '_' || c == '/' || c == '.' || c == ':' || c == '[' || c == ']' || c == '-') {        // identifier
+        } else if (isalnum(c) || c == '_' || c == '/' || c == '.' || c == ':' || c == '[' || c == ']' ||
+                   c == '-') { // identifier
             int startCol = _col;
             std::string val;
-            while (_pos < _text.size() && (isalnum(_text[_pos]) || _text[_pos] == '_' || _text[_pos] == '/' || _text[_pos] == '.' || _text[_pos] == ':' || _text[_pos] == '[' || _text[_pos] == ']' || _text[_pos] == '-')) {
+            while (_pos < _text.size() &&
+                   (isalnum(_text[_pos]) || _text[_pos] == '_' || _text[_pos] == '/' || _text[_pos] == '.' ||
+                    _text[_pos] == ':' || _text[_pos] == '[' || _text[_pos] == ']' || _text[_pos] == '-')) {
                 val += _text[_pos];
                 _advance();
             }
             _tokens.push_back(Token{IDENTIFIER, val, _line, startCol});
-        } else if (c == '"') {                                              // string literal
+        } else if (c == '"') { // string literal
             int startCol = _col;
-            _advance();  // consume "
+            _advance(); // consume "
             std::string val;
             while (_pos < _text.size() && _text[_pos] != '"') {
                 val += _text[_pos];
@@ -40,16 +49,14 @@ void TokenStream::_tokenize() {
             }
             _expectChar('"');
             _tokens.push_back(Token{STRING, val, _line, startCol});
-        } else if (c == '{' || c == '}' || c == ';') {                      // punctuation
+        } else if (c == '{' || c == '}' || c == ';') { // punctuation
             int startCol = _col;
             std::string val(1, c);
             _advance();
             _tokens.push_back(Token{PUNCT, val, _line, startCol});
-        } else {                                                            // error
-            throw std::runtime_error(
-                "Unexpected character `" + std::string(1,c)
-                + "` at line " + toString(_line)
-                + " col " + toString(_col));
+        } else { // error
+            throw std::runtime_error("Unexpected character `" + std::string(1, c) + "` at line " + toString(_line) +
+                                     " col " + toString(_col));
         }
     }
 }
@@ -61,10 +68,8 @@ void TokenStream::_advance() {
 
 void TokenStream::_expectChar(char expected) {
     if (_pos >= _text.size() || _text[_pos] != expected) {
-        throw std::runtime_error(
-            "Expected '" + std::string(1, expected)
-            + "' at line " + toString(_line)
-            + " col " + toString(_col));
+        throw std::runtime_error("Expected '" + std::string(1, expected) + "' at line " + toString(_line) + " col " +
+                                 toString(_col));
     }
     _advance();
 }
@@ -74,8 +79,8 @@ TokenStream::TokenStream(const std::string& input) : _text(input), _pos(0), _lin
     _tokens.push_back(Token());
     _tokens.back().type = END_OF_FILE;
     _tokens.back().value = "";
-    _tokens.back().line  = _line;
-    _tokens.back().column   = _col;
+    _tokens.back().line = _line;
+    _tokens.back().column = _col;
     _index = 0;
 }
 
@@ -101,9 +106,7 @@ void TokenStream::unget() {
     }
 }
 
-bool TokenStream::hasMore() const {
-    return peek().type != END_OF_FILE;
-}
+bool TokenStream::hasMore() const { return peek().type != END_OF_FILE; }
 
 bool TokenStream::accept(TokenType ttype, const std::string& tvalue) {
     const Token& token = peek();
@@ -117,16 +120,16 @@ bool TokenStream::accept(TokenType ttype, const std::string& tvalue) {
 void TokenStream::expect(TokenType ttype, const std::string& tvalue) {
     const Token& token = peek();
     if (token.type != ttype || (!tvalue.empty() && token.value != tvalue)) {
-        std::string msg = "Parse error at line " + toString(token.line)
-                            + " col " + toString(token.column)
-                            + ": expected ";
+        std::string msg =
+            "Parse error at line " + toString(token.line) + " col " + toString(token.column) + ": expected ";
         msg += _tokenDesc(ttype, tvalue) + ", got `" + token.value + "`";
         throw std::runtime_error(msg);
     }
     next();
 }
 
-std::vector<std::string> TokenStream::collectArguments(const std::set<std::string>& terminators, std::vector<std::string> invalidArgs) {
+std::vector<std::string> TokenStream::collectArguments(const std::set<std::string>& terminators,
+                                                       std::vector<std::string> invalidArgs) {
     std::vector<std::string> args;
     while (hasMore()) {
         Token token = peek();

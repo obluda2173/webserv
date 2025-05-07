@@ -43,7 +43,17 @@ class Router {
     ~Router() {
         for (std::map<std::string, IHandler*>::iterator it = _hdlrs.begin(); it != _hdlrs.end(); it++)
             delete it->second;
+
+        // for (std::map<std::string, Route>::iterator it = _routeToRoutes.begin(); it != _routeToRoutes.end(); it++) {
+        //     Route route = it->second;
+        //     for (std::unordered_map<std::string, IHandler*>::iterator it = route.hdlrs.begin(); it !=
+        //     route.hdlrs.end();
+        //          it++) {
+        //         delete it->second;
+        //     }
+        // }
     }
+    Router(std::map<std::string, IHandler*> hdlrs) : _hdlrs(hdlrs) {}
 
     Router(IHandler* getHdlr, IHandler* postHdlr, IHandler* delHdlr) {
         _hdlrs["GET"] = getHdlr;
@@ -55,12 +65,12 @@ class Router {
            std::map<std::string, std::set<std::string>> svrToLocs, std::map<std::string, Route> routeToRoutes)
         : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
 
-    void add(std::string svrName, std::string prefix, std::vector<std::string> allowedMethods, RouteConfig cfg);
+    void add(std::string svrName, std::string prefix, std::string method, IHandler* hdlr, RouteConfig cfg);
     Route match(HttpRequest req);
     void printSvrMap();
 };
 
-Router newRouter(std::vector<ServerConfig> svrCfgs, IHandler* getHdlr, IHandler* postHdlr, IHandler* delHdlr);
+Router newRouter(std::vector<ServerConfig> svrCfgs, std::map<std::string, IHandler*> hdlrs);
 Router newRouterTest();
 
 #endif // ROUTER_H

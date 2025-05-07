@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*multipleRequestsOneConnectionInBatches*";
-    // testing::GTEST_FLAG(filter) = "*RouterTest*";
+    testing::GTEST_FLAG(filter) = "*RouterTest*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTest.send2MsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestPersistenceSendInOneMsg*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
-    testing::GTEST_FLAG(filter) = "*ConnHdlrTest*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
