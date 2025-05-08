@@ -40,7 +40,7 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
 
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, 2);
         setupServer();
         setupClientConnections();
     }
