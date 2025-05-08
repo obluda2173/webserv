@@ -4,7 +4,22 @@ GetHandler::GetHandler() {}
 GetHandler::~GetHandler() {}
 
 std::map<std::string, std::string> GetHandler::mimeTypes = std::map<std::string, std::string>();
+struct MimeInitializer {
+    MimeInitializer() {
+        GetHandler::mimeTypes[".html"] = "text/html";
+        GetHandler::mimeTypes[".htm"] = "text/html";
+        GetHandler::mimeTypes[".txt"] = "text/plain";
+        GetHandler::mimeTypes[".css"] = "text/css";
+        GetHandler::mimeTypes[".jpg"] = "image/jpeg";
+        GetHandler::mimeTypes[".jpeg"] = "image/jpeg";
+        GetHandler::mimeTypes[".png"] = "image/png";
+        GetHandler::mimeTypes[".gif"] = "image/gif";
+        GetHandler::mimeTypes[".pdf"] = "application/pdf";
+    }
+};
+static MimeInitializer mimeInit;
 
+// add more headers check
 bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config, std::string& errorMessage) {
     HttpResponse& resp = conn->_response;
     const size_t MAX_PATH_LENGTH = 4096;
@@ -33,6 +48,7 @@ bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& reques
     return true;
 }
 
+// check mimeType of the error page for more security
 void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config, std::string& errorMessage) {
     std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
     if (it != config.errorPage.end()) {
@@ -57,6 +73,8 @@ void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::str
     resp.body = bodyProvider;
 }
 
+// handle URI-encoded characters
+// handle query parameters
 std::string GetHandler::_normalizePath(const std::string& root, const std::string& uri) {
     std::string normalized = root;
     std::vector<std::string> segments;
@@ -102,12 +120,6 @@ std::string GetHandler::_normalizePath(const std::string& root, const std::strin
 }
 
 std::string GetHandler::_getMimeType(const std::string& path) {
-    if (mimeTypes.empty()) {
-        mimeTypes[".html"] = "text/html";
-        mimeTypes[".txt"] = "text/plain";
-        mimeTypes[".jpg"] = "image/jpeg";
-        mimeTypes[".png"] = "image/png";
-    }
     std::string ext = "";
     std::string::size_type pos = path.rfind('.');
     if (pos != std::string::npos) {
@@ -120,6 +132,7 @@ std::string GetHandler::_getMimeType(const std::string& path) {
     return "application/octet-stream";
 }
 
+// no handling if opendir fails
 std::string GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath) {
     DIR* dir = opendir(dirPath.c_str());
 
