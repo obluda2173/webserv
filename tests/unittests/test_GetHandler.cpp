@@ -263,6 +263,18 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentType("text/plain")
                 .withContentLength(9)
                 .build()
+        },
+        TestGetHandlerParams{                                                                       // 10
+            RequestBuilder()
+                .withUri("/image.jpg")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("image/jpeg")
+                .withContentLength(65459)
+                .build()
         }
     )
 );
