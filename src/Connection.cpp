@@ -49,7 +49,12 @@ void Connection::sendResponse() {
     char buffer[1024];
     size_t bytesWritten = _wrtr->write(buffer, 1024);
     size_t bytesSent = send(_fd, buffer, bytesWritten, 0);
+
     (void)bytesSent;
+    if (_response.body == NULL)
+        return;
+    if (_response.body->isDone())
+        _state = Reset;
 }
 
 void Connection::parseBuf() {

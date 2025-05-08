@@ -20,14 +20,12 @@ TEST_F(ConnHdlrTestWithBigBody, firstTest) {
     e_notif notif;
     _ioNotifier->wait(&fd, &notif);
     while (notif == READY_TO_WRITE && fd != -1) {
-        std::cout << "hello" << std::endl;
         _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         char buffer[1025];
         ssize_t r = recv(clientfd, &buffer[0], 1024, 0);
         buffer[r] = '\0';
         gotResponse += buffer;
         _ioNotifier->wait(&fd, &notif);
-        break;
     }
 
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
@@ -36,6 +34,7 @@ TEST_F(ConnHdlrTestWithBigBody, firstTest) {
                                "\r\n"
                                "\r\n" +
                                _body;
+
+    ASSERT_EQ(wantResponse.length(), gotResponse.length());
     ASSERT_EQ(wantResponse, gotResponse);
-    // ASSERT_EQ(_body.length(), gotBody.length());
 }

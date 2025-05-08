@@ -24,7 +24,6 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     int connfd = conn->getFileDes();
     switch (conn->getState()) {
     case Connection::ReadingHeaders:
-        std::cout << "in _updateNotifier: ReadingHeader" << std::endl;
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
     case Connection::Handling:
@@ -35,6 +34,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         break;
     case Connection::SendResponse:
         _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    case Connection::Reset:
+        _ioNotifier.modify(connfd, READY_TO_READ);
         break;
     }
 }
@@ -68,9 +70,6 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
-    std::cout << "in _handleState" << std::endl;
-    std::cout << conn->getState() << std::endl;
-
     bool continueProcessing = true;
     while (continueProcessing) {
         HttpResponse resp;
@@ -99,8 +98,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
         }
     }
 
-    std::cout << "at the end of  _handleState" << std::endl;
-    std::cout << conn->getState() << std::endl;
     _updateNotifier(conn);
 }
 
@@ -115,10 +112,12 @@ void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
     conn->sendResponse();
+
     if (conn->_response.statusCode == 400) {
         _removeConnection(connfd);
-    } else {
-        std::cout << "resetting" << std::endl;
+        return;
+    }
+    if (conn->getState() == Connection::Reset) {
         conn->resetResponse();
         conn->setState(Connection::ReadingHeaders);
         _handleState(conn); // possibly data inside Connection

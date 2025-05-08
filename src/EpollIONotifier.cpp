@@ -34,10 +34,8 @@ void EpollIONotifier::del(int fd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL); }
 void EpollIONotifier::modify(int fd, e_notif notif) {
     struct epoll_event event;
     if (notif == READY_TO_WRITE) {
-        std::cout << "in modify: ready_to_write" << std::endl;
         event.events = EPOLLOUT;
     } else if (notif == READY_TO_READ) {
-        std::cout << "in modify: ready_to_read" << std::endl;
         event.events = EPOLLIN | CLIENT_HUNG_UP;
     }
     event.data.fd = fd;
@@ -49,7 +47,6 @@ int EpollIONotifier::wait(int* fds, e_notif* notifs) {
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
     // struct epoll_event* events = new struct epoll_event[_nbrNotifs];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
-    std::cout << "ready: " << ready << std::endl;
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             fds[i] = events[i].data.fd;
