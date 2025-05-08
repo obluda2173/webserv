@@ -37,13 +37,21 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
         _ioNotifier = new EpollIONotifier(*_logger);
 
         // router will be owned by ConnectionHandler
+        // std::map<std::string, IHandler*> hdlrs = {{"GET", new GetHandlerType()}};
+        // IRouter* router = new Router(hdlrs);
+        // router->add("test.com", "", "GET", {});
+        // _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, 2);
+
+        setupConnectionHandler();
+        setupServer();
+        setupClientConnections();
+    }
+
+    virtual void setupConnectionHandler() {
         std::map<std::string, IHandler*> hdlrs = {{"GET", new GetHandlerType()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, 2);
-        setupServer();
-        setupClientConnections();
     }
 
     virtual void setupServer() {
@@ -127,34 +135,35 @@ class ConnHdlrTestWithIntegerAsParameter : public BasConnHdlrTest<StubLogger> {
     }
 };
 
-class BigRespBodyGetHandler : public IHandler {
-  public:
-    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-        (void)req;
-        (void)cfg;
-        HttpResponse& resp = conn->_response;
-        resp.statusCode = 200;
-        resp.statusMessage = "OK";
-        resp.contentLength = 4;
-        resp.body = new StringBodyProvider(getRandomString(10000));
-        resp.version = "HTTP/1.1";
-        conn->setState(Connection::SendResponse);
-        return;
-    };
-};
+// class BigRespBodyGetHandler : public IHandler {
+//   public:
+//     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+//         (void)req;
+//         (void)cfg;
+//         HttpResponse& resp = conn->_response;
+//         resp.statusCode = 200;
+//         resp.statusMessage = "OK";
+//         resp.contentLength = 4;
+//         resp.body = new StringBodyProvider(getRandomString(10000));
+//         resp.version = "HTTP/1.1";
+//         conn->setState(Connection::SendResponse);
+//         return;
+//     };
+// };
 
-class ConnHdlrTestWithBigBody : public BasConnHdlrTest<StubLogger, int, BigRespBodyGetHandler> {
-    virtual void setupClientConnections() override {
-        int clientfd;
-        int connfd;
-        int port = 23456;
-        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
-        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-            << "connect: " << std::strerror(errno) << std::endl;
-        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-        fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
-    }
-};
+// class ConnHdlrTestWithBigBody : public BasConnHdlrTest<StubLogger, int, BigRespBodyGetHandler> {
+//   public:
+//     virtual void setupClientConnections() override {
+//         int clientfd;
+//         int connfd;
+//         int port = 23456;
+//         clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+//         ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+//             << "connect: " << std::strerror(errno) << std::endl;
+//         connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+//         fcntl(clientfd, F_SETFL, O_NONBLOCK);
+//         _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+//     }
+// };
 
 #endif // TEST_CONNECTIONHANDLERTESTFIXTURE_H
