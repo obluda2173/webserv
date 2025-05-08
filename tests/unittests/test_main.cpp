@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestBadRequestClosesConnection*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
-    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestOneConnection.TestPersistenceSendInOneMsg*";
+    testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInOneMsg*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";

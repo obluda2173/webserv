@@ -29,8 +29,7 @@ TEST_F(ConnHdlrTestWithOneConnection, TestBadRequestClosesConnection) {
     // Send malformed request
     send(clientfd, request.c_str(), request.length(), 0);
 
-    // Handle the read event - server should process the bad request
-    _connHdlr->handleConnection(connfd, READY_TO_READ);
+    readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
 
     // Handle the write event - server should send the 400 response
     _connHdlr->handleConnection(connfd, READY_TO_WRITE);
@@ -90,7 +89,7 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
         std::string request = requests[i];
         std::string wantResponse = wantResponses[i];
         send(clientfd, request.c_str(), request.length(), 0);
-        _connHdlr->handleConnection(connfd, READY_TO_READ);
+        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
 
         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
         // initiate)
@@ -170,7 +169,9 @@ TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
             int connfd = _clientFdsAndConnFds[count].second;
 
             send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
+            // readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
             _connHdlr->handleConnection(connfd, READY_TO_READ);
+
             recv(clientfd, buffer, 1024, 0);
             ASSERT_EQ(errno, EWOULDBLOCK);
 
