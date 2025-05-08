@@ -168,9 +168,8 @@ TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
             int clientfd = _clientFdsAndConnFds[count].first;
             int connfd = _clientFdsAndConnFds[count].second;
 
-            std::cout << "before send. fd = " << connfd << std::endl;
             send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
-            readTillNothingMoreToRead(_ioNotifier, _connHdlr, connfd);
+            readTillNothingMoreToRead(_ioNotifier, _connHdlr, connfd, 2);
 
             recv(clientfd, buffer, 1024, 0);
             ASSERT_EQ(errno, EWOULDBLOCK);
@@ -189,7 +188,7 @@ TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
     for (size_t i = 0; i < _clientFdsAndConnFds.size(); i++) {
         int clientfd = _clientFdsAndConnFds[i].first;
         int connfd = _clientFdsAndConnFds[i].second;
-        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, connfd);
+        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifierWithMaxEvents(_ioNotifier, connfd, 2);
         _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         ssize_t r = recv(clientfd, buffer, 1024, 0);
         buffer[r] = '\0';

@@ -22,6 +22,7 @@ class EpollIONotifier : public IIONotifier {
     void modify(int fd, e_notif notif);
     void del(int fd);
     int wait(int* fds, e_notif* notif);
+    int waitMoreEvents(int* fds, e_notif* notifs, int nbrEvents);
 };
 
 #endif // EPOLLMANAGER_H
