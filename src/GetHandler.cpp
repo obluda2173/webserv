@@ -20,35 +20,35 @@ struct MimeInitializer {
 static MimeInitializer mimeInit;
 
 // add more headers check
-bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config, std::string& errorMessage) {
+bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
     const size_t MAX_PATH_LENGTH = 4096;
     _path = _normalizePath(config.root, request.uri);
     // std::cout << "----------------------------------------->" << _path << std::endl;
     if (request.headers.find("content-length") != request.headers.end() ||
         request.headers.find("transfer-encoding") != request.headers.end() || request.uri.empty()) {
-        _setErrorResponse(resp, 400, "Bad Request", config, errorMessage);
+        _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     } else if (_path.empty()) {
-        _setErrorResponse(resp, 403, "Forbidden", config, errorMessage);
+        _setErrorResponse(resp, 403, "Forbidden", config);
         return false;
     } else if (_path.length() > MAX_PATH_LENGTH) {
-        _setErrorResponse(resp, 400, "Bad Request", config, errorMessage);
+        _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     } else if (stat(_path.c_str(), &_pathStat) != 0) {
-        _setErrorResponse(resp, 404, "Not Found", config, errorMessage);
+        _setErrorResponse(resp, 404, "Not Found", config);
         return false;
     } else if (access(_path.c_str(), R_OK) != 0) {
-        _setErrorResponse(resp, 403, "Forbidden", config, errorMessage);
+        _setErrorResponse(resp, 403, "Forbidden", config);
         return false;
     } else if (!S_ISREG(_pathStat.st_mode) && !S_ISDIR(_pathStat.st_mode)) {
-        _setErrorResponse(resp, 404, "Not Found", config, errorMessage);
+        _setErrorResponse(resp, 404, "Not Found", config);
         return false;
     }
     return true;
 }
 
-void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config, std::string& errorMessage) {
+void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config) {
     std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
     if (it != config.errorPage.end()) {
         std::string errorPagePath = config.root + it->second;
@@ -58,8 +58,7 @@ void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::stri
             return;
         }
     }
-    errorMessage = message;
-    _setResponse(resp, code, message, "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+    _setResponse(resp, code, message, "text/plain", message.size(), new StringBodyProvider(message));
 }
 
 void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
@@ -131,7 +130,6 @@ std::string GetHandler::_getMimeType(const std::string& path) {
     return "application/octet-stream";
 }
 
-// no handling if opendir fails
 bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath, std::string& outListing) {
     DIR* dir = opendir(dirPath.c_str());
     if (!dir) {
@@ -142,17 +140,13 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
         std::string name = entry->d_name;
-
-        // Skip . and ..
         if (name == "." || name == "..")
             continue;
-
         std::string fullPath = dirPath + "/" + name;
         struct stat statbuf;
         if (stat(fullPath.c_str(), &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
             name += "/";
         }
-
         entries.push_back(name);
     }
     closedir(dir);
@@ -161,11 +155,9 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
     html << "<!DOCTYPE html>\n"
          << "<html><head><title>Index of " << requestPath << "</title></head><body>\n"
          << "<h1>Index of " << requestPath << "</h1><ul>\n";
-
     for (size_t i = 0; i < entries.size(); ++i) {
         html << "<li><a href=\"" << entries[i] << "\">" << entries[i] << "</a></li>\n";
     }
-
     html << "</ul></body></html>\n";
     outListing = html.str();
     return true;
@@ -173,7 +165,7 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     std::string errorMessage;
-    if (!_validateGetRequest(conn, request, config, errorMessage)) {
+    if (!_validateGetRequest(conn, request, config)) {
         conn->setState(Connection::SendResponse);
         return;
     }
@@ -198,13 +190,11 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
             _setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
             conn->setState(Connection::SendResponse);
         } else {
-            errorMessage = "Forbidden";
-            _setResponse(resp, 403, "Forbidden", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+            _setErrorResponse(resp, 403, "Forbidden", config);
             conn->setState(Connection::SendResponse);
         }
     } else {
-        errorMessage = "Not Found";
-        _setResponse(resp, 404, "Not Found", "text/plain", errorMessage.size(), new StringBodyProvider(errorMessage));
+        _setErrorResponse(resp, 404, "Not Found", config);
         conn->setState(Connection::SendResponse);
     }
 }
