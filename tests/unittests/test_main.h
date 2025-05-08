@@ -35,6 +35,7 @@ void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifierWithMaxEvents(IIONotifi
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
 void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents);
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
+std::string getRandomString(size_t length);
 Router newRouterTest();
 
 #endif // TEST_MAIN_H_

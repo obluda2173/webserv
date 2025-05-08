@@ -1,4 +1,5 @@
 #include "ResponseWriter.h"
+#include "test_main.h"
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
 
@@ -55,19 +56,6 @@ INSTANTIATE_TEST_SUITE_P(maxSizes, ResponseWriterTest,
                                          ResponseWriterParams{"pong", 3}));
 
 INSTANTIATE_TEST_SUITE_P(bodyEmpty, ResponseWriterTest, testing::Values(ResponseWriterParams{"", 1}));
-
-std::string getRandomString(size_t length) {
-    const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    std::string randomString;
-
-    std::srand(static_cast<unsigned int>(std::time(0))); // Seed for random number generator
-
-    for (size_t i = 0; i < length; ++i) {
-        randomString += chars[std::rand() % chars.length()];
-    }
-
-    return randomString;
-}
 
 INSTANTIATE_TEST_SUITE_P(msg100long, ResponseWriterTest,
                          testing::Values(ResponseWriterParams{getRandomString(100), 1},

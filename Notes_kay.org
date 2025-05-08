@@ -46,4 +46,5 @@ index       index.html index.htm
   - [ ] make the read and send methods adjustable in buffer size
   - [ ] rename to _headersBuf and _bodyBuf
   - [ ] test for long responses where sent needs to happen more than once
+- [ ] handle ClientHungUp
 - [ ] Put the thing together
