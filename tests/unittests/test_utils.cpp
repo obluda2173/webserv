@@ -70,7 +70,7 @@ void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifierWithMaxEvents(IIONotifi
     int* fds = new int[maxEvents]();
     e_notif* notifs = new e_notif[maxEvents](); // uninitialized
 
-    ioNotifier->waitMoreEvents(fds, notifs, maxEvents);
+    ioNotifier->wait(fds, notifs);
     int fd = -1;
     e_notif notif;
     for (int i = 0; i < maxEvents; i++) {
@@ -107,7 +107,7 @@ void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _co
     int* fds = new int[maxEvents]();
     e_notif* notifs = new e_notif[maxEvents](); // uninitialized
 
-    _ioNotifier->waitMoreEvents(fds, notifs, maxEvents);
+    _ioNotifier->wait(fds, notifs);
     int fd = -1;
     e_notif notif;
     for (int i = 0; i < maxEvents; i++) {
@@ -124,7 +124,7 @@ void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _co
 
         fds = new int[maxEvents]();
         notifs = new e_notif[maxEvents](); // uninitialized
-        _ioNotifier->waitMoreEvents(fds, notifs, maxEvents);
+        _ioNotifier->wait(fds, notifs);
         fd = -1;
         for (int i = 0; i < maxEvents; i++) {
             if (fds[i] == _conn) {

@@ -9,7 +9,6 @@ class IIONotifier {
     virtual void add(int fd) = 0;
     virtual void del(int fd) = 0;
     virtual int wait(int* fds, e_notif* notif) = 0;
-    virtual int waitMoreEvents(int* fds, e_notif* notifs, int nbrEvents) = 0;
     virtual void modify(int fd, e_notif notif) = 0;
 };
 
