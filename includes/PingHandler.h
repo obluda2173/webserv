@@ -3,6 +3,7 @@
 
 #include "Connection.h"
 #include "HttpResponse.h"
+#include "IHandler.h"
 
 class PingHandler : public IHandler {
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
