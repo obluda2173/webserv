@@ -20,6 +20,7 @@ class ConnectionHandler : public IConnectionHandler {
     IRouter* _router;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
+    size_t _readSize;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
     void _onSocketRead(int fd);
@@ -30,7 +31,7 @@ class ConnectionHandler : public IConnectionHandler {
     void _removeConnection(int connfd);
 
   public:
-    ConnectionHandler(IRouter*, ILogger&, IIONotifier&);
+    ConnectionHandler(IRouter*, ILogger&, IIONotifier&, size_t readSize = READ_SIZE);
     ~ConnectionHandler(void);
     int handleConnection(int conn, e_notif notif);
 };

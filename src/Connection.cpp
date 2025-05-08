@@ -1,8 +1,9 @@
 #include "Connection.h"
 #include "HttpResponse.h"
+#include <climits>
 
-Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr)
-    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL) {}
+Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize)
+    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize) {}
 
 Connection::~Connection() {
     close(_fd);
@@ -22,15 +23,15 @@ void Connection::resetResponse() {
 
 void Connection::readIntoBuf() {
     // Reserve space to minimize reallocations if receiving multiple chunks
-    if (_buf.capacity() < _buf.size() + 1024)
-        _buf.reserve(_buf.size() + 1024);
+    if (_buf.capacity() < _buf.size() + _readSize)
+        _buf.reserve(_buf.size() + _readSize);
 
     // Get position to write at and increase size
     size_t oldSize = _buf.size();
-    _buf.resize(oldSize + 1024);
+    _buf.resize(oldSize + _readSize);
 
     // Receive directly into string buffer
-    ssize_t r = recv(_fd, &_buf[oldSize], 1024, 0);
+    ssize_t r = recv(_fd, &_buf[oldSize], _readSize, 0);
 
     // Adjust size to actual bytes received
     if (r > 0)

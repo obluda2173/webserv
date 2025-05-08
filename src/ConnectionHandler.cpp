@@ -10,8 +10,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-ConnectionHandler::ConnectionHandler(IRouter* router, ILogger& l, IIONotifier& ep)
-    : _router(router), _logger(l), _ioNotifier(ep) {}
+ConnectionHandler::ConnectionHandler(IRouter* router, ILogger& l, IIONotifier& ep, size_t readSize)
+    : _router(router), _logger(l), _ioNotifier(ep), _readSize(readSize) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
     for (std::map<int, Connection*>::iterator it = _connections.begin(); it != _connections.end(); it++) {
@@ -40,7 +40,7 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
 
 void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
-    Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
+    Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger), _readSize);
     _connections[connfd] = conn;
     _ioNotifier.add(connfd);
 }
