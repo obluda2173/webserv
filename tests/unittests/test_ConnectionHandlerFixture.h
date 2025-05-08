@@ -150,7 +150,7 @@ class BigRespBodyGetHandler : public IHandler {
         HttpResponse& resp = conn->_response;
         resp.statusCode = 200;
         resp.statusMessage = "OK";
-        resp.contentLength = 4;
+        resp.contentLength = _body.length();
         resp.body = new StringBodyProvider(_body);
         resp.version = "HTTP/1.1";
         conn->setState(Connection::SendResponse);

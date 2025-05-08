@@ -1,6 +1,9 @@
 #include "Connection.h"
 #include "HttpResponse.h"
 #include <climits>
+#include <cstring>
+#include <iostream>
+#include <string.h>
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize) {}
