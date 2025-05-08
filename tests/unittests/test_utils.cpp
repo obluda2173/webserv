@@ -141,7 +141,7 @@ void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _conn
     int fds = -1;
     e_notif notif;
     _ioNotifier->wait(&fds, &notif);
-    while (notif == READY_TO_READ && fds != -1) {
+    while (notif == READY_TO_READ) {
         _connHdlr->handleConnection(_conn, READY_TO_READ);
         _ioNotifier->wait(&fds, &notif);
     }

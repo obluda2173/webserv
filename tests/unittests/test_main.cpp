@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     //
     // only run the following test
 
-    testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestBadRequestClosesConnection*";
     // testing::GTEST_FLAG(filter) = "*ConnectionHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
