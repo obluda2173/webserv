@@ -48,14 +48,13 @@ bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& reques
     return true;
 }
 
-// check mimeType of the error page for more security
 void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config, std::string& errorMessage) {
     std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
     if (it != config.errorPage.end()) {
         std::string errorPagePath = config.root + it->second;
         struct stat fileStat;
         if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
-            _setResponse(resp, code, message, "text/html", fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
+            _setResponse(resp, code, message, _getMimeType(errorPagePath), fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
             return;
         }
     }
@@ -133,8 +132,11 @@ std::string GetHandler::_getMimeType(const std::string& path) {
 }
 
 // no handling if opendir fails
-std::string GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath) {
+bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath, std::string& outListing) {
     DIR* dir = opendir(dirPath.c_str());
+    if (!dir) {
+        return false;
+    }
 
     std::vector<std::string> entries;
     struct dirent* entry;
@@ -165,7 +167,8 @@ std::string GetHandler::_getDirectoryListing(const std::string& dirPath, const s
     }
 
     html << "</ul></body></html>\n";
-    return html.str();
+    outListing = html.str();
+    return true;
 }
 
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
@@ -190,8 +193,8 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
                 }
             }
         }
-        if (config.autoindex) {
-            std::string listing = _getDirectoryListing(_path, request.uri);
+        std::string listing;
+        if (config.autoindex && _getDirectoryListing(_path, request.uri, listing)) {
             _setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
             conn->setState(Connection::SendResponse);
         } else {

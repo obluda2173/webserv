@@ -21,7 +21,7 @@ class GetHandler : public IHandler {
     void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
     std::string _normalizePath(const std::string& root, const std::string& uri);
     std::string _getMimeType(const std::string& path);
-    std::string _getDirectoryListing(const std::string& path, const std::string& uri);
+    bool _getDirectoryListing(const std::string& path, const std::string& uri, std::string& outListing);
     
   public:
     static std::map<std::string, std::string> mimeTypes;
