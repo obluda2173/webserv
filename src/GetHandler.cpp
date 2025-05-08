@@ -9,16 +9,16 @@ bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& reques
     HttpResponse& resp = conn->_response;
     const size_t MAX_PATH_LENGTH = 4096;
     _path = _normalizePath(config.root, request.uri);
-
+    // std::cout << "----------------------------------------->" << _path << std::endl;
     if (request.headers.find("content-length") != request.headers.end() ||
-        request.headers.find("transfer-encoding") != request.headers.end()) {
+        request.headers.find("transfer-encoding") != request.headers.end() || request.uri.empty()) {
         _setErrorResponse(resp, 400, "Bad Request", config, errorMessage);
         return false;
     } else if (_path.empty()) {
         _setErrorResponse(resp, 403, "Forbidden", config, errorMessage);
         return false;
     } else if (_path.length() > MAX_PATH_LENGTH) {
-        _setErrorResponse(resp, 414, "URI Too Long", config, errorMessage);
+        _setErrorResponse(resp, 400, "Bad Request", config, errorMessage);
         return false;
     } else if (stat(_path.c_str(), &_pathStat) != 0) {
         _setErrorResponse(resp, 404, "Not Found", config, errorMessage);
