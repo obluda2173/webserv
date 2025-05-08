@@ -30,6 +30,7 @@ bool allZero(std::vector<std::string> msgs);
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
+void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
 Router newRouterTest();
 

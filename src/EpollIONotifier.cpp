@@ -1,6 +1,7 @@
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
 #include <errno.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
@@ -44,7 +45,6 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
 int EpollIONotifier::wait(int* fds, e_notif* notifs) {
     struct epoll_event events[1]; // TODO: make maxEvents configurable
     int ready = epoll_wait(_epfd, events, 1, 10);
-
     if (ready > 0) {
         *fds = events[0].data.fd;
         if (events[0].events & EPOLLHUP)

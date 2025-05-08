@@ -168,9 +168,9 @@ TEST_P(ConnHdlrTestWithOneConnectionPerRequest, sendMsgsAsync) {
             int clientfd = _clientFdsAndConnFds[count].first;
             int connfd = _clientFdsAndConnFds[count].second;
 
+            std::cout << "before send. fd = " << connfd << std::endl;
             send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
-            // readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
-            _connHdlr->handleConnection(connfd, READY_TO_READ);
+            readTillNothingMoreToRead(_ioNotifier, _connHdlr, connfd);
 
             recv(clientfd, buffer, 1024, 0);
             ASSERT_EQ(errno, EWOULDBLOCK);

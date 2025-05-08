@@ -1,6 +1,7 @@
 #include "Connection.h"
 #include "HttpResponse.h"
 #include <climits>
+#include <iostream>
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize) {}
@@ -32,7 +33,6 @@ void Connection::readIntoBuf() {
 
     // Receive directly into string buffer
     ssize_t r = recv(_fd, &_buf[oldSize], _readSize, 0);
-
     // Adjust size to actual bytes received
     if (r > 0)
         _buf.resize(oldSize + r);

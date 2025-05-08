@@ -84,11 +84,22 @@ void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier
     ASSERT_EQ(notif, READY_TO_READ);
 }
 
+void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn) {
+    int fds = -1;
+    e_notif notif;
+    _ioNotifier->wait(&fds, &notif);
+    while (notif == READY_TO_READ && fds != -1) {
+        _connHdlr->handleConnection(_conn, READY_TO_READ);
+        _ioNotifier->wait(&fds, &notif);
+    }
+    std::cout << fds << std::endl;
+}
+
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn) {
     int fds = -1;
     e_notif notif;
     _ioNotifier->wait(&fds, &notif);
-    while (notif == READY_TO_READ) {
+    while (notif == READY_TO_READ && fds != -1) {
         _connHdlr->handleConnection(_conn, READY_TO_READ);
         _ioNotifier->wait(&fds, &notif);
     }
