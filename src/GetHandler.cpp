@@ -140,7 +140,7 @@ std::string GetHandler::_getMimeType(const std::string& path) const {
     if (it != mimeTypes.end()) {
         return it->second;
     }
-    return "application/octet-stream";
+    return DEFAULT_MIME_TYPE;
 }
 
 bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath, std::string& outListing) {
