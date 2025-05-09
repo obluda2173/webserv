@@ -28,7 +28,7 @@ class Connection {
   private:
     STATE _state;
     sockaddr_storage _addr;
-    std::string _buf;
+    std::string _readBuf;
     int _fd;
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;

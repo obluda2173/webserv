@@ -29,20 +29,20 @@ void Connection::resetResponse() {
 
 void Connection::readIntoBuf() {
     // Reserve space to minimize reallocations if receiving multiple chunks
-    if (_buf.capacity() < _buf.size() + _readSize)
-        _buf.reserve(_buf.size() + _readSize);
+    if (_readBuf.capacity() < _readBuf.size() + _readSize)
+        _readBuf.reserve(_readBuf.size() + _readSize);
 
     // Get position to write at and increase size
-    size_t oldSize = _buf.size();
-    _buf.resize(oldSize + _readSize);
+    size_t oldSize = _readBuf.size();
+    _readBuf.resize(oldSize + _readSize);
 
     // Receive directly into string buffer
-    ssize_t r = recv(_fd, &_buf[oldSize], _readSize, 0);
+    ssize_t r = recv(_fd, &_readBuf[oldSize], _readSize, 0);
     // Adjust size to actual bytes received
     if (r > 0)
-        _buf.resize(oldSize + r);
+        _readBuf.resize(oldSize + r);
     else
-        _buf.resize(oldSize); // Restore original size if no data received
+        _readBuf.resize(oldSize); // Restore original size if no data received
 }
 
 void Connection::sendResponse() {
@@ -74,11 +74,11 @@ void Connection::parseBuf() {
         _state = ReadingHeaders;
     }
 
-    char* b = (char*)_buf.c_str();
+    char* b = (char*)_readBuf.c_str();
     while (*b) {
         _prsr->feed(b, 1);
         if (_prsr->error() || _prsr->ready()) {
-            _buf = b + 1;
+            _readBuf = b + 1;
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
                 _state = Handling;
@@ -88,7 +88,7 @@ void Connection::parseBuf() {
         }
         b++;
     }
-    _buf = b;
+    _readBuf = b;
 }
 
 int Connection::getFileDes() const { return _fd; }
