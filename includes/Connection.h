@@ -7,6 +7,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <vector>
 
 #define READ_SIZE 2048
 
@@ -33,6 +34,7 @@ class Connection {
     IResponseWriter* _wrtr;
     size_t _readSize;
     ISender* _sender;
+    std::string _sendBuf;
 
   public:
     ~Connection();

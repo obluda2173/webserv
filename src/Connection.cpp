@@ -2,6 +2,7 @@
 #include "HttpResponse.h"
 #include <climits>
 #include <cstring>
+#include <iostream>
 #include <string.h>
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize, ISender* sender)
@@ -47,9 +48,14 @@ void Connection::sendResponse() {
         _wrtr = new ResponseWriter(_response);
 
     char buffer[1024];
-    size_t bytesWritten = _wrtr->write(buffer, 1024);
-    size_t bytesSent = _sender->_send(_fd, buffer, bytesWritten);
 
+    memcpy(buffer, _sendBuf.data(), _sendBuf.size());
+
+    size_t bytesWritten = _wrtr->write(buffer + _sendBuf.size(), 1024 - _sendBuf.size());
+
+    size_t bytesSent = _sender->_send(_fd, buffer, bytesWritten + _sendBuf.size());
+
+    _sendBuf = std::string(buffer + bytesSent, bytesWritten + _sendBuf.size() - bytesSent);
     (void)bytesSent;
     if (_response.body == NULL)
         return;

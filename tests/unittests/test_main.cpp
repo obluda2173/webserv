@@ -10,12 +10,13 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
-    // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "-*ConnectionTestResend*";
+    // testing::GTEST_FLAG(filter) =
+    //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // only run the following test
 
-    testing::GTEST_FLAG(filter) = "*ConnectionTestResend*";
+    // testing::GTEST_FLAG(filter) = "*ConnectionTestResend*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithBigBody*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";

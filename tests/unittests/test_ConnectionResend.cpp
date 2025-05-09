@@ -35,10 +35,12 @@ TEST(ConnectionTestResend, testPartiallySending) {
 
     conn._response.statusCode = 200;
     conn._response.version = "HTTP/1.1";
+    conn._response.statusMessage = "OK";
     conn._response.contentLength = body.length();
     conn._response.body = new StringBodyProvider(body);
     int count = 0; // to make the test terminate
-    while (sender->response.length() < body.length() && count++ < 50)
+    while (sender->response.length() < wantResponse.length() && count++ < 50)
         conn.sendResponse();
-    ASSERT_EQ(sender->response.length(), body.length());
+    ASSERT_EQ(sender->response.length(), wantResponse.length());
+    ASSERT_EQ(sender->response, wantResponse);
 }
