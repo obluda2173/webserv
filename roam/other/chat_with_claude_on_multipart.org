@@ -1,0 +1,43 @@
+:PROPERTIES:
+:GPTEL_MODEL: claude-3-7-sonnet-20250219
+:GPTEL_BACKEND: Claude
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Avoid long answers.
+:GPTEL_BOUNDS: ((response (347 380) (514 889) (1101 1850)))
+:END:
+
+*** I'm developping an http server where I want to be able to upload data. Therefore I'm using Content-Type: multipart/form-data. The data, especially the body, is arriving in chunks. So each time that i encounter a boundary, I need to parse some headers again.
+   #+begin_src http
+   POST /upload HTTP/1.1
+   Host: example.com
+   Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+   ------WebKitFormBoundary7MA4YWxkTrZu0gW
+   Content-Disposition: form-data; name="file"; filename="example.txt"
+   Content-Type: text/plain
+
+   ...file contents...
+   ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+   #+end_src
+   What I'm mostly concerned with right-now, is when I read some file content, how do I know if it still belongs to the file content or maybe is already the seperator line (boundary) which I'm looking out for?
+
+To determine if a line is part of the file content or a boundary:
+
+1. Check if the current line starts with the boundary string (usually prefixed with "--")
+2. Be careful with binary files that might contain sequences that look like the boundary
+3. The proper approach is to scan for "\r\n--boundary" or "\n--boundary" sequences
+
+A common implementation strategy:
+#+begin_src
+buffer = read_chunk()
+boundary_position = buffer.find("\r\n" + boundary_string)
+if boundary_position != -1:
+    file_content = buffer[:boundary_position]
+    # Process boundary and headers that follow
+else:
+    file_content = buffer
+    # Continue reading more chunks
+#+end_src
+
+The key is to maintain a buffer that can handle boundary strings possibly split across chunks.
+
+***
