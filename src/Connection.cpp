@@ -2,16 +2,16 @@
 #include "HttpResponse.h"
 #include <climits>
 #include <cstring>
-#include <iostream>
 #include <string.h>
 
-Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize)
-    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize) {}
+Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize, ISender* sender)
+    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize), _sender(sender) {}
 
 Connection::~Connection() {
     close(_fd);
     delete _prsr;
     delete _wrtr;
+    delete _sender;
     delete _response.body;
 }
 
@@ -48,7 +48,7 @@ void Connection::sendResponse() {
 
     char buffer[1024];
     size_t bytesWritten = _wrtr->write(buffer, 1024);
-    size_t bytesSent = send(_fd, buffer, bytesWritten, 0);
+    size_t bytesSent = _sender->_send(_fd, buffer, bytesWritten);
 
     (void)bytesSent;
     if (_response.body == NULL)
