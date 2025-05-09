@@ -12,13 +12,6 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
-struct ScopedBodyProvider {
-  IBodyProvider* ptr;
-  ScopedBodyProvider() : ptr(0) {}
-  // ScopedBodyProvider(IBodyProvider* p = 0) : ptr(p) {} // not used
-  ~ScopedBodyProvider() { delete ptr; }
-};
-
 class GetHandler : public IHandler {
   private:
     std::string _path;

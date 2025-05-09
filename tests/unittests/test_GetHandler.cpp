@@ -289,6 +289,21 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentType("text/html")
                 .withContentLength(435)
                 .build()
+        },
+        TestGetHandlerParams{                                                                       // 12 test directory listing (content-length changes with changing test_root)
+            RequestBuilder()
+                .withUri("/")
+                .build(),
+            RouteConfigBuilder()
+                .withErrorPage({{400, "/error_pages/400.html"}, {403, "/error_pages/403.html"}, {404, "/error_pages/404.html"}})
+                .withAutoIndex(true)
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/html")
+                .withContentLength(307)
+                .build()
         }
     )
 );

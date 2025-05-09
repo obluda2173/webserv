@@ -37,7 +37,6 @@ bool GetHandler::_isValidFileType() const {
 
 bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
-    _path = _normalizePath(config.root, req.uri);
 
     if (req.uri.empty() || _isInvalidHeader(req)) {
         _setErrorResponse(resp, 400, "Bad Request", config);
@@ -154,41 +153,39 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 }
 
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
+    _path = _normalizePath(config.root, request.uri);
     if (!_validateGetRequest(conn, request, config)) {
         conn->setState(Connection::SendResponse);
         return;
     }
 
     HttpResponse& resp = conn->_response;
-    ScopedBodyProvider body;
 
-    if (S_ISREG(_pathStat.st_mode)) {
-        body.ptr = new FileBodyProvider(_path.c_str());
-        _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, body.ptr);
-        body.ptr = 0;
-    } else if (S_ISDIR(_pathStat.st_mode)) {
+    if (S_ISREG(_pathStat.st_mode)) { // if file
+        _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
+        conn->setState(Connection::SendResponse);
+        return;
+    } else if (S_ISDIR(_pathStat.st_mode)) { // if directory
         if (!config.index.empty()) {
-            for (size_t i = 0; i < config.index.size(); ++i) {
+            for (size_t i = 0; i < config.index.size(); ++i) { // serve existing index file from "index" directive (confg)
                 std::string indexPath = _path + config.index[i];
                 if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-                    body.ptr = new FileBodyProvider(indexPath.c_str());
-                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, body.ptr);
-                    body.ptr = 0;
-                    break;
+                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
+                    conn->setState(Connection::SendResponse);
+                    return;
                 }
             }
         }
-        if (resp.statusCode != 200 && config.autoindex) {
+        if (config.autoindex) { // if no existing index file was found
             std::string listing;
-            if (_getDirectoryListing(_path, request.uri, listing)) {
-                body.ptr = new StringBodyProvider(listing);
-                _setResponse(resp, 200, "OK", "text/html", listing.size(), body.ptr);
-                body.ptr = 0;
+            if (_getDirectoryListing(_path, request.uri, listing)) { // serve directory listing
+                _setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
+                conn->setState(Connection::SendResponse);
+                return;
             }
         }
-        if (resp.statusCode != 200) {
-            _setErrorResponse(resp, 403, "Forbidden", config);
-        }
     }
+    _setErrorResponse(resp, 403, "Forbidden", config);
     conn->setState(Connection::SendResponse);
+    return;
 }
