@@ -2,11 +2,13 @@
 #include "HttpResponse.h"
 #include <climits>
 #include <cstring>
-#include <iostream>
 #include <string.h>
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize, ISender* sender)
-    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize), _sender(sender) {}
+    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize), _sender(sender) {
+    _sendBuf = std::vector<char>(1024);
+    _sendBufUsedSize = 0;
+}
 
 Connection::~Connection() {
     close(_fd);
@@ -47,16 +49,19 @@ void Connection::sendResponse() {
     if (!_wrtr)
         _wrtr = new ResponseWriter(_response);
 
-    char buffer[1024];
+    // Writing new data
+    size_t bytesWritten = _wrtr->write(_sendBuf.data() + _sendBufUsedSize, _sendBuf.size() - _sendBufUsedSize);
+    _sendBufUsedSize += bytesWritten;
 
-    memcpy(buffer, _sendBuf.data(), _sendBuf.size());
+    // Sending data
+    size_t bytesSent = _sender->_send(_fd, _sendBuf.data(), _sendBufUsedSize);
 
-    size_t bytesWritten = _wrtr->write(buffer + _sendBuf.size(), 1024 - _sendBuf.size());
+    // Update after sending
+    if (bytesSent > 0) {
+        memmove(_sendBuf.data(), _sendBuf.data() + bytesSent, _sendBufUsedSize - bytesSent);
+        _sendBufUsedSize -= bytesSent;
+    }
 
-    size_t bytesSent = _sender->_send(_fd, buffer, bytesWritten + _sendBuf.size());
-
-    _sendBuf = std::string(buffer + bytesSent, bytesWritten + _sendBuf.size() - bytesSent);
-    (void)bytesSent;
     if (_response.body == NULL)
         return;
     if (_response.body->isDone())

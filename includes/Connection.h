@@ -34,7 +34,8 @@ class Connection {
     IResponseWriter* _wrtr;
     size_t _readSize;
     ISender* _sender;
-    std::string _sendBuf;
+    std::vector<char> _sendBuf;
+    size_t _sendBufUsedSize;
 
   public:
     ~Connection();
