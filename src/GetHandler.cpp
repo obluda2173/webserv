@@ -75,14 +75,38 @@ void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::str
     resp.body = bodyProvider;
 }
 
-// handle URI-encoded characters
-// handle query parameters
-std::string GetHandler::_normalizePath(const std::string& root, const std::string& uri) {
+int GetHandler::_hexToInt(char c) const {
+    if (c >= '0' && c <= '9') 
+        return c - '0';
+    if (c >= 'a' && c <= 'f') 
+        return 10 + c - 'a';
+    return -1;
+}
+
+std::string GetHandler::_decodePercent(const std::string& str) const {
+    std::string result;
+    for (size_t i = 0; i < str.size(); ++i) {
+        if (str[i] == '%' && i + 2 < str.size()) {
+            int hi = _hexToInt(tolower(str[i + 1]));
+            int lo = _hexToInt(tolower(str[i + 2]));
+            if (hi != -1 && lo != -1) {
+                result += static_cast<char>((hi << 4) | lo);
+                i += 2;
+                continue;
+            }
+        }
+        result += str[i];
+    }
+    return result;
+}
+
+std::string GetHandler::_normalizePath(const std::string& root, const std::string& uri) const {
+    std::istringstream iss(uri.substr(0, uri.find('?')));
     std::vector<std::string> segments;
-    std::string segment;
-    std::istringstream iss(uri);
+    std::string encoded_segment;
     
-    while (std::getline(iss, segment, '/')) {
+    while (std::getline(iss, encoded_segment, '/')) {
+        std::string segment = _decodePercent(encoded_segment);
         if (segment.empty() || segment == ".")
             continue;
         if (segment == "..") {
@@ -100,13 +124,13 @@ std::string GetHandler::_normalizePath(const std::string& root, const std::strin
     }
     std::string result = oss.str();
 
-    if (uri == "/") {
+    if (uri == "/" && segments.empty()) {
         result += "/";
     }
     return (result.find(root) == 0) ? result : "";
 }
 
-std::string GetHandler::_getMimeType(const std::string& path) {
+std::string GetHandler::_getMimeType(const std::string& path) const {
     std::string ext = "";
     std::string::size_type pos = path.rfind('.');
     if (pos != std::string::npos) {

@@ -302,7 +302,21 @@ INSTANTIATE_TEST_SUITE_P(
                 .withStatusCode(200)
                 .withStatusMessage("OK")
                 .withContentType("text/html")
-                .withContentLength(307)
+                .withContentLength(370)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 13 decoding
+            RequestBuilder()
+                .withUri("/file%20with%20space.txt")
+                .build(),
+            RouteConfigBuilder()
+                .withErrorPage({{400, "/error_pages/400.html"}, {403, "/error_pages/403.html"}, {404, "/error_pages/404.html"}})
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/plain")
+                .withContentLength(39)
                 .build()
         }
     )
