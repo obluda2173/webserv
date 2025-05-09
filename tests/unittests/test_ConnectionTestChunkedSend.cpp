@@ -22,7 +22,7 @@ class MockSender : public ISender {
     }
 };
 
-TEST(ConnectionTestResend, testPartiallySending) {
+TEST(ConnectionTestChunkedSend, testPartiallySending) {
     MockSender* sender = new MockSender();
     Connection conn({}, -1, NULL, -1, sender);
     std::string body = getRandomString(10000);
