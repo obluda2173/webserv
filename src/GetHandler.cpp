@@ -19,30 +19,37 @@ struct MimeInitializer {
 };
 static MimeInitializer mimeInit;
 
-// add more headers check
-bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
+bool GetHandler::_isInvalidHeader(const HttpRequest& req) const {
+    return req.headers.count("content-length") || req.headers.count("transfer-encoding");
+}
+
+bool GetHandler::_isValidPath() const {
+    return !_path.empty() && _path.length() <= MAX_PATH_LENGTH;
+}
+
+bool GetHandler::_isAccessible() const {
+    return access(_path.c_str(), R_OK) == 0;
+}
+
+bool GetHandler::_isValidFileType() const {
+    return S_ISREG(_pathStat.st_mode) || S_ISDIR(_pathStat.st_mode);
+}
+
+bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
-    const size_t MAX_PATH_LENGTH = 4096;
-    _path = _normalizePath(config.root, request.uri);
-    // std::cout << "----------------------------------------->" << _path << std::endl;
-    if (request.headers.find("content-length") != request.headers.end() ||
-        request.headers.find("transfer-encoding") != request.headers.end() || request.uri.empty()) {
+    _path = _normalizePath(config.root, req.uri);
+
+    if (req.uri.empty() || _isInvalidHeader(req)) {
         _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
-    } else if (_path.empty()) {
+    } else if (!_isValidPath()) {
         _setErrorResponse(resp, 403, "Forbidden", config);
-        return false;
-    } else if (_path.length() > MAX_PATH_LENGTH) {
-        _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     } else if (stat(_path.c_str(), &_pathStat) != 0) {
         _setErrorResponse(resp, 404, "Not Found", config);
         return false;
-    } else if (access(_path.c_str(), R_OK) != 0) {
+    } else if (!_isAccessible() || !_isValidFileType()) {
         _setErrorResponse(resp, 403, "Forbidden", config);
-        return false;
-    } else if (!S_ISREG(_pathStat.st_mode) && !S_ISDIR(_pathStat.st_mode)) {
-        _setErrorResponse(resp, 404, "Not Found", config);
         return false;
     }
     return true;
@@ -106,11 +113,9 @@ std::string GetHandler::_normalizePath(const std::string& root, const std::strin
     for (std::vector<std::string>::const_iterator it = stack.begin(); it != stack.end(); ++it) {
         normalized += "/" + *it;
     }
-
     if (uri == "/" && stack.empty()) {
         normalized += "/";
     }
-
     if (normalized.find(root) != 0) {
         return "";
     }
