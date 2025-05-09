@@ -81,45 +81,30 @@ void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::str
 // handle URI-encoded characters
 // handle query parameters
 std::string GetHandler::_normalizePath(const std::string& root, const std::string& uri) {
-    std::string normalized = root;
     std::vector<std::string> segments;
-
-    std::string segment = "";
-    for (size_t i = 0; i < uri.size(); ++i) {
-        if (uri[i] == '/') {
-            if (!segment.empty()) {
-                segments.push_back(segment);
-                segment = "";
-            }
+    std::string segment;
+    std::istringstream iss(uri);
+    
+    while (std::getline(iss, segment, '/')) {
+        if (segment.empty() || segment == ".") continue;
+        if (segment == "..") {
+            if (!segments.empty()) segments.pop_back();
         } else {
-            segment += uri[i];
-        }
-    }
-    if (!segment.empty()) {
-        segments.push_back(segment);
-    }
-
-    std::vector<std::string> stack;
-    for (std::vector<std::string>::const_iterator it = segments.begin(); it != segments.end(); ++it) {
-        if (*it == "..") {
-            if (!stack.empty()) {
-                stack.pop_back();
-            }
-        } else if (*it != "." && !it->empty()) {
-            stack.push_back(*it);
+            segments.push_back(segment);
         }
     }
 
-    for (std::vector<std::string>::const_iterator it = stack.begin(); it != stack.end(); ++it) {
-        normalized += "/" + *it;
+    std::ostringstream oss;
+    oss << root;
+    for (size_t i = 0; i < segments.size(); ++i) {
+        oss << '/' << segments[i];
     }
-    if (uri == "/" && stack.empty()) {
-        normalized += "/";
+    std::string result = oss.str();
+
+    if (uri == "/") {
+        result += "/";
     }
-    if (normalized.find(root) != 0) {
-        return "";
-    }
-    return normalized;
+    return (result.find(root) == 0) ? result : "";
 }
 
 std::string GetHandler::_getMimeType(const std::string& path) {
