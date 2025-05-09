@@ -133,7 +133,7 @@ TEST_P(TestGetHandler, ResponseFilling) {
 INSTANTIATE_TEST_SUITE_P(
     GetHandlerTests, TestGetHandler,
     ::testing::Values(
-        TestGetHandlerParams{                                                                       // 0
+        TestGetHandlerParams{                                                                       // 0 invalid body header
             RequestBuilder().withHeader("content-length", "48").build(),
             RouteConfigBuilder()
                 .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
@@ -145,7 +145,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(414)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 1
+        TestGetHandlerParams{                                                                       // 1 invalid body header
             RequestBuilder().withHeader("transfer-encoding", "chunked").build(),
             RouteConfigBuilder()
                 .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
@@ -157,7 +157,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(414)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 2
+        TestGetHandlerParams{                                                                       // 2 valid request of .txt
             RequestBuilder()
                 .withUri("/Divine_Comedy.txt")
                 .build(),
@@ -169,7 +169,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(444)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 3
+        TestGetHandlerParams{                                                                       // 3 valid request of .html
             RequestBuilder()
                 .withUri("/index.html")
                 .build(),
@@ -181,7 +181,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(1429)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 4
+        TestGetHandlerParams{                                                                       // 4 autoindex check
             RequestBuilder()
                 .withUri("/")
                 .build(),
@@ -196,7 +196,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(1429)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 5
+        TestGetHandlerParams{                                                                       // 5 non existing file
             RequestBuilder().withUri("/nonexistent.txt").build(),
             RouteConfigBuilder()
                 .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
@@ -208,7 +208,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(435)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 6
+        TestGetHandlerParams{                                                                       // 6 invalid body header
             RequestBuilder()
                 .withHeader("content-length", "100")
                 .withHeader("cransfer-encoding", "chunked")
@@ -223,7 +223,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(414)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 7
+        TestGetHandlerParams{                                                                       // 7 no index, autoindex and uri
             RequestBuilder()
                 .withUri("/")
                 .build(),
@@ -238,7 +238,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(9)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 8
+        TestGetHandlerParams{                                                                       // 8 with index but without autoindex
             RequestBuilder()
                 .withUri("")
                 .build(),
@@ -252,7 +252,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(11)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 9
+        TestGetHandlerParams{                                                                       // 9 tries to escape root
             RequestBuilder()
                 .withUri("/../../../src/GetHandler.cpp")
                 .build(),
@@ -264,7 +264,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(9)
                 .build()
         },
-        TestGetHandlerParams{                                                                       // 10
+        TestGetHandlerParams{                                                                       // 10 image serving
             RequestBuilder()
                 .withUri("/image.jpg")
                 .build(),
@@ -275,7 +275,20 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentType("image/jpeg")
                 .withContentLength(65459)
                 .build()
+        },
+        TestGetHandlerParams{                                                                       // 11 no permission folder
+            RequestBuilder()
+                .withUri("/no_permission_folder/secret_file.txt")
+                .build(),
+            RouteConfigBuilder()
+                .withErrorPage({{400, "/error_pages/400.html"}, {403, "/error_pages/403.html"}, {404, "/error_pages/404.html"}})
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentType("text/html")
+                .withContentLength(435)
+                .build()
         }
-        // todo: a request of a file in no permission folder
     )
 );

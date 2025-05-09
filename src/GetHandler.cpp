@@ -154,37 +154,41 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 }
 
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
-    std::string errorMessage;
     if (!_validateGetRequest(conn, request, config)) {
         conn->setState(Connection::SendResponse);
         return;
     }
+
     HttpResponse& resp = conn->_response;
+    ScopedBodyProvider body;
 
     if (S_ISREG(_pathStat.st_mode)) {
-        _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
-        conn->setState(Connection::SendResponse);
+        body.ptr = new FileBodyProvider(_path.c_str());
+        _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, body.ptr);
+        body.ptr = 0;
     } else if (S_ISDIR(_pathStat.st_mode)) {
         if (!config.index.empty()) {
-            for (std::vector<std::string>::const_iterator it = config.index.begin(); it != config.index.end(); ++it) {
-                std::string indexPath = _path + *it;
+            for (size_t i = 0; i < config.index.size(); ++i) {
+                std::string indexPath = _path + config.index[i];
                 if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
-                    conn->setState(Connection::SendResponse);
-                    return;
+                    body.ptr = new FileBodyProvider(indexPath.c_str());
+                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, body.ptr);
+                    body.ptr = 0;
+                    break;
                 }
             }
         }
-        std::string listing;
-        if (config.autoindex && _getDirectoryListing(_path, request.uri, listing)) {
-            _setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
-            conn->setState(Connection::SendResponse);
-        } else {
-            _setErrorResponse(resp, 403, "Forbidden", config);
-            conn->setState(Connection::SendResponse);
+        if (resp.statusCode != 200 && config.autoindex) {
+            std::string listing;
+            if (_getDirectoryListing(_path, request.uri, listing)) {
+                body.ptr = new StringBodyProvider(listing);
+                _setResponse(resp, 200, "OK", "text/html", listing.size(), body.ptr);
+                body.ptr = 0;
+            }
         }
-    } else {
-        _setErrorResponse(resp, 404, "Not Found", config);
-        conn->setState(Connection::SendResponse);
+        if (resp.statusCode != 200) {
+            _setErrorResponse(resp, 403, "Forbidden", config);
+        }
     }
+    conn->setState(Connection::SendResponse);
 }

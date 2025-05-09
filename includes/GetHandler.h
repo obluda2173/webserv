@@ -12,19 +12,25 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
+struct ScopedBodyProvider {
+  IBodyProvider* ptr;
+  ScopedBodyProvider() : ptr(0) {}
+  // ScopedBodyProvider(IBodyProvider* p = 0) : ptr(p) {} // not used
+  ~ScopedBodyProvider() { delete ptr; }
+};
+
 class GetHandler : public IHandler {
   private:
     std::string _path;
     struct stat _pathStat;
     static const size_t MAX_PATH_LENGTH = 4096;
 
-    // validation
     bool _isInvalidHeader(const HttpRequest& req) const;
     bool _isValidPath() const;
     bool _isAccessible() const;
     bool _isValidFileType() const;
-
     bool _validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config);
+    
     void _setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
     void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
     std::string _normalizePath(const std::string& root, const std::string& uri);
