@@ -12,18 +12,20 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
+#define DEFAULT_HTTP_VERSION "HTTP/1.1"
+#define DEFAULT_CONTENT_LANGUAGE "en-US"
+#define MAX_PATH_LENGTH 4096
+
 class GetHandler : public IHandler {
   private:
     std::string _path;
     struct stat _pathStat;
-    static const size_t MAX_PATH_LENGTH = 4096;
 
     bool _isInvalidHeader(const HttpRequest& req) const;
     bool _isValidPath() const;
     bool _isAccessible() const;
     bool _isValidFileType() const;
-    bool _validateGetRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config);
-    
+    bool _validateGetRequest(HttpResponse& resp, const HttpRequest& request, const RouteConfig& config);
     void _setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
     void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
     std::string _normalizePath(const std::string& root, const std::string& uri);

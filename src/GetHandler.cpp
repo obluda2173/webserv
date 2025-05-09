@@ -35,9 +35,7 @@ bool GetHandler::_isValidFileType() const {
     return S_ISREG(_pathStat.st_mode) || S_ISDIR(_pathStat.st_mode);
 }
 
-bool GetHandler::_validateGetRequest(Connection* conn, const HttpRequest& req, const RouteConfig& config) {
-    HttpResponse& resp = conn->_response;
-
+bool GetHandler::_validateGetRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config) {
     if (req.uri.empty() || _isInvalidHeader(req)) {
         _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
@@ -68,11 +66,11 @@ void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::stri
 }
 
 void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
-    resp.version = "HTTP/1.1";
+    resp.version = DEFAULT_HTTP_VERSION;
     resp.statusCode = statusCode;
     resp.statusMessage = statusMessage;
     resp.contentType = contentType;
-    resp.contentLanguage = "en-US";
+    resp.contentLanguage = DEFAULT_CONTENT_LANGUAGE;
     resp.contentLength = contentLength;
     resp.body = bodyProvider;
 }
@@ -85,9 +83,11 @@ std::string GetHandler::_normalizePath(const std::string& root, const std::strin
     std::istringstream iss(uri);
     
     while (std::getline(iss, segment, '/')) {
-        if (segment.empty() || segment == ".") continue;
+        if (segment.empty() || segment == ".")
+            continue;
         if (segment == "..") {
-            if (!segments.empty()) segments.pop_back();
+            if (!segments.empty())
+                segments.pop_back();
         } else {
             segments.push_back(segment);
         }
@@ -153,13 +153,12 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 }
 
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
+    HttpResponse& resp = conn->_response;
     _path = _normalizePath(config.root, request.uri);
-    if (!_validateGetRequest(conn, request, config)) {
+    if (!_validateGetRequest(resp, request, config)) { // basic validation
         conn->setState(Connection::SendResponse);
         return;
     }
-
-    HttpResponse& resp = conn->_response;
 
     if (S_ISREG(_pathStat.st_mode)) { // if file
         _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
@@ -185,7 +184,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
             }
         }
     }
-    _setErrorResponse(resp, 403, "Forbidden", config);
+    _setErrorResponse(resp, 403, "Forbidden", config); // no need to explain
     conn->setState(Connection::SendResponse);
     return;
 }
