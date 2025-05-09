@@ -31,7 +31,6 @@ class Connection {
     int _fd;
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
-    size_t _readSize;
     ISender* _sender;
     std::vector<char> _readBuf;
     size_t _readBufUsedSize;
@@ -40,7 +39,7 @@ class Connection {
 
   public:
     ~Connection();
-    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize, ISender* = new SystemSender());
+    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
     STATE getState() const;
     void readIntoBuf();
     void parseBuf();

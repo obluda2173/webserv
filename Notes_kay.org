@@ -53,3 +53,4 @@ index       index.html index.htm
 1. Transfer-Encoding and Content-Length
    - If no Content-Length, then Transfer-Encoding needs to be chunked (and only chunked)
    - if no Transfer-encoding, then Content-Length needs to be set
+2.

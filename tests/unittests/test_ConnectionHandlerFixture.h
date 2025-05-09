@@ -46,7 +46,7 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
         std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, CONNECTION_READSIZE);
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
     }
 
     virtual void setupServer() {
@@ -104,7 +104,7 @@ class ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited
         std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, 2);
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {
@@ -166,7 +166,7 @@ class ConnHdlrTestWithBigResponseBody : public BasConnHdlrTest<StubLogger, int> 
         std::map<std::string, IHandler*> hdlrs = {{"GET", new BigRespBodyGetHandler(_body)}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, CONNECTION_READSIZE);
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {
@@ -205,7 +205,7 @@ class ConnHdlrTestUpload : public BasConnHdlrTest<StubLogger, int> {
         std::map<std::string, IHandler*> hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, CONNECTION_READSIZE);
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {

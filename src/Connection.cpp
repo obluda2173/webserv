@@ -4,8 +4,8 @@
 #include <cstring>
 #include <string.h>
 
-Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize, ISender* sender)
-    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize), _sender(sender) {
+Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* sender)
+    : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _sender(sender) {
     _readBuf = std::vector<char>(1024);
     _readBufUsedSize = 0;
     _sendBuf = std::vector<char>(1024);
