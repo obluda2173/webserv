@@ -28,12 +28,13 @@ class Connection {
   private:
     STATE _state;
     sockaddr_storage _addr;
-    std::string _readBuf;
     int _fd;
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     size_t _readSize;
     ISender* _sender;
+    std::vector<char> _readBuf;
+    size_t _readBufUsedSize;
     std::vector<char> _sendBuf;
     size_t _sendBufUsedSize;
 

@@ -6,6 +6,8 @@
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, size_t readSize, ISender* sender)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _readSize(readSize), _sender(sender) {
+    _readBuf = std::vector<char>(1024);
+    _readBufUsedSize = 0;
     _sendBuf = std::vector<char>(1024);
     _sendBufUsedSize = 0;
 }
@@ -25,24 +27,6 @@ void Connection::resetResponse() {
     delete _wrtr;
     _wrtr = NULL;
     _response = HttpResponse{};
-}
-
-void Connection::readIntoBuf() {
-    // Reserve space to minimize reallocations if receiving multiple chunks
-    if (_readBuf.capacity() < _readBuf.size() + _readSize)
-        _readBuf.reserve(_readBuf.size() + _readSize);
-
-    // Get position to write at and increase size
-    size_t oldSize = _readBuf.size();
-    _readBuf.resize(oldSize + _readSize);
-
-    // Receive directly into string buffer
-    ssize_t r = recv(_fd, &_readBuf[oldSize], _readSize, 0);
-    // Adjust size to actual bytes received
-    if (r > 0)
-        _readBuf.resize(oldSize + r);
-    else
-        _readBuf.resize(oldSize); // Restore original size if no data received
 }
 
 void Connection::sendResponse() {
@@ -68,17 +52,26 @@ void Connection::sendResponse() {
         _state = Reset;
 }
 
+void Connection::readIntoBuf() {
+    // Receive directly into string buffer
+    ssize_t r = recv(_fd, _readBuf.data() + _readBufUsedSize, _readBuf.size() - _readBufUsedSize, 0);
+    _readBufUsedSize += r;
+}
+
 void Connection::parseBuf() {
     if (_prsr->error() || _prsr->ready()) {
         _prsr->resetPublic();
         _state = ReadingHeaders;
     }
 
-    char* b = (char*)_readBuf.c_str();
-    while (*b) {
+    char* b = _readBuf.data();
+    size_t count = 0;
+    while (count < _readBufUsedSize) {
         _prsr->feed(b, 1);
         if (_prsr->error() || _prsr->ready()) {
-            _readBuf = b + 1;
+            memmove(_readBuf.data(), b + 1, _readBufUsedSize - (count + 1));
+            _readBufUsedSize -= (count + 1);
+            // _readBuf = b + 1;
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
                 _state = Handling;
@@ -87,8 +80,9 @@ void Connection::parseBuf() {
             return;
         }
         b++;
+        count++;
     }
-    _readBuf = b;
+    _readBufUsedSize = 0;
 }
 
 int Connection::getFileDes() const { return _fd; }
