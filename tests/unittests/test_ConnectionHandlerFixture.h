@@ -158,7 +158,7 @@ class BigRespBodyGetHandler : public IHandler {
     };
 };
 
-class ConnHdlrTestWithBigBody : public BasConnHdlrTest<StubLogger, int> {
+class ConnHdlrTestWithBigResponseBody : public BasConnHdlrTest<StubLogger, int> {
   public:
     std::string _body;
     virtual void setupConnectionHandler() override {
@@ -166,6 +166,45 @@ class ConnHdlrTestWithBigBody : public BasConnHdlrTest<StubLogger, int> {
         std::map<std::string, IHandler*> hdlrs = {{"GET", new BigRespBodyGetHandler(_body)}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, CONNECTION_READSIZE);
+    }
+
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int connfd;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+    }
+};
+
+class StubUploadHandler : public IHandler {
+  public:
+    std::string _uploaded;
+    virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+        (void)req;
+        (void)cfg;
+        _uploaded += conn->getReadBuf();
+        HttpResponse& resp = conn->_response;
+        resp.statusCode = 200;
+        resp.statusMessage = "OK";
+        resp.version = "HTTP/1.1";
+        conn->setState(Connection::SendResponse);
+    }
+};
+
+class ConnHdlrTestUpload : public BasConnHdlrTest<StubLogger, int> {
+  public:
+    StubUploadHandler* _uploadHdlr;
+    virtual void setupConnectionHandler() override {
+        _uploadHdlr = new StubUploadHandler();
+        std::map<std::string, IHandler*> hdlrs = {{"POST", _uploadHdlr}};
+        IRouter* router = new Router(hdlrs);
+        router->add("test.com", "", "POST", {});
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, CONNECTION_READSIZE);
     }
 

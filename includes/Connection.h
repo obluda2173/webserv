@@ -50,6 +50,7 @@ class Connection {
     HttpRequest getRequest();
     sockaddr_storage getAddr() const;
     void setState(Connection::STATE state) { _state = state; }
+    std::string getReadBuf() { return std::string(_readBuf.data(), _readBufUsedSize); }
 
     HttpRequest _request;
     HttpResponse _response;

@@ -4,7 +4,7 @@
 #include <sys/types.h>
 
 // checking if the body is sent over the connection entirely
-TEST_F(ConnHdlrTestWithBigBody, firstTest) {
+TEST_F(ConnHdlrTestWithBigResponseBody, firstTest) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 

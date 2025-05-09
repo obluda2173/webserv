@@ -83,7 +83,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             break;
         case Connection::Handling:
             route = _router->match(conn->getRequest());
-            route.hdlrs["GET"]->handle(conn, {}, {});
+            route.hdlrs[conn->getRequest().method]->handle(conn, {}, {});
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:

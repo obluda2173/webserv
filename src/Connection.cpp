@@ -46,10 +46,10 @@ void Connection::sendResponse() {
         _sendBufUsedSize -= bytesSent;
     }
 
-    if (_response.body == NULL)
+    if (_response.body && !_response.body->isDone())
         return;
-    if (_response.body->isDone())
-        _state = Reset;
+
+    _state = Reset;
 }
 
 void Connection::readIntoBuf() {
