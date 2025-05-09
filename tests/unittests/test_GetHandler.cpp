@@ -302,7 +302,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withStatusCode(200)
                 .withStatusMessage("OK")
                 .withContentType("text/html")
-                .withContentLength(370)
+                .withContentLength(460)
                 .build()
         },
         TestGetHandlerParams{                                                                       // 13 decoding
@@ -317,6 +317,78 @@ INSTANTIATE_TEST_SUITE_P(
                 .withStatusMessage("OK")
                 .withContentType("text/plain")
                 .withContentLength(39)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 14 query parameters in URI (should be ignored)
+            RequestBuilder()
+                .withUri("/file%20with%20space.txt?action=delete&id=123")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/plain")
+                .withContentLength(39)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 15 invalid percent encoding
+            RequestBuilder()
+                .withUri("/file%2with%20space.txt")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentType("text/plain")
+                .withContentLength(9)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 16 default error page (no custom config)
+            RequestBuilder()
+                .withUri("/ghost_file.txt")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentType("text/plain")
+                .withContentLength(9)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 17 unknown MIME type
+            RequestBuilder()
+                .withUri("/unknown.xyz")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("application/octet-stream")
+                .withContentLength(13)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 18 multiple .. in path
+            RequestBuilder()
+                .withUri("/../../../../etc/passwd")
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentType("text/plain")
+                .withContentLength(9)
+                .build()
+        },
+        TestGetHandlerParams{                                                                       // 19 valid UTF-8 filename
+            RequestBuilder()
+                .withUri("/caf%C3%A9.txt")  // café.txt
+                .build(),
+            RouteConfigBuilder().build(),
+            ResponseBuilder()
+                .withStatusCode(200)
+                .withStatusMessage("OK")
+                .withContentType("text/plain")
+                .withContentLength(1008)
                 .build()
         }
     )
