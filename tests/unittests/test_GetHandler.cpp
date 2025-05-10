@@ -1,7 +1,4 @@
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include "test_stubs.h"
-#include "GetHandler.h"
+#include "test_handlers_utils.h"
 
 struct TestGetHandlerParams {
     HttpRequest req;
@@ -11,122 +8,13 @@ struct TestGetHandlerParams {
 
 class TestGetHandler : public ::testing::TestWithParam<TestGetHandlerParams> {};
 
-class RequestBuilder {
-    private:
-        HttpRequest req;
-
-    public:
-        RequestBuilder() {
-            req.method = "GET";
-            req.uri = "/test.txt";
-            req.version = "HTTP/1.1";
-            req.headers = {};
-        }
-        RequestBuilder& withMethod(const std::string& method) {
-            req.method = method;
-            return *this;
-        }
-        RequestBuilder& withUri(const std::string& uri) {
-            req.uri = uri;
-            return *this;
-        }
-        RequestBuilder& withHeader(const std::string& key, const std::string& value) {
-            req.headers[key] = value;
-            return *this;
-        }
-        HttpRequest build() const { return req; }
-};
-
-class RouteConfigBuilder {
-    private:
-        RouteConfig cfg;
-
-    public:
-        RouteConfigBuilder() {
-            cfg.root = "./tests/unittests/test_root";
-            cfg.index = {};
-            cfg.clientMaxBody = 0;
-            cfg.autoindex = false;
-        }
-        RouteConfigBuilder& withRoot(const std::string& root) {
-            cfg.root = root;
-            return *this;
-        }
-        RouteConfigBuilder& withAutoIndex(bool autoIndex) {
-            cfg.autoindex = autoIndex;
-            return *this;
-        }
-        RouteConfigBuilder& withErrorPage(std::map<int, std::string> errorPage) {
-            cfg.errorPage = errorPage;
-            return *this;
-        }
-        RouteConfigBuilder& withIndex(std::vector<std::string> index) {
-            cfg.index = index;
-            return *this;
-        }
-        RouteConfig build() const { return cfg; }
-};
-
-class ResponseBuilder {
-    private:
-        HttpResponse resp;
-
-    public:
-        ResponseBuilder() {
-            resp.version = "HTTP/1.1";
-            resp.statusCode = 400;
-            resp.statusMessage = "Bad Request";
-            resp.contentType = "text/plain";
-            resp.contentLanguage = "en-US";
-            resp.contentLength = 0;
-            resp.body = nullptr;
-            resp.isRange = false;
-            resp.isClosed = false;
-            resp.isChunked = false;
-        }
-        ResponseBuilder& withStatusCode(int code) {
-            resp.statusCode = code;
-            return *this;
-        }
-        ResponseBuilder& withStatusMessage(const std::string& message) {
-            resp.statusMessage = message;
-            return *this;
-        }
-        ResponseBuilder& withContentType(const std::string& type) {
-            resp.contentType = type;
-            return *this;
-        }
-        ResponseBuilder& withContentLength(int contentLength) {
-            resp.contentLength = contentLength;
-            return *this;
-        }
-        HttpResponse build() const { return resp; }
-};
-
-void assertEqualHttpResponse(const HttpResponse& want, const HttpResponse& got) {
-    EXPECT_EQ(want.version, got.version);
-    EXPECT_EQ(want.statusCode, got.statusCode);
-    EXPECT_EQ(want.statusMessage, got.statusMessage);
-    EXPECT_EQ(want.contentType, got.contentType);
-    EXPECT_EQ(want.contentLanguage, got.contentLanguage);
-    EXPECT_EQ(want.contentLength, got.contentLength);
-    char gotBuffer[2048];
-    std::string gotString;
-    while (!got.body->isDone() || gotString.size() < (size_t)got.contentLength) {
-        size_t bytesWritten = got.body->read(gotBuffer, 2048);
-        gotString += std::string(gotBuffer, bytesWritten);
-    }
-    // std::cout << gotString << std::endl;
-    EXPECT_EQ(want.contentLength, gotString.length());
-}
-
 TEST_P(TestGetHandler, ResponseFilling) {
     auto& params = GetParam();
     GetHandler handler;
-    Connection* conn = new Connection({}, -1, NULL);
+    Connection* conn = new Connection({}, -1, nullptr);
     conn->setState(Connection::Handling);
     handler.handle(conn, params.req, params.cfg);
-    assertEqualHttpResponse(params.wantResp, conn->_response);
+    assertEqualHttpResponse(params.wantResp, conn->_response);  // Use shared function
     delete conn;
 }
 
@@ -134,7 +22,10 @@ INSTANTIATE_TEST_SUITE_P(
     GetHandlerTests, TestGetHandler,
     ::testing::Values(
         TestGetHandlerParams{                                                                       // 0 invalid body header
-            RequestBuilder().withHeader("content-length", "48").build(),
+            RequestBuilder()
+                .withMethod("GET")
+                .withHeader("content-length", "48")
+                .build(),
             RouteConfigBuilder()
                 .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
                 .build(),
@@ -146,7 +37,9 @@ INSTANTIATE_TEST_SUITE_P(
                 .build()
         },
         TestGetHandlerParams{                                                                       // 1 invalid body header
-            RequestBuilder().withHeader("transfer-encoding", "chunked").build(),
+            RequestBuilder()
+                .withMethod("GET")
+        .withHeader("transfer-encoding", "chunked").build(),
             RouteConfigBuilder()
                 .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
                 .build(),
@@ -159,6 +52,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 2 valid request of .txt
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/Divine_Comedy.txt")
                 .build(),
             RouteConfigBuilder().build(),
@@ -171,6 +65,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 3 valid request of .html
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/index.html")
                 .build(),
             RouteConfigBuilder().build(),
@@ -183,6 +78,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 4 autoindex check
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/")
                 .build(),
             RouteConfigBuilder()
@@ -197,7 +93,9 @@ INSTANTIATE_TEST_SUITE_P(
                 .build()
         },
         TestGetHandlerParams{                                                                       // 5 non existing file
-            RequestBuilder().withUri("/nonexistent.txt").build(),
+            RequestBuilder()
+                .withMethod("GET")
+        .withUri("/nonexistent.txt").build(),
             RouteConfigBuilder()
                 .withErrorPage({{400, "/error_pages/400.html"}, {404, "/error_pages/404.html"}})
                 .build(),
@@ -210,6 +108,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 6 invalid body header
             RequestBuilder()
+                .withMethod("GET")
                 .withHeader("content-length", "100")
                 .withHeader("cransfer-encoding", "chunked")
                 .build(),
@@ -225,6 +124,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 7 no index, autoindex and uri
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/")
                 .build(),
             RouteConfigBuilder()
@@ -240,6 +140,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 8 with index but without autoindex
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("")
                 .build(),
             RouteConfigBuilder()
@@ -254,6 +155,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 9 tries to escape root
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/../../../src/GetHandler.cpp")
                 .build(),
             RouteConfigBuilder().build(),
@@ -266,6 +168,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 10 image serving
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/image.jpg")
                 .build(),
             RouteConfigBuilder().build(),
@@ -278,6 +181,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 11 no permission folder
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/no_permission_folder/secret_file.txt")
                 .build(),
             RouteConfigBuilder()
@@ -292,6 +196,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 12 test directory listing (content-length changes with changing test_root)
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/")
                 .build(),
             RouteConfigBuilder()
@@ -302,11 +207,12 @@ INSTANTIATE_TEST_SUITE_P(
                 .withStatusCode(200)
                 .withStatusMessage("OK")
                 .withContentType("text/html")
-                .withContentLength(460)
+                .withContentLength(513)
                 .build()
         },
         TestGetHandlerParams{                                                                       // 13 decoding
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/file%20with%20space.txt")
                 .build(),
             RouteConfigBuilder()
@@ -321,6 +227,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 14 query parameters in URI (should be ignored)
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/file%20with%20space.txt?action=delete&id=123")
                 .build(),
             RouteConfigBuilder().build(),
@@ -333,6 +240,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 15 invalid percent encoding
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/file%2with%20space.txt")
                 .build(),
             RouteConfigBuilder().build(),
@@ -345,6 +253,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 16 default error page (no custom config)
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/ghost_file.txt")
                 .build(),
             RouteConfigBuilder().build(),
@@ -357,6 +266,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 17 unknown MIME type
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/unknown.xyz")
                 .build(),
             RouteConfigBuilder().build(),
@@ -369,6 +279,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 18 multiple .. in path
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/../../../../etc/passwd")
                 .build(),
             RouteConfigBuilder().build(),
@@ -381,6 +292,7 @@ INSTANTIATE_TEST_SUITE_P(
         },
         TestGetHandlerParams{                                                                       // 19 valid UTF-8 filename
             RequestBuilder()
+                .withMethod("GET")
                 .withUri("/caf%C3%A9.txt")  // café.txt
                 .build(),
             RouteConfigBuilder().build(),

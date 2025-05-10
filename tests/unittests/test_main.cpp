@@ -29,6 +29,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection:ListenerTest.multiplePortsTestWoLogging";
     // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";
     // testing::GTEST_FLAG(filter) = "ServerTest*";
-    testing::GTEST_FLAG(filter) = "*GetHandlerTest*";
+    testing::GTEST_FLAG(filter) = "*HandlerTest*";
     return RUN_ALL_TESTS();
 }

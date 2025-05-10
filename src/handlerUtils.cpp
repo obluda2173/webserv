@@ -142,7 +142,7 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
     }
 
     // 6. Resource Type Validation
-    if ((method == "DELETE" && !S_ISREG(pathStat.st_mode)) ||
+    if ((method == "DELETE" && !S_ISREG(pathStat.st_mode) && !S_ISDIR(pathStat.st_mode)) ||
         (method == "GET" && !S_ISREG(pathStat.st_mode) && !S_ISDIR(pathStat.st_mode)) ||
         (method == "POST" && S_ISDIR(pathStat.st_mode))) {
         setErrorResponse(resp, 400, "Bad Request: Invalid resource type", config);
@@ -162,4 +162,3 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
     
     return true;
 }
-
