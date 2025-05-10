@@ -1,41 +1,39 @@
 #include "Connection.h"
 #include "HttpRequest.h"
-#include "RouteConfig.h"
+#include "test_main.h"
+#include <fstream>
 #include <gtest/gtest.h>
 
+std::string getFileContents(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file)
+        throw std::ios_base::failure("Error opening file");
+
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    return contents;
+}
 TEST(TestUploadHandler, firstTest) {
-
+    // setup request
     std::string filename = "example.txt";
-    std::string body = "------WebKitFormBoundary7MA4YWxkTrZu0gW"
-                       "Content-Disposition: form-data:; name=\"file\"; filename=\"" +
-                       filename +
-                       "\""
-                       "Content-Type: text/plain"
-                       "...file contents..."
-                       "------WebKitFormBoundary7MA4YWxkTrZu0gW--";
-
-    std::string headerString = "POST /upload HTTP/1.1\r\n"
-                               "Host: example.com\r\n"
-                               "Content-Length: " +
-                               std::to_string(body.length()) +
-                               "\r\n"
-                               "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\r\n"
-                               "\r\n";
+    std::string body = getRandomString(1000);
 
     Connection* conn = new Connection({}, -1, NULL, NULL);
-    HttpRequest req;
-    req.method = "POST";
-    req.uri = "upload";
-    req.version = "HTTP/1.1";
-    req.headers["content-length"] = body.length();
-    req.headers["content-type"] = "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW";
-    conn->_request = req;
-    send(fd, body, body.length());
-    conn->fd = fd;
-    conn->readIntoBuf();
+    conn->_request.method = "POST";
+    conn->_request.uri = "/upload/" + filename;
+    conn->_request.version = "HTTP/1.1";
+    conn->_request.headers["content-length"] = body.length();
+    conn->setReadBuf(body);
 
     // RouteConfig cfg;
-    // IHandler* uploadHdlr = new UploadHdlr();
-    uploadHdlr->handle(conn, req, cfg);
+    IHandler* uploadHdlr = new UploadHdlr();
+    uploadHdlr->handle(conn, conn->_request,
+                       {"tests/unittests/test_files/UploadHandler/example.txt", {}, {}, 10000, false});
+
+    std::string gotFile = getFileContents("tests/unittests/test_files/UploadHandler/example.txt");
+
+    std::cout << gotFile << std::endl;
+    EXPECT_EQ(body, gotFile);
     // assert that example.txt was created and check that the file content is correct
+    delete conn;
 }

@@ -4,6 +4,7 @@
 #include "HttpResponse.h"
 #include "IHttpParser.h"
 #include "ResponseWriter.h"
+#include <iostream>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -49,6 +50,14 @@ class Connection {
     HttpRequest getRequest();
     sockaddr_storage getAddr() const;
     void setState(Connection::STATE state) { _state = state; }
+    void setReadBuf(std::string s) {
+        if (s.length() > _readBuf.size()) {
+            std::cout << "string is bigger than readBuf" << std::endl;
+            exit(1);
+        }
+        _readBuf.assign(s.begin(), s.end());
+        _readBufUsedSize = s.length();
+    }
     std::string getReadBuf() { return std::string(_readBuf.data(), _readBufUsedSize); }
 
     HttpRequest _request;
