@@ -7,15 +7,9 @@
 #include <sys/stat.h>
 #include <filesystem>
 
-#include "Router.h"
-#include "Connection.h"
-#include "HttpRequest.h"
-#include "HttpResponse.h"
 #include "handlerUtils.h"
 
 #define DEFAULT_MIME_TYPE "application/octet-stream"
-#define DEFAULT_HTTP_VERSION "HTTP/1.1"
-#define DEFAULT_CONTENT_LANGUAGE "en-US"
 #define MAX_PATH_LENGTH 4096
 
 class GetHandler : public IHandler {
@@ -28,7 +22,6 @@ class GetHandler : public IHandler {
     bool _isValidFileType() const;
     bool _validateGetRequest(HttpResponse& resp, const HttpRequest& request, const RouteConfig& config);
     void _setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
-    void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
     std::string _getMimeType(const std::string& path) const;
     bool _getDirectoryListing(const std::string& path, const std::string& uri, std::string& outListing);
     

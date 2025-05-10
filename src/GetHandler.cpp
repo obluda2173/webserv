@@ -58,21 +58,11 @@ void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::stri
         std::string errorPagePath = config.root + it->second;
         struct stat fileStat;
         if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
-            _setResponse(resp, code, message, _getMimeType(errorPagePath), fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
+            setResponse(resp, code, message, _getMimeType(errorPagePath), fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
             return;
         }
     }
-    _setResponse(resp, code, message, "text/plain", message.size(), new StringBodyProvider(message));
-}
-
-void GetHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
-    resp.version = DEFAULT_HTTP_VERSION;
-    resp.statusCode = statusCode;
-    resp.statusMessage = statusMessage;
-    resp.contentType = contentType;
-    resp.contentLanguage = DEFAULT_CONTENT_LANGUAGE;
-    resp.contentLength = contentLength;
-    resp.body = bodyProvider;
+    setResponse(resp, code, message, "text/plain", message.size(), new StringBodyProvider(message));
 }
 
 std::string GetHandler::_getMimeType(const std::string& path) const {
@@ -130,7 +120,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     }
 
     if (S_ISREG(_pathStat.st_mode)) { // if file
-        _setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
+        setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
         conn->setState(Connection::SendResponse);
         return;
     } else if (S_ISDIR(_pathStat.st_mode)) { // if directory
@@ -138,7 +128,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
             for (size_t i = 0; i < config.index.size(); ++i) { // serve existing index file from "index" directive (confg)
                 std::string indexPath = _path + config.index[i];
                 if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-                    _setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
+                    setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
                     conn->setState(Connection::SendResponse);
                     return;
                 }
@@ -147,7 +137,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         if (config.autoindex) { // if no existing index file was found
             std::string listing;
             if (_getDirectoryListing(_path, request.uri, listing)) { // serve directory listing
-                _setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
+                setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
                 conn->setState(Connection::SendResponse);
                 return;
             }

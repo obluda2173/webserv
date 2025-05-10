@@ -54,3 +54,13 @@ std::string normalizePath(const std::string& root, const std::string& uri) {
     }
     return (result.find(root) == 0) ? result : "";
 }
+
+void setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
+    resp.version = DEFAULT_HTTP_VERSION;
+    resp.statusCode = statusCode;
+    resp.statusMessage = statusMessage;
+    resp.contentType = contentType;
+    resp.contentLanguage = DEFAULT_CONTENT_LANGUAGE;
+    resp.contentLength = contentLength;
+    resp.body = bodyProvider;
+}
