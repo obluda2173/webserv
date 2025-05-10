@@ -16,6 +16,7 @@ std::string getFileContents(const std::string& filename) {
 }
 TEST(TestUploadHandler, firstTest) {
     // setup request
+    std::string root = "tests/unittests/test_files/UploadHandler";
     std::string filename = "example.txt";
     std::string body = getRandomString(1000);
 
@@ -26,10 +27,8 @@ TEST(TestUploadHandler, firstTest) {
     conn->_request.headers["content-length"] = body.length();
     conn->setReadBuf(body);
 
-    // RouteConfig cfg;
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request,
-                       {"tests/unittests/test_files/UploadHandler/example.txt", {}, {}, 10000, false});
+    uploadHdlr->handle(conn, conn->_request, {root, {}, {}, 10000, false});
 
     std::string gotFile = getFileContents("tests/unittests/test_files/UploadHandler/example.txt");
 
@@ -37,4 +36,5 @@ TEST(TestUploadHandler, firstTest) {
     // assert that example.txt was created and check that the file content is correct
     delete conn;
     delete uploadHdlr;
+    std::remove((root + "/" + filename).data());
 }
