@@ -18,9 +18,6 @@ class DeleteHandler : public IHandler {
     std::string _path;
     struct stat _pathStat;
     bool _validateDeleteRequest(Connection* conn, const HttpRequest& request, const RouteConfig& config);
-    void _setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
-    void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
-    std::string _normalizePath(const std::string& root, const std::string& uri);
 
   public:
     DeleteHandler();
