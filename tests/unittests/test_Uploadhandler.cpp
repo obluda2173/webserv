@@ -1,5 +1,6 @@
 #include "Connection.h"
 #include "HttpRequest.h"
+#include "UploadHandler.h"
 #include "test_main.h"
 #include <fstream>
 #include <gtest/gtest.h>
@@ -26,14 +27,14 @@ TEST(TestUploadHandler, firstTest) {
     conn->setReadBuf(body);
 
     // RouteConfig cfg;
-    IHandler* uploadHdlr = new UploadHdlr();
+    IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request,
                        {"tests/unittests/test_files/UploadHandler/example.txt", {}, {}, 10000, false});
 
     std::string gotFile = getFileContents("tests/unittests/test_files/UploadHandler/example.txt");
 
-    std::cout << gotFile << std::endl;
     EXPECT_EQ(body, gotFile);
     // assert that example.txt was created and check that the file content is correct
     delete conn;
+    delete uploadHdlr;
 }

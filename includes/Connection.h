@@ -34,11 +34,11 @@ class Connection {
     IResponseWriter* _wrtr;
     ISender* _sender;
     std::vector<char> _readBuf;
-    size_t _readBufUsedSize;
     std::vector<char> _sendBuf;
     size_t _sendBufUsedSize;
 
   public:
+    size_t _readBufUsedSize;
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
     STATE getState() const;
