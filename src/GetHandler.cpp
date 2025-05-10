@@ -3,22 +3,6 @@
 GetHandler::GetHandler() {}
 GetHandler::~GetHandler() {}
 
-std::map<std::string, std::string> GetHandler::mimeTypes = std::map<std::string, std::string>();
-struct MimeInitializer {
-    MimeInitializer() {
-        GetHandler::mimeTypes[".html"] = "text/html";
-        GetHandler::mimeTypes[".htm"] = "text/html";
-        GetHandler::mimeTypes[".txt"] = "text/plain";
-        GetHandler::mimeTypes[".css"] = "text/css";
-        GetHandler::mimeTypes[".jpg"] = "image/jpeg";
-        GetHandler::mimeTypes[".jpeg"] = "image/jpeg";
-        GetHandler::mimeTypes[".png"] = "image/png";
-        GetHandler::mimeTypes[".gif"] = "image/gif";
-        GetHandler::mimeTypes[".pdf"] = "application/pdf";
-    }
-};
-static MimeInitializer mimeInit;
-
 bool GetHandler::_isInvalidHeader(const HttpRequest& req) const {
     return req.headers.count("content-length") || req.headers.count("transfer-encoding");
 }
@@ -37,45 +21,19 @@ bool GetHandler::_isValidFileType() const {
 
 bool GetHandler::_validateGetRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config) {
     if (req.uri.empty() || _isInvalidHeader(req)) {
-        _setErrorResponse(resp, 400, "Bad Request", config);
+        setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     } else if (!_isValidPath()) {
-        _setErrorResponse(resp, 403, "Forbidden", config);
+        setErrorResponse(resp, 403, "Forbidden", config);
         return false;
     } else if (stat(_path.c_str(), &_pathStat) != 0) {
-        _setErrorResponse(resp, 404, "Not Found", config);
+        setErrorResponse(resp, 404, "Not Found", config);
         return false;
     } else if (!_isAccessible() || !_isValidFileType()) {
-        _setErrorResponse(resp, 403, "Forbidden", config);
+        setErrorResponse(resp, 403, "Forbidden", config);
         return false;
     }
     return true;
-}
-
-void GetHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config) {
-    std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
-    if (it != config.errorPage.end()) {
-        std::string errorPagePath = config.root + it->second;
-        struct stat fileStat;
-        if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
-            setResponse(resp, code, message, _getMimeType(errorPagePath), fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
-            return;
-        }
-    }
-    setResponse(resp, code, message, "text/plain", message.size(), new StringBodyProvider(message));
-}
-
-std::string GetHandler::_getMimeType(const std::string& path) const {
-    std::string ext = "";
-    std::string::size_type pos = path.rfind('.');
-    if (pos != std::string::npos) {
-        ext = path.substr(pos);
-    }
-    std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
-    if (it != mimeTypes.end()) {
-        return it->second;
-    }
-    return DEFAULT_MIME_TYPE;
 }
 
 bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath, std::string& outListing) {
@@ -120,7 +78,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     }
 
     if (S_ISREG(_pathStat.st_mode)) { // if file
-        setResponse(resp, 200, "OK", _getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
+        setResponse(resp, 200, "OK", getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
         conn->setState(Connection::SendResponse);
         return;
     } else if (S_ISDIR(_pathStat.st_mode)) { // if directory
@@ -128,7 +86,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
             for (size_t i = 0; i < config.index.size(); ++i) { // serve existing index file from "index" directive (confg)
                 std::string indexPath = _path + config.index[i];
                 if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-                    setResponse(resp, 200, "OK", _getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
+                    setResponse(resp, 200, "OK", getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
                     conn->setState(Connection::SendResponse);
                     return;
                 }
@@ -143,7 +101,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
             }
         }
     }
-    _setErrorResponse(resp, 403, "Forbidden", config); // no need to explain
+    setErrorResponse(resp, 403, "Forbidden", config); // no need to explain
     conn->setState(Connection::SendResponse);
     return;
 }

@@ -4,12 +4,10 @@
 #include <sstream>
 #include <fstream>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <filesystem>
 
 #include "handlerUtils.h"
 
-#define DEFAULT_MIME_TYPE "application/octet-stream"
 #define MAX_PATH_LENGTH 4096
 
 class GetHandler : public IHandler {
@@ -21,12 +19,9 @@ class GetHandler : public IHandler {
     bool _isAccessible() const;
     bool _isValidFileType() const;
     bool _validateGetRequest(HttpResponse& resp, const HttpRequest& request, const RouteConfig& config);
-    void _setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
-    std::string _getMimeType(const std::string& path) const;
     bool _getDirectoryListing(const std::string& path, const std::string& uri, std::string& outListing);
     
   public:
-    static std::map<std::string, std::string> mimeTypes;
     GetHandler();
     ~GetHandler();
     void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config);

@@ -1,5 +1,35 @@
 #include "handlerUtils.h"
 
+std::map<std::string, std::string> mimeTypes;
+struct MimeInitializer {
+    MimeInitializer() {
+        mimeTypes[".html"] = "text/html";
+        mimeTypes[".htm"] = "text/html";
+        mimeTypes[".txt"] = "text/plain";
+        mimeTypes[".css"] = "text/css";
+        mimeTypes[".js"] = "application/javascript";
+        mimeTypes[".jpg"] = "image/jpeg";
+        mimeTypes[".jpeg"] = "image/jpeg";
+        mimeTypes[".png"] = "image/png";
+        mimeTypes[".gif"] = "image/gif";
+        mimeTypes[".pdf"] = "application/pdf";
+    }
+};
+static MimeInitializer mimeInit;
+
+std::string getMimeType(const std::string& path)  {
+    std::string ext = "";
+    std::string::size_type pos = path.rfind('.');
+    if (pos != std::string::npos) {
+        ext = path.substr(pos);
+    }
+    std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
+    if (it != mimeTypes.end()) {
+        return it->second;
+    }
+    return DEFAULT_MIME_TYPE;
+}
+
 int hexToInt(char c) {
     if (c >= '0' && c <= '9') 
         return c - '0';
@@ -63,4 +93,17 @@ void setResponse(HttpResponse& resp, int statusCode, const std::string& statusMe
     resp.contentLanguage = DEFAULT_CONTENT_LANGUAGE;
     resp.contentLength = contentLength;
     resp.body = bodyProvider;
+}
+
+void setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config) {
+    std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
+    if (it != config.errorPage.end()) {
+        std::string errorPagePath = config.root + it->second;
+        struct stat fileStat;
+        if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
+            setResponse(resp, code, message, getMimeType(errorPagePath), fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
+            return;
+        }
+    }
+    setResponse(resp, code, message, mimeTypes[".txt"], message.size(), new StringBodyProvider(message));
 }
