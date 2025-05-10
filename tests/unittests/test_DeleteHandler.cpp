@@ -38,8 +38,6 @@ TEST_P(TestDeleteHandler, FileDeletionTests) {
     DeleteHandler handler;
     Connection* conn = new Connection({}, -1, nullptr);
     struct stat st;
-    bool existsBefore = stat(param.setupFile.c_str(), &st) == 0;
-    EXPECT_TRUE(existsBefore);
     handler.handle(conn, param.req, param.cfg);
     assertEqualHttpResponse(param.wantResp, conn->_response);
     bool existsAfter = stat(param.setupFile.c_str(), &st) == 0;
@@ -79,6 +77,43 @@ INSTANTIATE_TEST_SUITE_P(
             ResponseBuilder()
                 .withStatusCode(204)
                 .withStatusMessage("No Content")
+                .build(),
+            false
+        },
+        TestDeleteHandlerParams{
+            "",
+            false,
+            RequestBuilder()
+                .withMethod("DELETE")
+                .withUri("/non_existing_file.txt")
+                .build(),
+            RouteConfigBuilder()
+                .withRoot("./tests/unittests/test_root/delete_root")
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentType("text/plain")
+                .withContentLength(9)
+                .build(),
+            false
+        },
+        TestDeleteHandlerParams{
+            "",
+            false,
+            RequestBuilder()
+                .withMethod("DELETE")
+                .withUri("/non_existing_file.txt")
+                .build(),
+            RouteConfigBuilder()
+                .withRoot("./tests/unittests/test_root")
+                .withErrorPage({{400, "/error_pages/400.html"}, {403, "/error_pages/403.html"}, {404, "/error_pages/404.html"}})
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(404)
+                .withStatusMessage("Not Found")
+                .withContentType("text/html")
+                .withContentLength(435)
                 .build(),
             false
         }

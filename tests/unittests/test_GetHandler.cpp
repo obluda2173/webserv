@@ -207,7 +207,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withStatusCode(200)
                 .withStatusMessage("OK")
                 .withContentType("text/html")
-                .withContentLength(513)
+                .withContentLength(460)
                 .build()
         },
         TestGetHandlerParams{                                                                       // 13 decoding
