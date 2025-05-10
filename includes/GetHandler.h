@@ -8,8 +8,6 @@
 
 #include "handlerUtils.h"
 
-#define MAX_PATH_LENGTH 4096
-
 class GetHandler : public IHandler {
   private:
     std::string _path;
@@ -18,7 +16,6 @@ class GetHandler : public IHandler {
     bool _isValidPath() const;
     bool _isAccessible() const;
     bool _isValidFileType() const;
-    bool _validateGetRequest(HttpResponse& resp, const HttpRequest& request, const RouteConfig& config);
     bool _getDirectoryListing(const std::string& path, const std::string& uri, std::string& outListing);
     
   public:

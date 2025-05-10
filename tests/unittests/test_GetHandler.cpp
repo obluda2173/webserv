@@ -140,7 +140,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .build(),
             ResponseBuilder()
                 .withStatusCode(400)
-                .withStatusMessage("Bad Request")
+                .withStatusMessage("Bad Request: Invalid body content")
                 .withContentType("text/html")
                 .withContentLength(414)
                 .build()
@@ -152,7 +152,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .build(),
             ResponseBuilder()
                 .withStatusCode(400)
-                .withStatusMessage("Bad Request")
+                .withStatusMessage("Bad Request: Invalid body content")
                 .withContentType("text/html")
                 .withContentLength(414)
                 .build()
@@ -218,7 +218,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .build(),
             ResponseBuilder()
                 .withStatusCode(400)
-                .withStatusMessage("Bad Request")
+                .withStatusMessage("Bad Request: Invalid body content")
                 .withContentType("text/html")
                 .withContentLength(414)
                 .build()
@@ -247,9 +247,9 @@ INSTANTIATE_TEST_SUITE_P(
                 .build(),
             ResponseBuilder()
                 .withStatusCode(400)
-                .withStatusMessage("Bad Request")
+                .withStatusMessage("Bad Request: Invalid URI")
                 .withContentType("text/plain")
-                .withContentLength(11)
+                .withContentLength(24)
                 .build()
         },
         TestGetHandlerParams{                                                                       // 9 tries to escape root

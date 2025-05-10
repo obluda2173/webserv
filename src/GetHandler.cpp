@@ -3,39 +3,6 @@
 GetHandler::GetHandler() {}
 GetHandler::~GetHandler() {}
 
-bool GetHandler::_isInvalidHeader(const HttpRequest& req) const {
-    return req.headers.count("content-length") || req.headers.count("transfer-encoding");
-}
-
-bool GetHandler::_isValidPath() const {
-    return !_path.empty() && _path.length() <= MAX_PATH_LENGTH;
-}
-
-bool GetHandler::_isAccessible() const {
-    return access(_path.c_str(), R_OK) == 0;
-}
-
-bool GetHandler::_isValidFileType() const {
-    return S_ISREG(_pathStat.st_mode) || S_ISDIR(_pathStat.st_mode);
-}
-
-bool GetHandler::_validateGetRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config) {
-    if (req.uri.empty() || _isInvalidHeader(req)) {
-        setErrorResponse(resp, 400, "Bad Request", config);
-        return false;
-    } else if (!_isValidPath()) {
-        setErrorResponse(resp, 403, "Forbidden", config);
-        return false;
-    } else if (stat(_path.c_str(), &_pathStat) != 0) {
-        setErrorResponse(resp, 404, "Not Found", config);
-        return false;
-    } else if (!_isAccessible() || !_isValidFileType()) {
-        setErrorResponse(resp, 403, "Forbidden", config);
-        return false;
-    }
-    return true;
-}
-
 bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath, std::string& outListing) {
     DIR* dir = opendir(dirPath.c_str());
     if (!dir) {
@@ -72,10 +39,12 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
     _path = normalizePath(config.root, request.uri);
-    if (!_validateGetRequest(resp, request, config)) { // basic validation
+    if (!validateRequest(resp, request, config, "GET")) { // basic validation
         conn->setState(Connection::SendResponse);
         return;
     }
+
+    stat(_path.c_str(), &_pathStat);
 
     if (S_ISREG(_pathStat.st_mode)) { // if file
         setResponse(resp, 200, "OK", getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));

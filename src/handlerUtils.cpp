@@ -107,3 +107,59 @@ void setErrorResponse(HttpResponse& resp, int code, const std::string& message, 
     }
     setResponse(resp, code, message, mimeTypes[".txt"], message.size(), new StringBodyProvider(message));
 }
+
+bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, const std::string& method) {
+    // 1. Method Validation
+    if (req.method != method) {
+        setErrorResponse(resp, 405, "Method Not Allowed", config);
+        return false;
+    }
+
+    // 2. URI Validation
+    if (req.uri.empty() || req.uri.length() > MAX_URI_LENGTH) {
+        setErrorResponse(resp, 400, "Bad Request: Invalid URI", config);
+        return false;
+    }
+
+    // 3. Path Normalization & Security
+    std::string path = normalizePath(config.root, req.uri);
+    struct stat pathStat;
+    if (path.empty() || path.find(config.root) != 0) {
+        setErrorResponse(resp, 403, "Forbidden: Invalid path", config);
+        return false;
+    }
+
+    // 4. Body Content Validation
+    if ((req.headers.count("content-length") || req.headers.count("transfer-encoding")) && (method == "GET" || method == "DELETE")) {
+        setErrorResponse(resp, 400, "Bad Request: Invalid body content", config);
+        return false;
+    }
+
+    // 5. Resource Existence Check
+    if (stat(path.c_str(), &pathStat) != 0) {
+        setErrorResponse(resp, 404, "Not Found", config);
+        return false;
+    }
+
+    // 6. Resource Type Validation
+    if ((method == "DELETE" && !S_ISREG(pathStat.st_mode)) ||
+        (method == "GET" && !S_ISREG(pathStat.st_mode) && !S_ISDIR(pathStat.st_mode)) ||
+        (method == "POST" && S_ISDIR(pathStat.st_mode))) {
+        setErrorResponse(resp, 400, "Bad Request: Invalid resource type", config);
+        return false;
+    }
+
+    // 7. Access Permissions
+    int accessMode = F_OK;
+    if (method == "GET") accessMode |= R_OK;
+    else if (method == "POST") accessMode |= W_OK;
+    else if (method == "DELETE") accessMode |= W_OK;
+    
+    if (access(path.c_str(), accessMode) != 0) {
+        setErrorResponse(resp, 403, "Forbidden: Access denied", config);
+        return false;
+    }
+    
+    return true;
+}
+
