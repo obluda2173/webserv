@@ -17,6 +17,9 @@ class GetHandler : public IHandler {
     bool _isAccessible() const;
     bool _isValidFileType() const;
     bool _getDirectoryListing(const std::string& path, const std::string& uri, std::string& outListing);
+    void _serveRegFile(Connection& conn, HttpResponse& resp);
+    void _serveIndexFile(Connection& conn, const RouteConfig& config, HttpResponse& resp);
+    void _serveDirectoryListing(Connection& conn, const HttpRequest& request, HttpResponse& resp);
     
   public:
     GetHandler();
