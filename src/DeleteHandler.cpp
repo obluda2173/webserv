@@ -5,15 +5,18 @@ DeleteHandler::~DeleteHandler() {}
 
 bool DeleteHandler::_deleteResource() {
     if (S_ISDIR(_pathStat.st_mode)) {
-        DIR* dir = opendir(_path.c_str());
+        DIR* dir(opendir(_path.c_str()));
         if (dir) {
-            bool empty = readdir(dir) == NULL;
-            closedir(dir);
-            if (!empty) {
-                return false;
+            struct dirent* entry;
+            while ((entry = readdir(dir))) {
+                const std::string name(entry->d_name);
+                if (name != "." && name != "..") {
+                    closedir(dir);
+                    return false;
+                }
             }
         }
-        return remove(_path.c_str()) == 0;
+        closedir(dir);
     }
     return remove(_path.c_str()) == 0;
 }
