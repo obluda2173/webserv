@@ -31,8 +31,7 @@ Connection* setupConnWithoutContentLength(std::string filename) {
     return conn;
 }
 
-void cleanup(Connection* conn, std::string filepath) {
-    delete conn;
+void removeFile(std::string filepath) {
     std::remove(filepath.data());
     ASSERT_FALSE(std::filesystem::exists(filepath));
 }
