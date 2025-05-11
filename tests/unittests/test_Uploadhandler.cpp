@@ -117,7 +117,7 @@ TEST(TestUploadHandler, uploadInChunksExactlyTheContent) {
 }
 
 TEST(TestUploadHandler, sendMoreThanContent) {
-    std::string filename = "example.txt";
+    std::string filename = "example5.txt";
     std::string prefix = "/uploads/";
     std::string readBuf = getRandomString(1000);
     std::string body = readBuf.substr(0, 600);
