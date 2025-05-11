@@ -36,7 +36,6 @@ SRC_FILES := 	$(SRC_DIR)/ConfigParser.cpp \
 				$(SRC_DIR)/Server.cpp \
 				$(SRC_DIR)/ServerBuilder.cpp \
 				$(SRC_DIR)/TokenStream.cpp \
-				$(SRC_DIR)/ValidationRules.cpp \
 				$(SRC_DIR)/handlerUtils.cpp \
 				$(SRC_DIR)/httpParsing.cpp \
 				$(SRC_DIR)/logging.cpp \

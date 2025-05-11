@@ -1,6 +1,6 @@
 #include "ResponseWriter.h"
+#include "utils.h"
 #include <algorithm>
-#include <string.h>
 
 // Definition of the static member
 const std::string ResponseWriter::CRLF = "\r\n";
@@ -8,7 +8,7 @@ const std::string ResponseWriter::WS = " ";
 
 void ResponseWriter::_writeStatusLine() {
     _headers += _resp.version + WS;
-    _headers += std::to_string(_resp.statusCode) + WS;
+    _headers += to_string(_resp.statusCode) + WS;
     _headers += _resp.statusMessage;
     _headers += CRLF;
 }
@@ -16,7 +16,7 @@ void ResponseWriter::_writeStatusLine() {
 void ResponseWriter::_formatHeaders() {
     _writeStatusLine();
     if (_resp.contentLength > 0)
-        _headers += "Content-Length: " + std::to_string(_resp.contentLength) + CRLF;
+        _headers += "Content-Length: " + to_string(_resp.contentLength) + CRLF;
 
     _headers += CRLF;
 }

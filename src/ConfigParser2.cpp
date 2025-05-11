@@ -1,4 +1,5 @@
 #include <ConfigParser.h>
+#include <cstdlib>
 #include <stdexcept>
 
 void ConfigParser::_validateFilename() {
@@ -11,7 +12,7 @@ void ConfigParser::_parseWorkerConnections(const Directive& directive, EventsCon
     if (directive.args.size() != 1) {
         throw std::runtime_error("worker_connections requires exactly one argument");
     }
-    config.workerConnections = static_cast<size_t>(std::strtoul(directive.args[0].c_str(), NULL, 10));
+    config.workerConnections = static_cast< size_t >(std::strtoul(directive.args[0].c_str(), NULL, 10));
     if (config.workerConnections > MAX_WORKER_CONNECTIONS) {
         throw std::runtime_error("worker_connections exceeded the maximum value");
     }
@@ -39,7 +40,7 @@ void ConfigParser::_parseListen(const Directive& directive, ServerConfig& config
         if (colon_pos != std::string::npos) {
             addr = directive.args[i].substr(0, colon_pos);
             port_str = directive.args[i].substr(colon_pos + 1);
-            if (addr.size() >= 2 && addr.front() == '[' && addr.back() == ']') {
+            if (addr.size() >= 2 && addr[0] == '[' && addr[addr.size() - 1] == ']') {
                 addr = addr.substr(1, addr.size() - 2);
             }
         } else {
@@ -50,7 +51,7 @@ void ConfigParser::_parseListen(const Directive& directive, ServerConfig& config
         if (*end != '\0' || port < 1 || port > 65535) {
             throw std::runtime_error("Invalid port in listen directive: " + port_str);
         }
-        config.listen[addr] = static_cast<int>(port);
+        config.listen[addr] = static_cast< int >(port);
     }
 }
 
@@ -73,7 +74,7 @@ void ConfigParser::_parseCgiExt(const Directive& directive, LocationConfig& conf
     } else if (config.cgi.find(directive.args[0]) != config.cgi.end()) {
         throw std::runtime_error("Duplicate cgi_ext extension: " + directive.args[0]);
     }
-    config.cgi.insert(std::pair<std::string, std::string>(directive.args[0], directive.args[1]));
+    config.cgi.insert(std::pair< std::string, std::string >(directive.args[0], directive.args[1]));
 }
 
 void ConfigParser::_parseRoot(const Directive& directive, CommonConfig& config) {
@@ -108,7 +109,7 @@ void ConfigParser::_parseClientMaxBodySize(const Directive& directive, CommonCon
         else
             throw std::runtime_error("Invalid unit in client_max_body_size: " + std::string(1, unit));
     }
-    config.clientMaxBody = static_cast<size_t>(value);
+    config.clientMaxBody = static_cast< size_t >(value);
 }
 
 void ConfigParser::_parseAllowMethods(const Directive& directive, CommonConfig& config) {
@@ -133,7 +134,7 @@ void ConfigParser::_parseIndex(const Directive& directive, CommonConfig& config)
 }
 
 void ConfigParser::_parseErrorPage(const Directive& directive, CommonConfig& config) {
-    const std::vector<std::string>& args = directive.args;
+    const std::vector< std::string >& args = directive.args;
     const size_t argCount = args.size();
 
     if (argCount < 2) {
@@ -158,7 +159,7 @@ void ConfigParser::_parseErrorPage(const Directive& directive, CommonConfig& con
         } else if (config.errorPage.find(code) != config.errorPage.end()) {
             throw std::runtime_error("Duplicate error_page code: " + args[i]);
         }
-        config.errorPage[static_cast<int>(code)] = uri;
+        config.errorPage[static_cast< int >(code)] = uri;
     }
 }
 

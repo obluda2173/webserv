@@ -5,6 +5,7 @@ IndentWidth: 4
 ColumnLimit: 120
 PointerAlignment: Left
 BreakTemplateDeclarations: Yes
+SpacesInAngles:  Always
 ---
 Language:        Cpp
 AccessModifierOffset: -2
@@ -244,7 +245,6 @@ SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
 SpacesBeforeTrailingComments: 1
-SpacesInAngles:  Never
 SpacesInContainerLiterals: true
 SpacesInLineCommentPrefix:
   Minimum:         1

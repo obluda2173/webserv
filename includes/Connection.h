@@ -41,8 +41,8 @@ class Connection {
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;
-    std::vector<char> _readBuf;
-    std::vector<char> _sendBuf;
+    std::vector< char > _readBuf;
+    std::vector< char > _sendBuf;
     size_t _sendBufUsedSize;
 
   public:
@@ -62,7 +62,7 @@ class Connection {
     void setReadBuf(std::string s) {
         if (s.length() > _readBuf.size()) {
             std::cout << "string is bigger than readBuf" << std::endl;
-            exit(1);
+            _exit(1);
         }
         _readBuf.assign(s.begin(), s.end());
         _readBufUsedSize = s.length();

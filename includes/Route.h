@@ -3,10 +3,10 @@
 
 #include "RouteConfig.h"
 #include "IHandler.h"
-#include <unordered_map>
+#include <map>
 
 struct Route {
-    std::unordered_map<std::string, IHandler*> hdlrs;
+    std::map<std::string, IHandler*> hdlrs;
     RouteConfig cfg;
 };
 

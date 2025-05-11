@@ -12,13 +12,14 @@ int main() {
     Logger* logger = new Logger();
     EpollIONotifier* ioNotifier = new EpollIONotifier(*logger);
 
-    std::map<std::string, IHandler*> hdlrs = {{"GET", new GetHandler()}};
+    std::map< std::string, IHandler* > hdlrs;
+    hdlrs["GET"] = new GetHandler();
     Router router = newRouter(cfgPrsr->getServersConfig(), hdlrs);
     ConnectionHandler* connHdlr = new ConnectionHandler(&router, *logger, *ioNotifier);
 
     Server* svr = ServerBuilder().setLogger(logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
 
-    std::vector<std::string> ports;
+    std::vector< std::string > ports;
     ports.push_back("8080");
 
     svr->start(ports);

@@ -2,7 +2,6 @@
 #define RESPONSEWRITER_H
 
 #include "HttpResponse.h"
-#include <string>
 
 class IResponseWriter {
   public:

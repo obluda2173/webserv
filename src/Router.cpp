@@ -2,13 +2,12 @@
 #include "HttpRequest.h"
 #include <algorithm>
 #include <map>
-#include <unordered_map>
 
 std::string Router::_matchLocations(HttpRequest req) {
     std::string route = "";
-    std::vector<std::string> matches;
-    std::set<std::string> _locs = _svrToLocs[req.headers["host"]];
-    for (std::set<std::string>::iterator itLoc = _locs.begin(); itLoc != _locs.end(); itLoc++) {
+    std::vector< std::string > matches;
+    std::set< std::string > _locs = _svrToLocs[req.headers["host"]];
+    for (std::set< std::string >::iterator itLoc = _locs.begin(); itLoc != _locs.end(); itLoc++) {
         if (req.uri.compare(0, itLoc->length(), *itLoc) == 0)
             matches.push_back(*itLoc);
     }

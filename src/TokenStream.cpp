@@ -38,7 +38,7 @@ void TokenStream::_tokenize() {
                 val += _text[_pos];
                 _advance();
             }
-            _tokens.push_back(Token{IDENTIFIER, val, _line, startCol});
+            _tokens.push_back(Token(IDENTIFIER, val, _line, startCol));
         } else if (c == '"') { // string literal
             int startCol = _col;
             _advance(); // consume "
@@ -48,12 +48,12 @@ void TokenStream::_tokenize() {
                 _advance();
             }
             _expectChar('"');
-            _tokens.push_back(Token{STRING, val, _line, startCol});
+            _tokens.push_back(Token(STRING, val, _line, startCol));
         } else if (c == '{' || c == '}' || c == ';') { // punctuation
             int startCol = _col;
             std::string val(1, c);
             _advance();
-            _tokens.push_back(Token{PUNCT, val, _line, startCol});
+            _tokens.push_back(Token(PUNCT, val, _line, startCol));
         } else { // error
             throw std::runtime_error("Unexpected character `" + std::string(1, c) + "` at line " + toString(_line) +
                                      " col " + toString(_col));
@@ -128,15 +128,15 @@ void TokenStream::expect(TokenType ttype, const std::string& tvalue) {
     next();
 }
 
-std::vector<std::string> TokenStream::collectArguments(const std::set<std::string>& terminators,
-                                                       std::vector<std::string> invalidArgs) {
-    std::vector<std::string> args;
+std::vector< std::string > TokenStream::collectArguments(const std::set< std::string >& terminators,
+                                                         std::vector< std::string > invalidArgs) {
+    std::vector< std::string > args;
     while (hasMore()) {
         Token token = peek();
         if (token.type == PUNCT && terminators.count(token.value)) {
             break;
         }
-        for (std::vector<std::string>::size_type i = 0; i < invalidArgs.size(); ++i) {
+        for (std::vector< std::string >::size_type i = 0; i < invalidArgs.size(); ++i) {
             if (invalidArgs[i] == token.value) {
                 throw std::runtime_error("Invalid directive argument");
             }

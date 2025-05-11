@@ -27,7 +27,7 @@ void Connection::resetResponse() {
     delete _response.body;
     delete _wrtr;
     _wrtr = NULL;
-    _response = HttpResponse{};
+    _response = HttpResponse();
 }
 
 void Connection::sendResponse() {

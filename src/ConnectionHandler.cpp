@@ -14,7 +14,7 @@ ConnectionHandler::ConnectionHandler(IRouter* router, ILogger& l, IIONotifier& e
     : _router(router), _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
-    for (std::map<int, Connection*>::iterator it = _connections.begin(); it != _connections.end(); it++) {
+    for (std::map< int, Connection* >::iterator it = _connections.begin(); it != _connections.end(); it++) {
         delete it->second;
     }
     delete _router;
@@ -83,12 +83,12 @@ void ConnectionHandler::_handleState(Connection* conn) {
             break;
         case Connection::Handling:
             route = _router->match(conn->getRequest());
-            route.hdlrs[conn->getRequest().method]->handle(conn, {}, {});
+            route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:
             hdlr = new BadRequestHandler();
-            hdlr->handle(conn, {}, {});
+            hdlr->handle(conn, HttpRequest(), RouteConfig());
             delete hdlr;
             continueProcessing = (conn->getState() != currentState);
             break;

@@ -3,7 +3,8 @@
 GetHandler::GetHandler() {}
 GetHandler::~GetHandler() {}
 
-bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath, std::string& outListing) {
+bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::string& requestPath,
+                                      std::string& outListing) {
     DIR* dir = opendir(dirPath.c_str());
     if (!dir) {
         return false;
@@ -40,7 +41,8 @@ void GetHandler::_serveIndexFile(Connection& conn, const RouteConfig& config, Ht
     for (size_t i = 0; i < config.index.size(); ++i) {
         std::string indexPath = _path + config.index[i];
         if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-            setResponse(resp, 200, "OK", getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
+            setResponse(resp, 200, "OK", getMimeType(indexPath), _pathStat.st_size,
+                        new FileBodyProvider(indexPath.c_str()));
             conn.setState(Connection::SendResponse);
         }
     }
@@ -69,11 +71,11 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         if (!config.index.empty()) {
             _serveIndexFile(*conn, config, resp);
         }
-        if (conn->getState() != Connection::STATE::SendResponse && config.autoindex) {
+        if (conn->getState() != Connection::SendResponse && config.autoindex) {
             _serveDirectoryListing(*conn, request, resp);
         }
     }
-    if (conn->getState() != Connection::STATE::SendResponse) {
+    if (conn->getState() != Connection::SendResponse) {
         setErrorResponse(resp, 403, "Forbidden", config);
         conn->setState(Connection::SendResponse);
     }
