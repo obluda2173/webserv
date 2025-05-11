@@ -3,7 +3,6 @@
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "logging.h"
-#include "utils.h"
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -106,29 +105,24 @@ void ConnectionHandler::_onSocketRead(int connfd) {
     Connection* conn = _connections[connfd];
     conn->readIntoBuf();
     _handleState(conn);
-    conn->logState(&_logger);
     return;
 }
 
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
-    std::cout << "hello" << std::endl;
     conn->sendResponse();
-    conn->logState(&_logger);
+
     if (conn->_response.statusCode == 400) {
-        std::cout << "gone here instead" << std::endl;
         _removeConnection(connfd);
         return;
     }
     if (conn->getState() == Connection::Reset) {
-        std::cout << "gone here" << std::endl;
         conn->resetResponse();
         conn->setState(Connection::ReadingHeaders);
         _handleState(conn); // possibly data inside Connection
         return;
     }
-    std::cout << "in fact, I've gone here instead" << std::endl;
 }
 
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
@@ -137,19 +131,15 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
 
     switch (notif) {
     case READY_TO_READ:
-        _logger.log("DEBUG", "handleConnection notif: READY_TO_READ " + to_string(fd));
         _onSocketRead(fd);
         break;
     case READY_TO_WRITE:
-        _logger.log("DEBUG", "handleConnection notif: READY_TO_WRITE " + to_string(fd));
         _onSocketWrite(fd);
         break;
     case CLIENT_HUNG_UP:
-        _logger.log("DEBUG", "handleConnection notif: CLIENT_HUNG_UP " + to_string(fd));
         _onClientHungUp(fd);
         break;
     case BROKEN_CONNECTION:
-        _logger.log("DEBUG", "handleConnection notif: BROKEN_CONNECTION " + to_string(fd));
         break;
     }
     return fd;

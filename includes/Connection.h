@@ -3,12 +3,9 @@
 
 #include "HttpResponse.h"
 #include "IHttpParser.h"
-#include "ILogger.h"
 #include "ResponseWriter.h"
-#include "logging.h"
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -61,7 +58,6 @@ class Connection {
     int getFileDes() const;
     HttpRequest getRequest();
     sockaddr_storage getAddr() const;
-    void logState(ILogger* logger) const;
     void setState(Connection::STATE state) { _state = state; }
     void setReadBuf(std::string s) {
         if (s.length() > _readBuf.size()) {
