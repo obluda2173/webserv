@@ -3,6 +3,8 @@
 
 #include <string.h>
 #include <string>
+#include <fcntl.h>
+#include <unistd.h>
 
 class IBodyProvider {
   public:
@@ -29,6 +31,41 @@ class StringBodyProvider : public IBodyProvider {
     }
 
     virtual bool isDone() const { return position >= data.length(); }
+};
+
+class FileBodyProvider : public IBodyProvider {
+  private:
+    int _fd;
+    bool _fdOwned;        // i.e. stdout ; not supposed to close it
+    bool _eofReached;
+
+  public:
+    explicit FileBodyProvider(const char* filename) : _fd(-1), _fdOwned(true), _eofReached(false) {
+        _fd = ::open(filename, O_RDONLY);
+        if (_fd < 0) {
+            _eofReached = true;
+        }
+    }
+
+    FileBodyProvider(int existingFd) : _fd(existingFd), _fdOwned(false), _eofReached(false) {}
+
+    virtual ~FileBodyProvider() {
+        if (_fdOwned && _fd >= 0) {
+            ::close(_fd);
+        }
+    }
+
+    virtual size_t read(char* buffer, size_t maxSize) {
+        if (_fd < 0 || _eofReached) return 0;
+        ssize_t n = ::read(_fd, buffer, maxSize);
+        if (n > 0) {
+            return static_cast<size_t>(n);
+        }
+        _eofReached = true;
+        return 0;
+    }
+
+    virtual bool isDone() const { return _eofReached; }
 };
 
 typedef struct HttpResponse {
