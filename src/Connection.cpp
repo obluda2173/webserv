@@ -6,9 +6,9 @@
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* sender)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _sender(sender) {
-    _readBuf = std::vector<char>(1024);
+    _readBuf = std::vector< char >(8192);
     _readBufUsedSize = 0;
-    _sendBuf = std::vector<char>(1024);
+    _sendBuf = std::vector< char >(8192);
     _sendBufUsedSize = 0;
 }
 
@@ -47,8 +47,11 @@ void Connection::sendResponse() {
         _sendBufUsedSize -= bytesSent;
     }
 
-    if (_response.body && !_response.body->isDone())
+    if (_response.body && !_response.body->isDone()) {
+
+        std::cout << "went here" << std::endl;
         return;
+    }
 
     _state = Reset;
 }
@@ -85,6 +88,39 @@ void Connection::parseBuf() {
     }
     _readBufUsedSize = 0;
 }
+void Connection::logState(ILogger* logger) const {
+    std::stringstream info;
+    info << "Connection IP: ";
+    if (_addr.ss_family == AF_INET) {
+        sockaddr_in* addr_in = (sockaddr_in*)&_addr;
+        info << getIpv4String(addr_in);
+        info << ", Port: " << ntohs(addr_in->sin_port);
+    }
+    if (_addr.ss_family == AF_INET6) {
+        sockaddr_in6* addr_in6 = (sockaddr_in6*)&_addr;
+        info << getIpv6String(*addr_in6);
+        info << ", Port: " << ntohs(addr_in6->sin6_port);
+    }
+    info << ", State: ";
+    switch (_state) {
+    case ReadingHeaders:
+        info << "ReadingHeaders";
+        break;
+    case Handling:
+        info << "Handling";
+        break;
+    case HandleBadRequest:
+        info << "HandleBadRequest";
+        break;
+    case SendResponse:
+        info << "SendResponse";
+        break;
+    case Reset:
+        info << "Reset";
+        break;
+    }
+    logger->log("DEBUG", info.str());
+};
 
 int Connection::getFileDes() const { return _fd; }
 
