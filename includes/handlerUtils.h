@@ -24,6 +24,6 @@ std::string decodePercent(const std::string& str);
 std::string normalizePath(const std::string& root, const std::string& uri);
 void setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
 void setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
-bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, const std::string& method);
+bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, std::string& path, struct stat& pathStat);
 
 #endif // HANDLERUTILS_H

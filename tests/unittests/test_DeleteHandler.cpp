@@ -65,14 +65,14 @@ INSTANTIATE_TEST_SUITE_P(
             false
         },
         TestDeleteHandlerParams{
-            "./tests/unittests/test_root/delete_root/empty_dir",
-            true,
+            "./tests/unittests/test_root/delete_root",
+            false,
             RequestBuilder()
                 .withMethod("DELETE")
-                .withUri("/empty_dir")
+                .withUri("/delete_root")
                 .build(),
             RouteConfigBuilder()
-                .withRoot("./tests/unittests/test_root/delete_root")
+                .withRoot("./tests/unittests/test_root")
                 .build(),
             ResponseBuilder()
                 .withStatusCode(204)

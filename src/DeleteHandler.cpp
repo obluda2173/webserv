@@ -21,7 +21,7 @@ bool DeleteHandler::_deleteResource() {
 void DeleteHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
     _path = normalizePath(config.root, request.uri);
-    if (!validateRequest(resp, request, config, "DELETE")) {
+    if (!validateRequest(resp, request, config, _path, _pathStat)) {
         conn->setState(Connection::SendResponse);
         return;
     }

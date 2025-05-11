@@ -39,12 +39,10 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
     _path = normalizePath(config.root, request.uri);
-    if (!validateRequest(resp, request, config, "GET")) { // basic validation
+    if (!validateRequest(resp, request, config, _path, _pathStat)) {
         conn->setState(Connection::SendResponse);
         return;
     }
-
-    stat(_path.c_str(), &_pathStat);
 
     if (S_ISREG(_pathStat.st_mode)) { // if file
         setResponse(resp, 200, "OK", getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
