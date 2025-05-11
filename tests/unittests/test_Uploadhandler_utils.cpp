@@ -2,8 +2,8 @@
 #include "Connection.h"
 #include "gtest/gtest.h"
 #include <filesystem>
-
 #include <fstream>
+
 std::string getFileContents(const std::string& filename) {
     std::ifstream file(filename);
     if (!file)

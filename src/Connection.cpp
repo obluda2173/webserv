@@ -18,6 +18,7 @@ Connection::~Connection() {
     delete _wrtr;
     delete _sender;
     delete _response.body;
+    delete ctx.file;
 }
 
 HttpRequest Connection::getRequest() { return _request; }

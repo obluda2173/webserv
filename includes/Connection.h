@@ -4,6 +4,7 @@
 #include "HttpResponse.h"
 #include "IHttpParser.h"
 #include "ResponseWriter.h"
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
@@ -22,6 +23,13 @@ class SystemSender : public ISender {
     virtual size_t _send(int fd, char* buf, size_t n) { return send(fd, buf, n, 0); }
 };
 
+typedef struct ConnectionContext {
+    size_t bytesUploaded;
+    size_t contentLength;
+    std::ofstream* file;
+    ConnectionContext() : bytesUploaded(0), contentLength(0), file(NULL) {}
+} ConnectionContext;
+
 class Connection {
   public:
     enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse, Reset };
@@ -38,6 +46,7 @@ class Connection {
     size_t _sendBufUsedSize;
 
   public:
+    ConnectionContext ctx;
     size_t _readBufUsedSize;
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
