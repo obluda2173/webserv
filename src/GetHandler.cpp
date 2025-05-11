@@ -9,8 +9,11 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
         return false;
     }
 
-    std::vector<std::string> entries;
     struct dirent* entry;
+    std::ostringstream html;
+    html << "<!DOCTYPE html>\n"
+         << "<html><head><title>Index of " << requestPath << "</title></head><body>\n"
+         << "<h1>Index of " << requestPath << "</h1><ul>\n";
     while ((entry = readdir(dir)) != NULL) {
         std::string name = entry->d_name;
         if (name == "." || name == "..")
@@ -20,17 +23,9 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
         if (stat(fullPath.c_str(), &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
             name += "/";
         }
-        entries.push_back(name);
+        html << "<li><a href=\"" << name << "\">" << name << "</a></li>\n";
     }
     closedir(dir);
-
-    std::ostringstream html;
-    html << "<!DOCTYPE html>\n"
-         << "<html><head><title>Index of " << requestPath << "</title></head><body>\n"
-         << "<h1>Index of " << requestPath << "</h1><ul>\n";
-    for (size_t i = 0; i < entries.size(); ++i) {
-        html << "<li><a href=\"" << entries[i] << "\">" << entries[i] << "</a></li>\n";
-    }
     html << "</ul></body></html>\n";
     outListing = html.str();
     return true;
