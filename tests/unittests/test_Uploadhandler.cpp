@@ -91,3 +91,58 @@ TEST(UploadHandlerTest, concurrentUploads) {
     std::remove(filepath2.data());
     ASSERT_FALSE(std::filesystem::exists(filepath2));
 }
+
+struct UploadHandlerTestParamsVector {
+    std::vector<std::string> filenames;
+    std::vector<size_t> readBufsLengths;
+    std::vector<size_t> bodyLengths;
+    size_t batchSize;
+    size_t clientMaxBody;
+};
+
+class UploadHandlerTestVector : public testing::TestWithParam<UploadHandlerTestParamsVector> {};
+
+TEST_P(UploadHandlerTestVector, concurrentUploadsParam) {
+    UploadHandlerTestParamsVector params = GetParam();
+    size_t batchSize = params.batchSize;
+    std::vector<std::string> filenames = params.filenames;
+    std::vector<size_t> readBufsLengths = params.readBufsLengths;
+    std::vector<size_t> bodyLengths = params.bodyLengths;
+
+    std::vector<std::string> readBufs;
+    std::vector<std::string> bodies;
+    std::vector<Connection*> conns;
+    for (size_t i = 0; i < readBufsLengths.size(); i++) {
+        readBufs.push_back(getRandomString(readBufsLengths[i]));
+        bodies.push_back(readBufs[i].substr(0, bodyLengths[i]));
+        conns.push_back(setupConnWithContentLength(filenames[i], bodies[i].length()));
+    }
+
+    IHandler* uploadHdlr = new UploadHandler();
+    size_t pos = 0;
+    size_t maxSize = *std::max_element(readBufsLengths.begin(), readBufsLengths.end());
+    while (pos < maxSize) {
+        for (size_t i = 0; i < filenames.size(); i++) {
+            if (pos < readBufsLengths[i]) {
+                conns[i]->setReadBuf(readBufs[i].substr(pos, batchSize));
+                uploadHdlr->handle(conns[i], conns[i]->_request, {ROOT, {}, {}, params.clientMaxBody, false});
+            }
+        }
+        pos += batchSize;
+    }
+    delete uploadHdlr;
+
+    for (size_t i = 0; i < filenames.size(); i++) {
+        delete conns[i];
+        std::string gotFile1 = getFileContents(ROOT + PREFIX + filenames[i]);
+        EXPECT_EQ(bodies[i].length(), gotFile1.length());
+        EXPECT_EQ(bodies[i], gotFile1);
+        std::string filepath = ROOT + PREFIX + filenames[i];
+        std::remove(filepath.data());
+        ASSERT_FALSE(std::filesystem::exists(filepath));
+    }
+}
+
+INSTANTIATE_TEST_SUITE_P(first, UploadHandlerTestVector,
+                         testing::Values(UploadHandlerTestParamsVector{
+                             {"1.txt", "2.txt"}, {1000, 1000}, {444, 555}, 10, 20000}));
