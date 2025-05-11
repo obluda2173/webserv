@@ -6,6 +6,8 @@
 #include <fstream>
 #include <gtest/gtest.h>
 
+static std::string ROOT = "tests/unittests/test_files/UploadHandler";
+
 std::string getFileContents(const std::string& filename) {
     std::ifstream file(filename);
     if (!file)
@@ -33,11 +35,8 @@ Connection* setupConnWithoutContentLength(std::string prefix, std::string filena
     return conn;
 }
 
-static std::string ROOT = "tests/unittests/test_files/UploadHandler";
-
-void cleanup(Connection* conn, IHandler* hdlr, std::string filepath) {
+void cleanup(Connection* conn, std::string filepath) {
     delete conn;
-    delete hdlr;
     std::remove(filepath.data());
     ASSERT_FALSE(std::filesystem::exists(filepath));
 }
@@ -89,10 +88,11 @@ TEST(TestUploadHandler, uploadInChunksMismatchContent) {
         uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
     }
 
+    delete uploadHdlr;
     std::string gotFile = getFileContents(ROOT + prefix + filename);
     EXPECT_EQ(body.length(), gotFile.length());
     EXPECT_EQ(body, gotFile);
-    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+    cleanup(conn, ROOT + prefix + filename);
 }
 
 TEST(TestUploadHandler, uploadInChunksExactlyTheContent) {
@@ -111,9 +111,10 @@ TEST(TestUploadHandler, uploadInChunksExactlyTheContent) {
         uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
     }
 
+    delete uploadHdlr;
     std::string gotFile = getFileContents(ROOT + prefix + filename);
     EXPECT_EQ(body, gotFile);
-    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+    cleanup(conn, ROOT + prefix + filename);
 }
 
 TEST(TestUploadHandler, sendMoreThanContent) {
@@ -126,11 +127,12 @@ TEST(TestUploadHandler, sendMoreThanContent) {
     conn->setReadBuf(readBuf);
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
+    delete uploadHdlr;
 
     std::string gotFile = getFileContents(ROOT + prefix + filename);
     EXPECT_EQ(body.length(), gotFile.length());
     EXPECT_EQ(body, gotFile);
-    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+    cleanup(conn, ROOT + prefix + filename);
 }
 
 TEST(TestUploadHandler, firstTest) {
@@ -143,11 +145,12 @@ TEST(TestUploadHandler, firstTest) {
     conn->setReadBuf(body);
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
+    delete uploadHdlr;
 
     std::string gotFile = getFileContents(ROOT + prefix + filename);
     EXPECT_EQ(body.length(), gotFile.length());
     EXPECT_EQ(body, gotFile);
-    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+    cleanup(conn, ROOT + prefix + filename);
 
     filename = "example2.txt";
     prefix = "/uploads/";
@@ -157,12 +160,10 @@ TEST(TestUploadHandler, firstTest) {
     conn->setReadBuf(body);
     uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
+    delete uploadHdlr;
 
     gotFile = getFileContents(ROOT + prefix + filename);
 
     EXPECT_EQ(body, gotFile);
-    delete conn;
-    delete uploadHdlr;
-    std::remove((ROOT + prefix + filename).data());
-    ASSERT_FALSE(std::filesystem::exists(ROOT + prefix + filename));
+    cleanup(conn, ROOT + prefix + filename);
 }

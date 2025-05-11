@@ -24,9 +24,6 @@ class UploadHandler : public IHandler {
             file->write(reinterpret_cast<const char*>(conn->getReadBuf().data()), contentLength - bytesUploaded);
             bytesUploaded = contentLength;
         }
-        // need to flush, otherwise it would stay in memory until buffer is full or UploadHandler is
-        // deleted
-        file->flush();
     }
 
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
