@@ -5,9 +5,17 @@ DeleteHandler::~DeleteHandler() {}
 
 bool DeleteHandler::_deleteResource() {
     if (S_ISDIR(_pathStat.st_mode)) {
-        return rmdir(_path.c_str()) == 0;
+        DIR* dir = opendir(_path.c_str());
+        if (dir) {
+            bool empty = readdir(dir) == NULL;
+            closedir(dir);
+            if (!empty) {
+                return false;
+            }
+        }
+        return remove(_path.c_str()) == 0;
     }
-    return std::remove(_path.c_str()) == 0;
+    return remove(_path.c_str()) == 0;
 }
 
 void DeleteHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {

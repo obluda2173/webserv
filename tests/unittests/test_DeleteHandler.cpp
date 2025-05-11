@@ -116,6 +116,25 @@ INSTANTIATE_TEST_SUITE_P(
                 .withContentLength(435)
                 .build(),
             false
+        },
+        TestDeleteHandlerParams{
+            "",
+            false,
+            RequestBuilder()
+                .withMethod("DELETE")
+                .withUri("/error_pages")
+                .build(),
+            RouteConfigBuilder()
+                .withRoot("./tests/unittests/test_root")
+                .withErrorPage({{400, "/error_pages/400.html"}, {403, "/error_pages/403.html"}, {404, "/error_pages/404.html"}})
+                .build(),
+            ResponseBuilder()
+                .withStatusCode(500)
+                .withStatusMessage("Internal Server Error")
+                .withContentType("text/plain")
+                .withContentLength(21)
+                .build(),
+            false
         }
     )
 );
