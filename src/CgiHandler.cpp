@@ -9,7 +9,33 @@ void CgiHandler::_setCgiEnvironment(Connection& conn, const HttpRequest& request
 }
 
 std::string CgiHandler::_executeCgiScript() {
-    return "";
+    int pipefd[2];
+    pid_t pid;
+    std::string output;
+
+    if (pipe(pipefd) == -1) return "";
+    if ((pid = fork()) == -1) return "";
+
+    if (pid == 0) {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        // int exitCode = execve(...)
+        exit(EXIT_FAILURE);
+    } else {
+        close(pipefd[1]);
+        char buffer[4096];
+        ssize_t count;
+        
+        while ((count = read(pipefd[0], buffer, sizeof(buffer)))) {
+            if (count == -1) {
+                break;
+            }
+            output.append(buffer, count);
+        }
+        waitpid(pid, NULL, 0);
+        close(pipefd[0]);
+    }
+    return output;
 }
 
 void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp) {
@@ -19,8 +45,7 @@ void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& res
 
 void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
-    
-    // validation
+    _path = normalizePath(config.root, request.uri);
     if (!validateRequest(resp, request, config, _path, _pathStat)) {
         conn->setState(Connection::SendResponse);
         return;
