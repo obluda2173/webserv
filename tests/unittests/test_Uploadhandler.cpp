@@ -3,24 +3,25 @@
 #include "test_Uploadhandler_utils.h"
 #include "test_main.h"
 #include "gtest/gtest.h"
+#include <algorithm>
 #include <gtest/gtest.h>
 
 struct UploadHandlerTestParams {
-    std::vector<std::string> filenames;
-    std::vector<size_t> readBufsLengths;
-    std::vector<size_t> bodyLengths;
+    std::vector< std::string > filenames;
+    std::vector< size_t > readBufsLengths;
+    std::vector< size_t > bodyLengths;
     size_t batchSize;
     size_t clientMaxBody;
 };
 
-class UploadHdlrTest : public testing::TestWithParam<UploadHandlerTestParams> {
+class UploadHdlrTest : public testing::TestWithParam< UploadHandlerTestParams > {
   protected:
-    std::vector<std::string> filenames;
-    std::vector<size_t> readBufsLengths;
-    std::vector<size_t> bodyLengths;
-    std::vector<std::string> readBufs;
-    std::vector<std::string> bodies;
-    std::vector<Connection*> conns;
+    std::vector< std::string > filenames;
+    std::vector< size_t > readBufsLengths;
+    std::vector< size_t > bodyLengths;
+    std::vector< std::string > readBufs;
+    std::vector< std::string > bodies;
+    std::vector< Connection* > conns;
     size_t batchSize;
     size_t clientMaxBody;
 
