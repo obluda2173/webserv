@@ -72,7 +72,30 @@ void cleanup(Connection* conn, IHandler* hdlr, std::string filepath) {
 //     cleanup(conn2, NULL, ROOT + prefix + filename2);
 // }
 
-TEST(TestUploadHandler, uploadInChunks) {
+TEST(TestUploadHandler, uploadInChunksMismatchContent) {
+    // setup request
+    std::string filename = "example3.txt";
+    std::string prefix = "/uploads/";
+    std::string readBuf = getRandomString(1000);
+    std::string body = readBuf.substr(0, 600);
+
+    Connection* conn = setupConnWithContentLength(prefix, filename, body.length());
+    IHandler* uploadHdlr = new UploadHandler();
+    int pos = 0;
+    while (pos < 1000) {
+        std::size_t size = 10;
+        conn->setReadBuf(readBuf.substr(pos, size));
+        pos += size;
+        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
+    }
+
+    std::string gotFile = getFileContents(ROOT + prefix + filename);
+    EXPECT_EQ(body.length(), gotFile.length());
+    EXPECT_EQ(body, gotFile);
+    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+}
+
+TEST(TestUploadHandler, uploadInChunksExactlyTheContent) {
     // setup request
     std::string filename = "example3.txt";
     std::string prefix = "/uploads/";
@@ -105,9 +128,9 @@ TEST(TestUploadHandler, sendMoreThanContent) {
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
 
     std::string gotFile = getFileContents(ROOT + prefix + filename);
-    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
     EXPECT_EQ(body.length(), gotFile.length());
     EXPECT_EQ(body, gotFile);
+    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
 }
 
 TEST(TestUploadHandler, firstTest) {
@@ -122,8 +145,9 @@ TEST(TestUploadHandler, firstTest) {
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
 
     std::string gotFile = getFileContents(ROOT + prefix + filename);
-    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+    EXPECT_EQ(body.length(), gotFile.length());
     EXPECT_EQ(body, gotFile);
+    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
 
     filename = "example2.txt";
     prefix = "/uploads/";
