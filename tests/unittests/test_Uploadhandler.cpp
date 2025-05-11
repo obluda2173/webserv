@@ -16,12 +16,20 @@ std::string getFileContents(const std::string& filename) {
     return contents;
 }
 
-Connection* setupConnWithContentLength(std::string prefix, std::string filename, std::string body) {
+Connection* setupConnWithContentLength(std::string prefix, std::string filename, size_t contentLength) {
     Connection* conn = new Connection({}, -1, NULL, NULL);
     conn->_request.method = "POST";
     conn->_request.uri = prefix + filename;
     conn->_request.version = "HTTP/1.1";
-    conn->_request.headers["content-length"] = body.length();
+    conn->_request.headers["content-length"] = std::to_string(contentLength);
+    return conn;
+}
+
+Connection* setupConnWithoutContentLength(std::string prefix, std::string filename) {
+    Connection* conn = new Connection({}, -1, NULL, NULL);
+    conn->_request.method = "POST";
+    conn->_request.uri = prefix + filename;
+    conn->_request.version = "HTTP/1.1";
     return conn;
 }
 
@@ -34,13 +42,43 @@ void cleanup(Connection* conn, IHandler* hdlr, std::string filepath) {
     ASSERT_FALSE(std::filesystem::exists(filepath));
 }
 
-TEST(TestUploadHandler, inMultiParts) {
+// TEST(TestUploadHandler, TwoConnectionsUploadInChunks) {
+//     // setup request
+//     std::string filename1 = "example1.txt";
+//     std::string filename2 = "example2.txt";
+//     std::string prefix = "/uploads/";
+//     std::string body1 = getRandomString(1000);
+//     std::string body2 = getRandomString(1000);
+
+//     Connection* conn1 = setupConnWithContentLength(prefix, filename1, body1);
+//     Connection* conn2 = setupConnWithContentLength(prefix, filename2, body2);
+//     IHandler* uploadHdlr = new UploadHandler();
+//     int pos = 0;
+//     while (pos < 1000) {
+//         std::size_t size = 10;
+//         conn1->setReadBuf(body1.substr(pos, size));
+//         conn2->setReadBuf(body2.substr(pos, size));
+//         pos += size;
+//         uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false});
+//         uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false});
+//     }
+
+//     std::string gotFile1 = getFileContents(ROOT + prefix + filename1);
+//     EXPECT_EQ(body1, gotFile1);
+//     cleanup(conn1, uploadHdlr, ROOT + prefix + filename1);
+
+//     std::string gotFile2 = getFileContents(ROOT + prefix + filename2);
+//     EXPECT_EQ(body2, gotFile2);
+//     cleanup(conn2, NULL, ROOT + prefix + filename2);
+// }
+
+TEST(TestUploadHandler, uploadInChunks) {
     // setup request
     std::string filename = "example3.txt";
     std::string prefix = "/uploads/";
     std::string body = getRandomString(1000);
 
-    Connection* conn = setupConnWithContentLength(prefix, filename, body);
+    Connection* conn = setupConnWithContentLength(prefix, filename, body.length());
     IHandler* uploadHdlr = new UploadHandler();
     int pos = 0;
     while (pos < 1000) {
@@ -55,13 +93,30 @@ TEST(TestUploadHandler, inMultiParts) {
     cleanup(conn, uploadHdlr, ROOT + prefix + filename);
 }
 
+TEST(TestUploadHandler, sendMoreThanContent) {
+    std::string filename = "example.txt";
+    std::string prefix = "/uploads/";
+    std::string readBuf = getRandomString(1000);
+    std::string body = readBuf.substr(0, 600);
+
+    Connection* conn = setupConnWithContentLength(prefix, filename, body.length());
+    conn->setReadBuf(readBuf);
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
+
+    std::string gotFile = getFileContents(ROOT + prefix + filename);
+    cleanup(conn, uploadHdlr, ROOT + prefix + filename);
+    EXPECT_EQ(body.length(), gotFile.length());
+    EXPECT_EQ(body, gotFile);
+}
+
 TEST(TestUploadHandler, firstTest) {
     // setup request
     std::string filename = "example.txt";
     std::string prefix = "/uploads/";
     std::string body = getRandomString(1000);
 
-    Connection* conn = setupConnWithContentLength(prefix, filename, body);
+    Connection* conn = setupConnWithContentLength(prefix, filename, body.length());
     conn->setReadBuf(body);
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
@@ -74,7 +129,7 @@ TEST(TestUploadHandler, firstTest) {
     prefix = "/uploads/";
     body = getRandomString(1000);
 
-    conn = setupConnWithContentLength(prefix, filename, body);
+    conn = setupConnWithContentLength(prefix, filename, body.length());
     conn->setReadBuf(body);
     uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});

@@ -5,14 +5,21 @@
 #include "IHandler.h"
 #include "RouteConfig.h"
 #include <fstream>
+#include <sstream>
 
 class UploadHandler : public IHandler {
   public:
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-        conn->getReadBuf();
+        std::ofstream file = std::ofstream(cfg.root + req.uri, std::ios::binary | std::ios::app);
 
-        std::ofstream file = std::ofstream(cfg.root + req.uri, std::ios::binary);
-        file.write(reinterpret_cast<const char*>(conn->getReadBuf().data()), conn->_readBufUsedSize);
+        std::stringstream ss(conn->_request.headers["content-length"]);
+        size_t contentLength;
+        ss >> contentLength;
+
+        if (conn->_readBufUsedSize < contentLength)
+            file.write(reinterpret_cast<const char*>(conn->getReadBuf().data()), conn->_readBufUsedSize);
+        else
+            file.write(reinterpret_cast<const char*>(conn->getReadBuf().data()), contentLength);
     }
 };
 
