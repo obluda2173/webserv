@@ -54,3 +54,6 @@ index       index.html index.htm
    - If no Content-Length, then Transfer-Encoding needs to be chunked (and only chunked)
    - if no Transfer-encoding, then Content-Length needs to be set
 2.
+* httpParser
+- [ ] validation Accept to rigid
+- [ ] validation Accept-encoding to rigid

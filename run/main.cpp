@@ -8,7 +8,7 @@
 
 int main() {
 
-    IConfigParser* cfgPrsr = new ConfigParser("tests/end_to_end_tests/Config1/config1.cfg");
+    IConfigParser* cfgPrsr = new ConfigParser("tests/end_to_end_tests/Config1/config1.conf");
     Logger* logger = new Logger();
     EpollIONotifier* ioNotifier = new EpollIONotifier(*logger);
 
