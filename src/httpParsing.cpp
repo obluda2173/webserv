@@ -159,6 +159,7 @@ bool isValidAccept(const std::string& str) {
     std::vector< std::string > tokens;
     std::istringstream iss(str);
     std::string token;
+    bool available = false;
     while (std::getline(iss, token, ',')) {
         token.erase(0, token.find_first_not_of(" "));
         tokens.push_back(token);
@@ -170,10 +171,10 @@ bool isValidAccept(const std::string& str) {
             slash == token2.size() - 1) // the char '/' must be in the middle of the string
             return false;
         std::string type = token2.substr(0, slash);
-        if (type != "application" && type != "text" && type != "image" && type != "audio" && type != "video" &&
-            type != "multipart" && type != "font" && type != "model" && type != "message" && type != "example" &&
-            type != "*") {
-            return false;
+        if (type == "application" || type == "text" || type == "image" || type == "audio" || type == "video" ||
+            type == "multipart" || type == "font" || type == "model" || type == "message" || type == "example" ||
+            type == "*") {
+            available = true;
         }
         // Only validate charset/boundary if present
         if (!checkOptionalCharset(token2)) {
@@ -186,6 +187,9 @@ bool isValidAccept(const std::string& str) {
             return false;
         }
     }
+    if (available == false) {
+        return false;
+    }
     return true;
 }
 
@@ -194,6 +198,7 @@ bool isValidAcceptEncoding(const std::string& str) {
     std::istringstream iss(str);
     std::string token;
     std::string token3;
+    bool available = false;
     while (std::getline(iss, token, ',')) {
         token.erase(0, token.find_first_not_of(" "));
         tokens.push_back(token);
@@ -206,13 +211,16 @@ bool isValidAcceptEncoding(const std::string& str) {
         } else {
             token3 = token2;
         }
-        if (token3 != "gzip" && token3 != "deflate" && token3 != "br" &&
-            token3 != "compress" && token3 != "identity" && token3 != "zstd") {
-            return false;
+        if (token3 == "gzip" || token3 == "deflate" || token3 == "br" ||
+            token3 == "compress" || token3 == "identity" || token3 == "zstd") {
+            available = true;
         }
         if (checkQValue(token2) == false) {
             return false;
         }
+    }
+    if (available == false) {
+        return false;
     }
     return true;
 }
