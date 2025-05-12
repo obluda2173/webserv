@@ -7,8 +7,9 @@
 
 #include <IIONotifier.h>
 
-// #define CLIENT_HUNG_UP EPOLLRDHUP
-// #define READY_TO_READ EPOLLIN
+#ifndef NBR_EVENTS_NOTIFIER
+#define NBR_EVENTS_NOTIFIER 10
+#endif
 
 class EpollIONotifier : public IIONotifier {
   private:

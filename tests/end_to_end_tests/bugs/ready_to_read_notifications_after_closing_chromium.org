@@ -1,0 +1,4 @@
+#+title: Ready To Read Notifications After Closing Chromium
+
+* behavior
+- after establishing a connection with chromium and then closing the browser, we get a lot of READY_TO_READ notifications

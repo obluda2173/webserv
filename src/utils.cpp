@@ -85,7 +85,7 @@ int newListeningSocket(std::string ip, std::string port, int protocol, int backl
 std::string toLower(const std::string& str) {
     std::string result = str;
     for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
-        *ptr = static_cast<char>(tolower(*ptr));
+        *ptr = static_cast< char >(tolower(*ptr));
     }
     return result;
 }

@@ -1,6 +1,7 @@
 #include <ConfigParser.h>
-#include <gtest/gtest.h>
+#include <fstream>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 Context buildAST(const std::string& config) {
     ConfigParser parser(config);
@@ -69,7 +70,7 @@ TEST(ASTTest, IgnoresCommentsAndWhitespace) {
          << "    listen    3000;   \n"
          << "    # another comment\n"
          << "    root    \"/srv/www\";\n"
-         << "    server_name example.com;\n" 
+         << "    server_name example.com;\n"
          << "}\n";
     file.close();
     Context root = buildAST("configTest.conf");
@@ -94,9 +95,7 @@ TEST(ASTTest, ThrowsOnMissingListen) {
          << "    server_name example.com;\n"
          << "}\n";
     file.close();
-    EXPECT_THROW({
-        Context root = buildAST("configTest.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context root = buildAST("configTest.conf"); }, std::runtime_error);
     std::remove("configTest.conf");
 }
 
@@ -108,9 +107,7 @@ TEST(ASTTest, ThrowsOnMissingRoot) {
          << "    server_name example.com;\n"
          << "}\n";
     file.close();
-    EXPECT_THROW({
-        Context confiroot = buildAST("configTest.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context confiroot = buildAST("configTest.conf"); }, std::runtime_error);
     std::remove("configTest.conf");
 }
 
@@ -122,9 +119,7 @@ TEST(ASTTest, ThrowsOnMissingServerName) {
          << "    root /var/www/html;\n"
          << "}\n";
     file.close();
-    EXPECT_THROW({
-        Context confiroot = buildAST("configTest.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context confiroot = buildAST("configTest.conf"); }, std::runtime_error);
     std::remove("configTest.conf");
 }
 
@@ -133,9 +128,7 @@ TEST(ASTTest, ThrowsOnEmptyBlock) {
     file.open("configTest.conf");
     file << "server {}\n";
     file.close();
-    EXPECT_THROW({
-        Context confiroot = buildAST("configTest.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context confiroot = buildAST("configTest.conf"); }, std::runtime_error);
     std::remove("configTest.conf");
 }
 
@@ -148,9 +141,7 @@ TEST(ASTTest, ThrowsOnMissingSemicolon) {
          << "    server_name example.com;\n"
          << "}\n";
     file.close();
-    EXPECT_THROW({
-        Context root = buildAST("configTest.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context root = buildAST("configTest.conf"); }, std::runtime_error);
     std::remove("configTest.conf");
 }
 
@@ -162,9 +153,7 @@ TEST(ASTTest, ThrowsOnUnclosedBlock) {
          << "    root /var/www/html;\n"
          << "    server_name example.com;\n";
     file.close();
-    EXPECT_THROW({
-        Context root = buildAST("configTest.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context root = buildAST("configTest.conf"); }, std::runtime_error);
     std::remove("configTest.conf");
 }
 
@@ -224,9 +213,7 @@ TEST(ASTTest, ParsesQuotedArguments) {
 }
 
 TEST(ASTTest, ThrowsOnNonexistentFile) {
-    EXPECT_THROW({
-        Context root = buildAST("nonexistent.conf");
-    }, std::runtime_error);
+    EXPECT_THROW({ Context root = buildAST("nonexistent.conf"); }, std::runtime_error);
 }
 
 TEST(ASTTest, HandlesEmptyFile) {

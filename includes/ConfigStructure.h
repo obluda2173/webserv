@@ -1,16 +1,14 @@
 #ifndef CONFIGSTRUCTURE_H
 #define CONFIGSTRUCTURE_H
 
-#include <iostream>
+#include "webserv.h"
 #include <map>
+#include <string>
 #include <vector>
 
 #define DEFAULT_WORKER_CONNECTIONS 512
 #define MAX_WORKER_CONNECTIONS 1024
 #define DEFAULT_USE "epoll"
-#define KB 1024
-#define MB 1024 * 1024
-#define GB 1024 * 1024 * 1024
 
 typedef struct Directive {
     std::string name;
@@ -39,7 +37,7 @@ typedef struct CommonConfig {
     std::map<int, std::string> errorPage;
     bool autoindex;
 
-    CommonConfig() : root(), allowMethods(), index(), clientMaxBody(MB), errorPage(), autoindex(false) {}
+    CommonConfig() : root(), allowMethods(), index(), clientMaxBody(oneMB), errorPage(), autoindex(false) {}
 } CommonConfig;
 
 typedef struct LocationConfig {

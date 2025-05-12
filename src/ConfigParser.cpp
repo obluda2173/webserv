@@ -1,4 +1,6 @@
 #include <ConfigParser.h>
+#include <fstream>
+#include <stdexcept>
 
 ConfigParser::ConfigParser(const std::string& filename) {
     _filename = filename;
@@ -18,13 +20,27 @@ void ConfigParser::_parseDirectiveOrBlock(TokenStream& tokenStream, Context& cur
     if (nameToken.type != IDENTIFIER) {
         throw std::runtime_error("Expected identifier for directive/block");
     }
-    std::set<std::string> terminators;
+    std::set< std::string > terminators;
     terminators.insert("{");
     terminators.insert(";");
     terminators.insert("}");
-    std::vector<std::string> invalidArgs = {"server", "location", "listen", "server_name", "cgi_ext", "root", "allow_methods", \
-                                            "index", "client_max_body", "error_page", "autoindex", "worker_connections", "use"};
-    std::vector<std::string> args = tokenStream.collectArguments(terminators, invalidArgs);
+
+    std::vector< std::string > invalidArgs;
+    invalidArgs.push_back("server");
+    invalidArgs.push_back("location");
+    invalidArgs.push_back("listen");
+    invalidArgs.push_back("server_name");
+    invalidArgs.push_back("cgi_ext");
+    invalidArgs.push_back("root");
+    invalidArgs.push_back("allow_methods");
+    invalidArgs.push_back("index");
+    invalidArgs.push_back("client_max_body");
+    invalidArgs.push_back("error_page");
+    invalidArgs.push_back("autoindex");
+    invalidArgs.push_back("worker_connections");
+    invalidArgs.push_back("use");
+
+    std::vector< std::string > args = tokenStream.collectArguments(terminators, invalidArgs);
     if (!tokenStream.hasMore()) {
         throw std::runtime_error("Unexpected end of file");
     }
@@ -60,7 +76,8 @@ LocationConfig ConfigParser::_parseLocationContext(const Context& locationContex
     for (size_t i = 0; i < locationContext.parameters.size(); ++i) {
         locationConfig.prefix.append(locationContext.parameters[i]);
     }
-    for (std::vector<Directive>::const_iterator it = locationContext.directives.begin(); it != locationContext.directives.end(); ++it) {
+    for (std::vector< Directive >::const_iterator it = locationContext.directives.begin();
+         it != locationContext.directives.end(); ++it) {
         if (it->name == "root") {
             _parseRoot(*it, locationConfig.common);
         } else if (it->name == "client_max_body_size") {
@@ -69,9 +86,9 @@ LocationConfig ConfigParser::_parseLocationContext(const Context& locationContex
             _parseAllowMethods(*it, locationConfig.common);
         } else if (it->name == "index") {
             _parseIndex(*it, locationConfig.common);
-        } else if (it->name == "autoindex"){
+        } else if (it->name == "autoindex") {
             _parseAutoindex(*it, locationConfig.common);
-        } else if (it->name == "error_page"){
+        } else if (it->name == "error_page") {
             _parseErrorPage(*it, locationConfig.common);
         } else if (it->name == "cgi_ext") {
             _parseCgiExt(*it, locationConfig);
@@ -83,7 +100,8 @@ LocationConfig ConfigParser::_parseLocationContext(const Context& locationContex
 }
 
 void ConfigParser::_processServerDirectives(const Context& context, ServerConfig& serverConfig) {
-    for (std::vector<Directive>::const_iterator it = context.directives.begin(); it != context.directives.end(); ++it) {
+    for (std::vector< Directive >::const_iterator it = context.directives.begin(); it != context.directives.end();
+         ++it) {
         if (it->name == "listen") {
             _parseListen(*it, serverConfig);
         } else if (it->name == "server_name") {
@@ -96,9 +114,9 @@ void ConfigParser::_processServerDirectives(const Context& context, ServerConfig
             _parseAllowMethods(*it, serverConfig.common);
         } else if (it->name == "index") {
             _parseIndex(*it, serverConfig.common);
-        } else if (it->name == "autoindex"){
+        } else if (it->name == "autoindex") {
             _parseAutoindex(*it, serverConfig.common);
-        } else if (it->name == "error_page"){
+        } else if (it->name == "error_page") {
             _parseErrorPage(*it, serverConfig.common);
         } else {
             throw std::runtime_error("Unknown directive in server context: " + it->name);
@@ -112,7 +130,8 @@ void ConfigParser::_parseServerContext(const Context& serverContext) {
         throw std::runtime_error("Server context doesn't accept parameters");
     }
     _processServerDirectives(serverContext, config);
-    for (std::vector<Context>::const_iterator it = serverContext.children.begin(); it != serverContext.children.end(); ++it) {
+    for (std::vector< Context >::const_iterator it = serverContext.children.begin(); it != serverContext.children.end();
+         ++it) {
         if (it->name == "location") {
             config.locations.push_back(_parseLocationContext(*it));
         }
@@ -124,7 +143,8 @@ void ConfigParser::_parseEventsContext(const Context& eventsContext) {
     EventsConfig eventsConfig;
     eventsConfig.workerConnections = DEFAULT_WORKER_CONNECTIONS;
     eventsConfig.kernelMethod = DEFAULT_USE;
-    for (std::vector<Directive>::const_iterator it = eventsContext.directives.begin(); it != eventsContext.directives.end(); ++it) {
+    for (std::vector< Directive >::const_iterator it = eventsContext.directives.begin();
+         it != eventsContext.directives.end(); ++it) {
         if (it->name == "worker_connections") {
             _parseWorkerConnections(*it, eventsConfig);
         } else if (it->name == "use") {
@@ -137,7 +157,8 @@ void ConfigParser::_parseEventsContext(const Context& eventsContext) {
 }
 
 bool ConfigParser::_findDirective(const Context& context, const std::string& identifierKey) {
-    for (std::vector<Directive>::const_iterator it = context.directives.begin(); it != context.directives.end(); ++it) {
+    for (std::vector< Directive >::const_iterator it = context.directives.begin(); it != context.directives.end();
+         ++it) {
         if (it->name == identifierKey) {
             return true;
         }
@@ -158,7 +179,7 @@ void ConfigParser::_validateServerContext(const Context& context) {
 }
 
 void ConfigParser::_makeAst() {
-    std::ifstream configFile(_filename);
+    std::ifstream configFile(_filename.c_str());
     if (!configFile.is_open()) {
         throw std::runtime_error("Failed to open configuration file");
     }
@@ -183,7 +204,7 @@ void ConfigParser::_makeAst() {
 
 void ConfigParser::_makeConfig() {
     bool firstEventContext = true;
-    for (std::vector<Context>::const_iterator it = _ast.children.begin(); it != _ast.children.end(); ++it) {
+    for (std::vector< Context >::const_iterator it = _ast.children.begin(); it != _ast.children.end(); ++it) {
         if (it->name == "server") {
             _validateServerContext(*it);
             _parseServerContext(*it);
@@ -196,14 +217,8 @@ void ConfigParser::_makeConfig() {
     }
 }
 
-Context ConfigParser::getAst() {
-    return _ast;
-}
+Context ConfigParser::getAst() { return _ast; }
 
-EventsConfig ConfigParser::getEventsConfig() {
-    return _eventsConfig;
-}
+EventsConfig ConfigParser::getEventsConfig() { return _eventsConfig; }
 
-std::vector<ServerConfig> ConfigParser::getServersConfig() {
-    return _serversConfig;
-}
+std::vector< ServerConfig > ConfigParser::getServersConfig() { return _serversConfig; }

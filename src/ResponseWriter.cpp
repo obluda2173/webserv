@@ -1,40 +1,57 @@
 #include "ResponseWriter.h"
-#include <string.h>
+#include "utils.h"
+#include <algorithm>
 
 // Definition of the static member
 const std::string ResponseWriter::CRLF = "\r\n";
 const std::string ResponseWriter::WS = " ";
 
 void ResponseWriter::_writeStatusLine() {
-    _respString += _resp.version + WS;
-    _respString += std::to_string(_resp.statusCode) + WS;
-    _respString += _resp.statusMessage;
-    _respString += CRLF;
+    _headers += _resp.version + WS;
+    _headers += to_string(_resp.statusCode) + WS;
+    _headers += _resp.statusMessage;
+    _headers += CRLF;
 }
 
-void ResponseWriter::_writeHeaders() {
+void ResponseWriter::_formatHeaders() {
     _writeStatusLine();
     if (_resp.contentLength > 0)
-        _respString += "Content-Length: " + std::to_string(_resp.contentLength) + CRLF;
+        _headers += "Content-Length: " + to_string(_resp.contentLength) + CRLF;
 
-    _respString += CRLF;
+    _headers += CRLF;
 }
 
-void ResponseWriter::_writeBody() {
-    char buffer[1024];
-    size_t readBytes = _resp.body->read(buffer, 1023);
-    buffer[readBytes] = '\0';
-    _respString += buffer;
+size_t ResponseWriter::_writeHeaders(char* buffer, size_t maxSize) {
+    size_t bytesToWrite = std::min(maxSize, _headers.size());
+    memcpy(buffer, _headers.c_str(), bytesToWrite);
+    return bytesToWrite;
 }
 
-int ResponseWriter::write(char* buffer, int maxSize) {
-    (void)maxSize;
-    _writeHeaders();
-
-    if (_resp.body) {
-        _writeBody();
+size_t ResponseWriter::write(char* buffer, size_t maxSize) {
+    size_t bytesWritten = 0;
+    bool continueProcessing = true;
+    while (continueProcessing) {
+        switch (_state) {
+        case FormatHeaders:
+            _formatHeaders();
+            _state = WritingHeaders;
+            break;
+        case WritingHeaders:
+            bytesWritten = _writeHeaders(buffer, maxSize);
+            maxSize -= bytesWritten;
+            if (maxSize) {
+                _state = WritingBody;
+            } else {
+                _headers = _headers.substr(bytesWritten, _headers.length());
+                continueProcessing = false;
+            }
+            break;
+        case WritingBody:
+            if (_resp.body)
+                bytesWritten += _resp.body->read(buffer + bytesWritten, maxSize);
+            continueProcessing = false;
+            break;
+        }
     }
-
-    memcpy(buffer, _respString.c_str(), _respString.length());
-    return _respString.length();
+    return bytesWritten;
 }

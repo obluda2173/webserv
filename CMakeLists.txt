@@ -12,13 +12,13 @@ FetchContent_MakeAvailable(googletest)
 project(webserv)
 option(BUILD_TEST "Build tests" ON)
 
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -fsanitize=address")
 # set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra ")
 
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
-list(REMOVE_ITEM SOURCES "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
 if(BUILD_TEST)
+  set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -fsanitize=address")
+
   file(GLOB UNITTEST_FILES "tests/unittests/*")
   set(UNITTEST_EXECUTABLE "run_unittests")
 
@@ -31,3 +31,13 @@ if(BUILD_TEST)
   gtest_discover_tests(${UNITTEST_EXECUTABLE})
 endif()
 
+
+if(BUILD_MAIN)
+  set(CMAKE_CXX_FLAGS "-std=c++98 -Wall -Werror -Wextra -fsanitize=address")
+
+  file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "run/main.cpp")
+  set(EXECUTABLE "webserv")
+
+  add_executable(${EXECUTABLE} ${SOURCES})
+  target_include_directories(${EXECUTABLE} PRIVATE "./includes")
+endif()

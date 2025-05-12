@@ -1,0 +1,88 @@
+:PROPERTIES:
+:GPTEL_MODEL: claude-3-7-sonnet-20250219
+:GPTEL_BACKEND: Claude
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Avoid long answers.
+:GPTEL_BOUNDS: ((response (370 2636)))
+:END:
+
+*** I want to write a test for the case that "send" fails (does not send every byte) inside Connection.sendResponse. How could i mock it?
+
+To test what happens when =send= fails in =Connection::sendResponse()=, you'll need to mock the =send= system call. Since this is a system function, you have a few approaches:
+
+1. Use a function wrapper and dependency injection:
+   - Create an interface for sending data
+   - Pass this interface to the Connection class
+   - Mock the interface in tests
+
+2. Use a link-time override with a test-specific implementation
+
+Here's how you could refactor the code for option 1:
+
+#+begin_src cpp
+// In a new header file "ISender.h"
+class ISender {
+public:
+    virtual ~ISender() {}
+    virtual ssize_t send(int sockfd, const void* buf, size_t len, int flags) = 0;
+};
+
+// Real implementation
+class SystemSender : public ISender {
+public:
+    ssize_t send(int sockfd, const void* buf, size_t len, int flags) override {
+        return ::send(sockfd, buf, len, flags);
+    }
+};
+
+// Update Connection.h to include the sender
+class Connection {
+private:
+    // Other members...
+    ISender* _sender;
+
+public:
+    // Update constructor to take ISender
+    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr,
+               ISender* sender = new SystemSender(), size_t readSize = READ_SIZE);
+    // Rest of the class...
+};
+#+end_src
+
+Then in your test, create a mock sender:
+
+#+begin_src cpp
+// Mock implementation for testing
+class MockSender : public ISender {
+public:
+    size_t bytesToSend;
+
+    MockSender(size_t bytesToSend = 0) : bytesToSend(bytesToSend) {}
+
+    ssize_t send(int sockfd, const void* buf, size_t len, int flags) override {
+        // Return fewer bytes than requested to simulate partial send
+        return bytesToSend < len ? bytesToSend : len;
+    }
+};
+
+// In your test
+TEST(ConnectionTest, SendResponsePartialSend) {
+    // Setup
+    sockaddr_storage addr;
+    int fd = 1; // Dummy fd
+    MockHttpParser* parser = new MockHttpParser();
+    MockSender* sender = new MockSender(5); // Will only send 5 bytes
+
+    Connection conn(addr, fd, parser, sender);
+    conn.setState(Connection::SendResponse);
+
+    // Execute
+    conn.sendResponse();
+
+    // Verify expected behavior
+    // Check state, etc.
+}
+#+end_src
+
+This approach requires moderate refactoring but gives you clean control over the =send= behavior for testing.
+
+***

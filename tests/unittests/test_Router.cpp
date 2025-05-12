@@ -52,8 +52,13 @@ TEST_P(RouterTest, testWithConfigParsing) {
 
     // Building the router
     IConfigParser* cfgPrsr = new ConfigParser("./tests/unittests/test_configs/config1.conf");
-    Router r = newRouter(cfgPrsr->getServersConfig(), new StubHandler("GET"), new StubHandler("POST"),
-                         new StubHandler("DELETE"));
+
+    std::map<std::string, IHandler*> hdlrs = {
+        {"GET", new StubHandler("GET")},
+        {"POST", new StubHandler("POST")},
+        {"DELETE", new StubHandler("DELETE")},
+    };
+    Router r = newRouter(cfgPrsr->getServersConfig(), hdlrs);
 
     Route gotRoute = r.match(request);
     // check root

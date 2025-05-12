@@ -1,16 +1,17 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include "GetHandler.h"
 #include "DeleteHandler.h"
+#include "GetHandler.h"
 
 class RequestBuilder {
-private:
+  private:
     HttpRequest req;
-public:
+
+  public:
     RequestBuilder() {
         req.method = "";
         req.uri = "/test.txt";
@@ -33,9 +34,10 @@ public:
 };
 
 class RouteConfigBuilder {
-private:
+  private:
     RouteConfig cfg;
-public:
+
+  public:
     RouteConfigBuilder() {
         cfg.root = "./tests/unittests/test_root";
         cfg.index = {};
@@ -50,11 +52,11 @@ public:
         cfg.autoindex = autoIndex;
         return *this;
     }
-    RouteConfigBuilder& withErrorPage(std::map<int, std::string> errorPage) {
+    RouteConfigBuilder& withErrorPage(std::map< int, std::string > errorPage) {
         cfg.errorPage = errorPage;
         return *this;
     }
-    RouteConfigBuilder& withIndex(std::vector<std::string> index) {
+    RouteConfigBuilder& withIndex(std::vector< std::string > index) {
         cfg.index = index;
         return *this;
     }
@@ -62,9 +64,10 @@ public:
 };
 
 class ResponseBuilder {
-private:
+  private:
     HttpResponse resp;
-public:
+
+  public:
     ResponseBuilder() {
         resp.version = "HTTP/1.1";
         resp.statusCode = 400;
@@ -105,7 +108,8 @@ inline void assertEqualHttpResponse(const HttpResponse& want, const HttpResponse
     if (want.contentLength > 0 && got.body != nullptr) {
         char gotBuffer[2048];
         std::string gotString;
-        while (!got.body->isDone() && gotString.size() < static_cast<size_t>(got.contentLength)) {
+        while (!got.body->isDone() && gotString.size() < static_cast< size_t >(got.contentLength)) {
+            // while (!got.body->isDone()) {
             size_t bytesWritten = got.body->read(gotBuffer, 2048);
             gotString += std::string(gotBuffer, bytesWritten);
         }

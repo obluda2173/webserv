@@ -4,6 +4,8 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 ColumnLimit: 120
 PointerAlignment: Left
+BreakTemplateDeclarations: Yes
+SpacesInAngles:  Always
 ---
 Language:        Cpp
 AccessModifierOffset: -2
@@ -121,7 +123,6 @@ BreakConstructorInitializers: BeforeColon
 BreakFunctionDefinitionParameters: false
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: true
-BreakTemplateDeclarations: MultiLine
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
@@ -244,7 +245,6 @@ SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets: false
 SpaceInEmptyBlock: false
 SpacesBeforeTrailingComments: 1
-SpacesInAngles:  Never
 SpacesInContainerLiterals: true
 SpacesInLineCommentPrefix:
   Minimum:         1

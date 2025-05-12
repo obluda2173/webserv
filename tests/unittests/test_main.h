@@ -29,8 +29,13 @@ bool allZero(std::vector<std::string> msgs);
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
+
+void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifierWithMaxEvents(IIONotifier* ioNotifier, int conn,
+                                                                       int maxEvents);
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
+void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents);
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
+std::string getRandomString(size_t length);
 Router newRouterTest();
 
 #endif // TEST_MAIN_H_

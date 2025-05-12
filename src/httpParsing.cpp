@@ -26,15 +26,13 @@ bool checkValidVersion(const std::string& version) {
     }
     std::istringstream iss(verStr);
     iss >> ver;
-    if (ver < 1 || ver > 2) { //I CHANGED THIS FROM 0 TO 1, BECAUSE HTTP/0.9 IS NOT SUPPORTED
+    if (ver < 1 || ver > 2) { // I CHANGED THIS FROM 0 TO 1, BECAUSE HTTP/0.9 IS NOT SUPPORTED
         return false;
     }
     return true;
 }
 
-bool isValidTokenChar(char c) {
-    return isalnum(c) || c == '-' || c == '_' || c == '.';
-}
+bool isValidTokenChar(char c) { return isalnum(c) || c == '-' || c == '_' || c == '.'; }
 
 bool checkOptionalCharset(const std::string& str) {
     size_t pos = str.find("charset=");
@@ -76,17 +74,15 @@ bool isValidContentType(const std::string& str) {
         return false;
 
     std::string type = str.substr(0, slash);
-    if (type != "application" && type != "text" && type != "image" && type != "audio" &&
-        type != "video" && type != "multipart" && type != "font" && type != "model" &&
-        type != "message" && type != "example")
+    if (type != "application" && type != "text" && type != "image" && type != "audio" && type != "video" &&
+        type != "multipart" && type != "font" && type != "model" && type != "message" && type != "example")
         return false;
 
     // Only validate charset/boundary if present
     if (!checkOptionalCharset(str))
         return false;
-    if (type == "multipart" && (!checkOptionalBoundary(str) || 
-        str.find("boundary=") == std::string::npos ||
-        str.find(';') == std::string::npos))
+    if (type == "multipart" && (!checkOptionalBoundary(str) || str.find("boundary=") == std::string::npos ||
+                                str.find(';') == std::string::npos))
         return false;
     return true;
 }
@@ -160,7 +156,7 @@ bool isValidHost(std::string str) {
 }
 
 bool isValidAccept(const std::string& str) {
-    std::vector<std::string> tokens;
+    std::vector< std::string > tokens;
     std::istringstream iss(str);
     std::string token;
     while (std::getline(iss, token, ',')) {
@@ -193,7 +189,7 @@ bool isValidAccept(const std::string& str) {
 }
 
 bool isValidAcceptEncoding(const std::string& str) {
-    std::vector<std::string> tokens;
+    std::vector< std::string > tokens;
     std::istringstream iss(str);
     std::string token;
     std::string token3;
@@ -206,12 +202,10 @@ bool isValidAcceptEncoding(const std::string& str) {
         size_t semicolon = token2.find(';');
         if (semicolon != std::string::npos) {
             token3 = token2.substr(0, semicolon);
-        }
-        else {
+        } else {
             token3 = token2;
         }
-        if (token3 != "gzip" && token3 != "deflate" && token3 != "br" && token3 != "compress" && token3 !=
-        "identity") {
+        if (token3 != "gzip" && token3 != "deflate" && token3 != "br" && token3 != "compress" && token3 != "identity") {
             return false;
         }
         if (checkQValue(token2) == false) {
@@ -222,7 +216,7 @@ bool isValidAcceptEncoding(const std::string& str) {
 }
 
 bool isValidAcceptLanguage(const std::string& str) {
-    std::vector<std::string> tokens;
+    std::vector< std::string > tokens;
     std::istringstream iss(str);
     std::string token;
     std::string lang;
@@ -264,7 +258,7 @@ bool isValidAcceptLanguage(const std::string& str) {
 }
 
 bool isValidCookie(std::string str) {
-    std::vector<std::string> tokens;
+    std::vector< std::string > tokens;
     std::istringstream iss(str);
     std::string token;
     while (std::getline(iss, token, ';')) {
@@ -293,7 +287,7 @@ bool isValidRange(const std::string& str) {
         return false;
     }
     std::string range = str.substr(pos + 6);
-    std::vector<std::string> tokens;
+    std::vector< std::string > tokens;
     std::istringstream iss(range);
     std::string token;
     while (std::getline(iss, token, ',')) {
@@ -373,18 +367,18 @@ bool specificHeaderValidation(
             return false;
         }
     }
-    if (key == "accept") {
-        if (isValidAccept(value) == false) {
-            logger.log("ERROR", "specificHeaderValidation: Invalid Accept header");
-            return false;
-        }
-    }
-    if (key == "accept-encoding") {
-        if (isValidAcceptEncoding(value) == false) {
-            logger.log("ERROR", "specificHeaderValidation: Invalid Accept-Encoding header");
-            return false;
-        }
-    }
+    // if (key == "accept") {
+    //     if (isValidAccept(value) == false) {
+    //         logger.log("ERROR", "specificHeaderValidation: Invalid Accept header");
+    //         return false;
+    //     }
+    // }
+    // if (key == "accept-encoding") {
+    //     if (isValidAcceptEncoding(value) == false) {
+    //         logger.log("ERROR", "specificHeaderValidation: Invalid Accept-Encoding header");
+    //         return false;
+    //     }
+    // }
     if (key == "accept-language") {
         if (isValidAcceptLanguage(value) == false) {
             logger.log("ERROR", "specificHeaderValidation: Invalid Accept-Language header");

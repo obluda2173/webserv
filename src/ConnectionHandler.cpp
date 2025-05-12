@@ -2,9 +2,6 @@
 #include "BadRequestHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
-#include "PingHandler.h"
-#include "ResponseWriter.h"
-#include "Router.h"
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>
@@ -13,12 +10,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-ConnectionHandler::ConnectionHandler(ILogger& l, IIONotifier& ep) : _logger(l), _ioNotifier(ep) {}
+ConnectionHandler::ConnectionHandler(IRouter* router, ILogger& l, IIONotifier& ep)
+    : _router(router), _logger(l), _ioNotifier(ep) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
-    for (std::map<int, Connection*>::iterator it = _connections.begin(); it != _connections.end(); it++) {
+    for (std::map< int, Connection* >::iterator it = _connections.begin(); it != _connections.end(); it++) {
         delete it->second;
     }
+    delete _router;
 }
 
 void ConnectionHandler::_updateNotifier(Connection* conn) {
@@ -35,6 +34,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         break;
     case Connection::SendResponse:
         _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
+    case Connection::Reset:
+        _ioNotifier.modify(connfd, READY_TO_READ);
         break;
     }
 }
@@ -61,34 +63,32 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
     int fd = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
     if (fd < 0) {
         _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
-        exit(1); // TODO: you probably don't want to exit
+        return -1;
     }
     _addClientConnection(fd, theirAddr);
     return fd;
 }
 
-void ConnectionHandler::_onSocketRead(int connfd) {
-    Connection* conn = _connections[connfd];
+void ConnectionHandler::_handleState(Connection* conn) {
     bool continueProcessing = true;
     while (continueProcessing) {
         HttpResponse resp;
         IHandler* hdlr;
-        Connection::STATE currentState = _connections[connfd]->getState();
+        Route route;
+        Connection::STATE currentState = conn->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
-            conn->readIntoBuf();
             conn->parseBuf();
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Handling:
-            hdlr = new PingHandler();
-            hdlr->handle(conn, {}, {});
-            delete hdlr;
+            route = _router->match(conn->getRequest());
+            route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:
             hdlr = new BadRequestHandler();
-            hdlr->handle(conn, {}, {});
+            hdlr->handle(conn, HttpRequest(), RouteConfig());
             delete hdlr;
             continueProcessing = (conn->getState() != currentState);
             break;
@@ -97,26 +97,30 @@ void ConnectionHandler::_onSocketRead(int connfd) {
             break;
         }
     }
+
     _updateNotifier(conn);
+}
+
+void ConnectionHandler::_onSocketRead(int connfd) {
+    Connection* conn = _connections[connfd];
+    conn->readIntoBuf();
+    _handleState(conn);
     return;
 }
 
 void ConnectionHandler::_onSocketWrite(int connfd) {
     Connection* conn = _connections[connfd];
 
-    IResponseWriter* wrtr = new ResponseWriter(conn->_response);
-    char buffer[1024];
-    int bytesWritten = wrtr->write(buffer, 1024);
-    send(connfd, buffer, bytesWritten, 0);
-    delete wrtr;
+    conn->sendResponse();
 
     if (conn->_response.statusCode == 400) {
         _removeConnection(connfd);
-    } else {
-        conn->parseBuf();
-        delete conn->_response.body;
-        conn->_response.body = NULL;
-        _updateNotifier(conn);
+        return;
+    }
+    if (conn->getState() == Connection::Reset) {
+        conn->resetResponse();
+        conn->setState(Connection::ReadingHeaders);
+        _handleState(conn); // possibly data inside Connection
         return;
     }
 }
@@ -127,15 +131,19 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
 
     switch (notif) {
     case READY_TO_READ:
+        _logger.log("INFO", "Got notif: READY_TO_READ");
         _onSocketRead(fd);
         break;
     case READY_TO_WRITE:
+        _logger.log("INFO", "Got notif: READY_TO_WRITE");
         _onSocketWrite(fd);
         break;
     case CLIENT_HUNG_UP:
+        _logger.log("INFO", "Got notif: CLIENT_HUNG_UP");
         _onClientHungUp(fd);
         break;
     case BROKEN_CONNECTION:
+        _logger.log("INFO", "Got notif: BROKEN_CONNECTION");
         break;
     }
     return fd;

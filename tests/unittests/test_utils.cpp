@@ -4,7 +4,6 @@
 #include "gtest/gtest.h"
 #include <dirent.h>
 #include <iostream>
-#include <thread>
 #include <unistd.h>
 
 void reuseSocket(int socketfd) {
@@ -66,6 +65,26 @@ bool allZero(std::vector<std::string> msgs) {
     return true;
 }
 
+void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifierWithMaxEvents(IIONotifier* ioNotifier, int conn,
+                                                                       int maxEvents) {
+    int* fds = new int[maxEvents]();
+    e_notif* notifs = new e_notif[maxEvents](); // uninitialized
+
+    ioNotifier->wait(fds, notifs);
+    int fd = -1;
+    e_notif notif;
+    for (int i = 0; i < maxEvents; i++) {
+        if (fds[i] == conn) {
+            fd = fds[i];
+            notif = notifs[i];
+        }
+    }
+    delete[] fds;
+    delete[] notifs;
+    ASSERT_EQ(fd, conn);
+    ASSERT_EQ(notif, READY_TO_WRITE);
+}
+
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn) {
     // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
     int fds;
@@ -84,15 +103,50 @@ void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier
     ASSERT_EQ(notif, READY_TO_READ);
 }
 
+void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents) {
+    int* fds = new int[maxEvents]();
+    e_notif* notifs = new e_notif[maxEvents](); // uninitialized
+
+    _ioNotifier->wait(fds, notifs);
+    int fd = -1;
+    e_notif notif;
+    for (int i = 0; i < maxEvents; i++) {
+        if (fds[i] == _conn) {
+            fd = fds[i];
+            notif = notifs[i];
+        }
+    }
+    delete[] fds;
+    delete[] notifs;
+
+    while (notif == READY_TO_READ && fd != -1) {
+        _connHdlr->handleConnection(_conn, READY_TO_READ);
+
+        fds = new int[maxEvents]();
+        notifs = new e_notif[maxEvents](); // uninitialized
+        _ioNotifier->wait(fds, notifs);
+        fd = -1;
+        for (int i = 0; i < maxEvents; i++) {
+            if (fds[i] == _conn) {
+                fd = fds[i];
+                notif = notifs[i];
+            }
+        }
+        delete[] fds;
+        delete[] notifs;
+    }
+}
+
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn) {
-    int fds;
+    int fds = -1;
     e_notif notif;
     _ioNotifier->wait(&fds, &notif);
     while (notif == READY_TO_READ) {
         _connHdlr->handleConnection(_conn, READY_TO_READ);
         _ioNotifier->wait(&fds, &notif);
     }
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    EXPECT_NE(fds, -1);
+    EXPECT_EQ(notif, READY_TO_WRITE);
 }
 
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd) {
@@ -106,4 +160,17 @@ std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _c
     }
     buffer[r] = '\0';
     return buffer;
+}
+
+std::string getRandomString(size_t length) {
+    const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    std::string randomString;
+
+    std::srand(static_cast<unsigned int>(std::time(0))); // Seed for random number generator
+
+    for (size_t i = 0; i < length; ++i) {
+        randomString += chars[std::rand() % chars.length()];
+    }
+
+    return randomString;
 }
