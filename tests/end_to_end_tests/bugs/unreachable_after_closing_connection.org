@@ -1,0 +1,4 @@
+#+title: Unreachable After Closing Connection
+
+* behavior
+- [ ] after closing a connection (i.e. closing browser), it seems that the server is unreachable
