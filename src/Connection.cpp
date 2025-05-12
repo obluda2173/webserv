@@ -6,9 +6,9 @@
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* sender)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _sender(sender) {
-    _readBuf = std::vector<char>(1024);
+    _readBuf = std::vector< char >(1024);
     _readBufUsedSize = 0;
-    _sendBuf = std::vector<char>(1024);
+    _sendBuf = std::vector< char >(1024);
     _sendBufUsedSize = 0;
 }
 
@@ -57,6 +57,7 @@ void Connection::readIntoBuf() {
     // Receive directly into string buffer
     ssize_t r = recv(_fd, _readBuf.data() + _readBufUsedSize, _readBuf.size() - _readBufUsedSize, 0);
     _readBufUsedSize += r;
+    std::cout << std::string(_readBuf.data(), _readBufUsedSize) << std::endl;
 }
 
 void Connection::parseBuf() {

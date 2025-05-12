@@ -1,9 +1,12 @@
 #ifndef HTTPRESPONSE_H
 #define HTTPRESPONSE_H
 
+#include <fcntl.h>
+#include <fstream>
+
+#include <iostream>
 #include <string.h>
 #include <string>
-#include <fcntl.h>
 #include <unistd.h>
 
 class IBodyProvider {
@@ -35,34 +38,31 @@ class StringBodyProvider : public IBodyProvider {
 
 class FileBodyProvider : public IBodyProvider {
   private:
-    int _fd;
-    bool _fdOwned;        // i.e. stdout ; not supposed to close it
+    std::ifstream* _file;
     bool _eofReached;
 
   public:
-    explicit FileBodyProvider(const char* filename) : _fd(-1), _fdOwned(true), _eofReached(false) {
-        _fd = ::open(filename, O_RDONLY);
-        if (_fd < 0) {
-            _eofReached = true;
+    explicit FileBodyProvider(const char* filename) : _file(new std::ifstream(filename, std::ios_base::in)) {
+        if (!_file || !_file->is_open()) {
+            std::cout << "Error opening file" << std::endl;
         }
+        _eofReached = false;
     }
 
-    FileBodyProvider(int existingFd) : _fd(existingFd), _fdOwned(false), _eofReached(false) {}
+    // FileBodyProvider(int existingFd) : _file(NULL), _eofReached(false) {}
 
     virtual ~FileBodyProvider() {
-        if (_fdOwned && _fd >= 0) {
-            ::close(_fd);
-        }
+        _file->close();
+        delete _file;
     }
 
     virtual size_t read(char* buffer, size_t maxSize) {
-        if (_fd < 0 || _eofReached) return 0;
-        ssize_t n = ::read(_fd, buffer, maxSize);
-        if (n > 0) {
-            return static_cast<size_t>(n);
-        }
-        _eofReached = true;
-        return 0;
+        if (_eofReached)
+            return 0;
+        _file->read(buffer, maxSize);
+        std::streamsize n = _file->gcount();
+        _eofReached = (n == 0 || _file->eof() || _file->fail());
+        return static_cast< size_t >(n);
     }
 
     virtual bool isDone() const { return _eofReached; }
