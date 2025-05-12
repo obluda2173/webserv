@@ -19,46 +19,49 @@ std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& reque
 
 std::string CgiHandler::_executeCgiScript(std::vector<std::string> env) {
     int pipefd[2];
-    pid_t pid;
-    std::string output;
-
-    const char* argv[] = {
-        _interpreter.c_str(),
-        _path.c_str(),
-        nullptr
-    };
-
-    std::vector<const char*> env_ptrs;
-        for (const auto& s : env) {
-            env_ptrs.push_back(s.c_str());
-        }
-        env_ptrs.push_back(nullptr);
     if (pipe(pipefd) == -1) {
         return "";
     }
-    if ((pid = fork()) == -1) {
+
+    const pid_t pid = fork();
+    if (pid == -1) {
+        close(pipefd[0]);
+        close(pipefd[1]);
         return "";
     }
+
     if (pid == 0) {
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
-        // close pipefd[1]?
-        execve(argv[0], const_cast<char* const*>(argv), const_cast<char* const*>(env_ptrs.data()));
-        exit(EXIT_FAILURE);
-    } else {
         close(pipefd[1]);
-        char buffer[4096];
-        ssize_t count;
-        
-        while ((count = read(pipefd[0], buffer, sizeof(buffer)))) {
-            if (count == -1) {
-                break;
-            }
-            output.append(buffer, count);
+
+        const std::vector<const char*> argv = {
+            _interpreter.c_str(),
+            _path.c_str(),
+            nullptr
+        };
+
+        std::vector<const char*> env_ptrs;
+        env_ptrs.reserve(env.size() + 1);
+        for (const auto& var : env) {
+            env_ptrs.push_back(var.c_str());
         }
-        waitpid(pid, NULL, 0);
-        close(pipefd[0]);
+        env_ptrs.push_back(nullptr);
+
+        execve(argv[0], const_cast<char* const*>(argv.data()), 
+              const_cast<char* const*>(env_ptrs.data()));
+        exit(EXIT_FAILURE);
+    } 
+    close(pipefd[1]);
+    std::string output;
+    char buffer[4096];
+    ssize_t count;
+
+    while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+        output.append(buffer, count);
     }
+
+    close(pipefd[0]);
     return output;
 }
 
@@ -68,13 +71,8 @@ void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& res
 }
 
 std::string CgiHandler::_extractQuery(const std::string& uri) {
-    size_t pos = uri.find("?");
-
-    if (pos == std::string::npos) {
-        return "";
-    }
-    std::string query = uri.substr(pos + 1);
-    return query;
+    const size_t pos = uri.find('?');
+    return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
 }
 
 // can be deleted if make the getMimeType(const std::string& path) reusable
@@ -113,10 +111,10 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         return;
     }
 
+    // parse CGI output
+    // _parseCgiOutput(cgiOutput, resp);
     
     setResponse(resp, 200, "OK", "text/php", cgiOutput.size(), new StringBodyProvider(cgiOutput));
 
-    // 4. Parse CGI output
-    // _parseCgiOutput(cgiOutput, resp);
     conn->setState(Connection::SendResponse);
 }
