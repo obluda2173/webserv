@@ -23,6 +23,7 @@ class PostHandler : public IHandler {
 	private:
 	  bool _postValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
 	  bool _checkChunk(Connection* conn);
+	  std::string _setPath(std::string root, std::string uri);
 
 	  void _writeIntoFile(Connection* conn, HttpRequest& request, RouteConfig& config);
 

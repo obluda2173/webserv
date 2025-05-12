@@ -64,6 +64,18 @@ bool PostHandler::_checkChunk(Connection* conn) {       // we might need to chan
     return false;
 }
 
+std::string PostHandler::_setPath(std::string root, std::string uri) {     // make the path to the DIR without "//" or "/./"
+    std::string tempPath = root + "/" + uri + "/";
+    for (size_t i = 0; i < tempPath.size(); )
+    {
+        if (tempPath[i] == '/' && i + 1 < tempPath.size() && (tempPath[i + 1] == '/' || tempPath[i + 1] == '.')) {
+            tempPath.erase(i + 1, 1);
+        } else {
+            i++;
+        }
+    }
+    return tempPath;
+}
 
 bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteConfig& config) {
     HttpResponse& resp = conn->_response;
@@ -90,7 +102,7 @@ bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteC
             return false;       // chunk body is incorrect.
         }
     }
-    std::string path = config.root + request.uri;
+    std::string path = _setPath(config.root, request.uri);
     struct stat st;
     if (stat(path.c_str(), &st) != 0) {     // Does the exact path exist?
         // Not a file — try the directory part
