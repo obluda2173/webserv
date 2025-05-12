@@ -11,7 +11,7 @@ class CgiHandler : public IHandler {
   private:
     std::string _path;
     struct stat _pathStat;
-    void _setCgiEnvironment(Connection& conn, const HttpRequest& request);
+    std::vector<std::string> _getCgiEnvironment(const HttpRequest& request);
     std::string _executeCgiScript();
     void _parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp);
 

@@ -3,9 +3,20 @@
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
 
-void CgiHandler::_setCgiEnvironment(Connection& conn, const HttpRequest& request) {
-    (void)conn;
-    (void)request;
+std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& request) {
+    // (void)request;
+    std::vector<std::string> env;
+
+    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    env.push_back("SERVER_PROTOCOL=" + request.version);
+    env.push_back("REQUEST_METHOD=" + request.method);
+    env.push_back("SCRIPT_NAME=" + _path);
+    env.push_back("PATH_INFO=" + request.uri);
+    // env.push_back("QUERY_STRING=" + request.query); todo
+    env.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
+    env.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+
+    return env;
 }
 
 std::string CgiHandler::_executeCgiScript() {
@@ -13,13 +24,17 @@ std::string CgiHandler::_executeCgiScript() {
     pid_t pid;
     std::string output;
 
-    if (pipe(pipefd) == -1) return "";
-    if ((pid = fork()) == -1) return "";
-
+    if (pipe(pipefd) == -1) {
+        return "";
+    }
+    if ((pid = fork()) == -1) {
+        return "";
+    }
     if (pid == 0) {
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
-        // int exitCode = execve(...)
+        // close pipefd[1]?
+        // execve(...)
         exit(EXIT_FAILURE);
     } else {
         close(pipefd[1]);
@@ -52,7 +67,7 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     }
 
     // environment
-    _setCgiEnvironment(*conn, request);
+    // env = _getCgiEnvironment(*conn, request);
 
     // execute  script
     std::string cgiOutput = _executeCgiScript();
