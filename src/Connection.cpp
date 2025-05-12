@@ -57,11 +57,11 @@ void Connection::readIntoBuf() {
     // Receive directly into string buffer
     ssize_t r = recv(_fd, _readBuf.data() + _readBufUsedSize, _readBuf.size() - _readBufUsedSize, 0);
     _readBufUsedSize += r;
-    std::cout << std::string(_readBuf.data(), _readBufUsedSize) << std::endl;
 }
 
 void Connection::parseBuf() {
     if (_prsr->error() || _prsr->ready()) {
+        std::cout << "resetting in parseBuf" << std::endl;
         _prsr->resetPublic();
         _state = ReadingHeaders;
     }
@@ -73,7 +73,6 @@ void Connection::parseBuf() {
         if (_prsr->error() || _prsr->ready()) {
             memmove(_readBuf.data(), b + 1, _readBufUsedSize - (count + 1));
             _readBufUsedSize -= (count + 1);
-            // _readBuf = b + 1;
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
                 _state = Handling;

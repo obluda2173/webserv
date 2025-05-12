@@ -12,7 +12,7 @@ struct TestHttpParserParams {
     std::string req;     // Raw HTTP request (with \r\n)
 };
 
-class TestHttpParser : public ::testing::TestWithParam<TestHttpParserParams> {};
+class TestHttpParser : public ::testing::TestWithParam< TestHttpParserParams > {};
 
 void assertEqualHttpRequest(const HttpRequest& want, const HttpRequest& got) {
     EXPECT_EQ(want.method, got.method);
@@ -28,7 +28,7 @@ TEST_P(TestHttpParser, Parsing) {
 
     // Split request into chunks to simulate partial data
     for (size_t i = 0; i < params.req.size(); i += params.bufLen) {
-        size_t chunkSize = std::min<size_t>(params.bufLen, params.req.size() - i);
+        size_t chunkSize = std::min< size_t >(params.bufLen, params.req.size() - i);
         parser.feed(params.req.data() + i, chunkSize);
     }
 

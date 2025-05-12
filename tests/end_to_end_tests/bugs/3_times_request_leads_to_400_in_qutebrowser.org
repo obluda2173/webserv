@@ -1,0 +1,99 @@
+#+title: 3 Times Request Leads To 400
+
+* Behavior
+- always after 3 reloads, we get a 400
+- Parsing is failing
+
+* readBuf
+** 1
+#+begin_example
+GET / HTTP/1.1\r\nHost: localhost:8080\r\nConnection: keep-alive\r\nCache-Control: max-age=0\r\nsec-ch-ua: "Not(A:Brand";v="24", "Chromium";v="122"\r\nsec-ch-ua-mobile: ?0\r\nsec-ch-ua-platform: "Linux"\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/6.8.2 Chrome/122.0.6261.171 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\r\nDNT: 1\r\nAccept-Language: en-US,en;q=0.9\r\nSec-Fetch-Site: none\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-User: ?1\r\nSec-Fetch-Dest: document\r\nAccept-Encoding: gzip, deflate, br\r\nCookie: supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE0NTUwMTc4LCJpYXQiOjE3MTQ1NDY1NzgsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTQzMjEvYXV0aC92MSIsInN1YiI6IjM5NDE4ZTNiLTAyNTgtNDQ1Mi1hZjYwLTdhY2ZjYzEyNjNmZiIsImVtYWlsIjoiYWRtaW5AcXVpdnIuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MTQ1NDY1Nzh9XSwic2Vzc2lvbl9pZCI6ImFmYjcyM2M1LTAxNTMtNGE2ZS05NWJmLWYyOTcwNDYyYjMzMiJ9.W4pUmc7LXT_aG37HfYHxJlbKg23gJNUWJXzylwIfxR8%22%2C%220X19StBUSef0W0PPLb4c5Q%22%2Cnull%2Cnull%2Cnull%5D\r\n\r\n
+#+end_example
+** 2
+#+begin_example
+GET / HTTP/1.1\r\nHost: localhost:8080\r\nConnection: keep-alive\r\nCache-Control: max-age=0\r\nsec-ch-ua: "Not(A:Brand";v="24", "Chromium";v="122"\r\nsec-ch-ua-mobile: ?0\r\nsec-ch-ua-platform: "Linux"\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/6.8.2 Chrome/122.0.6261.171 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\r\nDNT: 1\r\nAccept-Language: en-US,en;q=0.9\r\nSec-Fetch-Site: none\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-User: ?1\r\nSec-Fetch-Dest: document\r\nAccept-Encoding: gzip, deflate, br\r\nCookie: supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE0NTUwMTc4LCJpYXQiOjE3MTQ1NDY1NzgsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTQzMjEvYXV0aC92MSIsInN1YiI6IjM5NDE4ZTNiLTAyNTgtNDQ1Mi1hZjYwLTdhY2ZjYzEyNjNmZiIsImVtYWlsIjoiYWRtaW5AcXVpdnIuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MTQ1NDY1Nzh9XSwic2Vzc2lvbl9pZCI6ImFmYjcyM2M1LTAxNTMtNGE2ZS05NWJmLWYyOTcwNDYyYjMzMiJ9.W4pUmc7LXT_aG37HfYHxJlbKg23gJNUWJXzylwIfxR8%22%2C%220X19StBUSef0W0PPLb4c5Q%22%2Cnull%2Cnull%2Cnull%5D\r\n\r\n
+#+end_example
+** 3
+#+begin_example
+GET / HTTP/1.1\r\nHost: localhost:8080\r\nConnection: keep-alive\r\nCache-Control: max-age=0\r\nsec-ch-ua: "Not(A:Brand";v="24", "Chromium";v="122"\r\nsec-ch-ua-mobile: ?0\r\nsec-ch-ua-platform: "Linux"\r\nUpgrade-Insecure-Requests: 1\r\nUser-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/6.8.2 Chrome/122.0.6261.171 Safari/537.36\r\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\r\nDNT: 1\r\nAccept-Language: en-US,en;q=0.9\r\nSec-Fetch-Site: none\r\nSec-Fetch-Mode: navigate\r\nSec-Fetch-User: ?1\r\nSec-Fetch-Dest: document\r\nAccept-Encoding: gzip, deflate, br\r\nCookie: supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE0NTUwMTc4LCJpYXQiOjE3MTQ1NDY1NzgsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTQzMjEvYXV0aC92MSIsInN1YiI6IjM5NDE4ZTNiLTAyNTgtNDQ1Mi1hZjYwLTdhY2ZjYzEyNjNmZiIsImVtYWlsIjoiYWRtaW5AcXVpdnIuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MTQ1NDY1Nzh9XSwic2Vzc2lvbl9pZCI6ImFmYjcyM2M1LTAxNTMtNGE2ZS05NWJmLWYyOTcwNDYyYjMzMiJ9.W4pUmc7LXT_aG37HfYHxJlbKg23gJNUWJXzylwIfxR8%22%2C%220X19StB
+#+end_example
+
+
+* LOGOUTPUT
+[2025-05-12 08:23:07] INFO Server is starting...
+[2025-05-12 08:23:07] INFO Server started
+[2025-05-12 08:23:09] INFO Connection accepted from IP: 127.0.0.1, Port: 38804
+[2025-05-12 08:23:09] INFO Got notif: READY_TO_READ
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Not(A:Brand";v="24", "Chromium";v="122"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/6.8.2 Chrome/122.0.6261.171 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+DNT: 1
+Accept-Language: en-US,en;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Cookie: supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE0NTUwMTc4LCJpYXQiOjE3MTQ1NDY1NzgsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTQzMjEvYXV0aC92MSIsInN1YiI6IjM5NDE4ZTNiLTAyNTgtNDQ1Mi1hZjYwLTdhY2ZjYzEyNjNmZiIsImVtYWlsIjoiYWRtaW5AcXVpdnIuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlb
+[2025-05-12 08:23:09] INFO Got notif: READY_TO_READ
+WFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MTQ1NDY1Nzh9XSwic2Vzc2lvbl9pZCI6ImFmYjcyM2M1LTAxNTMtNGE2ZS05NWJmLWYyOTcwNDYyYjMzMiJ9.W4pUmc7LXT_aG37HfYHxJlbKg23gJNUWJXzylwIfxR8%22%2C%220X19StBUSef0W0PPLb4c5Q%22%2Cnull%2Cnull%2Cnull%5D
+
+
+[2025-05-12 08:23:09] INFO Got notif: READY_TO_WRITE
+[2025-05-12 08:23:15] INFO Got notif: READY_TO_READ
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Not(A:Brand";v="24", "Chromium";v="122"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/6.8.2 Chrome/122.0.6261.171 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+DNT: 1
+Accept-Language: en-US,en;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Cookie: supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE0NTUwMTc4LCJpYXQiOjE3MTQ1NDY1NzgsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTQzMjEvYXV0aC92MSIsInN1YiI6IjM5NDE4ZTNiLTAyNTgtNDQ1Mi1hZjYwLTdhY2ZjYzEyNjNmZiIsImVtYWlsIjoiYWRtaW5AcXVpdnIuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlb
+[2025-05-12 08:23:15] INFO Got notif: READY_TO_READ
+WFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MTQ1NDY1Nzh9XSwic2Vzc2lvbl9pZCI6ImFmYjcyM2M1LTAxNTMtNGE2ZS05NWJmLWYyOTcwNDYyYjMzMiJ9.W4pUmc7LXT_aG37HfYHxJlbKg23gJNUWJXzylwIfxR8%22%2C%220X19StBUSef0W0PPLb4c5Q%22%2Cnull%2Cnull%2Cnull%5D
+
+
+[2025-05-12 08:23:15] INFO Got notif: READY_TO_WRITE
+[2025-05-12 08:23:17] INFO Got notif: READY_TO_READ
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Not(A:Brand";v="24", "Chromium";v="122"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) QtWebEngine/6.8.2 Chrome/122.0.6261.171 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+DNT: 1
+Accept-Language: en-US,en;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Cookie: supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE0NTUwMTc4LCJpYXQiOjE3MTQ1NDY1NzgsImlzcyI6Imh0dHA6Ly8xMjcuMC4wLjE6NTQzMjEvYXV0aC92MSIsInN1YiI6IjM5NDE4ZTNiLTAyNTgtNDQ1Mi1hZjYwLTdhY2ZjYzEyNjNmZiIsImVtYWlsIjoiYWRtaW5AcXVpdnIuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlb
+[2025-05-12 08:23:17] INFO Got notif: READY_TO_READ
+WFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MTQ1NDY1Nzh9XSwic2Vzc2lvbl9pZCI6ImFmYjcyM2M1LTAxNTMtNGE2ZS05NWJmLWYyOTcwNDYyYjMzMiJ9.W4pUmc7LXT_aG37HfYHxJlbKg23gJNUWJXzylwIfxR8%22%2C%220X19StBUSef0W0PPLb4c5Q%22%2Cnull%2Cnull%2Cnull%5D
+
+
+here
+[2025-05-12 08:23:17] INFO Got notif: READY_TO_WRITE
+[2025-05-12 08:23:17] INFO Disconnect IP: 127.0.0.1, Port: 38804

@@ -87,7 +87,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:
-            std::cout << "here" << std::endl;
             hdlr = new BadRequestHandler();
             hdlr->handle(conn, HttpRequest(), RouteConfig());
             delete hdlr;
