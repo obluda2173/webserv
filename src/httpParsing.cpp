@@ -171,7 +171,8 @@ bool isValidAccept(const std::string& str) {
             return false;
         std::string type = token2.substr(0, slash);
         if (type != "application" && type != "text" && type != "image" && type != "audio" && type != "video" &&
-            type != "multipart" && type != "font" && type != "model" && type != "message" && type != "example") {
+            type != "multipart" && type != "font" && type != "model" && type != "message" && type != "example" &&
+            type != "*") {
             return false;
         }
         // Only validate charset/boundary if present
@@ -205,7 +206,8 @@ bool isValidAcceptEncoding(const std::string& str) {
         } else {
             token3 = token2;
         }
-        if (token3 != "gzip" && token3 != "deflate" && token3 != "br" && token3 != "compress" && token3 != "identity") {
+        if (token3 != "gzip" && token3 != "deflate" && token3 != "br" &&
+            token3 != "compress" && token3 != "identity" && token3 != "zstd") {
             return false;
         }
         if (checkQValue(token2) == false) {
@@ -367,18 +369,18 @@ bool specificHeaderValidation(
             return false;
         }
     }
-    // if (key == "accept") {
-    //     if (isValidAccept(value) == false) {
-    //         logger.log("ERROR", "specificHeaderValidation: Invalid Accept header");
-    //         return false;
-    //     }
-    // }
-    // if (key == "accept-encoding") {
-    //     if (isValidAcceptEncoding(value) == false) {
-    //         logger.log("ERROR", "specificHeaderValidation: Invalid Accept-Encoding header");
-    //         return false;
-    //     }
-    // }
+    if (key == "accept") {
+        if (isValidAccept(value) == false) {
+            logger.log("ERROR", "specificHeaderValidation: Invalid Accept header");
+            return false;
+        }
+    }
+    if (key == "accept-encoding") {
+        if (isValidAcceptEncoding(value) == false) {
+            logger.log("ERROR", "specificHeaderValidation: Invalid Accept-Encoding header");
+            return false;
+        }
+    }
     if (key == "accept-language") {
         if (isValidAcceptLanguage(value) == false) {
             logger.log("ERROR", "specificHeaderValidation: Invalid Accept-Language header");
