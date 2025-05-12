@@ -87,6 +87,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:
+            std::cout << "here" << std::endl;
             hdlr = new BadRequestHandler();
             hdlr->handle(conn, HttpRequest(), RouteConfig());
             delete hdlr;
@@ -131,15 +132,19 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
 
     switch (notif) {
     case READY_TO_READ:
+        _logger.log("INFO", "Got notif: READY_TO_READ");
         _onSocketRead(fd);
         break;
     case READY_TO_WRITE:
+        _logger.log("INFO", "Got notif: READY_TO_WRITE");
         _onSocketWrite(fd);
         break;
     case CLIENT_HUNG_UP:
+        _logger.log("INFO", "Got notif: CLIENT_HUNG_UP");
         _onClientHungUp(fd);
         break;
     case BROKEN_CONNECTION:
+        _logger.log("INFO", "Got notif: BROKEN_CONNECTION");
         break;
     }
     return fd;
