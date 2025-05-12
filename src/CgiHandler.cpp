@@ -9,7 +9,6 @@ std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& reque
     env.push_back("SERVER_PROTOCOL=" + request.version);
     env.push_back("REQUEST_METHOD=" + request.method);
     env.push_back("SCRIPT_NAME=" + _path);
-    // env.push_back("PATH_INFO=" + request.uri); maybe later
     env.push_back("QUERY_STRING=" + _query);
     if (request.headers.count("content-length")) {
         env.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
@@ -21,7 +20,7 @@ std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& reque
     return env;
 }
 
-std::string CgiHandler::_executeCgiScript(std::vector<std::string> env) {
+std::string CgiHandler::_executeCgiScript(std::vector<std::string> envStr) {
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         return "";
@@ -39,19 +38,22 @@ std::string CgiHandler::_executeCgiScript(std::vector<std::string> env) {
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
 
-        const std::vector<const char*> argv = {
-            _interpreter.c_str(),
-            _path.c_str(),
-            nullptr
-        };
-
-        std::vector<const char*> env_ptrs;
-        for (size_t i = 0; i < env.size(); i++) {
-            env_ptrs.push_back(env[i].c_str());
+        std::vector<const char*> av;
+        if (_interpreter.empty()) {
+            av.push_back(_path.c_str());
+        } else {
+            av.push_back(_interpreter.c_str());
+            av.push_back(_path.c_str());
         }
-        env_ptrs.push_back(nullptr);
+        av.push_back(nullptr);
 
-        execve(argv[0], const_cast<char* const*>(argv.data()), const_cast<char* const*>(env_ptrs.data()));
+        std::vector<const char*> envChr;
+        for (size_t i = 0; i < envStr.size(); i++) {
+            envChr.push_back(envStr[i].c_str());
+        }
+        envChr.push_back(nullptr);
+
+        execve(av[0], const_cast<char* const*>(av.data()), const_cast<char* const*>(envChr.data()));
         exit(EXIT_FAILURE);
     } 
     close(pipefd[1]);
@@ -64,6 +66,7 @@ std::string CgiHandler::_executeCgiScript(std::vector<std::string> env) {
     }
 
     close(pipefd[0]);
+    waitpid(pid, NULL, 0);
     return output;
 }
 
@@ -79,17 +82,16 @@ std::string CgiHandler::_extractQuery(const std::string& uri) {
 
 // can be deleted if make the getMimeType(const std::string& path) reusable
 std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiMap) {
-    size_t pos = _path.find(".") + 1;
-    std::string ext;
-    while (_path[pos] && _path[pos] != '/' && _path[pos] != '?') {
-        ext += _path[pos];
-        pos++;
+    size_t dot = _path.rfind('.');
+    if (dot == std::string::npos) {
+        return "";
     }
-    std::map< std::string, std::string >::const_iterator it = cgiMap.find(ext);
-    if (it != cgiMap.end()) {
-        return it->second;
-    }
-    return "";
+
+    size_t end = _path.find_first_of("/?#", dot);
+    std::string ext = _path.substr(dot + 1, end - dot - 1);
+    
+    std::map<std::string, std::string>::const_iterator it = cgiMap.find(ext);
+    return it != cgiMap.end() ? it->second : "";
 }
 
 void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
@@ -97,26 +99,27 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     _path = normalizePath(config.root, request.uri);
     _query = _extractQuery(request.uri);
     _interpreter = _findInterpreter(config.cgi);
+
+    if (_interpreter.empty()) {
+        setErrorResponse(resp, 403, "Forbidden", config);
+        conn->setState(Connection::SendResponse);
+        return;
+    }
+
     if (!validateRequest(resp, request, config, _path, _pathStat)) {
         conn->setState(Connection::SendResponse);
         return;
     }
 
-    // environment
     std::vector<std::string> env = _getCgiEnvironment(request);
-
-    // execute  script
     std::string cgiOutput = _executeCgiScript(env);
+
     if (cgiOutput.empty()) {
         setErrorResponse(resp, 500, "Internal Server Error", config);
-        conn->setState(Connection::SendResponse);
-        return;
+    } else {
+        // _parseCgiOutput(cgiOutput, resp);
+        setResponse(resp, 200, "OK", "text/php", cgiOutput.size(), new StringBodyProvider(cgiOutput));
     }
-
-    // parse CGI output
-    // _parseCgiOutput(cgiOutput, resp);
-    
-    setResponse(resp, 200, "OK", "text/php", cgiOutput.size(), new StringBodyProvider(cgiOutput));
 
     conn->setState(Connection::SendResponse);
 }
