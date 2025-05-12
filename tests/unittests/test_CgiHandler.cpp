@@ -5,7 +5,7 @@
 
 TEST(CgiHandlerTest, firstTest) {
 
-    std::string wantScriptOutput = "Hello World!";
+    std::string wantScriptOutput = "Hello, World!";
 
     RouteConfig cfg = {"tests/unittests/test_cgi/scripts", {}, {}, 10000, false, {{"php", "/usr/bin/php"}}};
     IHandler* cgiHdlr = new CgiHandler();
