@@ -9,10 +9,14 @@ std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& reque
     env.push_back("SERVER_PROTOCOL=" + request.version);
     env.push_back("REQUEST_METHOD=" + request.method);
     env.push_back("SCRIPT_NAME=" + _path);
-    // env.push_back("PATH_INFO=" + request.uri); is it neccessary?
+    // env.push_back("PATH_INFO=" + request.uri); maybe later
     env.push_back("QUERY_STRING=" + _query);
-    // env.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
-    // env.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+    if (request.headers.count("content-length")) {
+        env.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
+    }
+    if (request.headers.count("content-type")) {
+        env.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+    }
 
     return env;
 }
@@ -42,14 +46,12 @@ std::string CgiHandler::_executeCgiScript(std::vector<std::string> env) {
         };
 
         std::vector<const char*> env_ptrs;
-        env_ptrs.reserve(env.size() + 1);
-        for (const auto& var : env) {
-            env_ptrs.push_back(var.c_str());
+        for (size_t i = 0; i < env.size(); i++) {
+            env_ptrs.push_back(env[i].c_str());
         }
         env_ptrs.push_back(nullptr);
 
-        execve(argv[0], const_cast<char* const*>(argv.data()), 
-              const_cast<char* const*>(env_ptrs.data()));
+        execve(argv[0], const_cast<char* const*>(argv.data()), const_cast<char* const*>(env_ptrs.data()));
         exit(EXIT_FAILURE);
     } 
     close(pipefd[1]);
