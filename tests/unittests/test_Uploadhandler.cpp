@@ -10,7 +10,7 @@ struct UploadHandlerTestParams {
     std::vector< std::string > filenames;
     std::vector< size_t > readBufsLengths;
     std::vector< size_t > bodyLengths;
-    size_t batchSize;
+    size_t batchSize;       // amount of bites calling the upload handler handler function
     size_t clientMaxBody;
 };
 

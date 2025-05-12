@@ -6,7 +6,7 @@ int main(int argc, char* argv[]) {
     // Don't run the following tests
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
-    testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*:*TestHttpParser*";
+    // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*:*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "-*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 
     // testing::GTEST_FLAG(filter) = "*HttpParserTest*";
     // testing::GTEST_FLAG(filter) = "*DeleteHandler*";
-    // testing::GTEST_FLAG(filter) = "*UploadHdlr*";
+    testing::GTEST_FLAG(filter) = "*UploadHdlr*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestUpload*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestResend*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithBigBody*";
