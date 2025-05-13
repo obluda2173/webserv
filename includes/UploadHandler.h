@@ -11,10 +11,10 @@
 class UploadHandler : public IHandler {
 
   public:
-    void uploadNewContent(Connection* conn // , size_t contentLength
-    ) {
+    void uploadNewContent(Connection* conn) {
         ConnectionContext& ctx = conn->ctx;
-        if ((ctx.bytesUploaded + conn->_readBufUsedSize) < ctx.contentLength) {
+
+        if ((ctx.bytesUploaded + conn->_readBufUsedSize) < ctx.contentLength) { // TODO: make test for smaller equal
             ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()), conn->_readBufUsedSize);
             ctx.bytesUploaded += conn->_readBufUsedSize;
         } else {
