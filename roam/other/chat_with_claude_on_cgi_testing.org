@@ -1,0 +1,320 @@
+:PROPERTIES:
+:GPTEL_MODEL: claude-3-7-sonnet-20250219
+:GPTEL_BACKEND: Claude
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Avoid long answers.
+:GPTEL_BOUNDS: ((response (765 3351) (3397 10717)))
+:END:
+
+*** I'm developing a webserver and you can find my models under includes. I'm developing a CgiHandler right now. I'm struggling to write a test. As you can see, we have a BodyProvider* Interface which is going to be set on the HttpResponse and from which the Connection can read and write into the connection. So I want to write a test which makes sure that the CGIHandler is not blocking. I'm thinking about putting an attribute on Connection to see if it is still in progress but please provide me with your own ideas
+
+Looking at your code structure, I understand your concern about ensuring the CGI handler is non-blocking. Since CGI processing can take time, you want to avoid blocking the server's event loop.
+
+Here are a few approaches you could consider:
+
+*** 1. Add a State Indicator for CGI Processing
+
+You could extend the Connection::STATE enum to include a CGI-specific state:
+
+#+begin_src cpp
+enum STATE {
+    ReadingHeaders,
+    Handling,
+    HandleBadRequest,
+    SendResponse,
+    Reset,
+    ProcessingCGI  // New state
+};
+#+end_src
+
+Then modify =CgiHandler::handle()= to:
+1. Start the CGI process
+2. Set the connection state to =ProcessingCGI=
+3. Return without waiting
+
+*** 2. Create an Asynchronous CGI Body Provider
+
+Instead of executing the CGI script directly in =_executeCgiScript()=, create a special body provider:
+
+#+begin_src cpp
+class AsyncCgiBodyProvider : public IBodyProvider {
+private:
+    pid_t _childPid;
+    int _pipefd[2];
+    bool _done;
+
+public:
+    AsyncCgiBodyProvider(const std::string& interpreter, const std::string& path,
+                         std::vector<std::string> env);
+    ~AsyncCgiBodyProvider();
+
+    virtual size_t read(char* buffer, size_t maxSize);
+    virtual bool isDone() const { return _done; }
+};
+#+end_src
+
+This provider would:
+1. Start the CGI process and save the file descriptor
+2. Read from the pipe as needed in a non-blocking way
+3. Check for process completion with non-blocking =waitpid()=
+
+*** 3. Use Connection Context
+
+You're already using =ConnectionContext= for other purposes. You could expand it to track CGI state:
+
+#+begin_src cpp
+typedef struct ConnectionContext {
+    // Existing fields
+    size_t bytesUploaded;
+    size_t contentLength;
+    std::ofstream* file;
+
+    // New CGI-specific fields
+    pid_t cgiPid;
+    int cgiPipe;
+    bool cgiInProgress;
+
+    ConnectionContext() : bytesUploaded(0), contentLength(0), file(NULL),
+                          cgiPid(-1), cgiPipe(-1), cgiInProgress(false) {}
+} ConnectionContext;
+#+end_src
+
+*** Testing Approach
+
+For testing, you could:
+
+1. Create a mock CGI script that sleeps for a few seconds before producing output
+2. Execute your server with this script
+3. Send a request to the CGI endpoint
+4. Immediately send another request to a different endpoint
+5. Verify that the second request is handled before the CGI response completes
+
+This demonstrates that the server remains responsive while CGI processing happens.
+
+My recommendation would be the AsyncCgiBodyProvider approach, as it fits well with your existing architecture and keeps the CGI-specific logic encapsulated.
+
+*** please provide me with a test for this
+
+Here's a test case for the asynchronous CGI handler implementation. I'll create a complete test that verifies the CGI handler doesn't block the server while processing requests.
+
+#+begin_src cpp
+// test_cgi_nonblocking.cpp
+
+#include <gtest/gtest.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fstream>
+#include <string>
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <vector>
+
+#include "CgiHandler.h"
+#include "Connection.h"
+#include "HttpRequest.h"
+#include "RouteConfig.h"
+#include "HttpParser.h"
+#include "Logger.h"
+
+// Mock slow CGI script content - save this to a file for testing
+const char* SLOW_CGI_SCRIPT = R"(
+#!/bin/sh
+sleep 3
+echo "Content-type: text/plain"
+echo ""
+echo "CGI response after delay"
+)";
+
+// Mock fast endpoint content
+const char* FAST_ENDPOINT_CONTENT = "Quick response from non-CGI endpoint";
+
+class MockLogger : public ILogger {
+public:
+    virtual void log(const std::string& level, const std::string& message) {
+        std::cout << "[" << level << "] " << message << std::endl;
+    }
+};
+
+class MockIONotifier : public IIONotifier {
+public:
+    virtual void add(int fd) { (void)fd; }
+    virtual void del(int fd) { (void)fd; }
+    virtual int wait(int* fds, e_notif* notif) {
+        (void)fds;
+        (void)notif;
+        return 0;
+    }
+    virtual void modify(int fd, e_notif notif) {
+        (void)fd;
+        (void)notif;
+    }
+};
+
+class MockResponse : public HttpResponse {
+public:
+    std::string capturedOutput;
+
+    // Override to capture output
+    bool captureBodyOutput() {
+        if (!body) return false;
+
+        char buffer[4096];
+        size_t bytesRead;
+        while (!body->isDone()) {
+            bytesRead = body->read(buffer, sizeof(buffer));
+            if (bytesRead > 0) {
+                capturedOutput.append(buffer, bytesRead);
+            }
+        }
+        return true;
+    }
+};
+
+class CgiNonBlockingTest : public ::testing::Test {
+protected:
+    MockLogger logger;
+    MockIONotifier ioNotifier;
+    std::string cgiBinPath;
+    std::string normalFilePath;
+
+    void SetUp() override {
+        // Create test CGI script
+        cgiBinPath = "/tmp/test_slow_script.sh";
+        std::ofstream cgiScript(cgiBinPath);
+        cgiScript << SLOW_CGI_SCRIPT;
+        cgiScript.close();
+
+        // Make it executable
+        chmod(cgiBinPath.c_str(), 0755);
+
+        // Create a normal file for non-CGI request
+        normalFilePath = "/tmp/test_normal_file.txt";
+        std::ofstream normalFile(normalFilePath);
+        normalFile << FAST_ENDPOINT_CONTENT;
+        normalFile.close();
+    }
+
+    void TearDown() override {
+        // Clean up test files
+        unlink(cgiBinPath.c_str());
+        unlink(normalFilePath.c_str());
+    }
+
+    // Helper to create a mock HTTP request
+    HttpRequest createRequest(const std::string& method, const std::string& uri) {
+        HttpRequest req;
+        req.method = method;
+        req.uri = uri;
+        req.version = "HTTP/1.1";
+        return req;
+    }
+
+    // Helper to create route config
+    RouteConfig createConfig(bool enableCgi = true) {
+        RouteConfig cfg;
+        cfg.root = "/tmp";
+        if (enableCgi) {
+            cfg.cgi["sh"] = "/bin/sh";
+        }
+        return cfg;
+    }
+};
+
+// Test that verifies CGI handling doesn't block
+TEST_F(CgiNonBlockingTest, CgiDoesNotBlockOtherRequests) {
+    // Create a CGI handler
+    CgiHandler cgiHandler;
+
+    // Set up connections for both requests
+    int dummyFd = socket(AF_INET, SOCK_STREAM, 0);
+    sockaddr_storage dummyAddr = {};
+
+    HttpParser* parser1 = new HttpParser(logger);
+    HttpParser* parser2 = new HttpParser(logger);
+
+    Connection* cgiConn = new Connection(dummyAddr, dummyFd, parser1);
+    Connection* normalConn = new Connection(dummyAddr, dummyFd, parser2);
+
+    // Create requests
+    HttpRequest cgiRequest = createRequest("GET", "/test_slow_script.sh");
+    HttpRequest normalRequest = createRequest("GET", "/test_normal_file.txt");
+
+    // Create route configs
+    RouteConfig cgiConfig = createConfig(true);
+    RouteConfig normalConfig = createConfig(false);
+
+    // Start timing
+    auto startTime = std::chrono::steady_clock::now();
+
+    // Handle the CGI request
+    cgiHandler.handle(cgiConn, cgiRequest, cgiConfig);
+
+    // Get the current time after CGI handler returns
+    auto cgiHandlerReturnTime = std::chrono::steady_clock::now();
+    auto cgiHandlerDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+        cgiHandlerReturnTime - startTime).count();
+
+    // The CGI handler should return quickly without waiting for the script to complete
+    EXPECT_LT(cgiHandlerDuration, 3000) << "CGI handler took too long to return, it might be blocking";
+
+    // Check that the connection is in a state that indicates ongoing processing
+    EXPECT_TRUE(cgiConn->_response.body != nullptr) << "CGI handler did not set a body provider";
+
+    // If we implemented a special state for CGI processing:
+    // EXPECT_EQ(cgiConn->getState(), Connection::ProcessingCGI);
+
+    // Handle a normal request while CGI is processing
+    GetHandler getHandler;
+    getHandler.handle(normalConn, normalRequest, normalConfig);
+
+    EXPECT_TRUE(normalConn->_response.body != nullptr) << "Normal handler did not set a body provider";
+    EXPECT_EQ(normalConn->getState(), Connection::SendResponse) << "Normal handler did not set proper state";
+
+    // Capture the response from the normal handler
+    MockResponse normalResp;
+    normalResp.body = normalConn->_response.body;
+    EXPECT_TRUE(normalResp.captureBodyOutput()) << "Failed to capture normal response output";
+    EXPECT_EQ(normalResp.capturedOutput, FAST_ENDPOINT_CONTENT) << "Normal response content doesn't match";
+
+    // Now wait a bit to let the CGI script complete
+    std::this_thread::sleep_for(std::chrono::seconds(4));
+
+    // Capture the CGI response
+    MockResponse cgiResp;
+    cgiResp.body = cgiConn->_response.body;
+    EXPECT_TRUE(cgiResp.captureBodyOutput()) << "Failed to capture CGI response output";
+
+    // Verify the CGI response contains our expected output
+    EXPECT_TRUE(cgiResp.capturedOutput.find("CGI response after delay") != std::string::npos)
+        << "CGI response content doesn't match";
+
+    // Clean up
+    delete cgiConn;
+    delete normalConn;
+    close(dummyFd);
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+#+end_src
+
+This test:
+
+1. Creates a slow CGI script that sleeps for 3 seconds before responding
+2. Tests that the CgiHandler returns quickly rather than blocking for those 3 seconds
+3. Confirms a normal request can be processed while the CGI script is still running
+4. Verifies that both responses eventually contain the correct data
+
+To run this test, you'll need:
+1. Google Test framework installed
+2. Sufficient permissions to create and execute files in /tmp
+3. The AsyncCgiBodyProvider implementation in your CgiHandler
+
+You might need to adjust paths and class names based on your actual implementation. Also, I assumed a GetHandler exists - if it doesn't, you can replace it with any other handler that returns a quick response.
+
+If you're not using Google Test, you could adapt this to your testing framework of choice or create a simple standalone program that runs similar checks.
+
+*** I want the
