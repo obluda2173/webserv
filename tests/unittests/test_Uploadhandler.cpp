@@ -10,7 +10,7 @@ struct UploadHandlerTestParams {
     std::vector< std::string > filenames;
     std::vector< size_t > readBufsLengths;
     std::vector< size_t > bodyLengths;
-    size_t batchSize;       // amount of bites calling the upload handler handler function
+    size_t batchSize; // amount of bites calling the upload handler handler function
     size_t clientMaxBody;
 };
 
@@ -76,3 +76,15 @@ INSTANTIATE_TEST_SUITE_P(first, UploadHdlrTest,
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 1000, 20000},
                                          UploadHandlerTestParams{
                                              {"1.txt", "2.txt"}, {1000, 1000}, {444, 555}, 10, 20000}));
+
+TEST(UploadHdlrErrorTest, error413) {
+    RouteConfig cfg;
+    Connection* conn = setupConnWithContentLength("1.txt", 300);
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 200, false});
+
+    EXPECT_EQ(413, conn->_response.statusCode);
+
+    delete conn;
+    delete uploadHdlr;
+}
