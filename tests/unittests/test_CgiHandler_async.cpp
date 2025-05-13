@@ -42,9 +42,9 @@ TEST(CgiHandlerTestAsync, firstTest) {
     EXPECT_LT(cgiHandlerDuration, 1000) << "CGI handler took too long to return, it might be blocking";
 
     // sleep for a few milliseconds
-    std::this_thread::sleep_for(std::chrono::seconds(4));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // Check that the connection is in a state that indicates ongoing processing
-    EXPECT_TRUE(cgiConn->_response.body != nullptr) << "CGI handler did not set a body provider";
+    EXPECT_TRUE(cgiConn->_response.body != NULL) << "CGI handler did not set a body provider";
 
     // Now wait a bit to let the CGI script complete
     std::this_thread::sleep_for(std::chrono::seconds(4));
