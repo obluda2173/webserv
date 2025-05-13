@@ -97,3 +97,19 @@ TEST(UploadHdlrErrorTest, error413) {
     delete conn;
     delete uploadHdlr;
 }
+
+TEST(UploadHdlrErrorTest, error400NoContentBadRequest) {
+    size_t contentLength = 0;
+    size_t clientMaxBody = 200;
+    RouteConfig cfg;
+    Connection* conn = setupConnWithContentLength("1.txt", contentLength);
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, clientMaxBody, false});
+
+    EXPECT_EQ(NULL, conn->uploadCtx.file);
+    EXPECT_EQ(400, conn->_response.statusCode);
+    // EXPECT_EQ("Bad Request", conn->_response.statusMessage);
+
+    delete conn;
+    delete uploadHdlr;
+}
