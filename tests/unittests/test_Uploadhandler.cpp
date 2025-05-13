@@ -30,7 +30,7 @@ TEST(UploadHdlrTest, changeFileExisting) {
     // EXPECT_EQ(body.length(), gotFile1.length());
     // EXPECT_EQ(body, gotFile1);
     EXPECT_EQ(200, resp.statusCode);
-    // EXPECT_EQ("OK", resp.statusMessage);
+    EXPECT_EQ("OK", resp.statusMessage);
 
     removeFile(ROOT + PREFIX + filename);
     delete uploadHdlr;

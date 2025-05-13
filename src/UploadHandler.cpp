@@ -45,11 +45,14 @@ bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
     if (!_validateContentLength(conn, cfg))
         return false;
 
-    setResponse(conn->_response, 201, "Created", "", 0, NULL);
     return true;
 }
 
 void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+
+    struct stat statStruct;
+    conn->uploadCtx.fileExisted = (stat((cfg.root + req.uri).c_str(), &statStruct) == 0 && S_ISREG(statStruct.st_mode));
+
     UploadContext& ctx = conn->uploadCtx;
     ctx.file = new std::ofstream(cfg.root + req.uri, std::ios::binary | std::ios::app);
     if (!ctx.file->is_open()) {
@@ -66,6 +69,11 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
 
     if (!conn->uploadCtx.file)
         _initUploadCxt(conn, req, cfg);
+
+    if (conn->uploadCtx.fileExisted)
+        setResponse(conn->_response, 200, "OK", "", 0, NULL);
+    else
+        setResponse(conn->_response, 201, "Created", "", 0, NULL);
 
     uploadNewContent(conn);
 }
