@@ -21,11 +21,11 @@
 
 class PostHandler : public IHandler {
 	private:
-	  bool _postValidation(Connection* conn, HttpRequest& request, RouteConfig& config);
+	  bool _postValidation(Connection* conn, const HttpRequest& request, const RouteConfig& config);
 	  bool _checkChunk(Connection* conn);
 	  std::string _setPath(std::string root, std::string uri);
 
-	  void _writeIntoFile(Connection* conn, HttpRequest& request, RouteConfig& config);
+	  void _writeIntoFile(Connection* conn, const HttpRequest& request, const RouteConfig& config);
 
 	  void _setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider);
 	  void _setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
@@ -36,7 +36,7 @@ class PostHandler : public IHandler {
 	  static std::map<std::string, std::string> mimeTypes;
 	  PostHandler();
 	  ~PostHandler();
-	  void handle(Connection* conn, HttpRequest& req, RouteConfig& config);
+	  void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config);
   };
 
 #endif

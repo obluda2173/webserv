@@ -77,7 +77,7 @@ std::string PostHandler::_setPath(std::string root, std::string uri) {     // ma
     return tempPath;
 }
 
-bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteConfig& config) {
+bool PostHandler::_postValidation(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
 
     if (request.uri.empty() || config.root.empty()) {       // uri and root should not empty
@@ -88,7 +88,8 @@ bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteC
         _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     }
-    if (request.headers.find("content-type") == request.headers.end() || request.headers["content-type"] == "") {       // no content-type or no value
+    std::map<std::string, std::string>::const_iterator it = request.headers.find("content-length");
+    if (it == request.headers.end() || it->second.empty()) {       // no content-type or no value
         _setErrorResponse(resp, 400, "Bad Request", config);
 		return false;
 	}
@@ -103,10 +104,17 @@ bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteC
         }
     }
     std::string path = _setPath(config.root, request.uri);
+    std::string dirPath;
     struct stat st;
     if (stat(path.c_str(), &st) != 0) {     // Does the exact path exist?
         // Not a file — try the directory part
-        std::string dirPath = path.substr(0, path.find_last_of('/'));
+        if (path.find_last_of('/') == path.size() - 1) {
+            path.erase(path.end() - 1);
+            dirPath = path.substr(0, path.find_last_of('/'));
+            dirPath = dirPath.substr(0, path.find_last_of('/'));
+        } else {
+            dirPath = path.substr(0, path.find_last_of('/'));
+        }
         if (stat(dirPath.c_str(), &st) != 0) {        // directory doesn't exist
             _setErrorResponse(resp, 404, "Not Found", config);
             return false;
@@ -134,17 +142,24 @@ bool PostHandler::_postValidation(Connection* conn, HttpRequest& request, RouteC
     return true;
 }
 
-void PostHandler::_writeIntoFile(Connection* conn, HttpRequest& request, RouteConfig& config) {
+void PostHandler::_writeIntoFile(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
 	if (request.headers.find("content-length") != request.headers.end()) {
 		if (!conn->ctx.file) {
             std::string path = config.root + request.uri;
 			conn->ctx.file = new std::ofstream(path.c_str(), std::ios::binary | std::ios::app);
-			conn->ctx.contentLength = atoi(request.headers["content-length"].c_str());
+            if (!conn->ctx.file->is_open()) {
+                std::cerr << "Failed to open file" << std::endl;
+                return;
+            }
+            std::map<std::string, std::string>::const_iterator it = request.headers.find("content-length");
+			conn->ctx.contentLength = atoi(it->second.c_str());
 		}
         if (conn->ctx.bytesUploaded + conn->_readBufUsedSize <= conn->ctx.contentLength) {
 			conn->ctx.file->write(conn->getReadBuf().c_str(), conn->_readBufUsedSize);
+            conn->ctx.bytesUploaded += conn->_readBufUsedSize;
 		} else {
 			conn->ctx.file->write(conn->getReadBuf().c_str(), conn->ctx.contentLength - conn->ctx.bytesUploaded);
+            conn->ctx.bytesUploaded = conn->ctx.contentLength;
 		}
     } else if (request.headers.find("transfer-encoding") != request.headers.end()) {        // we might need to change this in the future
         
@@ -219,7 +234,7 @@ std::string PostHandler::_getMimeType(const std::string& path) const {
     return DEFAULT_MIME_TYPE;
 }
 
-void PostHandler::handle(Connection* conn, HttpRequest& request, RouteConfig& config) {
+void PostHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
 
     // check everything necessary first
