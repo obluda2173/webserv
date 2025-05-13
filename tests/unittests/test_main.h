@@ -25,7 +25,7 @@ void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort
 void testOneConnection(std::string& clientIp, std::string& clientPort, struct addrinfo* svrAddrInfo);
 void testMultipleConnections(std::string svrPort, int nbrConns);
 void sendMsgInBatches(std::string msg, int clientfd, int batchSize);
-bool allZero(std::vector<std::string> msgs);
+bool allZero(std::vector< std::string > msgs);
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
 void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
@@ -37,5 +37,11 @@ void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _co
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
 std::string getRandomString(size_t length);
 Router newRouterTest();
+
+// CgiHandlerTest utils
+std::string buildUri(std::string script,
+                     std::vector< std::pair< std::string, std::vector< std::string > > > queryParams);
+
+std::string getOutput(Connection* conn);
 
 #endif // TEST_MAIN_H_
