@@ -49,9 +49,9 @@ bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
 }
 
 void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-
     struct stat statStruct;
     conn->uploadCtx.fileExisted = (stat((cfg.root + req.uri).c_str(), &statStruct) == 0 && S_ISREG(statStruct.st_mode));
+    std::remove((cfg.root + req.uri).c_str());
 
     UploadContext& ctx = conn->uploadCtx;
     ctx.file = new std::ofstream(cfg.root + req.uri, std::ios::binary | std::ios::app);

@@ -27,8 +27,8 @@ TEST(UploadHdlrTest, changeFileExisting) {
     HttpResponse resp = conn->_response;
     delete conn; // need to delete conn to close the file and write to disk
     std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
-    // EXPECT_EQ(body.length(), gotFile1.length());
-    // EXPECT_EQ(body, gotFile1);
+    EXPECT_EQ(body.length(), gotFile1.length());
+    EXPECT_EQ(body, gotFile1);
     EXPECT_EQ(200, resp.statusCode);
     EXPECT_EQ("OK", resp.statusMessage);
 
