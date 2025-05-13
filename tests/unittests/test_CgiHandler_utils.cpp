@@ -21,6 +21,7 @@ std::string buildUri(std::string script,
 }
 
 std::string getOutput(Connection* conn) {
+    
     std::string gotOutput = "";
     std::vector< char > buffer(1024);
     size_t r = 0;

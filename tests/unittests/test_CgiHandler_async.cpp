@@ -20,32 +20,35 @@ RouteConfig createConfig(bool enableCgi = true) {
     return cfg;
 }
 
-TEST(CgiHandlerTestAsync, firstTest) {
-    CgiHandler cgiHandler;
 
+TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
+    CgiHandler cgiHandler;
     int dummyFd = socket(AF_INET, SOCK_STREAM, 0);
     Connection* cgiConn = new Connection({}, dummyFd, NULL);
     HttpRequest cgiRequest = createRequest("GET", "/test_slow_script.sh");
     RouteConfig cgiConfig = createConfig(true);
 
-    // Start timing
     auto startTime = std::chrono::steady_clock::now();
-    // Handle the CGI request
     cgiHandler.handle(cgiConn, cgiRequest, cgiConfig);
+    auto handlerReturnTime = std::chrono::steady_clock::now();
 
-    // Get the current time after CGI handler returns
-    auto cgiHandlerReturnTime = std::chrono::steady_clock::now();
-    auto cgiHandlerDuration =
-        std::chrono::duration_cast< std::chrono::milliseconds >(cgiHandlerReturnTime - startTime).count();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+        handlerReturnTime - startTime
+    ).count();
+    EXPECT_LT(duration, 100) << "CGI handler is blocking!";
 
-    // The CGI handler should return quickly without waiting for the script to complete
-    EXPECT_LT(cgiHandlerDuration, 1000) << "CGI handler took too long to return, it might be blocking";
+    bool cgiCompleted = false;
+    auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+    while (std::chrono::steady_clock::now() < timeout) {
+        if (cgiConn->getState() == Connection::SendResponse) {
+            cgiCompleted = true;
+            break;
+        }
+        cgiConn->handleCgiProcess();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 
-    // sleep for a few milliseconds
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // Check that the connection is in a state that indicates ongoing processing
-    EXPECT_TRUE(cgiConn->_response.body != NULL) << "CGI handler did not set a body provider";
-
-    // Now wait a bit to let the CGI script complete
-    std::this_thread::sleep_for(std::chrono::seconds(4));
+    EXPECT_TRUE(cgiCompleted) << "CGI processing timed out";
+    EXPECT_NE(cgiConn->_response.body, nullptr) << "Response body not set";
+    EXPECT_EQ(cgiConn->_response.statusCode, 200) << "Unexpected status code";
 }

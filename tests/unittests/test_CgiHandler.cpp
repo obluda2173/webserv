@@ -4,6 +4,7 @@
 #include "test_main.h"
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
+#include <thread>
 
 struct CgiTestParams {
     std::string scriptName;
@@ -21,13 +22,31 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
                        {},
                        10000,
                        false,
-                       {{"php", "/usr/bin/php"}, {"py", "/home/kfreyer/.pyenv/shims/python"}}};
+                       {{"php", "/usr/bin/php"}, {"py", "/usr/bin/python3"}}};
     IHandler* cgiHdlr = new CgiHandler();
 
     req.uri = buildUri(params.scriptName, params.queryParams);
 
     Connection* conn = new Connection({}, -1, NULL, NULL);
     cgiHdlr->handle(conn, req, cfg);
+
+    bool cgiCompleted = false;
+    auto startTime = std::chrono::steady_clock::now();
+    while (!cgiCompleted) {
+        if (conn->getState() == Connection::SendResponse) {
+            cgiCompleted = true;
+            break;
+        }
+        if (conn->getState() == Connection::HandlingCgi) {
+            conn->handleCgiProcess();
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+        auto now = std::chrono::steady_clock::now();
+        if (now - startTime > std::chrono::seconds(5)) {
+            FAIL() << "CGI processing timed out";
+        }
+    }
 
     std::string gotOutput = getOutput(conn);
     ASSERT_EQ(params.wantOutput, gotOutput);

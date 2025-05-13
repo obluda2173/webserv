@@ -20,56 +20,6 @@ std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& reque
     return env;
 }
 
-std::string CgiHandler::_executeCgiScript(std::vector<std::string> envStr) {
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        return "";
-    }
-
-    const pid_t pid = fork();
-    if (pid == -1) {
-        close(pipefd[0]);
-        close(pipefd[1]);
-        return "";
-    }
-
-    if (pid == 0) {
-        close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-
-        std::vector<const char*> av;
-        if (_interpreter.empty()) {
-            av.push_back(_path.c_str());
-        } else {
-            av.push_back(_interpreter.c_str());
-            av.push_back(_path.c_str());
-        }
-        av.push_back(nullptr);
-
-        std::vector<const char*> envChr;
-        for (size_t i = 0; i < envStr.size(); i++) {
-            envChr.push_back(envStr[i].c_str());
-        }
-        envChr.push_back(nullptr);
-
-        execve(av[0], const_cast<char* const*>(av.data()), const_cast<char* const*>(envChr.data()));
-        exit(EXIT_FAILURE);
-    } 
-    close(pipefd[1]);
-    std::string output;
-    char buffer[4096];
-    ssize_t count;
-
-    while ((count = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-        output.append(buffer, count);
-    }
-
-    close(pipefd[0]);
-    waitpid(pid, NULL, 0);
-    return output;
-}
-
 void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp) {
     (void)cgiOutput;
     (void)resp;
@@ -112,14 +62,54 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     }
 
     std::vector<std::string> env = _getCgiEnvironment(request);
-    std::string cgiOutput = _executeCgiScript(env);
 
-    if (cgiOutput.empty()) {
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
         setErrorResponse(resp, 500, "Internal Server Error", config);
-    } else {
-        // _parseCgiOutput(cgiOutput, resp);
-        setResponse(resp, 200, "OK", "text/php", cgiOutput.size(), new StringBodyProvider(cgiOutput));
+        conn->setState(Connection::SendResponse);
+        return;
     }
 
-    conn->setState(Connection::SendResponse);
+    pid_t pid = fork();
+    if (pid == -1) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        setErrorResponse(resp, 500, "Internal Server Error", config);
+        conn->setState(Connection::SendResponse);
+        return;
+    }
+
+    if (pid == 0) { // Child process
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+
+        // Setup argv and env as before
+        std::vector<const char*> av;
+        if (_interpreter.empty()) {
+            av.push_back(_path.c_str());
+        } else {
+            av.push_back(_interpreter.c_str());
+            av.push_back(_path.c_str());
+        }
+        av.push_back(nullptr);
+
+        std::vector<const char*> envChr;
+        for (size_t i = 0; i < env.size(); i++) {
+            envChr.push_back(env[i].c_str());
+        }
+        envChr.push_back(nullptr);
+
+        execve(av[0], const_cast<char* const*>(av.data()), const_cast<char* const*>(envChr.data()));
+        exit(EXIT_FAILURE);
+    } else { // Parent process
+        close(pipefd[1]);
+        fcntl(pipefd[0], F_SETFL, O_NONBLOCK);
+
+        // Store CGI process details in the connection context
+        conn->ctx.cgiPid = pid;
+        conn->ctx.cgiPipeFd = pipefd[0];
+        conn->ctx.cgiRouteConfig = config;
+        conn->setState(Connection::HandlingCgi);
+    }
 }

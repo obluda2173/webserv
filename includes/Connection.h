@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include "RouteConfig.h"
 
 #define READ_SIZE 2048
 
@@ -33,7 +34,7 @@ typedef struct UploadContext {
 
 class Connection {
   public:
-    enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse, Reset };
+    enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse, Reset, HandlingCgi };
 
   private:
     STATE _state;
@@ -69,6 +70,7 @@ class Connection {
         _readBufUsedSize = s.length();
     }
     std::string getReadBuf() { return std::string(_readBuf.data(), _readBufUsedSize); }
+    void handleCgiProcess();
 
     HttpRequest _request;
     HttpResponse _response;
