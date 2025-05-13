@@ -108,7 +108,7 @@ TEST(UploadHdlrErrorTest, error400NoContentBadRequest) {
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(400, conn->_response.statusCode);
-    // EXPECT_EQ("Bad Request", conn->_response.statusMessage);
+    EXPECT_EQ("Bad Request", conn->_response.statusMessage);
 
     delete conn;
     delete uploadHdlr;
