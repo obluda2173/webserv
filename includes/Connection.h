@@ -23,12 +23,13 @@ class SystemSender : public ISender {
     virtual size_t _send(int fd, char* buf, size_t n) { return send(fd, buf, n, 0); }
 };
 
-typedef struct ConnectionContext {
+typedef struct UploadContext {
     size_t bytesUploaded;
     size_t contentLength;
     std::ofstream* file;
-    ConnectionContext() : bytesUploaded(0), contentLength(0), file(NULL) {}
-} ConnectionContext;
+    bool fileExisted;
+    UploadContext() : bytesUploaded(0), contentLength(0), file(NULL), fileExisted(false) {}
+} UploadContext;
 
 class Connection {
   public:
@@ -46,7 +47,7 @@ class Connection {
     size_t _sendBufUsedSize;
 
   public:
-    ConnectionContext ctx;
+    UploadContext uploadCtx;
     size_t _readBufUsedSize;
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
