@@ -3,9 +3,9 @@
 #include "HttpRequest.h"
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
-#include <map>
 
 struct CgiTestParams {
+    std::string scriptName;
     std::vector< std::pair< std::string, std::vector< std::string > > > queryParams;
     std::string wantOutput;
 };
@@ -46,11 +46,15 @@ std::string getOutput(Connection* conn) {
 TEST_P(CgiHandlerTestP, WithQueryParams) {
     CgiTestParams params = GetParam();
     HttpRequest req = HttpRequest();
-    RouteConfig cfg = {"tests/unittests/test_cgi/scripts",       {}, {}, 10000, false,
-                       {{"py", "/home/kay/.pyenv/shims/python"}}};
+    RouteConfig cfg = {"tests/unittests/test_cgi/scripts",
+                       {},
+                       {},
+                       10000,
+                       false,
+                       {{"php", "/usr/bin/php"}, {"py", "/home/kfreyer/.pyenv/shims/python"}}};
     IHandler* cgiHdlr = new CgiHandler();
 
-    req.uri = buildUri("MqueryParams.py", params.queryParams);
+    req.uri = buildUri(params.scriptName, params.queryParams);
 
     Connection* conn = new Connection({}, -1, NULL, NULL);
     cgiHdlr->handle(conn, req, cfg);
@@ -63,27 +67,12 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
 }
 
 INSTANTIATE_TEST_SUITE_P(firstTest, CgiHandlerTestP,
-                         testing::Values(CgiTestParams{{{"name", {"kay"}}, {"hobby", {"coding", "running"}}},
+                         testing::Values(CgiTestParams{"MqueryParams.py",
+                                                       {{"name", {"kay"}}, {"hobby", {"coding", "running"}}},
                                                        {"name kay\nhobby coding, running\n"}},
-                                         CgiTestParams{{{"name", {"kay"}}, {"hobby", {"coding"}}},
+                                         CgiTestParams{"MqueryParams.py",
+                                                       {{"name", {"kay"}}, {"hobby", {"coding"}}},
                                                        {"name kay\nhobby coding\n"}},
-                                         CgiTestParams{{{"name", {"kay"}}}, {"name kay\n"}}));
-
-// TEST(CgiHandlerTest, helloWorld) {
-
-//     std::string wantScriptOutput = "Hello, World!";
-
-//     RouteConfig cfg = {"tests/unittests/test_cgi/scripts", {}, {}, 10000, false, {{"php", "/usr/bin/php"}}};
-//     IHandler* cgiHdlr = new CgiHandler();
-
-//     HttpRequest req = HttpRequest();
-//     req.uri = buildUri("helloWorld.php", {});
-//     Connection* conn = new Connection({}, -1, NULL, NULL);
-//     cgiHdlr->handle(conn, req, cfg);
-
-//     std::string gotOutput = getOutput(conn);
-//     ASSERT_EQ(wantScriptOutput, gotOutput);
-
-//     delete cgiHdlr;
-//     delete conn;
-// }
+                                         CgiTestParams{"MqueryParams.py", {{"name", {"kay"}}}, {"name kay\n"}},
+                                         CgiTestParams{"helloWorld.php", {}, {"Hello, World!"}}
+                                         ));
