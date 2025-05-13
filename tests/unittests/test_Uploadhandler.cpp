@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
+// TODO: Make a test where the content of a file is changed
 struct UploadHandlerTestParams {
     std::vector< std::string > filenames;
     std::vector< size_t > readBufsLengths;
@@ -67,6 +68,7 @@ TEST_P(UploadHdlrTest, concurrentUploadsParam) {
         EXPECT_EQ(bodies[i].length(), gotFile1.length());
         EXPECT_EQ(bodies[i], gotFile1);
         EXPECT_EQ(201, resp.statusCode);
+        EXPECT_EQ("Created", resp.statusMessage);
 
         removeFile(ROOT + PREFIX + filenames[i]);
     }

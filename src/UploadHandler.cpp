@@ -27,6 +27,7 @@ bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
         return false;
     }
     conn->_response.statusCode = 201;
+    conn->_response.statusMessage = "Created";
     return true;
 }
 
