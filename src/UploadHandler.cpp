@@ -1,4 +1,7 @@
 #include "UploadHandler.h"
+#include "RouteConfig.h"
+#include <fstream>
+#include <sstream>
 
 void UploadHandler::uploadNewContent(Connection* conn) {
     ConnectionContext& ctx = conn->ctx;
@@ -12,6 +15,14 @@ void UploadHandler::uploadNewContent(Connection* conn) {
     }
 }
 
+void UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
+    ConnectionContext& ctx = conn->ctx;
+    if (ctx.contentLength > cfg.clientMaxBody)
+        conn->_response.statusCode = 413;
+    else
+        conn->_response.statusCode = 201;
+}
+
 void UploadHandler::handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     ConnectionContext& ctx = conn->ctx;
     if (!ctx.file) {
@@ -22,12 +33,9 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         }
         std::stringstream ss(conn->_request.headers["content-length"]);
         ss >> ctx.contentLength;
-        if (ctx.contentLength > cfg.clientMaxBody)
-            conn->_response.statusCode = 413;
-        else
-            conn->_response.statusCode = 201;
     }
 
-    if (ctx.bytesUploaded < ctx.contentLength)
-        uploadNewContent(conn);
+    _validation(conn, cfg);
+
+    uploadNewContent(conn);
 }

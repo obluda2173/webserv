@@ -5,10 +5,10 @@
 #include "HttpRequest.h"
 #include "IHandler.h"
 #include "RouteConfig.h"
-#include <fstream>
-#include <sstream>
 
 class UploadHandler : public IHandler {
+  private:
+    void _validation(Connection* conn, const RouteConfig& cfg);
 
   public:
     void uploadNewContent(Connection* conn);
