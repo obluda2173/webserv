@@ -81,13 +81,16 @@ INSTANTIATE_TEST_SUITE_P(first, UploadHdlrTest,
                                              {"1.txt", "2.txt"}, {1000, 1000}, {444, 555}, 10, 20000}));
 
 TEST(UploadHdlrErrorTest, error413) {
+    size_t contentLength = 300;
+    size_t clientMaxBody = 200;
     RouteConfig cfg;
-    Connection* conn = setupConnWithContentLength("1.txt", 300);
+    Connection* conn = setupConnWithContentLength("1.txt", contentLength);
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 200, false});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, clientMaxBody, false});
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(413, conn->_response.statusCode);
+    EXPECT_EQ("Content Too Large", conn->_response.statusMessage);
 
     delete conn;
     delete uploadHdlr;

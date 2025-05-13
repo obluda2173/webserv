@@ -23,6 +23,7 @@ bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
 
     if (contentLength > cfg.clientMaxBody) {
         conn->_response.statusCode = 413;
+        conn->_response.statusMessage = "Content Too Large";
         return false;
     }
     conn->_response.statusCode = 201;
@@ -41,7 +42,6 @@ void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
 }
 
 void UploadHandler::handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-
     if (!_validation(conn, cfg))
         return;
 
