@@ -20,7 +20,7 @@ class UploadHdlrTest : public testing::TestWithParam< UploadHandlerTestParams > 
   protected:
     std::vector< std::string > filenames;
     std::vector< size_t > readBufsLengths;
-    std::vector< size_t > bodyLengths;
+    std::vector< size_t > contentLengths;
     std::vector< std::string > readBufs;
     std::vector< std::string > bodies;
     std::vector< Connection* > conns;
@@ -35,7 +35,7 @@ class UploadHdlrTest : public testing::TestWithParam< UploadHandlerTestParams > 
 
         filenames = params.filenames;
         readBufsLengths = params.readBufsLengths;
-        bodyLengths = params.bodyLengths;
+        contentLengths = params.bodyLengths;
         for (size_t i = 0; i < params.readBufsLengths.size(); i++) {
             readBufs.push_back(getRandomString(params.readBufsLengths[i]));
             bodies.push_back(readBufs[i].substr(0, params.bodyLengths[i]));
@@ -75,40 +75,53 @@ TEST_P(UploadHdlrTest, concurrentUploadsParam) {
 }
 
 INSTANTIATE_TEST_SUITE_P(first, UploadHdlrTest,
-                         testing::Values(UploadHandlerTestParams{{"1.txt"}, {1000}, {300}, 10, 20000},
+                         testing::Values(UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 1000, 1000},
+                                         UploadHandlerTestParams{{"1.txt"}, {1000}, {300}, 10, 20000},
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {600}, 1000, 20000},
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 10, 20000},
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 1000, 20000},
                                          UploadHandlerTestParams{
                                              {"1.txt", "2.txt"}, {1000, 1000}, {444, 555}, 10, 20000}));
 
-TEST(UploadHdlrErrorTest, error413) {
-    size_t contentLength = 300;
-    size_t clientMaxBody = 200;
+struct UploadHandlerErrorTestParams {
+    size_t contentLength;
+    size_t clientMaxBody;
+    int wantStatusCode;
+    std::string wantStatusMsg;
+};
+
+class UploadHdlrErrorTest : public testing::TestWithParam< UploadHandlerErrorTestParams > {};
+
+TEST_P(UploadHdlrErrorTest, errorTesting) {
+    UploadHandlerErrorTestParams params = GetParam();
+    size_t contentLength = params.contentLength;
+    size_t clientMaxBody = params.clientMaxBody;
     RouteConfig cfg;
     Connection* conn = setupConnWithContentLength("1.txt", contentLength);
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, clientMaxBody, false});
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
-    EXPECT_EQ(413, conn->_response.statusCode);
-    EXPECT_EQ("Content Too Large", conn->_response.statusMessage);
+    EXPECT_EQ(params.wantStatusCode, conn->_response.statusCode);
+    EXPECT_EQ(params.wantStatusMsg, conn->_response.statusMessage);
 
     delete conn;
     delete uploadHdlr;
 }
 
-TEST(UploadHdlrErrorTest, error400NoContentBadRequest) {
-    size_t contentLength = 0;
-    size_t clientMaxBody = 200;
+INSTANTIATE_TEST_SUITE_P(errorTests, UploadHdlrErrorTest,
+                         testing::Values(UploadHandlerErrorTestParams{300, 200, 413, "Content Too Large"},
+                                         UploadHandlerErrorTestParams{0, 200, 400, "Bad Request"}));
+
+TEST(UploadHdlrErrorTest, missingHeaders) {
     RouteConfig cfg;
-    Connection* conn = setupConnWithContentLength("1.txt", contentLength);
+    Connection* conn = new Connection({}, -1, NULL, NULL);
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, clientMaxBody, false});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false});
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(400, conn->_response.statusCode);
-    EXPECT_EQ("Bad Request", conn->_response.statusMessage);
+    // EXPECT_EQ(params.wantStatusMsg, conn->_response.statusMessage);
 
     delete conn;
     delete uploadHdlr;
