@@ -15,27 +15,33 @@ void UploadHandler::uploadNewContent(Connection* conn) {
     }
 }
 
-void UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
+bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
     ConnectionContext& ctx = conn->ctx;
-    if (ctx.contentLength > cfg.clientMaxBody)
+    if (ctx.contentLength > cfg.clientMaxBody) {
         conn->_response.statusCode = 413;
-    else
-        conn->_response.statusCode = 201;
+        return false;
+    }
+    conn->_response.statusCode = 201;
+    return true;
 }
 
 void UploadHandler::handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     ConnectionContext& ctx = conn->ctx;
+
+    std::stringstream ss(conn->_request.headers["content-length"]);
+    ss >> ctx.contentLength;
+    bool valid = _validation(conn, cfg);
+    if (!valid)
+        return;
+
     if (!ctx.file) {
+
         ctx.file = new std::ofstream(cfg.root + req.uri, std::ios::binary | std::ios::app);
         if (!ctx.file->is_open()) {
             std::cerr << "Failed to open file" << std::endl;
             return;
         }
-        std::stringstream ss(conn->_request.headers["content-length"]);
-        ss >> ctx.contentLength;
     }
-
-    _validation(conn, cfg);
 
     uploadNewContent(conn);
 }

@@ -8,7 +8,7 @@
 
 class UploadHandler : public IHandler {
   private:
-    void _validation(Connection* conn, const RouteConfig& cfg);
+    bool _validation(Connection* conn, const RouteConfig& cfg);
 
   public:
     void uploadNewContent(Connection* conn);
