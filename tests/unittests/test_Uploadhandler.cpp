@@ -86,7 +86,7 @@ TEST(UploadHdlrErrorTest, error413) {
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 200, false});
 
-    EXPECT_EQ(NULL, conn->ctx.file);
+    EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(413, conn->_response.statusCode);
 
     delete conn;

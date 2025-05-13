@@ -3,7 +3,7 @@
 PostHandler::PostHandler() {}
 PostHandler::~PostHandler() {}
 
-std::map<std::string, std::string> PostHandler::mimeTypes = std::map<std::string, std::string>();
+std::map< std::string, std::string > PostHandler::mimeTypes = std::map< std::string, std::string >();
 struct MimeInitializer {
     MimeInitializer() {
         PostHandler::mimeTypes[".html"] = "text/html";
@@ -19,7 +19,7 @@ struct MimeInitializer {
 };
 static MimeInitializer mimeInit;
 
-bool PostHandler::_checkChunk(Connection* conn) {       // we might need to change this function in the future
+bool PostHandler::_checkChunk(Connection* conn) { // we might need to change this function in the future
     const std::string body = conn->getReadBuf();
     size_t i = 0;
 
@@ -27,14 +27,14 @@ bool PostHandler::_checkChunk(Connection* conn) {       // we might need to chan
         // 1) Locate end of chunk-size line
         size_t line_end = body.find("\r\n", i);
         if (line_end == std::string::npos)
-            return false;       // missing CRLF after size
+            return false; // missing CRLF after size
 
         // 2) Extract hex size string and parse it
         std::string size_str = body.substr(i, line_end - i);
         char* endptr = NULL;
         long length = strtol(size_str.c_str(), &endptr, 16);
         if (endptr == size_str.c_str() || length < 0)
-            return false;       // invalid hex number
+            return false; // invalid hex number
 
         // Advance i past the size line "xxxx\r\n"
         i = line_end + 2;
@@ -43,9 +43,9 @@ bool PostHandler::_checkChunk(Connection* conn) {       // we might need to chan
         if (length == 0) {
             // Must be followed by final "\r\n"
             if (i + 2 <= body.size() && body.substr(i, 2) == "\r\n")
-                return true;        // valid end
+                return true; // valid end
             else
-                return false;       // missing final CRLF
+                return false; // missing final CRLF
         }
 
         // 4) Make sure we have at least 'length' bytes + "\r\n"
@@ -64,10 +64,9 @@ bool PostHandler::_checkChunk(Connection* conn) {       // we might need to chan
     return false;
 }
 
-std::string PostHandler::_setPath(std::string root, std::string uri) {     // make the path to the DIR without "//" or "/./"
+std::string PostHandler::_setPath(std::string root, std::string uri) { // make the path to the DIR without "//" or "/./"
     std::string tempPath = root + "/" + uri + "/";
-    for (size_t i = 0; i < tempPath.size(); )
-    {
+    for (size_t i = 0; i < tempPath.size();) {
         if (tempPath[i] == '/' && i + 1 < tempPath.size() && (tempPath[i + 1] == '/' || tempPath[i + 1] == '.')) {
             tempPath.erase(i + 1, 1);
         } else {
@@ -80,33 +79,33 @@ std::string PostHandler::_setPath(std::string root, std::string uri) {     // ma
 bool PostHandler::_postValidation(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
 
-    if (request.uri.empty() || config.root.empty()) {       // uri and root should not empty
+    if (request.uri.empty() || config.root.empty()) { // uri and root should not empty
         _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     }
-    if (request.uri.find("..") != std::string::npos) {      // not allow /../ appear
+    if (request.uri.find("..") != std::string::npos) { // not allow /../ appear
         _setErrorResponse(resp, 400, "Bad Request", config);
         return false;
     }
-    std::map<std::string, std::string>::const_iterator it = request.headers.find("content-length");
-    if (it == request.headers.end() || it->second.empty()) {       // no content-type or no value
+    std::map< std::string, std::string >::const_iterator it = request.headers.find("content-length");
+    if (it == request.headers.end() || it->second.empty()) { // no content-type or no value
         _setErrorResponse(resp, 400, "Bad Request", config);
-		return false;
-	}
-	// if (!conn->body.size()) {     // no body
+        return false;
+    }
+    // if (!conn->body.size()) {     // no body
     //     _setErrorResponse(resp, 400, "Bad Request", config);
-	// 	return false;
-	// }
+    // 	return false;
+    // }
     if (request.headers.find("transfer-encoding") != request.headers.end()) {
         if (!_checkChunk(conn)) {
             _setErrorResponse(resp, 400, "Bad Request", config);
-            return false;       // chunk body is incorrect.
+            return false; // chunk body is incorrect.
         }
     }
     std::string path = _setPath(config.root, request.uri);
     std::string dirPath;
     struct stat st;
-    if (stat(path.c_str(), &st) != 0) {     // Does the exact path exist?
+    if (stat(path.c_str(), &st) != 0) { // Does the exact path exist?
         // Not a file — try the directory part
         if (path.find_last_of('/') == path.size() - 1) {
             path.erase(path.end() - 1);
@@ -115,25 +114,25 @@ bool PostHandler::_postValidation(Connection* conn, const HttpRequest& request, 
         } else {
             dirPath = path.substr(0, path.find_last_of('/'));
         }
-        if (stat(dirPath.c_str(), &st) != 0) {        // directory doesn't exist
+        if (stat(dirPath.c_str(), &st) != 0) { // directory doesn't exist
             _setErrorResponse(resp, 404, "Not Found", config);
             return false;
         }
-        if (! S_ISDIR(st.st_mode)) {        // It must be a directory
+        if (!S_ISDIR(st.st_mode)) { // It must be a directory
             _setErrorResponse(resp, 403, "Forbidden", config);
             return false;
         }
-        if (access(dirPath.c_str(), R_OK | X_OK) != 0) {        // You need execute (and maybe read) permission on the dir
+        if (access(dirPath.c_str(), R_OK | X_OK) != 0) { // You need execute (and maybe read) permission on the dir
             _setErrorResponse(resp, 403, "Forbidden", config);
             return false;
         }
     } else {
         // Path exists
-        if (!S_ISREG(st.st_mode)) {        // It must be a file
+        if (!S_ISREG(st.st_mode)) { // It must be a file
             _setErrorResponse(resp, 403, "Forbidden", config);
             return false;
         }
-        if (access(path.c_str(), R_OK) != 0) {        // Check read permission on the file
+        if (access(path.c_str(), R_OK) != 0) { // Check read permission on the file
             _setErrorResponse(resp, 403, "Forbidden", config);
             return false;
         }
@@ -143,39 +142,42 @@ bool PostHandler::_postValidation(Connection* conn, const HttpRequest& request, 
 }
 
 void PostHandler::_writeIntoFile(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
-	if (request.headers.find("content-length") != request.headers.end()) {
-		if (!conn->ctx.file) {
+    if (request.headers.find("content-length") != request.headers.end()) {
+        if (!conn->ctx.file) {
             std::string path = config.root + request.uri;
-			conn->ctx.file = new std::ofstream(path.c_str(), std::ios::binary | std::ios::app);
+            conn->ctx.file = new std::ofstream(path.c_str(), std::ios::binary | std::ios::app);
             if (!conn->ctx.file->is_open()) {
                 std::cerr << "Failed to open file" << std::endl;
                 return;
             }
-            std::map<std::string, std::string>::const_iterator it = request.headers.find("content-length");
-			conn->ctx.contentLength = atoi(it->second.c_str());
-		}
+            std::map< std::string, std::string >::const_iterator it = request.headers.find("content-length");
+            conn->ctx.contentLength = atoi(it->second.c_str());
+        }
         if (conn->ctx.bytesUploaded + conn->_readBufUsedSize <= conn->ctx.contentLength) {
-			conn->ctx.file->write(conn->getReadBuf().c_str(), conn->_readBufUsedSize);
+            conn->ctx.file->write(conn->getReadBuf().c_str(), conn->_readBufUsedSize);
             conn->ctx.bytesUploaded += conn->_readBufUsedSize;
-		} else {
-			conn->ctx.file->write(conn->getReadBuf().c_str(), conn->ctx.contentLength - conn->ctx.bytesUploaded);
+        } else {
+            conn->ctx.file->write(conn->getReadBuf().c_str(), conn->ctx.contentLength - conn->ctx.bytesUploaded);
             conn->ctx.bytesUploaded = conn->ctx.contentLength;
-		}
-    } else if (request.headers.find("transfer-encoding") != request.headers.end()) {        // we might need to change this in the future
-        
+        }
+    } else if (request.headers.find("transfer-encoding") !=
+               request.headers.end()) { // we might need to change this in the future
+
         const std::string body = conn->getReadBuf();
         size_t i = 0;
 
         while (i < body.size()) {
             // 1) find the end of the size line
             size_t line_end = body.find("\r\n", i);
-            if (line_end == std::string::npos) break;
+            if (line_end == std::string::npos)
+                break;
 
             // 2) parse hex length
             std::string size_str = body.substr(i, line_end - i);
             char* endptr = NULL;
             long chunk_len = strtol(size_str.c_str(), &endptr, 16);
-            if (endptr == size_str.c_str() || chunk_len < 0) break;
+            if (endptr == size_str.c_str() || chunk_len < 0)
+                break;
 
             // move index past "<hex>\r\n"
             i = line_end + 2;
@@ -186,32 +188,36 @@ void PostHandler::_writeIntoFile(Connection* conn, const HttpRequest& request, c
             }
 
             // 4) write exactly chunk_len bytes
-            if (i + (size_t)chunk_len > body.size()) break;
+            if (i + (size_t)chunk_len > body.size())
+                break;
             conn->ctx.file->write(body.data() + i, chunk_len);
 
             // 5) advance past data + trailing "\r\n"
             i += chunk_len;
-            if (i + 2 > body.size() || body[i] != '\r' || body[i+1] != '\n')
+            if (i + 2 > body.size() || body[i] != '\r' || body[i + 1] != '\n')
                 break;
             i += 2;
         }
     }
 }
 
-void PostHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config) {
-    std::map<int, std::string>::const_iterator it = config.errorPage.find(code);
+void PostHandler::_setErrorResponse(HttpResponse& resp, int code, const std::string& message,
+                                    const RouteConfig& config) {
+    std::map< int, std::string >::const_iterator it = config.errorPage.find(code);
     if (it != config.errorPage.end()) {
         std::string errorPagePath = config.root + it->second;
         struct stat fileStat;
         if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
-            _setResponse(resp, code, message, _getMimeType(errorPagePath), fileStat.st_size, new FileBodyProvider(errorPagePath.c_str()));
+            _setResponse(resp, code, message, _getMimeType(errorPagePath), fileStat.st_size,
+                         new FileBodyProvider(errorPagePath.c_str()));
             return;
         }
     }
     _setResponse(resp, code, message, "text/plain", message.size(), new StringBodyProvider(message));
 }
 
-void PostHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
+void PostHandler::_setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage,
+                               const std::string& contentType, size_t contentLength, IBodyProvider* bodyProvider) {
     resp.version = DEFAULT_HTTP_VERSION;
     resp.statusCode = statusCode;
     resp.statusMessage = statusMessage;
@@ -227,7 +233,7 @@ std::string PostHandler::_getMimeType(const std::string& path) const {
     if (pos != std::string::npos) {
         ext = path.substr(pos);
     }
-    std::map<std::string, std::string>::const_iterator it = mimeTypes.find(ext);
+    std::map< std::string, std::string >::const_iterator it = mimeTypes.find(ext);
     if (it != mimeTypes.end()) {
         return it->second;
     }

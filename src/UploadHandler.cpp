@@ -5,7 +5,7 @@
 #include <sstream>
 
 void UploadHandler::uploadNewContent(Connection* conn) {
-    ConnectionContext& ctx = conn->ctx;
+    UploadContext& ctx = conn->uploadCtx;
     if ((ctx.bytesUploaded + conn->_readBufUsedSize) < ctx.contentLength) {
         ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()), conn->_readBufUsedSize);
         ctx.bytesUploaded += conn->_readBufUsedSize;
@@ -30,7 +30,7 @@ bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
 }
 
 void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-    ConnectionContext& ctx = conn->ctx;
+    UploadContext& ctx = conn->uploadCtx;
     ctx.file = new std::ofstream(cfg.root + req.uri, std::ios::binary | std::ios::app);
     if (!ctx.file->is_open()) {
         std::cerr << "Failed to open file" << std::endl;
@@ -45,7 +45,7 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
     if (!_validation(conn, cfg))
         return;
 
-    if (!conn->ctx.file)
+    if (!conn->uploadCtx.file)
         _initUploadCxt(conn, req, cfg);
 
     uploadNewContent(conn);
