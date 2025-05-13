@@ -1,4 +1,5 @@
 #include "Connection.h"
+#include "HttpResponse.h"
 #include "UploadHandler.h"
 #include "test_Uploadhandler_utils.h"
 #include "test_main.h"
@@ -60,10 +61,12 @@ TEST_P(UploadHdlrTest, concurrentUploadsParam) {
     for (size_t i = 0; i < filenames.size(); i++) {
         // the Connection holds a ofstream, which may not be flushed until deleting the Connection (which closes it)
         // therefore the connection needs to be closed before investigating the file
+        HttpResponse resp = conns[i]->_response;
         delete conns[i];
         std::string gotFile1 = getFileContents(ROOT + PREFIX + filenames[i]);
         EXPECT_EQ(bodies[i].length(), gotFile1.length());
         EXPECT_EQ(bodies[i], gotFile1);
+        EXPECT_EQ(201, resp.statusCode);
 
         removeFile(ROOT + PREFIX + filenames[i]);
     }
