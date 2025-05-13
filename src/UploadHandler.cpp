@@ -1,6 +1,7 @@
 #include "UploadHandler.h"
 #include "HttpRequest.h"
 #include "RouteConfig.h"
+#include "handlerUtils.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -20,21 +21,20 @@ void UploadHandler::uploadNewContent(Connection* conn) {
 bool UploadHandler::_validateContentLength(Connection* conn, const RouteConfig& cfg) {
     size_t contentLength;
     if (conn->_request.headers.find("content-length") == conn->_request.headers.end()) {
-        contentLength = 0;
-    } else {
-        std::stringstream ss(conn->_request.headers["content-length"]);
-        ss >> contentLength;
+        setErrorResponse(conn->_response, 400, "Bad Request", cfg);
+        return false;
     }
 
+    std::stringstream ss(conn->_request.headers["content-length"]);
+    ss >> contentLength;
+
     if (contentLength == 0) {
-        conn->_response.statusCode = 400;
-        conn->_response.statusMessage = "Bad Request";
+        setErrorResponse(conn->_response, 400, "Bad Request", cfg);
         return false;
     }
 
     if (contentLength > cfg.clientMaxBody) {
-        conn->_response.statusCode = 413;
-        conn->_response.statusMessage = "Content Too Large";
+        setErrorResponse(conn->_response, 413, "Content Too Large", cfg);
         return false;
     }
 
@@ -44,8 +44,8 @@ bool UploadHandler::_validateContentLength(Connection* conn, const RouteConfig& 
 bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
     if (!_validateContentLength(conn, cfg))
         return false;
-    conn->_response.statusCode = 201;
-    conn->_response.statusMessage = "Created";
+
+    setResponse(conn->_response, 201, "Created", "", 0, NULL);
     return true;
 }
 

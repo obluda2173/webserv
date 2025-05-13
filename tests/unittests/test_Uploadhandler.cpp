@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
-// TODO: Make a test where the content of a file is changed
+// TODO: Make a test where the content of an existing file is changed
+
 struct UploadHandlerTestParams {
     std::vector< std::string > filenames;
     std::vector< size_t > readBufsLengths;
@@ -121,7 +122,7 @@ TEST(UploadHdlrErrorTest, missingHeaders) {
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(400, conn->_response.statusCode);
-    // EXPECT_EQ(params.wantStatusMsg, conn->_response.statusMessage);
+    EXPECT_EQ("Bad Request", conn->_response.statusMessage);
 
     delete conn;
     delete uploadHdlr;
