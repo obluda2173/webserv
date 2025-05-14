@@ -198,7 +198,7 @@ TEST(UploadHdlrTest, filePathNotSoGood) {       // it seems that this is a green
     delete uploadHdlr;
 }
 
-TEST(UploadHdlrTest, filePathNotSoGoodAgain) {       // it seems that this is a green test, which means the system deal with /./ automatically
+TEST(UploadHdlrTest, filePathNotSoGoodAgain) {       // it seems that this is a green test, which means the system deal with /// automatically
     std::string filename = "//existing.txt";
 
     int contentLength = 100;
@@ -221,7 +221,7 @@ TEST(UploadHdlrTest, filePathNotSoGoodAgain) {       // it seems that this is a 
     delete uploadHdlr;
 }
 
-TEST(UploadHdlrTest, filePathNotSoGoodAgainAgain) {       // it seems that this is a green test, which means the system deal with /./ automatically
+TEST(UploadHdlrTest, filePathNotSoGoodAgainAgain) {       // it seems that this is a green test, which means the system deal with // automatically
     std::string filename = "/existing.txt";
 
     int contentLength = 100;
