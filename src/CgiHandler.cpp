@@ -17,20 +17,19 @@ std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiM
     return it != cgiMap.end() ? it->second : "";
 }
 
-std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& request) {
+void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     std::vector<std::string> env;
-    env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    env.push_back("SERVER_PROTOCOL=" + request.version);
-    env.push_back("REQUEST_METHOD=" + request.method);
-    env.push_back("SCRIPT_NAME=" + _path);
-    env.push_back("QUERY_STRING=" + _query);
+    _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
+    _envStorage.push_back("REQUEST_METHOD=" + request.method);
+    _envStorage.push_back("SCRIPT_NAME=" + _path);
+    _envStorage.push_back("QUERY_STRING=" + _query);
     if (request.headers.count("content-length")) {
-        env.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
+        _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
     if (request.headers.count("content-type")) {
-        env.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+        _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
-    return env;
 }
 
 void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp) {
@@ -43,26 +42,29 @@ void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& para
     params.argv.push_back(_path.c_str());
     params.argv.push_back(NULL);
 
-    _envStorage = _getCgiEnvironment(request);
+    _setCgiEnvironment(request);
     for (size_t i = 0; i < _envStorage.size(); i++) {
         params.env.push_back(_envStorage[i].c_str());
     }
     params.env.push_back(NULL);
 }
 
-void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
-    HttpResponse& resp = conn->_response;
+bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp) {
     _path = normalizePath(config.root, request.uri);
     _query = _extractQuery(request.uri);
     _interpreter = _findInterpreter(config.cgi);
 
     if (_interpreter.empty()) {
         setErrorResponse(resp, 403, "Forbidden", config);
-        conn->setState(Connection::SendResponse);
-        return;
+        return false;
     }
+    return validateRequest(resp, request, config, _path, _pathStat);
+}
 
-    if (!validateRequest(resp, request, config, _path, _pathStat)) {
+void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
+    HttpResponse& resp = conn->_response;
+
+    if (!_validateAndPrepareContext(request, config, resp)) {
         conn->setState(Connection::SendResponse);
         return;
     }
