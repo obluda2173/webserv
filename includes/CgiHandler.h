@@ -25,7 +25,8 @@ class CgiHandler : public IHandler {
     void _prepareExecParams(const HttpRequest& request, ExecParams& params);
     void _parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp);
     bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
-
+    void _setupChildProcess(int pipefd[2]);
+    void _setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& cfg);
 
   public:
     CgiHandler();
