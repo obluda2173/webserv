@@ -55,6 +55,10 @@ void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
     std::string path = (cfg.root + req.uri);
     std::string dirPath;
 
+    if (path.find("..") != std::string::npos) {     // we do not allow /../appear
+        conn->uploadCtx.fileExisted = 3;
+        return;
+    }
     if (stat(path.c_str(), &statStruct) == 0 && S_ISREG(statStruct.st_mode)) {
         conn->uploadCtx.fileExisted = 1;        // everything is fine
     }
@@ -71,10 +75,6 @@ void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
         } else {
             conn->uploadCtx.fileExisted = 2;        // wrong path, we need to return error
         }
-    }
-    if (path.find("..") != std::string::npos) {     // we do not allow /../appear
-        conn->uploadCtx.fileExisted = 3;
-        // return;
     }
 
 
