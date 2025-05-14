@@ -22,7 +22,7 @@ TEST(UploadHdlrTest, changeFileExisting) {
     conn->setReadBuf(body);
 
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
 
     HttpResponse resp = conn->_response;
     delete conn; // need to delete conn to close the file and write to disk
@@ -127,7 +127,7 @@ TEST_P(UploadHdlrErrorTest, errorTesting) {
     RouteConfig cfg;
     Connection* conn = setupConnWithContentLength("1.txt", contentLength);
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, clientMaxBody, false});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, clientMaxBody, false, {}});
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(params.wantStatusCode, conn->_response.statusCode);
@@ -145,7 +145,7 @@ TEST(UploadHdlrErrorTest, missingHeaders) {
     RouteConfig cfg;
     Connection* conn = new Connection({}, -1, NULL, NULL);
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false, {}});
 
     EXPECT_EQ(NULL, conn->uploadCtx.file);
     EXPECT_EQ(400, conn->_response.statusCode);
