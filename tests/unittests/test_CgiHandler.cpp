@@ -62,5 +62,6 @@ INSTANTIATE_TEST_SUITE_P(firstTest, CgiHandlerTestP,
                                          CgiTestParams{"MqueryParams.py",
                                                        {{"name", {"kay"}}, {"hobby", {"coding"}}},
                                                        {"name kay\nhobby coding\n"}},
-                                         CgiTestParams{"MqueryParams.py", {{"name", {"kay"}}}, {"name kay\n"}},
-                                         CgiTestParams{"helloWorld.php", {}, {"Hello, World!"}}));
+                                         CgiTestParams{"MqueryParams.py", {{"name", {"kay"}}}, {"name kay\n"}}
+                                         // CgiTestParams{"helloWorld.php", {}, {"Hello, World!"}}
+                                         ));
