@@ -38,7 +38,8 @@ TEST(UploadHdlrTest, changeFileExisting) {
 
 TEST(UploadHdlrTest, filePathNotExist) {
     std::string filename = "existing.txt";
-    std::string addPath = "/notexistdir/";
+    std::string addPath = "notexistdir/";
+    std::cout << ROOT << PREFIX << addPath << filename << std::endl;
     int contentLength = 100;
     std::string body = getRandomString(contentLength);
     Connection* conn = setupConnWithContentLength(addPath + filename, contentLength);

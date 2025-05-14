@@ -17,7 +17,7 @@ typedef struct UploadContext {
     size_t bytesUploaded;
     size_t contentLength;
     std::ofstream* file;
-    bool fileExisted;
+    int fileExisted;
     UploadContext() : bytesUploaded(0), contentLength(0), file(NULL), fileExisted(false) {}
 } UploadContext;
 

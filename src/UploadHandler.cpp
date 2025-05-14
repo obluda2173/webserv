@@ -52,7 +52,29 @@ bool UploadHandler::_validation(Connection* conn, const RouteConfig& cfg) {
 
 void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     struct stat statStruct;
-    conn->uploadCtx.fileExisted = (stat((cfg.root + req.uri).c_str(), &statStruct) == 0 && S_ISREG(statStruct.st_mode));
+    std::string path = (cfg.root + req.uri);
+    std::string dirPath;
+
+    if (stat(path.c_str(), &statStruct) == 0 && S_ISREG(statStruct.st_mode)) {
+        conn->uploadCtx.fileExisted = 1;        // everything is fine
+    }
+    if (stat(path.c_str(), &statStruct) != 0) {
+        if (path.find_last_of('/') == path.size() - 1) {
+            path.erase(path.end() - 1);
+            dirPath = path.substr(0, path.find_last_of('/'));
+            dirPath = dirPath.substr(0, path.find_last_of('/'));
+        } else {
+            dirPath = path.substr(0, path.find_last_of('/'));
+        }
+        if (stat(dirPath.c_str(), &statStruct) == 0 && S_ISDIR(statStruct.st_mode)) {
+            conn->uploadCtx.fileExisted = 0;        // we need to creat a file
+        } else {
+            conn->uploadCtx.fileExisted = 2;        // wrong path, we need to return error
+        }
+    }
+
+
+    // remove the file first and then add the new file
     std::remove((cfg.root + req.uri).c_str());
 
     UploadContext& ctx = conn->uploadCtx;
@@ -72,10 +94,12 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
     if (!conn->uploadCtx.file)
         _initUploadCxt(conn, req, cfg);
 
-    if (conn->uploadCtx.fileExisted)
+    if (conn->uploadCtx.fileExisted == 1)
         setResponse(conn->_response, 200, "OK", "", 0, NULL);
-    else
+    if (conn->uploadCtx.fileExisted == 0)
         setResponse(conn->_response, 201, "Created", "", 0, NULL);
+    if (conn->uploadCtx.fileExisted == 2)
+        setErrorResponse(conn->_response, 400, "Bad Request", cfg);
 
     uploadNewContent(conn);
 }
