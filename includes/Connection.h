@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
+#include "RouteConfig.h"
 
 #define READ_SIZE 2048
 
@@ -31,9 +32,17 @@ typedef struct UploadContext {
     UploadContext() : bytesUploaded(0), contentLength(0), file(NULL), fileExisted(false) {}
 } UploadContext;
 
+struct CgiContext {
+    pid_t cgiPid;                       // Store CGI process ID
+    int cgiPipeFd;                      // Store CGI output pipe
+    std::string cgiOutput;              // Accumulate CGI output
+    RouteConfig cgiRouteConfig;         // Store RouteConfig for response
+    CgiContext() : cgiPid(-1), cgiPipeFd(-1) {}
+};
+
 class Connection {
   public:
-    enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse, Reset };
+    enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse, Reset, HandlingCgi };
 
   private:
     STATE _state;
@@ -48,6 +57,7 @@ class Connection {
 
   public:
     UploadContext uploadCtx;
+    CgiContext cgiCtx;
     size_t _readBufUsedSize;
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
