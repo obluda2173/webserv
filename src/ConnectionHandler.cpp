@@ -38,13 +38,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     case Connection::Reset:
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
-    case Connection::HandlingCgi: {
-        int pipeFd = conn->cgiCtx.cgiPipeFd;
-            if (pipeFd != -1) {
-                _ioNotifier.modify(pipeFd, READY_TO_READ);
-            }
-            break;
-        }
+    case Connection::HandlingCgi:
+        _ioNotifier.modify(conn->cgiCtx.cgiPipeFd, READY_TO_READ);
+        break;
     }
 }
 
