@@ -74,6 +74,7 @@ void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
             conn->uploadCtx.fileExisted = 0;        // we need to creat a file
         } else {
             conn->uploadCtx.fileExisted = 2;        // wrong path, we need to return error
+            return;
         }
     }
 

@@ -36,26 +36,6 @@ TEST(UploadHdlrTest, changeFileExisting) {
     delete uploadHdlr;
 }
 
-TEST(UploadHdlrTest, filePathNotExist) {
-    std::string filename = "existing.txt";
-    std::string addPath = "notexistdir/";
-    int contentLength = 100;
-    std::string body = getRandomString(contentLength);
-    Connection* conn = setupConnWithContentLength(addPath + filename, contentLength);
-    conn->setReadBuf(body);
-
-    IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
-
-    HttpResponse resp = conn->_response;
-    delete conn; // need to delete conn to close the file and write to disk
-    EXPECT_EQ(400, resp.statusCode);
-    EXPECT_EQ("Bad Request", resp.statusMessage);
-
-    removeFile(ROOT + PREFIX + addPath + filename);
-    delete uploadHdlr;
-}
-
 struct UploadHandlerTestParams {
     std::vector< std::string > filenames;
     std::vector< size_t > readBufsLengths;
@@ -172,6 +152,26 @@ TEST(UploadHdlrErrorTest, missingHeaders) {
     EXPECT_EQ("Bad Request", conn->_response.statusMessage);
 
     delete conn;
+    delete uploadHdlr;
+}
+
+TEST(UploadHdlrTest, filePathNotExist) {
+    std::string filename = "existing.txt";
+    std::string addPath = "notexistdir/";
+    int contentLength = 100;
+    std::string body = getRandomString(contentLength);
+    Connection* conn = setupConnWithContentLength(addPath + filename, contentLength);
+    conn->setReadBuf(body);
+
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+
+    HttpResponse resp = conn->_response;
+    delete conn; // need to delete conn to close the file and write to disk
+    EXPECT_EQ(400, resp.statusCode);
+    EXPECT_EQ("Bad Request", resp.statusMessage);
+
+    removeFile(ROOT + PREFIX + addPath + filename);
     delete uploadHdlr;
 }
 
