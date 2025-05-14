@@ -257,7 +257,6 @@ TEST(UploadHdlrTest, filePathIsReallyBad) {
 
     HttpResponse resp = conn->_response;
     delete conn; // need to delete conn to close the file and write to disk
-    std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
     EXPECT_EQ(400, resp.statusCode);
     EXPECT_EQ("Bad Request", resp.statusMessage);
 
