@@ -3,6 +3,20 @@
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
 
+std::string CgiHandler::_extractQuery(const std::string& uri) {
+    const size_t pos = uri.find('?');
+    return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
+}
+
+std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiMap) {
+    size_t dot = _path.rfind('.');
+    if (dot == std::string::npos) return "";
+    size_t end = _path.find_first_of("/?#", dot);
+    std::string ext = _path.substr(dot + 1, end - dot - 1);
+    std::map<std::string, std::string>::const_iterator it = cgiMap.find(ext);
+    return it != cgiMap.end() ? it->second : "";
+}
+
 std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& request) {
     std::vector<std::string> env;
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
@@ -24,22 +38,16 @@ void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& res
     (void)resp;
 }
 
-std::string CgiHandler::_extractQuery(const std::string& uri) {
-    const size_t pos = uri.find('?');
-    return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
-}
+void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params) {
+    params.argv.push_back(_interpreter.c_str());
+    params.argv.push_back(_path.c_str());
+    params.argv.push_back(NULL);
 
-std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiMap) {
-    size_t dot = _path.rfind('.');
-    if (dot == std::string::npos) {
-        return "";
+    _envStorage = _getCgiEnvironment(request);
+    for (size_t i = 0; i < _envStorage.size(); i++) {
+        params.env.push_back(_envStorage[i].c_str());
     }
-
-    size_t end = _path.find_first_of("/?#", dot);
-    std::string ext = _path.substr(dot + 1, end - dot - 1);
-    
-    std::map<std::string, std::string>::const_iterator it = cgiMap.find(ext);
-    return it != cgiMap.end() ? it->second : "";
+    params.env.push_back(NULL);
 }
 
 void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
@@ -58,8 +66,6 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         conn->setState(Connection::SendResponse);
         return;
     }
-
-    std::vector<std::string> env = _getCgiEnvironment(request);
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
@@ -82,22 +88,12 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
 
-        std::vector<const char*> av;
-        if (_interpreter.empty()) {
-            av.push_back(_path.c_str());
-        } else {
-            av.push_back(_interpreter.c_str());
-            av.push_back(_path.c_str());
-        }
-        av.push_back(NULL);
+        ExecParams params;
+        _prepareExecParams(request, params);
 
-        std::vector<const char*> envChr;
-        for (size_t i = 0; i < env.size(); i++) {
-            envChr.push_back(env[i].c_str());
-        }
-        envChr.push_back(NULL);
-
-        execve(av[0], const_cast<char* const*>(av.data()), const_cast<char* const*>(envChr.data()));
+        execve(params.argv[0], 
+            const_cast<char* const*>(params.argv.data()),
+            const_cast<char* const*>(params.env.data()));
         exit(EXIT_FAILURE);
     } else {
         close(pipefd[1]);
@@ -117,7 +113,7 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
         ssize_t count = read(ctx.cgiPipeFd, buffer, sizeof(buffer));
         if (count > 0) {
             ctx.cgiOutput.append(buffer, count);
-        } else if (count == 0) { // EOF
+        } else if (count == 0) {
             close(ctx.cgiPipeFd);
             ctx.cgiPipeFd = -1;
         } else if (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {

@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*:*TestHttpParser*";
-    testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
+    // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // only run the following test
 
-    // testing::GTEST_FLAG(filter) = "*CgiHandlerTest*";
+    testing::GTEST_FLAG(filter) = "*CgiHandlerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParserTest*";
     // testing::GTEST_FLAG(filter) = "*DeleteHandler*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlr*";
