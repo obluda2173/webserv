@@ -39,7 +39,6 @@ TEST(UploadHdlrTest, changeFileExisting) {
 TEST(UploadHdlrTest, filePathNotExist) {
     std::string filename = "existing.txt";
     std::string addPath = "notexistdir/";
-    std::cout << ROOT << PREFIX << addPath << filename << std::endl;
     int contentLength = 100;
     std::string body = getRandomString(contentLength);
     Connection* conn = setupConnWithContentLength(addPath + filename, contentLength);
@@ -173,5 +172,74 @@ TEST(UploadHdlrErrorTest, missingHeaders) {
     EXPECT_EQ("Bad Request", conn->_response.statusMessage);
 
     delete conn;
+    delete uploadHdlr;
+}
+
+TEST(UploadHdlrTest, filePathNotSoGood) {       // it seems that this is a green test, which means the system deal with /./ automatically
+    std::string filename = "/./existing.txt";
+
+    int contentLength = 100;
+    std::string body = getRandomString(contentLength);
+    Connection* conn = setupConnWithContentLength(filename, contentLength);
+    conn->setReadBuf(body);
+
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+
+    HttpResponse resp = conn->_response;
+    delete conn; // need to delete conn to close the file and write to disk
+    std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
+    EXPECT_EQ(body.length(), gotFile1.length());
+    EXPECT_EQ(body, gotFile1);
+    EXPECT_EQ(201, resp.statusCode);
+    EXPECT_EQ("Created", resp.statusMessage);
+
+    removeFile(ROOT + PREFIX + filename);
+    delete uploadHdlr;
+}
+
+TEST(UploadHdlrTest, filePathNotSoGoodAgain) {       // it seems that this is a green test, which means the system deal with /./ automatically
+    std::string filename = "//existing.txt";
+
+    int contentLength = 100;
+    std::string body = getRandomString(contentLength);
+    Connection* conn = setupConnWithContentLength(filename, contentLength);
+    conn->setReadBuf(body);
+
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+
+    HttpResponse resp = conn->_response;
+    delete conn; // need to delete conn to close the file and write to disk
+    std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
+    EXPECT_EQ(body.length(), gotFile1.length());
+    EXPECT_EQ(body, gotFile1);
+    EXPECT_EQ(201, resp.statusCode);
+    EXPECT_EQ("Created", resp.statusMessage);
+
+    removeFile(ROOT + PREFIX + filename);
+    delete uploadHdlr;
+}
+
+TEST(UploadHdlrTest, filePathNotSoGoodAgain) {       // it seems that this is a green test, which means the system deal with /./ automatically
+    std::string filename = "/existing.txt";
+
+    int contentLength = 100;
+    std::string body = getRandomString(contentLength);
+    Connection* conn = setupConnWithContentLength(filename, contentLength);
+    conn->setReadBuf(body);
+
+    IHandler* uploadHdlr = new UploadHandler();
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+
+    HttpResponse resp = conn->_response;
+    delete conn; // need to delete conn to close the file and write to disk
+    std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
+    EXPECT_EQ(body.length(), gotFile1.length());
+    EXPECT_EQ(body, gotFile1);
+    EXPECT_EQ(201, resp.statusCode);
+    EXPECT_EQ("Created", resp.statusMessage);
+
+    removeFile(ROOT + PREFIX + filename);
     delete uploadHdlr;
 }
