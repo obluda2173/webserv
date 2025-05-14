@@ -28,7 +28,8 @@
 - [ ] BrokenConnection just removes the connection
   - [ ] check how ClientHungUp affects the behavior
 - [ ] probably change IHandler handle interface (add ConnectionInfo to it)
-- [ ] Idea: have a file descriptor inside the HttpResponse from which the HttpResponseWrite could read, which hopefully would also work for the cgi
+- [ ] check UploadHandler behavior of sending the response
+
 * notes configuration
 - [X] change throwing of std::runtime_error to something that makes sense
 - [X] no error is thrown when there is no ";" in
@@ -38,16 +39,15 @@ index       index.html index.htm
 - [X] cgi - only on location level
 - [X] oneMB as default if clientMaxBody is not set
 - [X] talk to Eric about oneMB const
-- [ ] restrict config allowedMethods to GET, POST, DELETE
+- [X] restrict config allowedMethods to GET, POST, DELETE
+- [X] insert Routing
 - [ ] make reset public on HttpParser
-- [ ] insert Routing
 - [ ] test for requests with longer bodies
   - [ ] test for overlapping headers and body
   - [ ] make the read and send methods adjustable in buffer size
   - [ ] rename to _headersBuf and _bodyBuf
   - [ ] test for long responses where sent needs to happen more than once
 - [ ] handle ClientHungUp
-- [ ] Put the thing together
 * postHandler
 ** headers
 1. Transfer-Encoding and Content-Length
