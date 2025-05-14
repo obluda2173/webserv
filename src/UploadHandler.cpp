@@ -79,7 +79,8 @@ void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
 
 
     // remove the file first and then add the new file
-    std::remove((cfg.root + req.uri).c_str());
+    if (conn->uploadCtx.fileExisted == 0 || conn->uploadCtx.fileExisted == 1)
+        std::remove((cfg.root + req.uri).c_str());
 
     UploadContext& ctx = conn->uploadCtx;
     ctx.file = new std::ofstream((cfg.root + req.uri).c_str(), std::ios::binary | std::ios::app);
@@ -105,5 +106,6 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
     if (conn->uploadCtx.fileExisted == 2 || conn->uploadCtx.fileExisted == 3)
         setErrorResponse(conn->_response, 400, "Bad Request", cfg);
 
-    uploadNewContent(conn);
+    if (conn->uploadCtx.fileExisted == 0 || conn->uploadCtx.fileExisted == 1)
+        uploadNewContent(conn);
 }
