@@ -4,13 +4,13 @@
 #include "HttpResponse.h"
 #include "IHttpParser.h"
 #include "ResponseWriter.h"
+#include "RouteConfig.h"
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
-#include "RouteConfig.h"
 
 #define READ_SIZE 2048
 
@@ -33,10 +33,10 @@ typedef struct UploadContext {
 } UploadContext;
 
 struct CgiContext {
-    pid_t cgiPid;                       // Store CGI process ID
-    int cgiPipeFd;                      // Store CGI output pipe
-    std::string cgiOutput;              // Accumulate CGI output
-    RouteConfig cgiRouteConfig;         // Store RouteConfig for response
+    pid_t cgiPid;               // Store CGI process ID
+    int cgiPipeFd;              // Store CGI output pipe
+    std::string cgiOutput;      // Accumulate CGI output
+    RouteConfig cgiRouteConfig; // Store RouteConfig for response
     CgiContext() : cgiPid(-1), cgiPipeFd(-1) {}
 };
 
@@ -66,19 +66,14 @@ class Connection {
     void parseBuf();
     void sendResponse();
     void resetResponse();
+
+    // getter and setter
     int getFileDes() const;
     HttpRequest getRequest();
     sockaddr_storage getAddr() const;
-    void setState(Connection::STATE state) { _state = state; }
-    void setReadBuf(std::string s) {
-        if (s.length() > _readBuf.size()) {
-            std::cout << "string is bigger than readBuf" << std::endl;
-            _exit(1);
-        }
-        _readBuf.assign(s.begin(), s.end());
-        _readBufUsedSize = s.length();
-    }
-    std::string getReadBuf() { return std::string(_readBuf.data(), _readBufUsedSize); }
+    void setState(Connection::STATE state);
+    void setReadBuf(std::string s);
+    std::string getReadBuf();
 
     HttpRequest _request;
     HttpResponse _response;

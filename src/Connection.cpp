@@ -85,9 +85,21 @@ void Connection::parseBuf() {
     }
     _readBufUsedSize = 0;
 }
+void Connection::setReadBuf(std::string s) {
+    if (s.length() > _readBuf.size()) {
+        std::cout << "string is bigger than readBuf" << std::endl;
+        _exit(1);
+    }
+    _readBuf.assign(s.begin(), s.end());
+    _readBufUsedSize = s.length();
+}
 
 int Connection::getFileDes() const { return _fd; }
 
 Connection::STATE Connection::getState() const { return _state; }
+
+void Connection::setState(Connection::STATE state) { _state = state; };
+
+std::string Connection::getReadBuf() { return std::string(_readBuf.data(), _readBufUsedSize); }
 
 struct sockaddr_storage Connection::getAddr() const { return _addr; }
