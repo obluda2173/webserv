@@ -72,6 +72,10 @@ void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
             conn->uploadCtx.fileExisted = 2;        // wrong path, we need to return error
         }
     }
+    if (path.find("..") != std::string::npos) {     // we do not allow /../appear
+        conn->uploadCtx.fileExisted = 3;
+        // return;
+    }
 
 
     // remove the file first and then add the new file
@@ -98,7 +102,7 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         setResponse(conn->_response, 200, "OK", "", 0, NULL);
     if (conn->uploadCtx.fileExisted == 0)
         setResponse(conn->_response, 201, "Created", "", 0, NULL);
-    if (conn->uploadCtx.fileExisted == 2)
+    if (conn->uploadCtx.fileExisted == 2 || conn->uploadCtx.fileExisted == 3)
         setErrorResponse(conn->_response, 400, "Bad Request", cfg);
 
     uploadNewContent(conn);
