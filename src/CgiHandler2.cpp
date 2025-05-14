@@ -14,6 +14,17 @@ std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiM
     return it != cgiMap.end() ? it->second : "";
 }
 
+bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp) {
+    _path = normalizePath(config.root, request.uri);
+    _query = _extractQuery(request.uri);
+    _interpreter = _findInterpreter(config.cgi);
+    if (_interpreter.empty()) {
+        setErrorResponse(resp, 403, "Forbidden", config);
+        return false;
+    }
+    return validateRequest(resp, request, config, _path, _pathStat);
+}
+
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
@@ -28,11 +39,6 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     }
 }
 
-void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp) {
-    (void)cgiOutput;
-    (void)resp;
-}
-
 void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params) {
     params.argv.push_back(_interpreter.c_str());
     params.argv.push_back(_path.c_str());
@@ -43,17 +49,6 @@ void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& para
         params.env.push_back(_envStorage[i].c_str());
     }
     params.env.push_back(NULL);
-}
-
-bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp) {
-    _path = normalizePath(config.root, request.uri);
-    _query = _extractQuery(request.uri);
-    _interpreter = _findInterpreter(config.cgi);
-    if (_interpreter.empty()) {
-        setErrorResponse(resp, 403, "Forbidden", config);
-        return false;
-    }
-    return validateRequest(resp, request, config, _path, _pathStat);
 }
 
 void CgiHandler::_setupChildProcess(int pipefd[2]) {
@@ -69,4 +64,9 @@ void CgiHandler::_setupParentProcess(Connection* conn, int pipefd[2], pid_t pid,
     conn->cgiCtx.cgiPipeFd = pipefd[0];
     conn->cgiCtx.cgiRouteConfig = config;
     conn->setState(Connection::HandlingCgi);
+}
+
+void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp) {
+    (void)cgiOutput;
+    (void)resp;
 }

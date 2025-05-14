@@ -19,14 +19,14 @@ class CgiHandler : public IHandler {
     std::string _path;
     struct stat _pathStat;
     std::vector<std::string> _envStorage;
-    void _setCgiEnvironment(const HttpRequest& request);
     std::string _extractQuery(const std::string& uri);
     std::string _findInterpreter(std::map<std::string,std::string> cgiMap);
-    void _prepareExecParams(const HttpRequest& request, ExecParams& params);
-    void _parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp);
     bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
+    void _setCgiEnvironment(const HttpRequest& request);
+    void _prepareExecParams(const HttpRequest& request, ExecParams& params);
     void _setupChildProcess(int pipefd[2]);
     void _setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& cfg);
+    void _parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp);
 
   public:
     CgiHandler();
