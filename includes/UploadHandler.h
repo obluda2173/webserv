@@ -13,6 +13,7 @@ class UploadHandler : public IHandler {
     bool _validateContentLength(Connection* conn, const RouteConfig& cfg);
 
   public:
+    ~UploadHandler();
     void uploadNewContent(Connection* conn);
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
 };

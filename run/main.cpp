@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "Router.h"
 #include "ServerBuilder.h"
+#include "UploadHandler.h"
 
 int main() {
 
@@ -14,6 +15,7 @@ int main() {
 
     std::map< std::string, IHandler* > hdlrs;
     hdlrs["GET"] = new GetHandler();
+    hdlrs["POST"] = new UploadHandler();
     Router router = newRouter(cfgPrsr->getServersConfig(), hdlrs);
     ConnectionHandler* connHdlr = new ConnectionHandler(&router, *logger, *ioNotifier);
 
