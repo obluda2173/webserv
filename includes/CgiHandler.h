@@ -7,6 +7,8 @@
 
 #include "handlerUtils.h"
 
+enum class ProcessState { Running, Exited, Error };
+
 struct ExecParams {
   std::vector<const char*> argv;
   std::vector<const char*> env;
@@ -27,6 +29,9 @@ class CgiHandler : public IHandler {
     void _setupChildProcess(int pipefd[2]);
     void _setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& cfg);
     void _parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp);
+    ProcessState _checkProcess(CgiContext& ctx, int& status);
+    bool _readPipeData(CgiContext& cgiCtx, bool drain);
+    void _handleProcessExit(Connection* conn, CgiContext& ctx, int status);
 
   public:
     CgiHandler();

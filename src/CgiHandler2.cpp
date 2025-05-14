@@ -37,6 +37,7 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     if (request.headers.count("content-type")) {
         _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
+    // not complete
 }
 
 void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params) {
@@ -69,4 +70,51 @@ void CgiHandler::_setupParentProcess(Connection* conn, int pipefd[2], pid_t pid,
 void CgiHandler::_parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp) {
     (void)cgiOutput;
     (void)resp;
+}
+
+ProcessState CgiHandler::_checkProcess(CgiContext& ctx, int& status) {
+    pid_t result = waitpid(ctx.cgiPid, &status, WNOHANG);
+    if (result == -1) {
+        return ProcessState::Error;
+    }
+    return result > 0 ? ProcessState::Exited : ProcessState::Running;
+}
+
+bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
+    if (cgiCtx.cgiPipeFd == -1) {
+        return false;
+    }
+
+    do {
+        char buffer[4096];
+        const ssize_t count = read(cgiCtx.cgiPipeFd, buffer, sizeof(buffer));
+        if (count > 0) {
+            cgiCtx.cgiOutput.append(buffer, count);
+        } else {
+            if (count == 0 || (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
+                close(cgiCtx.cgiPipeFd);
+                cgiCtx.cgiPipeFd = -1;
+                
+                if (count == -1) {
+                    return false;
+                }
+            }
+            break;
+        }
+    } while (drain);
+    return true;
+}
+
+void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int status) {
+    if (ctx.cgiPipeFd != -1) {
+        _readPipeData(ctx, true);
+    } 
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        setErrorResponse(conn->_response, 502, "Bad Gateway", ctx.cgiRouteConfig);
+    } else if (ctx.cgiOutput.empty()) {
+        setErrorResponse(conn->_response, 500, "Internal Error", ctx.cgiRouteConfig);
+    } else {
+        setResponse(conn->_response, 200, "OK", "text/php", ctx.cgiOutput.size(), new StringBodyProvider(ctx.cgiOutput));
+    }
+    conn->setState(Connection::SendResponse);
 }
