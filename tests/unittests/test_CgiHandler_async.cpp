@@ -44,11 +44,12 @@ TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
             cgiCompleted = true;
             break;
         }
-        cgiConn->handleCgiProcess();
+        cgiHandler.handleCgiProcess(cgiConn);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     EXPECT_TRUE(cgiCompleted) << "CGI processing timed out";
     EXPECT_NE(cgiConn->_response.body, nullptr) << "Response body not set";
     EXPECT_EQ(cgiConn->_response.statusCode, 200) << "Unexpected status code";
+    delete cgiConn;
 }

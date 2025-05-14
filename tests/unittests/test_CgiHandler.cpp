@@ -23,12 +23,13 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
                        10000,
                        false,
                        {{"php", "/usr/bin/php"}, {"py", "/usr/bin/python3"}}};
-    IHandler* cgiHdlr = new CgiHandler();
+    // IHandler* cgiHdlr = new CgiHandler();
+    CgiHandler cgiHdlr;
 
     req.uri = buildUri(params.scriptName, params.queryParams);
 
     Connection* conn = new Connection({}, -1, NULL, NULL);
-    cgiHdlr->handle(conn, req, cfg);
+    cgiHdlr.handle(conn, req, cfg);
 
     bool cgiCompleted = false;
     auto startTime = std::chrono::steady_clock::now();
@@ -38,7 +39,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
             break;
         }
         if (conn->getState() == Connection::HandlingCgi) {
-            conn->handleCgiProcess();
+            cgiHdlr.handleCgiProcess(conn);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -51,7 +52,6 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
     std::string gotOutput = getOutput(conn);
     ASSERT_EQ(params.wantOutput, gotOutput);
 
-    delete cgiHdlr;
     delete conn;
 }
 

@@ -39,7 +39,7 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
     case Connection::HandlingCgi: {
-        int pipeFd = conn->ctx.cgiPipeFd;
+        int pipeFd = conn->cgiCtx.cgiPipeFd;
             if (pipeFd != -1) {
                 _ioNotifier.modify(pipeFd, READY_TO_READ);
             }

@@ -86,58 +86,6 @@ void Connection::parseBuf() {
     _readBufUsedSize = 0;
 }
 
-#include "handlerUtils.h"
-#include <sys/wait.h>
-void Connection::handleCgiProcess() {
-    ConnectionContext& ctx = this->ctx;
-
-    if (ctx.cgiPipeFd != -1) {
-        char buffer[4096];
-        ssize_t count = read(ctx.cgiPipeFd, buffer, sizeof(buffer));
-        if (count > 0) {
-            ctx.cgiOutput.append(buffer, count);
-        } else if (count == 0) { // EOF
-            close(ctx.cgiPipeFd);
-            ctx.cgiPipeFd = -1;
-        } else if (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
-            close(ctx.cgiPipeFd);
-            ctx.cgiPipeFd = -1;
-        }
-    }
-
-    int status;
-    pid_t result = waitpid(ctx.cgiPid, &status, WNOHANG);
-    if (result == -1) {
-        setErrorResponse(_response, 500, "Internal Server Error", ctx.cgiRouteConfig);
-        _state = SendResponse;
-    } else if (result > 0) {
-        if (ctx.cgiPipeFd != -1) {
-            while (true) {
-                char buffer[4096];
-                ssize_t n = read(ctx.cgiPipeFd, buffer, sizeof(buffer));
-                if (n > 0) ctx.cgiOutput.append(buffer, n);
-                else if (n == 0) break;
-                else if (errno == EAGAIN || errno == EWOULDBLOCK) break;
-                else break;
-            }
-            close(ctx.cgiPipeFd);
-            ctx.cgiPipeFd = -1;
-        }
-
-        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-            if (ctx.cgiOutput.empty()) {
-                setErrorResponse(_response, 500, "Internal Server Error", ctx.cgiRouteConfig);
-            } else {
-                // Assuming _parseCgiOutput is handled or response is set directly
-                setResponse(_response, 200, "OK", "text/php", ctx.cgiOutput.size(), new StringBodyProvider(ctx.cgiOutput));
-            }
-        } else {
-            setErrorResponse(_response, 502, "Bad Gateway", ctx.cgiRouteConfig);
-        }
-        _state = SendResponse;
-    }
-}
-
 int Connection::getFileDes() const { return _fd; }
 
 Connection::STATE Connection::getState() const { return _state; }

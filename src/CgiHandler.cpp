@@ -16,7 +16,6 @@ std::vector<std::string> CgiHandler::_getCgiEnvironment(const HttpRequest& reque
     if (request.headers.count("content-type")) {
         env.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
-
     return env;
 }
 
@@ -30,7 +29,6 @@ std::string CgiHandler::_extractQuery(const std::string& uri) {
     return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
 }
 
-// can be deleted if make the getMimeType(const std::string& path) reusable
 std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiMap) {
     size_t dot = _path.rfind('.');
     if (dot == std::string::npos) {
@@ -79,12 +77,11 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         return;
     }
 
-    if (pid == 0) { // Child process
+    if (pid == 0) {
         close(pipefd[0]);
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
 
-        // Setup argv and env as before
         std::vector<const char*> av;
         if (_interpreter.empty()) {
             av.push_back(_path.c_str());
@@ -92,24 +89,72 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
             av.push_back(_interpreter.c_str());
             av.push_back(_path.c_str());
         }
-        av.push_back(nullptr);
+        av.push_back(NULL);
 
         std::vector<const char*> envChr;
         for (size_t i = 0; i < env.size(); i++) {
             envChr.push_back(env[i].c_str());
         }
-        envChr.push_back(nullptr);
+        envChr.push_back(NULL);
 
         execve(av[0], const_cast<char* const*>(av.data()), const_cast<char* const*>(envChr.data()));
         exit(EXIT_FAILURE);
-    } else { // Parent process
+    } else {
         close(pipefd[1]);
         fcntl(pipefd[0], F_SETFL, O_NONBLOCK);
-
-        // Store CGI process details in the connection context
-        conn->ctx.cgiPid = pid;
-        conn->ctx.cgiPipeFd = pipefd[0];
-        conn->ctx.cgiRouteConfig = config;
+        conn->cgiCtx.cgiPid = pid;
+        conn->cgiCtx.cgiPipeFd = pipefd[0];
+        conn->cgiCtx.cgiRouteConfig = config;
         conn->setState(Connection::HandlingCgi);
+    }
+}
+
+void CgiHandler::handleCgiProcess(Connection* conn) {
+    CgiContext& ctx = conn->cgiCtx;
+
+    if (ctx.cgiPipeFd != -1) {
+        char buffer[4096];
+        ssize_t count = read(ctx.cgiPipeFd, buffer, sizeof(buffer));
+        if (count > 0) {
+            ctx.cgiOutput.append(buffer, count);
+        } else if (count == 0) { // EOF
+            close(ctx.cgiPipeFd);
+            ctx.cgiPipeFd = -1;
+        } else if (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            close(ctx.cgiPipeFd);
+            ctx.cgiPipeFd = -1;
+        }
+    }
+
+    int status;
+    pid_t result = waitpid(ctx.cgiPid, &status, WNOHANG);
+    if (result == -1) {
+        setErrorResponse(conn->_response, 500, "Internal Server Error", ctx.cgiRouteConfig);
+        conn->setState(Connection::SendResponse);
+    } else if (result > 0) {
+        if (ctx.cgiPipeFd != -1) {
+            while (true) {
+                char buffer[4096];
+                ssize_t n = read(ctx.cgiPipeFd, buffer, sizeof(buffer));
+                if (n > 0) ctx.cgiOutput.append(buffer, n);
+                else if (n == 0) break;
+                else if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+                else break;
+            }
+            close(ctx.cgiPipeFd);
+            ctx.cgiPipeFd = -1;
+        }
+
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+            if (ctx.cgiOutput.empty()) {
+                setErrorResponse(conn->_response, 500, "Internal Server Error", ctx.cgiRouteConfig);
+            } else {
+                // _parseCgiOutput
+                setResponse(conn->_response, 200, "OK", "text/php", ctx.cgiOutput.size(), new StringBodyProvider(ctx.cgiOutput));
+            }
+        } else {
+            setErrorResponse(conn->_response, 502, "Bad Gateway", ctx.cgiRouteConfig);
+        }
+        conn->setState(Connection::SendResponse);
     }
 }

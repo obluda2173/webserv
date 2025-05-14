@@ -23,6 +23,7 @@ class CgiHandler : public IHandler {
     CgiHandler();
     ~CgiHandler();
     void handle(Connection* conn, const HttpRequest& req, const RouteConfig& config);
+    void handleCgiProcess(Connection* conn);
 };
 
 #endif // CGIHANDLER_H
