@@ -62,14 +62,18 @@ bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const
     return false;
 }
 
-bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+bool UploadHandler::_validateNotActive(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     std::string path = (cfg.root + req.uri);
-
     if (_activeUploadPaths.find(path) != _activeUploadPaths.end()) {
         setErrorResponse(conn->_response, 409, "Conflict", cfg);
         return false;
     }
     _activeUploadPaths.insert(path);
+    return true;
+}
+
+bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+    std::string path = (cfg.root + req.uri);
 
     struct stat statStruct;
     std::string dirPath;
@@ -90,6 +94,9 @@ bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, cons
 
 bool UploadHandler::_validation(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     if (!_validateContentLength(conn, cfg))
+        return false;
+
+    if (!_validateNotActive(conn, req, cfg))
         return false;
 
     if (!_validateFile(conn, req, cfg))
