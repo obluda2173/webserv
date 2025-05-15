@@ -25,6 +25,22 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
     return validateRequest(resp, request, config, _path, _pathStat);
 }
 
+std::string CgiHandler::_toUpper(const std::string& str) {
+    std::string result = str;
+    for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
+        *ptr = static_cast< char >(toupper(*ptr));
+    }
+    return result;
+}
+
+void CgiHandler::_replace(std::string& str, char what, char with) {
+    for (size_t i = 0; i < str.size(); i++) {
+        if (str[i] == what) {
+            str[i] = with;
+        }
+    }
+}
+
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
@@ -37,7 +53,13 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     if (request.headers.count("content-type")) {
         _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
-    // not complete
+    // RFC 3875 §4.1.18
+    for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); 
+         it != request.headers.end(); ++it) {
+        std::string varName = "HTTP_" + _toUpper(it->first);
+        _replace(varName, '-', '_');
+        _envStorage.push_back(varName + "=" + it->second);
+    }
 }
 
 void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params) {
