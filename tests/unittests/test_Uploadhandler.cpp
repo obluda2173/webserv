@@ -103,7 +103,8 @@ TEST_P(UploadHdlrTest, concurrentUploadsParam) {
 }
 
 INSTANTIATE_TEST_SUITE_P(first, UploadHdlrTest,
-                         testing::Values(UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 1000, 1000},
+                         testing::Values(UploadHandlerTestParams{{"example.txt/1.txt"}, {1000}, {1000}, 1000, 1000},
+                                         UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 1000, 1000},
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {300}, 10, 20000},
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {600}, 1000, 20000},
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 10, 20000},
