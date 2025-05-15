@@ -31,7 +31,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
 
     EXPECT_EQ(409, conn2->_response.statusCode);
-    // EXPECT_EQ("Conflict", conn2->_response.statusMessage);
+    EXPECT_EQ("Conflict", conn2->_response.statusMessage);
     delete conn1;
     delete conn2;
     delete uploadHdlr;
