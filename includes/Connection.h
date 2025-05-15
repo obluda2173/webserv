@@ -42,34 +42,34 @@ struct CgiContext {
 class Buffer {
   private:
     std::vector< char > _content;
-    size_t _used;
+    size_t _size;
 
   public:
     Buffer() {
         _content.resize(1024);
-        _used = 0;
+        _size = 0;
     }
 
     void recvNew(int fd) {
-        ssize_t r = recv(fd, _content.data() + _used, _content.size() - _used, 0);
-        _used += r;
-        std::cout << _used << std::endl;
+        ssize_t r = recv(fd, _content.data() + _size, _content.size() - _size, 0);
+        _size += r;
+        std::cout << _size << std::endl;
     }
 
     void advance(size_t count) {
-        memmove(_content.data(), _content.data() + count, _used - count);
-        _used -= count;
+        memmove(_content.data(), _content.data() + count, _size - count);
+        _size -= count;
     }
 
-    void clear() { _used = 0; }
-    size_t getUsed() const { return _used; }
+    void clear() { _size = 0; }
+    size_t size() const { return _size; }
     void assign(std::string s) {
         if (s.length() > _content.size()) {
             std::cout << "string is bigger than readBuf" << std::endl;
             _exit(1);
         }
         _content.assign(s.begin(), s.end());
-        _used = s.length();
+        _size = s.length();
     }
     char* data() { return _content.data(); }
 };
