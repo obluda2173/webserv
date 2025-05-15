@@ -28,7 +28,8 @@ class CgiHandler : public IHandler {
     void _prepareExecParams(const HttpRequest& request, ExecParams& params);
     void _setupChildProcess(int pipefd[2]);
     void _setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& cfg);
-    void _parseCgiOutput(const std::string& cgiOutput, HttpResponse& resp);
+    std::string _trimWhiteSpace(const std::string& str);
+    void _cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp);
     ProcessState _checkProcess(CgiContext& ctx, int& status);
     bool _readPipeData(CgiContext& cgiCtx, bool drain);
     void _handleProcessExit(Connection* conn, CgiContext& ctx, int status);
