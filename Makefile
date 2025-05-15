@@ -18,8 +18,9 @@ CXXFLAGS := -std=c++98 -Wall -Werror -Wextra -Wshadow
 SRC_DIR := src
 BUILD_DIR := build
 RUN_DIR := run
-INCLUDES := -Iincludes
-SRC_FILES := 	$(SRC_DIR)/ConfigParser.cpp \
+INCLUDES := -Iincludes -Iincludes/Interfaces
+SRC_FILES := 	$(SRC_DIR)/Buffer.cpp \
+				$(SRC_DIR)/ConfigParser.cpp \
 				$(SRC_DIR)/ConfigParser2.cpp \
 				$(SRC_DIR)/Connection.cpp \
 				$(SRC_DIR)/ConnectionHandler.cpp \
