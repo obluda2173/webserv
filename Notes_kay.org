@@ -51,8 +51,8 @@ index       index.html index.htm
 - [ ] handle ClientHungUp
 * Uploadhandler
 ** TODO
-1. [ ] only reply with a response once!
-2. [ ] don't upload to same file simultaneously
+1. [ ] don't upload to same file simultaneously
+2. [ ] only reply with a response once!
 3. [ ] don't remove file (test for broken connection basically)
 
 ** headers

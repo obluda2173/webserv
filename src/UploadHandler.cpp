@@ -116,10 +116,10 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         _initUploadCxt(conn, req, cfg);
     }
 
+    uploadNewContent(conn);
+
     if (conn->uploadCtx.fileExisted)
         setResponse(conn->_response, 200, "OK", "", 0, NULL);
     else
         setResponse(conn->_response, 201, "Created", "", 0, NULL);
-
-    uploadNewContent(conn);
 }
