@@ -16,6 +16,8 @@ CXX := c++
 CXXFLAGS := -std=c++98 -Wall -Werror -Wextra -Wshadow
 
 SRC_DIR := src
+OBJ_DIR := obj
+
 BUILD_DIR := build
 RUN_DIR := run
 INCLUDES := -Iincludes -Iincludes/Interfaces
@@ -43,18 +45,22 @@ SRC_FILES := 	$(SRC_DIR)/Buffer.cpp \
 				$(SRC_DIR)/logging.cpp \
 				$(SRC_DIR)/utils.cpp
 
-
+OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 
 NAME := webserv
 
 all: $(NAME)
 
-$(NAME): $(SRC_FILES) $(RUN_DIR)/main.cpp
-	$(CXX) $(CXXFLAGS) $(SRC_FILES) $(RUN_DIR)/main.cpp -o $(NAME) $(INCLUDES)
+$(NAME): $(OBJ_FILES) $(RUN_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) $^ -o $(NAME) $(INCLUDES)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 unittest:
 	cmake -S . -B build && \
-	cmake --build build && \
+	cmake --build build -j$(nproc) && \
 	./build/run_unittests
 
 clean:
