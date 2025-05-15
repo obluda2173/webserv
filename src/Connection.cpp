@@ -6,8 +6,7 @@
 
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* sender)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _sender(sender) {
-    _readBuf = std::vector< char >(1024);
-    _readBufUsedSize = 0;
+    _readBuf = Buffer();
     _sendBuf = std::vector< char >(1024);
     _sendBufUsedSize = 0;
 }
@@ -53,11 +52,7 @@ void Connection::sendResponse() {
     _state = Reset;
 }
 
-void Connection::readIntoBuf() {
-    // Receive directly into string buffer
-    ssize_t r = recv(_fd, _readBuf.data() + _readBufUsedSize, _readBuf.size() - _readBufUsedSize, 0);
-    _readBufUsedSize += r;
-}
+void Connection::readIntoBuf() { _readBuf.recvNew(_fd); }
 
 void Connection::parseBuf() {
     if (_prsr->error() || _prsr->ready()) {
@@ -66,13 +61,11 @@ void Connection::parseBuf() {
         _state = ReadingHeaders;
     }
 
-    char* b = _readBuf.data();
     size_t count = 0;
-    while (count < _readBufUsedSize) {
-        _prsr->feed(b, 1);
+    while (count < _readBuf.getUsed()) {
+        _prsr->feed(_readBuf.data() + count, 1);
         if (_prsr->error() || _prsr->ready()) {
-            memmove(_readBuf.data(), b + 1, _readBufUsedSize - (count + 1));
-            _readBufUsedSize -= (count + 1);
+            _readBuf.advance(count + 1);
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
                 _state = Handling;
@@ -80,26 +73,18 @@ void Connection::parseBuf() {
                 _state = HandleBadRequest;
             return;
         }
-        b++;
         count++;
     }
-    _readBufUsedSize = 0;
+    _readBuf.clear();
 }
-void Connection::setReadBuf(std::string s) {
-    if (s.length() > _readBuf.size()) {
-        std::cout << "string is bigger than readBuf" << std::endl;
-        _exit(1);
-    }
-    _readBuf.assign(s.begin(), s.end());
-    _readBufUsedSize = s.length();
-}
+void Connection::setReadBuf(std::string s) { _readBuf.assign(s); } // only used for testing
+
+std::string Connection::getReadBuf() { return std::string(_readBuf.data(), _readBuf.getUsed()); }
 
 int Connection::getFileDes() const { return _fd; }
 
 Connection::STATE Connection::getState() const { return _state; }
 
 void Connection::setState(Connection::STATE state) { _state = state; };
-
-std::string Connection::getReadBuf() { return std::string(_readBuf.data(), _readBufUsedSize); }
 
 struct sockaddr_storage Connection::getAddr() const { return _addr; }

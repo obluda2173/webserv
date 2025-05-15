@@ -6,7 +6,6 @@
 #include "ResponseWriter.h"
 #include "RouteConfig.h"
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -40,6 +39,41 @@ struct CgiContext {
     CgiContext() : cgiPid(-1), cgiPipeFd(-1) {}
 };
 
+class Buffer {
+  private:
+    std::vector< char > _content;
+    size_t _used;
+
+  public:
+    Buffer() {
+        _content.resize(1024);
+        _used = 0;
+    }
+
+    void recvNew(int fd) {
+        ssize_t r = recv(fd, _content.data() + _used, _content.size() - _used, 0);
+        _used += r;
+        std::cout << _used << std::endl;
+    }
+
+    void advance(size_t count) {
+        memmove(_content.data(), _content.data() + count, _used - count);
+        _used -= count;
+    }
+
+    void clear() { _used = 0; }
+    size_t getUsed() const { return _used; }
+    void assign(std::string s) {
+        if (s.length() > _content.size()) {
+            std::cout << "string is bigger than readBuf" << std::endl;
+            _exit(1);
+        }
+        _content.assign(s.begin(), s.end());
+        _used = s.length();
+    }
+    char* data() { return _content.data(); }
+};
+
 class Connection {
   public:
     enum STATE { ReadingHeaders, Handling, HandleBadRequest, SendResponse, Reset, HandlingCgi };
@@ -51,14 +85,14 @@ class Connection {
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;
-    std::vector< char > _readBuf;
     std::vector< char > _sendBuf;
     size_t _sendBufUsedSize;
 
   public:
     UploadContext uploadCtx;
     CgiContext cgiCtx;
-    size_t _readBufUsedSize;
+    Buffer _readBuf;
+
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
     STATE getState() const;
