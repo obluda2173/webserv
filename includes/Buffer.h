@@ -1,8 +1,8 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include "ResponseWriter.h"
 #include "ISender.h"
+#include "ResponseWriter.h"
 #include <string>
 #include <sys/socket.h>
 #include <vector>
@@ -15,14 +15,10 @@ class Buffer {
   public:
     Buffer();
 
-    void writeNew(IResponseWriter* wrtr);
-
-    void recvNew(int fd);
-
+    void write(IResponseWriter* wrtr);
+    void recv(int fd);
     void send(ISender* sender, int fd);
-
     void advance(size_t count);
-
     void clear();
     size_t size() const;
     void assign(std::string s);

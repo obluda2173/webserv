@@ -5,21 +5,11 @@ Buffer::Buffer() {
     _size = 0;
 }
 
-void Buffer::writeNew(IResponseWriter* wrtr) {
-    size_t bytesWritten = wrtr->write(_content.data() + _size, _content.size() - _size);
-    _size += bytesWritten;
-}
+void Buffer::write(IResponseWriter* wrtr) { _size += wrtr->write(_content.data() + _size, _content.size() - _size); }
 
-void Buffer::recvNew(int fd) {
-    ssize_t r = recv(fd, _content.data() + _size, _content.size() - _size, 0);
-    _size += r;
-}
+void Buffer::recv(int fd) { _size += ::recv(fd, _content.data() + _size, _content.size() - _size, 0); }
 
-void Buffer::send(ISender* sender, int fd) {
-    size_t bytesSent = sender->_send(fd, _content.data(), _size);
-    if (bytesSent > 0)
-        advance(bytesSent);
-}
+void Buffer::send(ISender* sender, int fd) { advance(sender->_send(fd, _content.data(), _size)); }
 
 void Buffer::advance(size_t count) {
     memmove(_content.data(), _content.data() + count, _size - count);
