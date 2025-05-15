@@ -99,7 +99,7 @@ std::string CgiHandler::_trimWhiteSpace(const std::string& str) {
 void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp) {
     resp.statusCode = 200;
     resp.statusMessage = "OK";
-    resp.contentType = "text/html";
+    resp.contentType = mimeTypes[".html"];
     resp.contentLength = 0;
 
     size_t separatorSize = 4;
@@ -183,7 +183,6 @@ void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int statu
     } else if (ctx.cgiOutput.empty()) {
         setErrorResponse(conn->_response, 500, "Internal Error", ctx.cgiRouteConfig);
     } else {
-        // setResponse(conn->_response, 200, "OK", "text/php", ctx.cgiOutput.size(), new StringBodyProvider(ctx.cgiOutput));
         _cgiResponseSetup(ctx.cgiOutput, conn->_response);
     }
     conn->setState(Connection::SendResponse);
