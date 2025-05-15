@@ -63,10 +63,16 @@ bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const
 }
 
 bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-    struct stat statStruct;
     std::string path = (cfg.root + req.uri);
-    std::string dirPath;
 
+    if (_activeUploadPaths.find(path) != _activeUploadPaths.end()) {
+        setErrorResponse(conn->_response, 409, "Conflict", cfg);
+        return false;
+    }
+    _activeUploadPaths.insert(path);
+
+    struct stat statStruct;
+    std::string dirPath;
     bool exists = !stat(path.c_str(), &statStruct);
     if (exists) {
         if (S_ISREG(statStruct.st_mode)) {
