@@ -32,7 +32,7 @@ void Connection::sendResponse() {
     if (!_wrtr)
         _wrtr = new ResponseWriter(_response);
 
-    _sendBuf.writeNew(_wrtr);
+    _sendBuf.write(_wrtr);
 
     _sendBuf.send(_sender, _fd);
 
@@ -42,7 +42,7 @@ void Connection::sendResponse() {
     _state = Reset;
 }
 
-void Connection::readIntoBuf() { _readBuf.recvNew(_fd); }
+void Connection::readIntoBuf() { _readBuf.recv(_fd); }
 
 void Connection::parseBuf() {
     if (_prsr->error() || _prsr->ready()) {
