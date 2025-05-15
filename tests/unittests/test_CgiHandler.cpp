@@ -22,7 +22,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
                        {},
                        10000,
                        false,
-                       {{"php", "/usr/bin/php"}, {"py", "/usr/bin/python3"}}};
+                       {{"php", "/usr/bin/php-cgi"}, {"py", "/usr/bin/python3"}}};
     // IHandler* cgiHdlr = new CgiHandler();
     CgiHandler cgiHdlr;
 

@@ -50,10 +50,20 @@ class Buffer {
         _size = 0;
     }
 
+    void writeNew(IResponseWriter* wrtr) {
+        size_t bytesWritten = wrtr->write(_content.data() + _size, _content.size() - _size);
+        _size += bytesWritten;
+    }
+
     void recvNew(int fd) {
         ssize_t r = recv(fd, _content.data() + _size, _content.size() - _size, 0);
         _size += r;
-        std::cout << _size << std::endl;
+    }
+
+    void send(ISender* sender, int fd) {
+        size_t bytesSent = sender->_send(fd, _content.data(), _size);
+        if (bytesSent > 0)
+            advance(bytesSent);
     }
 
     void advance(size_t count) {
@@ -66,7 +76,7 @@ class Buffer {
     void assign(std::string s) {
         if (s.length() > _content.size()) {
             std::cout << "string is bigger than readBuf" << std::endl;
-            _exit(1);
+            return;
         }
         _content.assign(s.begin(), s.end());
         _size = s.length();
@@ -85,13 +95,15 @@ class Connection {
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;
-    std::vector< char > _sendBuf;
-    size_t _sendBufUsedSize;
+
+    // std::vector< char > _sendBuf;
+    // size_t _sendBufUsedSize;
 
   public:
     UploadContext uploadCtx;
     CgiContext cgiCtx;
     Buffer _readBuf;
+    Buffer _sendBuf;
 
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
