@@ -21,7 +21,8 @@ void Buffer::assign(std::string s) {
         std::cout << "string is bigger than readBuf" << std::endl;
         return;
     }
-    _content.assign(s.begin(), s.end());
+    for (size_t i = 0; i < s.length(); i++)
+        _content[i] = s[i];
     _size = s.length();
 }
 char* Buffer::data() { return _content.data(); }
