@@ -11,7 +11,7 @@ class UploadHandler : public IHandler {
   private:
     std::set< std::string > _activeUploadPaths;
     bool _validation(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
-    void _initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
+    bool _initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
     bool _validateContentLength(Connection* conn, const RouteConfig& cfg);
     bool _validateFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
     bool _validateDir(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);

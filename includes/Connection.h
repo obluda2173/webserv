@@ -14,12 +14,14 @@
 #include <unistd.h>
 
 typedef struct UploadContext {
+    enum STATE { Validation, Uploading, Finished };
     size_t bytesUploaded;
     size_t contentLength;
     std::ofstream* file;
     bool fileExisted;
-    std::string state;
-    UploadContext() : bytesUploaded(0), contentLength(0), file(NULL), fileExisted(false), state("") {}
+    UploadContext::STATE state;
+    UploadContext()
+        : bytesUploaded(0), contentLength(0), file(NULL), fileExisted(false), state(UploadContext::Validation) {}
 } UploadContext;
 
 struct CgiContext {

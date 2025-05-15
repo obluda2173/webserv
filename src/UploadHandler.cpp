@@ -1,4 +1,5 @@
 #include "UploadHandler.h"
+#include "Connection.h"
 #include "HttpRequest.h"
 #include "RouteConfig.h"
 #include "handlerUtils.h"
@@ -18,6 +19,7 @@ void UploadHandler::uploadNewContent(Connection* conn) {
         ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()),
                         ctx.contentLength - ctx.bytesUploaded);
         ctx.bytesUploaded = ctx.contentLength;
+        ctx.state = UploadContext::Finished;
     }
 }
 
@@ -104,39 +106,38 @@ bool UploadHandler::_validation(Connection* conn, const HttpRequest& req, const 
     return true;
 }
 
-void UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     UploadContext& ctx = conn->uploadCtx;
     ctx.file = new std::ofstream((cfg.root + req.uri).c_str(), std::ios::binary | std::ios::app);
     if (!ctx.file->is_open()) {
         std::cerr << "Failed to open file" << std::endl;
-        return;
+        return false;
     }
     std::stringstream ss(conn->_request.headers["content-length"]);
     ss >> ctx.contentLength;
+    return true;
 }
 
 void UploadHandler::handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-    if (conn->uploadCtx.state.empty()) {
+    if (conn->uploadCtx.state == UploadContext::Validation) {
         if (!_validation(conn, req, cfg))
             return;
-    }
-    conn->uploadCtx.state = "After Validation";
 
-    if (!conn->uploadCtx.file) {
-        // remove the file first and then add the new file
         std::remove((cfg.root + req.uri).c_str());
-        _initUploadCxt(conn, req, cfg);
+        if (!_initUploadCxt(conn, req, cfg)) {
+            setErrorResponse(conn->_response, 500, "Internal Server Error", cfg);
+            return;
+        }
+        conn->uploadCtx.state = UploadContext::Uploading;
     }
 
     uploadNewContent(conn);
 
-    std::string path = (cfg.root + req.uri);
-    if (conn->uploadCtx.bytesUploaded == conn->uploadCtx.contentLength) {
-        _activeUploadPaths.erase(path);
+    if (conn->uploadCtx.state == UploadContext::Finished) {
+        _activeUploadPaths.erase(cfg.root + req.uri);
+        if (conn->uploadCtx.fileExisted)
+            setResponse(conn->_response, 200, "OK", "", 0, NULL);
+        else
+            setResponse(conn->_response, 201, "Created", "", 0, NULL);
     }
-
-    if (conn->uploadCtx.fileExisted)
-        setResponse(conn->_response, 200, "OK", "", 0, NULL);
-    else
-        setResponse(conn->_response, 201, "Created", "", 0, NULL);
 }
