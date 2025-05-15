@@ -26,6 +26,7 @@ if(BUILD_TEST)
   target_link_libraries(${UNITTEST_EXECUTABLE} gtest gtest_main pthread gmock)
 
   target_include_directories(${UNITTEST_EXECUTABLE} PRIVATE "./includes")
+  target_include_directories(${UNITTEST_EXECUTABLE} PRIVATE "./includes/Interfaces/")
 
   include(GoogleTest)
   gtest_discover_tests(${UNITTEST_EXECUTABLE})
@@ -40,4 +41,5 @@ if(BUILD_MAIN)
 
   add_executable(${EXECUTABLE} ${SOURCES})
   target_include_directories(${EXECUTABLE} PRIVATE "./includes")
+  target_include_directories(${EXECUTABLE} PRIVATE "./includes/Interfaces/")
 endif()
