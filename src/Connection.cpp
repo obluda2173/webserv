@@ -62,7 +62,7 @@ void Connection::parseBuf() {
     }
 
     size_t count = 0;
-    while (count < _readBuf.getUsed()) {
+    while (count < _readBuf.size()) {
         _prsr->feed(_readBuf.data() + count, 1);
         if (_prsr->error() || _prsr->ready()) {
             _readBuf.advance(count + 1);
@@ -79,7 +79,7 @@ void Connection::parseBuf() {
 }
 void Connection::setReadBuf(std::string s) { _readBuf.assign(s); } // only used for testing
 
-std::string Connection::getReadBuf() { return std::string(_readBuf.data(), _readBuf.getUsed()); }
+std::string Connection::getReadBuf() { return std::string(_readBuf.data(), _readBuf.size()); }
 
 int Connection::getFileDes() const { return _fd; }
 

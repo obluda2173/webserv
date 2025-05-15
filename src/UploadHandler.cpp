@@ -10,9 +10,9 @@ UploadHandler::~UploadHandler() {}
 
 void UploadHandler::uploadNewContent(Connection* conn) {
     UploadContext& ctx = conn->uploadCtx;
-    if ((ctx.bytesUploaded + conn->_readBuf.getUsed()) < ctx.contentLength) {
-        ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()), conn->_readBuf.getUsed());
-        ctx.bytesUploaded += conn->_readBuf.getUsed();
+    if ((ctx.bytesUploaded + conn->_readBuf.size()) < ctx.contentLength) {
+        ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()), conn->_readBuf.size());
+        ctx.bytesUploaded += conn->_readBuf.size();
     } else {
         ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()),
                         ctx.contentLength - ctx.bytesUploaded);
