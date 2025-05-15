@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <sys/stat.h>
 
 UploadHandler::~UploadHandler() {}
 
@@ -43,30 +44,42 @@ bool UploadHandler::_validateContentLength(Connection* conn, const RouteConfig& 
     return true;
 }
 
+bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+    struct stat statStruct;
+    std::string path = (cfg.root + req.uri);
+    std::string dirPath;
+    dirPath = path.substr(0, path.find_last_of('/'));
+    bool exists = !stat(dirPath.c_str(), &statStruct);
+    if (exists) {
+        if (S_ISDIR(statStruct.st_mode)) {
+            conn->uploadCtx.fileExisted = false; // everything is fine
+            return true;
+        }
+        setErrorResponse(conn->_response, 409, "Conflict", cfg);
+        return false;
+    }
+    setErrorResponse(conn->_response, 404, "Not Found", cfg);
+    return false;
+}
+
 bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     struct stat statStruct;
     std::string path = (cfg.root + req.uri);
     std::string dirPath;
 
-    int val = stat(path.c_str(), &statStruct);
-    if (val == 0) {
-        if (S_ISREG(statStruct.st_mode))
-            conn->uploadCtx.fileExisted = 1; // everything is fine
-    } else {
-        dirPath = path.substr(0, path.find_last_of('/'));
-
-        if (!(stat(dirPath.c_str(), &statStruct) == 0 && S_ISDIR(statStruct.st_mode))) {
-            setErrorResponse(conn->_response, 404, "Not Found", cfg);
-            return false;
+    bool exists = !stat(path.c_str(), &statStruct);
+    if (exists) {
+        if (S_ISREG(statStruct.st_mode)) {
+            conn->uploadCtx.fileExisted = true; // everything is fine
+            return true;
         }
-        // if (path.find("notexistdir/existing.txt") != std::string::npos) {
-        //     setErrorResponse(conn->_response, 404, "Not Found", cfg);
-        //     return false;
-        // }
-
-        conn->uploadCtx.fileExisted = 0; // we need to creat a file
+        setErrorResponse(conn->_response, 409, "Conflict", cfg);
+        return false;
     }
-    return true;
+
+    if (_validateDir(conn, req, cfg))
+        return true;
+    return false;
 }
 
 bool UploadHandler::_validation(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
