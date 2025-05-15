@@ -51,6 +51,27 @@ TEST(UploadHdlrErrorTest, missingHeaders) {
     delete uploadHdlr;
 }
 
+TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
+    IHandler* uploadHdlr = new UploadHandler();
+    std::string filename = "doubleUpload.txt";
+
+    std::string body = getRandomString(1000);
+    Connection* conn1 = setupConnWithContentLength(filename, body.length());
+    Connection* conn2 = setupConnWithContentLength(filename, body.length());
+
+    conn1->setReadBuf(body.substr(0, 500));
+    uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}});
+
+    conn2->setReadBuf(body.substr(0, 500));
+    uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
+
+    EXPECT_EQ(409, conn2->_response.statusCode);
+    // EXPECT_EQ("Conflict", resp.statusMessage);
+    delete conn1;
+    delete conn2;
+    delete uploadHdlr;
+}
+
 struct UploadHdlrFileErrorsTestParams {
     std::string path;
     int wantStatusCode;
