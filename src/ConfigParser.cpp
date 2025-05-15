@@ -92,6 +92,8 @@ LocationConfig ConfigParser::_parseLocationContext(const Context& locationContex
             _parseErrorPage(*it, locationConfig.common);
         } else if (it->name == "cgi_ext") {
             _parseCgiExt(*it, locationConfig);
+        } else if (it->name == "return") {
+            _parseRedirection(*it, locationConfig);
         } else {
             throw std::runtime_error("Unknown directive in location context: " + it->name);
         }

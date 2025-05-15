@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // only run the following test
 
-    testing::GTEST_FLAG(filter) = "*CgiHandlerTest*";
+    // testing::GTEST_FLAG(filter) = "*CgiHandlerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParserTest*";
     // testing::GTEST_FLAG(filter) = "*DeleteHandler*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlr*";
@@ -50,5 +50,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "ServerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParser*";
     // testing::GTEST_FLAG(filter) = "*HandlerTest*";
+    testing::GTEST_FLAG(filter) = "*ServerConfig*";
     return RUN_ALL_TESTS();
 }

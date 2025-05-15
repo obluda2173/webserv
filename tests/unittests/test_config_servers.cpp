@@ -577,3 +577,20 @@ TEST_F(ServerConfigTest, ValidateInvalidCgi) {
                              "}\n"),
                  std::runtime_error);
 }
+
+TEST_F(ServerConfigTest, SimpleRedirectCheck) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen 80;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "    server_name example.com;\n"
+                                                   "    location /old {\n"
+                                                   "           return http://mysite.com/new;\n"
+                                                   "    }\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].locations[0].redirect, "http://mysite.com/new");
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
