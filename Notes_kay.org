@@ -42,6 +42,7 @@ index       index.html index.htm
 - [X] restrict config allowedMethods to GET, POST, DELETE
 - [X] insert Routing
 - [ ] make reset public on HttpParser
+- [ ] normalization of uri needs to be done before routing
 - [ ] test for requests with longer bodies
   - [ ] test for overlapping headers and body
   - [ ] make the read and send methods adjustable in buffer size
