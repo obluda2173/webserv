@@ -7,8 +7,7 @@
 Connection::Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* sender)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _prsr(prsr), _wrtr(NULL), _sender(sender) {
     _readBuf = Buffer();
-    _sendBuf = std::vector< char >(1024);
-    _sendBufUsedSize = 0;
+    _sendBuf = Buffer();
 }
 
 Connection::~Connection() {
@@ -33,18 +32,9 @@ void Connection::sendResponse() {
     if (!_wrtr)
         _wrtr = new ResponseWriter(_response);
 
-    // Writing new data
-    size_t bytesWritten = _wrtr->write(_sendBuf.data() + _sendBufUsedSize, _sendBuf.size() - _sendBufUsedSize);
-    _sendBufUsedSize += bytesWritten;
+    _sendBuf.writeNew(_wrtr);
 
-    // Sending data
-    size_t bytesSent = _sender->_send(_fd, _sendBuf.data(), _sendBufUsedSize);
-
-    // Update after sending
-    if (bytesSent > 0) {
-        memmove(_sendBuf.data(), _sendBuf.data() + bytesSent, _sendBufUsedSize - bytesSent);
-        _sendBufUsedSize -= bytesSent;
-    }
+    _sendBuf.send(_sender, _fd);
 
     if (_response.body && !_response.body->isDone())
         return;
