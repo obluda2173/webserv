@@ -97,9 +97,7 @@ class ConnHdlrTestWithOneConnection : public BaseConnHdlrTest< StubLogger, Param
     }
 };
 
-class ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited
-    : public BaseConnHdlrTest< StubLogger, ParamsVectorRequestsResponses > {
-    // special ReadSize
+class ConnHdlrTestAsyncMultipleConnections : public BaseConnHdlrTest< StubLogger, ParamsVectorRequestsResponses > {
     virtual void setupConnectionHandler() override {
         std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
