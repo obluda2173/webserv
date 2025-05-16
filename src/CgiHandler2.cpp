@@ -42,20 +42,31 @@ void CgiHandler::_replace(std::string& str, char what, char with) {
 }
 
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
-    _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
     _envStorage.push_back("SCRIPT_NAME=" + _path);
+    // PATH_INFO todo
+    // PATH_TRANSLATED todo
     _envStorage.push_back("QUERY_STRING=" + _query);
-    if (request.headers.count("content-length")) {
-        _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
+    // _envStorage.push_back("SERVER_NAME=" + serverConfig.serverNames[0]);
+    // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
+    _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
+    _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    _envStorage.push_back("SERVER_SOFTWARE=webserv/1.0");
+    _envStorage.push_back("REQUEST_URI=" + request.uri);
+
+    if (request.method == "POST") {
+        if (request.headers.count("content-length")) {
+            _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
+        } 
+        if (request.headers.count("content-type")) {
+            _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+        }
+    } else {
+        _envStorage.push_back("CONTENT_LENGTH=");
     }
-    if (request.headers.count("content-type")) {
-        _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
-    }
-    // RFC 3875 §4.1.18
-    for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); 
-         it != request.headers.end(); ++it) {
+
+    for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
+        if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") continue;
         std::string varName = "HTTP_" + _toUpper(it->first);
         _replace(varName, '-', '_');
         _envStorage.push_back(varName + "=" + it->second);
