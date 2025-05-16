@@ -29,7 +29,6 @@ class HttpParser : public IHttpParser {
     bool _headerLineValidation(const std::string& key, const std::string& value);
 
   public:
-    void resetPublic();
     HttpParser(ILogger& logger);
     HttpParser(size_t maxHeaderKeySize, size_t maxHeaderSize, ILogger& logger);
     ~HttpParser();

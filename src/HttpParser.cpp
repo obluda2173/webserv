@@ -80,13 +80,6 @@ void HttpParser::_reset() {
     _currentRequest = HttpRequest();
 }
 
-void HttpParser::resetPublic() {
-    _state = STATE_REQUEST_LINE;
-    _totalProcessedSize = 0;
-    _buffer.clear();
-    _currentRequest = HttpRequest();
-}
-
 void HttpParser::_parseBuffer() {
     while (_state != STATE_DONE && _state != STATE_ERROR) {
         std::string line;
