@@ -3,7 +3,7 @@
 #include "test_main.h"
 #include <gtest/gtest.h>
 
-TEST_F(ConnHdlrTestUpload, testUpload) {
+TEST_F(ConnHdlrTestStubUploadHdlrSimple, testUpload) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
@@ -35,18 +35,4 @@ TEST_F(ConnHdlrTestUpload, testUpload) {
                                "\r\n";
 
     ASSERT_EQ(wantResponse, gotResponse);
-    // std::cout << buffer << std::endl;
-    // buffer[r] = '\0';
-
-    // _ioNotifier->wait(&fd, &notif);
-    // std::cout << notif << std::endl;
-    // std::cout << fd << std::endl;
-    // while (notif == READY_TO_WRITE && fd != -1) {
-    //     _connHdlr->handleConnection(connfd, READY_TO_WRITE);
-    //     // char buffer[1025];
-    //     // recv(clientfd, &buffer[0], 1024, 0);
-    //     // buffer[r] = '\0';
-    //     // gotResponse += buffer;
-    //     _ioNotifier->wait(&fd, &notif);
-    // }
 }

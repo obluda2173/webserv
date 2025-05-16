@@ -1,6 +1,7 @@
 #ifndef TEST_CONNECTIONHANDLERTESTFIXTURE_H
 #define TEST_CONNECTIONHANDLERTESTFIXTURE_H
 
+#include "Connection.h"
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
 #include "HttpResponse.h"
@@ -180,7 +181,7 @@ class ConnHdlrTestWithBigResponseBody : public BaseConnHdlrTest< StubLogger, int
     }
 };
 
-class StubUploadHandler : public IHandler {
+class StubUploadHdlrSimple : public IHandler {
   public:
     std::string _uploaded;
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
@@ -195,11 +196,58 @@ class StubUploadHandler : public IHandler {
     }
 };
 
-class ConnHdlrTestUpload : public BaseConnHdlrTest< StubLogger, int > {
+class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, int > {
   public:
-    StubUploadHandler* _uploadHdlr;
+    StubUploadHdlrSimple* _uploadHdlr;
     virtual void setupConnectionHandler() override {
-        _uploadHdlr = new StubUploadHandler();
+        _uploadHdlr = new StubUploadHdlrSimple();
+        std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
+        IRouter* router = new Router(hdlrs);
+        router->add("test.com", "", "POST", {});
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+    }
+
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int connfd;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
+    }
+};
+
+class StubUploadHdlrAdvanced : public IHandler {
+  private:
+    int _nbrOfHandleCallsUntilUploadComplete;
+    int _nbrOfHandleCalls;
+
+  public:
+    StubUploadHdlrAdvanced(int nbrOfHandleCallsUntilUploadComplete)
+        : _nbrOfHandleCallsUntilUploadComplete(nbrOfHandleCallsUntilUploadComplete), _nbrOfHandleCalls(0) {}
+    std::string _uploaded;
+    virtual void handle(Connection* conn, const HttpRequest&, const RouteConfig&) {
+        if (_nbrOfHandleCalls < _nbrOfHandleCallsUntilUploadComplete) {
+            return;
+        }
+        conn->uploadCtx.state = UploadContext::UploadFinished;
+        _uploaded += conn->getReadBuf();
+        HttpResponse& resp = conn->_response;
+        resp.statusCode = 200;
+        resp.statusMessage = "OK";
+        resp.version = "HTTP/1.1";
+        conn->setState(Connection::SendResponse);
+    }
+};
+
+class ConnHdlrStubUploadHdlrAdvanced : public BaseConnHdlrTest< StubLogger, int > {
+  public:
+    StubUploadHdlrAdvanced* _uploadHdlr;
+    virtual void setupConnectionHandler() override {
+        _uploadHdlr = new StubUploadHdlrAdvanced(3);
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {});
