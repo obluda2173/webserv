@@ -19,8 +19,8 @@
 
 #define CONNECTION_READSIZE 1024
 
-template <typename LoggerType, typename ParamType = int>
-class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
+template < typename LoggerType, typename ParamType = int >
+class BaseConnHdlrTest : public ::testing::TestWithParam< ParamType > {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
@@ -29,10 +29,10 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
     int _serverfd;
     struct addrinfo* _svrAddrInfo;
     int _nbrConns;
-    std::vector<std::pair<int, int>> _clientFdsAndConnFds;
+    std::vector< std::pair< int, int > > _clientFdsAndConnFds;
 
   public:
-    BasConnHdlrTest() : _openFdsBegin(countOpenFileDescriptors()) {}
+    BaseConnHdlrTest() : _openFdsBegin(countOpenFileDescriptors()) {}
     void SetUp() override {
         _openFdsBegin = countOpenFileDescriptors();
         _logger = new LoggerType();
@@ -43,7 +43,7 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
     }
 
     virtual void setupConnectionHandler() {
-        std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
+        std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
@@ -69,7 +69,7 @@ class BasConnHdlrTest : public ::testing::TestWithParam<ParamType> {
     }
 };
 
-class ConnHdlrTestWithMockLoggerIPv6 : public BasConnHdlrTest<MockLogger> {
+class ConnHdlrTestWithMockLoggerIPv6 : public BaseConnHdlrTest< MockLogger > {
     void setupServer() override {
         getAddrInfoHelper(NULL, "8080", AF_INET6, &_svrAddrInfo);
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
@@ -79,11 +79,11 @@ class ConnHdlrTestWithMockLoggerIPv6 : public BasConnHdlrTest<MockLogger> {
 };
 
 struct ParamsVectorRequestsResponses {
-    std::vector<std::string> requests;
-    std::vector<std::string> wantResponses;
+    std::vector< std::string > requests;
+    std::vector< std::string > wantResponses;
 };
 
-class ConnHdlrTestWithOneConnection : public BasConnHdlrTest<StubLogger, ParamsVectorRequestsResponses> {
+class ConnHdlrTestWithOneConnection : public BaseConnHdlrTest< StubLogger, ParamsVectorRequestsResponses > {
     virtual void setupClientConnections() override {
         int clientfd;
         int connfd;
@@ -93,15 +93,15 @@ class ConnHdlrTestWithOneConnection : public BasConnHdlrTest<StubLogger, ParamsV
             << "connect: " << std::strerror(errno) << std::endl;
         connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
     }
 };
 
 class ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited
-    : public BasConnHdlrTest<StubLogger, ParamsVectorRequestsResponses> {
+    : public BaseConnHdlrTest< StubLogger, ParamsVectorRequestsResponses > {
     // special ReadSize
     virtual void setupConnectionHandler() override {
-        std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
+        std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
@@ -119,13 +119,13 @@ class ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited
                 << "connect: " << std::strerror(errno) << std::endl;
             connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
             fcntl(clientfd, F_SETFL, O_NONBLOCK);
-            _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+            _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
             port++;
         }
     }
 };
 
-class ConnHdlrTestWithIntegerAsParameter : public BasConnHdlrTest<StubLogger> {
+class ConnHdlrTestWithIntegerAsParameter : public BaseConnHdlrTest< StubLogger > {
     virtual void setupClientConnections() override {
         int clientfd;
         int connfd;
@@ -135,7 +135,7 @@ class ConnHdlrTestWithIntegerAsParameter : public BasConnHdlrTest<StubLogger> {
             << "connect: " << std::strerror(errno) << std::endl;
         connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
     }
 };
 
@@ -158,12 +158,12 @@ class BigRespBodyGetHandler : public IHandler {
     };
 };
 
-class ConnHdlrTestWithBigResponseBody : public BasConnHdlrTest<StubLogger, int> {
+class ConnHdlrTestWithBigResponseBody : public BaseConnHdlrTest< StubLogger, int > {
   public:
     std::string _body;
     virtual void setupConnectionHandler() override {
         _body = getRandomString(10000);
-        std::map<std::string, IHandler*> hdlrs = {{"GET", new BigRespBodyGetHandler(_body)}};
+        std::map< std::string, IHandler* > hdlrs = {{"GET", new BigRespBodyGetHandler(_body)}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
@@ -178,7 +178,7 @@ class ConnHdlrTestWithBigResponseBody : public BasConnHdlrTest<StubLogger, int> 
             << "connect: " << std::strerror(errno) << std::endl;
         connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
     }
 };
 
@@ -197,12 +197,12 @@ class StubUploadHandler : public IHandler {
     }
 };
 
-class ConnHdlrTestUpload : public BasConnHdlrTest<StubLogger, int> {
+class ConnHdlrTestUpload : public BaseConnHdlrTest< StubLogger, int > {
   public:
     StubUploadHandler* _uploadHdlr;
     virtual void setupConnectionHandler() override {
         _uploadHdlr = new StubUploadHandler();
-        std::map<std::string, IHandler*> hdlrs = {{"POST", _uploadHdlr}};
+        std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {});
         _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
@@ -217,7 +217,7 @@ class ConnHdlrTestUpload : public BasConnHdlrTest<StubLogger, int> {
             << "connect: " << std::strerror(errno) << std::endl;
         connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
     }
 };
 
