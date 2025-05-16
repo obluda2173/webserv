@@ -141,3 +141,39 @@ INSTANTIATE_TEST_SUITE_P(first, UploadHdlrTest,
                                          UploadHandlerTestParams{{"1.txt"}, {1000}, {1000}, 1000, 20000},
                                          UploadHandlerTestParams{
                                              {"1.txt", "2.txt"}, {1000, 1000}, {444, 555}, 10, 20000}));
+
+TEST(UploadHdlrTest, testTempFileExist) {
+    std::string filename = "existing.txt";
+    size_t pos = 0;
+    size_t batchSize = 10;
+    
+    size_t contentLength = 100;
+    std::string body = getRandomString(contentLength);
+    Connection* conn = setupConnWithContentLength(filename, contentLength);
+
+    IHandler* uploadHdlr = new UploadHandler();
+    while (pos < contentLength) {
+        if (pos <= contentLength) {
+            conn->setReadBuf(body.substr(pos, batchSize));
+            uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+            struct stat statStruct;
+            bool exists = !stat((ROOT + PREFIX + filename + ".temp").c_str(), &statStruct);
+            if (pos < contentLength - batchSize)
+                EXPECT_EQ(exists, true);
+            else
+                EXPECT_EQ(exists, false);
+        }
+        pos += batchSize;
+    }
+
+    HttpResponse resp = conn->_response;
+    delete conn; // need to delete conn to close the file and write to disk
+    std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
+    EXPECT_EQ(body.length(), gotFile1.length());
+    EXPECT_EQ(body, gotFile1);
+    EXPECT_EQ(201, resp.statusCode);
+    EXPECT_EQ("Created", resp.statusMessage);
+
+    removeFile(ROOT + PREFIX + filename);
+    delete uploadHdlr;
+}
