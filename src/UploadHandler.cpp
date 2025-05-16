@@ -146,6 +146,8 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
             break; // will fallthrough
         case UploadContext::Uploading:
             uploadNewContent(conn);
+            // this part is just a short test as a proof that shows cfg.root + req.uri + ".temp" really existed
+            // (sorry kay, I connot come up with a regular test so I found this stupid way)
             // {
             //     struct stat statStruct;
             //     bool exists = !stat((cfg.root + req.uri + ".temp").c_str(), &statStruct);
