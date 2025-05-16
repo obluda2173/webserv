@@ -1,16 +1,16 @@
 #include "test_ConnectionHandlerFixture.h"
 
-TEST_P(ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited, sendMsgsAsync) {
+TEST_P(ConnHdlrTestAsyncMultipleConnections, sendMsgsAsync) {
     char buffer[1024];
     struct ParamsVectorRequestsResponses params = GetParam();
-    std::vector<std::string> requests = params.requests;
-    std::vector<std::string> wantResponses = params.wantResponses;
+    std::vector< std::string > requests = params.requests;
+    std::vector< std::string > wantResponses = params.wantResponses;
 
     // sending
     int batchSize = 3;
     while (!allZero(requests)) {
         int count = 0;
-        for (std::vector<std::string>::iterator it = requests.begin(); it != requests.end(); it++) {
+        for (std::vector< std::string >::iterator it = requests.begin(); it != requests.end(); it++) {
             if ((*it).length() == 0) {
                 count++;
                 continue;
@@ -49,7 +49,7 @@ TEST_P(ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited, sendMsgsAsync) {
     }
 }
 
-INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestAsyncMultipleConnectionsReadSizeLimited,
+INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestAsyncMultipleConnections,
                          ::testing::Values(ParamsVectorRequestsResponses{
                              {"GET \r\n", "GET /ping HTTP/1.1\r\n"
                                           "Host: test.com\r\n"

@@ -20,15 +20,14 @@
 - [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
 * TODO
 ** overall
-- [ ] build the server with the config and the Router
+- [X] build the server with the config and the Router
 ** listener
 - [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
 - [ ] ioNotifier.wait fills up multiples descriptors and notifications
 ** connection Handling (architecture)
 - [ ] BrokenConnection just removes the connection
   - [ ] check how ClientHungUp affects the behavior
-- [ ] probably change IHandler handle interface (add ConnectionInfo to it)
-- [ ] check UploadHandler behavior of sending the response
+- [X] probably change IHandler handle interface (add ConnectionInfo to it)
 
 * notes configuration
 - [X] change throwing of std::runtime_error to something that makes sense
@@ -41,25 +40,20 @@ index       index.html index.htm
 - [X] talk to Eric about oneMB const
 - [X] restrict config allowedMethods to GET, POST, DELETE
 - [X] insert Routing
-- [ ] make reset public on HttpParser
+- [X] make reset public on HttpParser
 - [ ] normalization of uri needs to be done before routing
-- [-] test for requests with longer bodies
-  - [ ] test for overlapping headers and body
-  - [ ] test for long responses where sent needs to happen more than once
+- [ ] handle ClientHungUp
+- [X] test for requests with longer bodies
+  - [X] test for long responses where sent needs to happen more than once
   - [X] make the read and send methods adjustable in buffer size
   - [X] rename to _headersBuf and _bodyBuf
-- [ ] handle ClientHungUp
 * Uploadhandler
 ** TODO
-1. [ ] don't upload to same file simultaneously
+1. [X] don't upload to same file simultaneously
 2. [ ] only reply with a response once!
 3. [ ] don't remove file (test for broken connection basically)
+4. [ ] test for overlapping uploadBody and headers of following request
 
-** headers
-1. Transfer-Encoding and Content-Length
-   - If no Content-Length, then Transfer-Encoding needs to be chunked (and only chunked)
-   - if no Transfer-encoding, then Content-Length needs to be set
-2.
 * httpParser
-- [ ] validation Accept to rigid
-- [ ] validation Accept-encoding to rigid
+- [X] validation Accept to rigid
+- [X] validation Accept-encoding to rigid
