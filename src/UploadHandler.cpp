@@ -13,12 +13,13 @@ UploadHandler::~UploadHandler() {}
 void UploadHandler::uploadNewContent(Connection* conn) {
     UploadContext& ctx = conn->uploadCtx;
     if ((ctx.bytesUploaded + conn->_readBuf.size()) < ctx.contentLength) {
-        ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()), conn->_readBuf.size());
+        ctx.file->write(reinterpret_cast< const char* >(conn->_readBuf.data()), conn->_readBuf.size());
         ctx.bytesUploaded += conn->_readBuf.size();
+        conn->_readBuf.clear();
     } else {
-        ctx.file->write(reinterpret_cast< const char* >(conn->getReadBuf().data()),
-                        ctx.contentLength - ctx.bytesUploaded);
+        ctx.file->write(reinterpret_cast< const char* >(conn->_readBuf.data()), ctx.contentLength - ctx.bytesUploaded);
         ctx.bytesUploaded = ctx.contentLength;
+        conn->_readBuf.clear();
     }
 }
 
