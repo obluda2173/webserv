@@ -43,11 +43,11 @@ index       index.html index.htm
 - [X] insert Routing
 - [ ] make reset public on HttpParser
 - [ ] normalization of uri needs to be done before routing
-- [ ] test for requests with longer bodies
+- [-] test for requests with longer bodies
   - [ ] test for overlapping headers and body
-  - [ ] make the read and send methods adjustable in buffer size
-  - [ ] rename to _headersBuf and _bodyBuf
   - [ ] test for long responses where sent needs to happen more than once
+  - [X] make the read and send methods adjustable in buffer size
+  - [X] rename to _headersBuf and _bodyBuf
 - [ ] handle ClientHungUp
 * Uploadhandler
 ** TODO
