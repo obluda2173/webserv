@@ -43,11 +43,11 @@ void CgiHandler::_replace(std::string& str, char what, char with) {
 
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + _path);
-    // PATH_INFO todo
-    // PATH_TRANSLATED todo
+    _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
+    _envStorage.push_back("PATH_INFO=" + _path);
+    _envStorage.push_back("PATH_TRANSLATED=" + _path);
     _envStorage.push_back("QUERY_STRING=" + _query);
-    // _envStorage.push_back("SERVER_NAME=" + serverConfig.serverNames[0]);
+    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : ""));
     // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
     _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
