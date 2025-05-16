@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*CgiHandlerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParserTest*";
     // testing::GTEST_FLAG(filter) = "*DeleteHandler*";
-    testing::GTEST_FLAG(filter) = "*UploadHdlrTest*";
+    testing::GTEST_FLAG(filter) = "*UploadHdlr*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlrFileErrorsTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestUpload*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestResend*";

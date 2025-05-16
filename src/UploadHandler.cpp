@@ -74,16 +74,18 @@ bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, cons
     std::string path = (cfg.root + req.uri);
     bool exists = !stat(path.c_str(), &statStruct);
     if (exists) {
-        if (S_ISREG(statStruct.st_mode)) {
-            conn->uploadCtx.fileExisted = true; // everything is fine
-            if (access(path.c_str(), W_OK) == -1) {
-                setErrorResponse(conn->_response, 403, "Forbidden", cfg);
-                return false;
-            }
-            return true;
+        if (!S_ISREG(statStruct.st_mode)) {
+            setErrorResponse(conn->_response, 409, "Conflict", cfg); // i.e. if the file is a directory
+            return false;
         }
-        setErrorResponse(conn->_response, 409, "Conflict", cfg);
-        return false;
+
+        if (access(path.c_str(), W_OK) == -1) {
+            setErrorResponse(conn->_response, 403, "Forbidden", cfg);
+            return false;
+        }
+
+        conn->uploadCtx.fileExisted = true; // everything is fine
+        return true;
     }
 
     if (_validateDir(conn, req, cfg))
