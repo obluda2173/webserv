@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 typedef struct UploadContext {
-    enum STATE { Validation, Uploading, UploadFinished };
+    enum STATE { Validation, Initialising, Uploading, UploadFinished };
     size_t bytesUploaded;
     size_t contentLength;
     std::ofstream* file;
