@@ -51,8 +51,9 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
     _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    _envStorage.push_back("SERVER_SOFTWARE=webserv/1.0");
     _envStorage.push_back("REQUEST_URI=" + request.uri);
+    // REMOTE_ADDR
+    // REMOTE_HOST
 
     if (request.method == "POST") {
         if (request.headers.count("content-length")) {
