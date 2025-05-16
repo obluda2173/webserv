@@ -55,6 +55,10 @@ bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const
     if (exists) {
         if (S_ISDIR(statStruct.st_mode)) {
             conn->uploadCtx.fileExisted = false; // everything is fine
+            // if (access(dirPath.c_str(), W_OK) == -1) {
+            //     setErrorResponse(conn->_response, 403, "Forbidden", cfg);
+            //     return false;
+            // }
             return true;
         }
         setErrorResponse(conn->_response, 409, "Conflict", cfg);
@@ -72,6 +76,10 @@ bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, cons
     if (exists) {
         if (S_ISREG(statStruct.st_mode)) {
             conn->uploadCtx.fileExisted = true; // everything is fine
+            if (access(path.c_str(), W_OK) == -1) {
+                setErrorResponse(conn->_response, 403, "Forbidden", cfg);
+                return false;
+            }
             return true;
         }
         setErrorResponse(conn->_response, 409, "Conflict", cfg);

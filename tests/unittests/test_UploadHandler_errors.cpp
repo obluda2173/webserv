@@ -114,7 +114,10 @@ TEST_P(UploadHdlrFileErrorsTest, filePathNotExist) {
 }
 
 INSTANTIATE_TEST_SUITE_P(fileErrorTests, UploadHdlrFileErrorsTest,
-                         ::testing::Values(UploadHdlrFileErrorsTestParams{"existing/notExisting.txt", 409, "Conflict"},
+                         ::testing::Values(
+                                        //    UploadHdlrFileErrorsTestParams{"dirCannotOpen/notExisting.txt", 403, "Forbidden"},
+                                           UploadHdlrFileErrorsTestParams{"existDir/fileConnotOpen.txt", 403, "Forbidden"},
+                                           UploadHdlrFileErrorsTestParams{"existing/notExisting.txt", 409, "Conflict"},
                                            UploadHdlrFileErrorsTestParams{"directory", 409, "Conflict"},
                                            UploadHdlrFileErrorsTestParams{"notexistdir/existing.txt", 404, "Not Found"},
                                            UploadHdlrFileErrorsTestParams{getRandomString(10) + "/existing.txt", 404,
