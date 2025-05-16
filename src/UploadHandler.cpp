@@ -110,6 +110,7 @@ bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
     ctx.file = new std::ofstream((cfg.root + req.uri).c_str(), std::ios::binary | std::ios::app);
     if (!ctx.file->is_open()) {
         std::cerr << "Failed to open file" << std::endl;
+        setErrorResponse(conn->_response, 500, "Internal Server Error", cfg);
         return false;
     }
     std::stringstream ss(conn->_request.headers["content-length"]);
@@ -119,22 +120,24 @@ bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
 
 void UploadHandler::handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     while (true) {
-        switch (conn->uploadCtx.state) {
+        UploadContext& uploadCtx = conn->uploadCtx;
+        switch (uploadCtx.state) {
         case UploadContext::Validation:
             if (!_validation(conn, req, cfg))
                 return;
+            uploadCtx.state = UploadContext::Initialising;
+            break; // will fallthrough
+        case UploadContext::Initialising:
             std::remove((cfg.root + req.uri).c_str());
-            if (!_initUploadCxt(conn, req, cfg)) {
-                setErrorResponse(conn->_response, 500, "Internal Server Error", cfg);
+            if (!_initUploadCxt(conn, req, cfg))
                 return;
-            }
-            conn->uploadCtx.state = UploadContext::Uploading;
+            uploadCtx.state = UploadContext::Uploading;
             break; // will fallthrough
         case UploadContext::Uploading:
             uploadNewContent(conn);
-            if (conn->uploadCtx.bytesUploaded < conn->uploadCtx.contentLength)
+            if (uploadCtx.bytesUploaded < uploadCtx.contentLength)
                 return;
-            conn->uploadCtx.state = UploadContext::UploadFinished;
+            uploadCtx.state = UploadContext::UploadFinished;
             break; // will fallthrough
         case UploadContext::UploadFinished:
             _activeUploadPaths.erase(cfg.root + req.uri);
