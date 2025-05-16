@@ -45,12 +45,6 @@ void Connection::sendResponse() {
 void Connection::readIntoBuf() { _readBuf.recv(_fd); }
 
 void Connection::parseBuf() {
-    if (_prsr->error() || _prsr->ready()) {
-        std::cout << "resetting in parseBuf" << std::endl;
-        _prsr->resetPublic();
-        _state = ReadingHeaders;
-    }
-
     size_t count = 0;
     while (count < _readBuf.size()) {
         _prsr->feed(_readBuf.data() + count, 1);
