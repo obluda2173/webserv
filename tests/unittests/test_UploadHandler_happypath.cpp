@@ -70,6 +70,38 @@ TEST(UploadHdlrTest, changeFileExisting) {
     delete uploadHdlr;
 }
 
+TEST(UploadHdlrTest2, uploading) {
+    IHandler* uploadHdlr = new UploadHandler();
+    int contentLength = 100;
+    std::string filename = "1.txt";
+    std::string body = getRandomString(contentLength);
+    Connection* conn = setupConnWithContentLength(filename, contentLength);
+    size_t pos = 0;
+    size_t batchSize = 10;
+    while (conn->uploadCtx.state != UploadContext::UploadFinished) {
+        conn->_readBuf.assign(body.substr(pos, batchSize));
+        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+        EXPECT_EQ(conn->_readBuf.size(), 0);
+        pos += batchSize;
+    }
+    delete uploadHdlr;
+
+    HttpResponse resp = conn->_response;
+    delete conn;
+    std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
+    EXPECT_EQ(body.length(), gotFile1.length());
+    EXPECT_EQ(body, gotFile1);
+    EXPECT_EQ(201, resp.statusCode);
+    EXPECT_EQ("Created", resp.statusMessage);
+
+    removeFile(ROOT + PREFIX + filename);
+}
+
+// these were the first tests
+// The way that the UploadHandler is used in these tests is not "correct".
+// Still they make sure that the right thing is saved into the files, especially it doesn't write more into than it
+// should. The UploadHdlrTest2 are the tests representing the Usage of the UploadHdlrTest. I.e. they are testing that
+// the _readBuf is set
 TEST_P(UploadHdlrTest, concurrentUploadsParam) {
     IHandler* uploadHdlr = new UploadHandler();
     size_t pos = 0;

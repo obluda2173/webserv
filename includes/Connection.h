@@ -44,9 +44,6 @@ class Connection {
     IResponseWriter* _wrtr;
     ISender* _sender;
 
-    // std::vector< char > _sendBuf;
-    // size_t _sendBufUsedSize;
-
   public:
     UploadContext uploadCtx;
     CgiContext cgiCtx;
