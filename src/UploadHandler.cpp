@@ -53,16 +53,16 @@ bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const
     dirPath = path.substr(0, path.find_last_of('/'));
     bool exists = !stat(dirPath.c_str(), &statStruct);
     if (exists) {
-        if (S_ISDIR(statStruct.st_mode)) {
-            conn->uploadCtx.fileExisted = false; // everything is fine
-            // if (access(dirPath.c_str(), W_OK) == -1) {
-            //     setErrorResponse(conn->_response, 403, "Forbidden", cfg);
-            //     return false;
-            // }
-            return true;
+        if (!S_ISDIR(statStruct.st_mode)) {
+            setErrorResponse(conn->_response, 409, "Conflict", cfg);
+            return false;
         }
-        setErrorResponse(conn->_response, 409, "Conflict", cfg);
-        return false;
+        conn->uploadCtx.fileExisted = false; // everything is fine
+        if (access(dirPath.c_str(), W_OK) == -1) {
+            setErrorResponse(conn->_response, 403, "Forbidden", cfg);
+            return false;
+        }
+        return true;
     }
     setErrorResponse(conn->_response, 404, "Not Found", cfg);
     return false;
