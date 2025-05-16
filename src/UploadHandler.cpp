@@ -118,7 +118,7 @@ bool UploadHandler::_validation(Connection* conn, const HttpRequest& req, const 
 
 bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     UploadContext& ctx = conn->uploadCtx;
-    ctx.file = new std::ofstream((cfg.root + req.uri).c_str(), std::ios::binary | std::ios::app);
+    ctx.file = new std::ofstream((cfg.root + req.uri + ".temp").c_str(), std::ios::binary | std::ios::app);
     if (!ctx.file->is_open()) {
         std::cerr << "Failed to open file" << std::endl;
         setErrorResponse(conn->_response, 500, "Internal Server Error", cfg);
@@ -139,23 +139,33 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
             uploadCtx.state = UploadContext::Initialising;
             break; // will fallthrough
         case UploadContext::Initialising:
-            std::remove((cfg.root + req.uri).c_str());
+            // std::remove((cfg.root + req.uri).c_str());
             if (!_initUploadCxt(conn, req, cfg))
                 return;
             uploadCtx.state = UploadContext::Uploading;
             break; // will fallthrough
         case UploadContext::Uploading:
             uploadNewContent(conn);
+            // {
+            //     struct stat statStruct;
+            //     bool exists = !stat((cfg.root + req.uri + ".temp").c_str(), &statStruct);
+            //     std::cout << "-------------------------------" << exists << "-------------------------------" << std::endl;
+            // }
             if (uploadCtx.bytesUploaded < uploadCtx.contentLength)
                 return;
             uploadCtx.state = UploadContext::UploadFinished;
             break; // will fallthrough
         case UploadContext::UploadFinished:
             _activeUploadPaths.erase(cfg.root + req.uri);
-            if (conn->uploadCtx.fileExisted)
+            if (conn->uploadCtx.fileExisted) {
+                std::remove((cfg.root + req.uri).c_str());
+                rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
                 setResponse(conn->_response, 200, "OK", "", 0, NULL);
-            else
+            }
+            else {
+                rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
                 setResponse(conn->_response, 201, "Created", "", 0, NULL);
+            }
             return;
         }
     }
