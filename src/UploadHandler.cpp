@@ -129,6 +129,26 @@ bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
     return true;
 }
 
+void UploadHandler::_renameOrRemoveFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+    if (conn->uploadCtx.fileExisted) {
+        std::remove((cfg.root + req.uri).c_str());
+        rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
+        setResponse(conn->_response, 200, "OK", "", 0, NULL);
+    }
+    else {
+        rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
+        setResponse(conn->_response, 201, "Created", "", 0, NULL);
+    }
+}
+
+void testProof(const HttpRequest& req, const RouteConfig& cfg) {
+    // this part is just a short test as a proof that shows cfg.root + req.uri + ".temp" really existed
+    // (sorry kay, I connot come up with a regular test so I found this stupid way)
+        struct stat statStruct;
+        bool exists = !stat((cfg.root + req.uri + ".temp").c_str(), &statStruct);
+        std::cout << "-------------------------------" << exists << "-------------------------------" << std::endl;
+}
+
 void UploadHandler::handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     while (true) {
         UploadContext& uploadCtx = conn->uploadCtx;
@@ -146,28 +166,14 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
             break; // will fallthrough
         case UploadContext::Uploading:
             uploadNewContent(conn);
-            // this part is just a short test as a proof that shows cfg.root + req.uri + ".temp" really existed
-            // (sorry kay, I connot come up with a regular test so I found this stupid way)
-            // {
-            //     struct stat statStruct;
-            //     bool exists = !stat((cfg.root + req.uri + ".temp").c_str(), &statStruct);
-            //     std::cout << "-------------------------------" << exists << "-------------------------------" << std::endl;
-            // }
+            // testProof(req, cfg);
             if (uploadCtx.bytesUploaded < uploadCtx.contentLength)
                 return;
             uploadCtx.state = UploadContext::UploadFinished;
             break; // will fallthrough
         case UploadContext::UploadFinished:
             _activeUploadPaths.erase(cfg.root + req.uri);
-            if (conn->uploadCtx.fileExisted) {
-                std::remove((cfg.root + req.uri).c_str());
-                rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
-                setResponse(conn->_response, 200, "OK", "", 0, NULL);
-            }
-            else {
-                rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
-                setResponse(conn->_response, 201, "Created", "", 0, NULL);
-            }
+            _renameOrRemoveFile(conn, req, cfg);
             return;
         }
     }

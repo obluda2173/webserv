@@ -16,6 +16,7 @@ class UploadHandler : public IHandler {
     bool _validateFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
     bool _validateDir(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
     bool _validateNotActive(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
+    void _renameOrRemoveFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg);
 
   public:
     ~UploadHandler();
