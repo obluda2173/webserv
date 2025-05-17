@@ -10,3 +10,4 @@ log.txt
 /sockets_tryout/a.out
 /sockets_tryout/showip
 /obj/
+/tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt

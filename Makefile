@@ -58,10 +58,17 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-unittest:
+unittest: prepare_unittests
 	cmake -S . -B build && \
 	cmake --build build -j$(nproc) && \
 	./build/run_unittests
+
+prepare_unittests:
+	@mkdir tests/unittests/test_files/UploadHandler/uploads/dirCannotOpen || \
+	chmod 000 tests/unittests/test_files/UploadHandler/uploads/dirCannotOpen
+
+	@touch tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt || \
+	chmod 000 tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt
 
 clean:
 	rm -rf .cache
