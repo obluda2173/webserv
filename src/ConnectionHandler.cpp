@@ -91,6 +91,11 @@ void ConnectionHandler::_handleState(Connection* conn) {
         case Connection::Handling:
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = _router->match(conn->getRequest());
+            if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
+                conn->setState(Connection::SendResponse);
+                setErrorResponse(conn->_response, 404, "Not Found", {});
+                break;
+            }
             route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
