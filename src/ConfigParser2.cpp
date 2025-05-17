@@ -77,6 +77,13 @@ void ConfigParser::_parseCgiExt(const Directive& directive, LocationConfig& conf
     config.cgi.insert(std::pair< std::string, std::string >(directive.args[0], directive.args[1]));
 }
 
+void ConfigParser::_parseRedirection(const Directive& directive, LocationConfig& config) {
+    if (directive.args.size() != 1) {
+        throw std::runtime_error("return requires exactly one argument");
+    }
+    config.redirect = directive.args[0];
+}
+
 void ConfigParser::_parseRoot(const Directive& directive, CommonConfig& config) {
     if (directive.args.size() != 1) {
         throw std::runtime_error("Invalid root directive: exactly one argument required");
