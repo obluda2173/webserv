@@ -2,6 +2,7 @@
 #include "BadRequestHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
+#include "handlerUtils.h"
 #include "logging.h"
 #include <errno.h>
 #include <netinet/in.h>
@@ -88,6 +89,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Handling:
+            conn->_request.uri = normalizePath("", conn->_request.uri);
             route = _router->match(conn->getRequest());
             route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
