@@ -77,25 +77,28 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
+    HttpResponse resp;
+    IHandler* hdlr;
+    Route route;
     bool continueProcessing = true;
     while (continueProcessing) {
-        HttpResponse resp;
-        IHandler* hdlr;
-        Route route;
         Connection::STATE currentState = conn->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
             conn->parseBuf();
             continueProcessing = (conn->getState() != currentState);
             break;
-        case Connection::Handling:
+        case Connection::Routing:
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = _router->match(conn->getRequest());
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
-                conn->setState(Connection::SendResponse);
                 setErrorResponse(conn->_response, 404, "Not Found", {});
+                conn->setState(Connection::SendResponse);
                 break;
             }
+            conn->setState(Connection::Handling);
+            break;
+        case Connection::Handling:
             route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;

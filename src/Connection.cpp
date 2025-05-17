@@ -52,7 +52,7 @@ void Connection::parseBuf() {
             _readBuf.advance(count + 1);
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
-                _state = Handling;
+                _state = Routing;
             } else
                 _state = HandleBadRequest;
             return;
