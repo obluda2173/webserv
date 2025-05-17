@@ -20,6 +20,7 @@ Connection* setupConnWithContentLength(std::string filename, size_t contentLengt
     conn->_request.uri = PREFIX + filename;
     conn->_request.version = "HTTP/1.1";
     conn->_request.headers["content-length"] = std::to_string(contentLength);
+    conn->setState(Connection::Handling);
     return conn;
 }
 

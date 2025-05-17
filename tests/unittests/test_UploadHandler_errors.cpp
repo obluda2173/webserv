@@ -32,6 +32,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
 
     EXPECT_EQ(409, conn2->_response.statusCode);
     EXPECT_EQ("Conflict", conn2->_response.statusMessage);
+    EXPECT_EQ(conn2->getState(), Connection::SendResponse);
     conn2->resetResponse();
 
     conn1->setReadBuf(body.substr(0, 500));

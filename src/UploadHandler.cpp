@@ -134,8 +134,7 @@ void UploadHandler::_renameOrRemoveFile(Connection* conn, const HttpRequest& req
         std::remove((cfg.root + req.uri).c_str());
         rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
         setResponse(conn->_response, 200, "OK", "", 0, NULL);
-    }
-    else {
+    } else {
         rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
         setResponse(conn->_response, 201, "Created", "", 0, NULL);
     }
@@ -146,8 +145,10 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         UploadContext& uploadCtx = conn->uploadCtx;
         switch (uploadCtx.state) {
         case UploadContext::Validation:
-            if (!_validation(conn, req, cfg))
+            if (!_validation(conn, req, cfg)) {
+                conn->setState(Connection::SendResponse);
                 return;
+            }
             uploadCtx.state = UploadContext::Initialising;
             break; // will fallthrough
         case UploadContext::Initialising:
@@ -165,6 +166,7 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         case UploadContext::UploadFinished:
             _activeUploadPaths.erase(cfg.root + req.uri);
             _renameOrRemoveFile(conn, req, cfg);
+            conn->setState(Connection::SendResponse);
             return;
         }
     }
