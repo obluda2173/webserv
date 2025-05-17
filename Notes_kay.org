@@ -42,6 +42,9 @@ index       index.html index.htm
 - [ ] handle ClientHungUp
 - [ ] BrokenConnection just removes the connection
   - [ ] check how ClientHungUp affects the behavior
+  - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
+- [ ] implement more than one router
+  - [ ] also handle cases where the routing is failing
 - [X] probably change IHandler handle interface (add ConnectionInfo to it)
 ** Uploadhandler
 1. [X] don't upload to same file simultaneously

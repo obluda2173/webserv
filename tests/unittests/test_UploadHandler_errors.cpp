@@ -6,7 +6,6 @@
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
 
-// TODO: Make a test where the content of an existing file is changed
 struct UploadHandlerErrorTestParams {
     size_t contentLength;
     size_t clientMaxBody;

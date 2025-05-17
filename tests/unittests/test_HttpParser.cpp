@@ -1279,20 +1279,4 @@ INSTANTIATE_TEST_SUITE_P(
             "GET /index.html HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Accept-Language: en-US;q =0.5\r\n"
-            "\r\n"}
-
-        // TODO: added test from Kay
-        // TestHttpParserParams{5,
-        //                      0,
-        //                      1,
-        //                      {
-        //                          "GET",
-        //                          "/file.txt",
-        //                          "HTTP/1.1",
-        //                          {{"host", "localhost"}, {"range", "bytes=0-499, 500-999"}},
-        //                      },
-        //                      "GET /file.txt   HTTP/1.1  \r\n"
-        //                      "Host: localhost\r\n"
-        //                      "Range: bytes=0-499, 500-999\r\n"
-        //                      "\r\n"}
-        ));
+            "\r\n"}));
