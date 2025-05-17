@@ -2,11 +2,12 @@
 #define ROUTE_H
 
 #include "RouteConfig.h"
-#include "IHandler.h"
 #include <map>
 
+class IHandler;
+
 struct Route {
-    std::map<std::string, IHandler*> hdlrs;
+    std::map< std::string, IHandler* > hdlrs;
     RouteConfig cfg;
 };
 

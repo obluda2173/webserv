@@ -1,4 +1,7 @@
 #include "GetHandler.h"
+#include "Connection.h"
+#include "handlerUtils.h"
+#include <sstream>
 
 GetHandler::GetHandler() {}
 GetHandler::~GetHandler() {}

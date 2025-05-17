@@ -2,16 +2,17 @@
 #define CGIHANDLER_H
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-#include "handlerUtils.h"
+#include "Connection.h"
+#include "IHandler.h"
 
 enum class ProcessState { Running, Exited, Error };
 
 struct ExecParams {
-  std::vector<const char*> argv;
-  std::vector<const char*> env;
+    std::vector< const char* > argv;
+    std::vector< const char* > env;
 };
 
 class CgiHandler : public IHandler {
@@ -20,9 +21,9 @@ class CgiHandler : public IHandler {
     std::string _interpreter;
     std::string _path;
     struct stat _pathStat;
-    std::vector<std::string> _envStorage;
+    std::vector< std::string > _envStorage;
     std::string _extractQuery(const std::string& uri);
-    std::string _findInterpreter(std::map<std::string,std::string> cgiMap);
+    std::string _findInterpreter(std::map< std::string, std::string > cgiMap);
     bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
     void _setCgiEnvironment(const HttpRequest& request);
     void _prepareExecParams(const HttpRequest& request, ExecParams& params);

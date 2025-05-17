@@ -96,10 +96,11 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 conn->setState(Connection::SendResponse);
                 break;
             }
+            conn->route = route;
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
-            route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
+            conn->route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:

@@ -1,12 +1,10 @@
 #ifndef GETHANDLER_H
 #define GETHANDLER_H
 
-#include <sstream>
-#include <fstream>
+#include "HttpResponse.h"
+#include "IHandler.h"
 #include <dirent.h>
-#include <filesystem>
-
-#include "handlerUtils.h"
+#include <sys/stat.h>
 
 class GetHandler : public IHandler {
   private:
@@ -16,7 +14,7 @@ class GetHandler : public IHandler {
     void _serveRegFile(Connection& conn, HttpResponse& resp);
     void _serveIndexFile(Connection& conn, const RouteConfig& config, HttpResponse& resp);
     void _serveDirectoryListing(Connection& conn, const HttpRequest& request, HttpResponse& resp);
-    
+
   public:
     GetHandler();
     ~GetHandler();

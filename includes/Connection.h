@@ -6,6 +6,7 @@
 #include "IHttpParser.h"
 #include "ISender.h"
 #include "ResponseWriter.h"
+#include "Route.h"
 #include "RouteConfig.h"
 #include "SystemSender.h"
 #include <fstream>
@@ -49,6 +50,7 @@ class Connection {
     CgiContext cgiCtx;
     Buffer _readBuf;
     Buffer _sendBuf;
+    Route route;
 
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());

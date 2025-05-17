@@ -1,10 +1,9 @@
 #ifndef DELETEHANDLER_H
 #define DELETEHANDLER_H
 
+#include "IHandler.h"
 #include <dirent.h>
-#include <filesystem>
-
-#include "handlerUtils.h"
+#include <sys/stat.h>
 
 class DeleteHandler : public IHandler {
   private:

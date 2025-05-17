@@ -1,3 +1,4 @@
+#include "Connection.h"
 #include "test_handlers_utils.h"
 
 struct TestDeleteHandlerParams {

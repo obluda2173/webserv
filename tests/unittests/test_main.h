@@ -1,6 +1,7 @@
 #ifndef TEST_MAIN_H_
 #define TEST_MAIN_H_
 
+#include "Connection.h"
 #include "IConnectionHandler.h"
 #include "Router.h"
 #include <arpa/inet.h>

@@ -1,4 +1,5 @@
 #include "CgiHandler.h"
+#include "handlerUtils.h"
 
 CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
@@ -31,9 +32,8 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         ExecParams params;
         _setupChildProcess(pipefd);
         _prepareExecParams(request, params);
-        execve(params.argv[0], 
-            const_cast<char* const*>(params.argv.data()),
-            const_cast<char* const*>(params.env.data()));
+        execve(params.argv[0], const_cast< char* const* >(params.argv.data()),
+               const_cast< char* const* >(params.env.data()));
         exit(EXIT_FAILURE);
     } else {
         _setupParentProcess(conn, pipefd, pid, config);
@@ -45,20 +45,20 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
     int status = 0;
 
     switch (_checkProcess(ctx, status)) {
-        case ProcessState::Exited:
-            _handleProcessExit(conn, ctx, status);
-            break;
+    case ProcessState::Exited:
+        _handleProcessExit(conn, ctx, status);
+        break;
 
-        case ProcessState::Error:
-            setErrorResponse(conn->_response, 500, "Process Error", ctx.cgiRouteConfig);
+    case ProcessState::Error:
+        setErrorResponse(conn->_response, 500, "Process Error", ctx.cgiRouteConfig);
+        conn->setState(Connection::SendResponse);
+        break;
+
+    case ProcessState::Running:
+        if (!_readPipeData(ctx, false)) {
+            setErrorResponse(conn->_response, 500, "Pipe Error", ctx.cgiRouteConfig);
             conn->setState(Connection::SendResponse);
-            break;
-
-        case ProcessState::Running:
-            if (!_readPipeData(ctx, false)) {
-                setErrorResponse(conn->_response, 500, "Pipe Error", ctx.cgiRouteConfig);
-                conn->setState(Connection::SendResponse);
-            }
-            break;
+        }
+        break;
     }
 }

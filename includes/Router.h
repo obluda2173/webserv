@@ -3,6 +3,7 @@
 
 #include "ConfigStructure.h"
 #include "HttpRequest.h"
+#include "IHandler.h"
 #include "IRouter.h"
 #include <set>
 #include <string>

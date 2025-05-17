@@ -1,16 +1,18 @@
 #include "CgiHandler.h"
+#include "handlerUtils.h"
 
 std::string CgiHandler::_extractQuery(const std::string& uri) {
     const size_t pos = uri.find('?');
     return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
 }
 
-std::string CgiHandler::_findInterpreter(std::map<std::string, std::string> cgiMap) {
+std::string CgiHandler::_findInterpreter(std::map< std::string, std::string > cgiMap) {
     size_t dot = _path.rfind('.');
-    if (dot == std::string::npos) return "";
+    if (dot == std::string::npos)
+        return "";
     size_t end = _path.find_first_of("/?#", dot);
     std::string ext = _path.substr(dot + 1, end - dot - 1);
-    std::map<std::string, std::string>::const_iterator it = cgiMap.find(ext);
+    std::map< std::string, std::string >::const_iterator it = cgiMap.find(ext);
     return it != cgiMap.end() ? it->second : "";
 }
 
@@ -94,7 +96,7 @@ bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
             if (count == 0 || (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
                 close(cgiCtx.cgiPipeFd);
                 cgiCtx.cgiPipeFd = -1;
-                
+
                 if (count == -1) {
                     return false;
                 }
@@ -108,13 +110,14 @@ bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
 void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int status) {
     if (ctx.cgiPipeFd != -1) {
         _readPipeData(ctx, true);
-    } 
+    }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
         setErrorResponse(conn->_response, 502, "Bad Gateway", ctx.cgiRouteConfig);
     } else if (ctx.cgiOutput.empty()) {
         setErrorResponse(conn->_response, 500, "Internal Error", ctx.cgiRouteConfig);
     } else {
-        setResponse(conn->_response, 200, "OK", "text/php", ctx.cgiOutput.size(), new StringBodyProvider(ctx.cgiOutput));
+        setResponse(conn->_response, 200, "OK", "text/php", ctx.cgiOutput.size(),
+                    new StringBodyProvider(ctx.cgiOutput));
     }
     conn->setState(Connection::SendResponse);
 }

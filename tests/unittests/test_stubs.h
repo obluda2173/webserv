@@ -2,8 +2,8 @@
 #define TEST_STUBS_H
 
 #include "HttpRequest.h"
+#include "IHandler.h"
 #include "ILogger.h"
-#include "Router.h"
 
 class StubLogger : public ILogger {
   public:

@@ -1,4 +1,6 @@
 #include "DeleteHandler.h"
+#include "Connection.h"
+#include "handlerUtils.h"
 
 DeleteHandler::DeleteHandler() {}
 DeleteHandler::~DeleteHandler() {}

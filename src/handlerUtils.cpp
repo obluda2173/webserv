@@ -1,5 +1,5 @@
 #include "handlerUtils.h"
-#include <iostream>
+#include <sstream>
 
 std::map< std::string, std::string > mimeTypes;
 struct MimeInitializer {
