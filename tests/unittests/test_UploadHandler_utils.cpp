@@ -1,4 +1,4 @@
-#include "test_Uploadhandler_utils.h"
+#include "test_UploadHandler_utils.h"
 #include "Connection.h"
 #include "gtest/gtest.h"
 #include <filesystem>
@@ -9,7 +9,7 @@ std::string getFileContents(const std::string& filename) {
     if (!file)
         throw std::ios_base::failure("Error opening file");
 
-    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::string contents((std::istreambuf_iterator< char >(file)), std::istreambuf_iterator< char >());
 
     return contents;
 }

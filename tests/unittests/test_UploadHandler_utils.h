@@ -1,3 +1,6 @@
+#ifndef TEST_UPLOADHANDLER_UTILS_H
+#define TEST_UPLOADHANDLER_UTILS_H
+
 #include "Connection.h"
 
 static std::string ROOT = "tests/unittests/test_files/UploadHandler";
@@ -6,3 +9,6 @@ std::string getFileContents(const std::string& filename);
 Connection* setupConnWithContentLength(std::string filename, size_t contentLength);
 Connection* setupConnWithoutContentLength(std::string filename);
 void removeFile(std::string filepath);
+
+
+#endif // TEST_UPLOADHANDLER_UTILS_H
