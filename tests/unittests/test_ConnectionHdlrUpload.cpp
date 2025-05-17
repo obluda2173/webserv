@@ -63,10 +63,10 @@ TEST_P(ConnHdlrTestStubUploadHdlrAdvanced, testUpload) {
     ASSERT_EQ(body.length(), _uploadHdlr->_uploaded.length());
     ASSERT_EQ(body, _uploadHdlr->_uploaded);
 
-    // int fd;
-    // e_notif notif;
-    // _ioNotifier->wait(&fd, &notif);
-    // ASSERT_EQ(notif, READY_TO_WRITE);
+    int fd;
+    e_notif notif;
+    _ioNotifier->wait(&fd, &notif);
+    ASSERT_EQ(notif, READY_TO_WRITE);
     // _connHdlr->handleConnection(connfd, READY_TO_WRITE);
 
     // char buffer[1025];

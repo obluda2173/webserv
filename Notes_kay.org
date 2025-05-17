@@ -19,17 +19,6 @@
 
 - [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
 * TODO
-** overall
-- [X] build the server with the config and the Router
-** listener
-- [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
-- [ ] ioNotifier.wait fills up multiples descriptors and notifications
-** connection Handling (architecture)
-- [ ] BrokenConnection just removes the connection
-  - [ ] check how ClientHungUp affects the behavior
-- [X] probably change IHandler handle interface (add ConnectionInfo to it)
-
-* notes configuration
 - [X] change throwing of std::runtime_error to something that makes sense
 - [X] no error is thrown when there is no ";" in
   #+begin_src conf
@@ -41,19 +30,21 @@ index       index.html index.htm
 - [X] restrict config allowedMethods to GET, POST, DELETE
 - [X] insert Routing
 - [X] make reset public on HttpParser
-- [ ] normalization of uri needs to be done before routing
-- [ ] handle ClientHungUp
 - [X] test for requests with longer bodies
   - [X] test for long responses where sent needs to happen more than once
   - [X] make the read and send methods adjustable in buffer size
   - [X] rename to _headersBuf and _bodyBuf
-* Uploadhandler
-** TODO
+** listener
+- [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
+- [ ] ioNotifier.wait fills up multiples descriptors and notifications
+** connection Handling (architecture)
+- [ ] normalization of uri needs to be done before routing
+- [ ] handle ClientHungUp
+- [ ] BrokenConnection just removes the connection
+  - [ ] check how ClientHungUp affects the behavior
+- [X] probably change IHandler handle interface (add ConnectionInfo to it)
+** Uploadhandler
 1. [X] don't upload to same file simultaneously
-2. [ ] only reply with a response once!
-3. [ ] don't remove file (test for broken connection basically)
+2. [X] don't remove file (test for broken connection basically)
+3. [ ] only reply with a response once!
 4. [ ] test for overlapping uploadBody and headers of following request
-
-* httpParser
-- [X] validation Accept to rigid
-- [X] validation Accept-encoding to rigid

@@ -43,9 +43,7 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
 }
 
 int EpollIONotifier::wait(int* fds, e_notif* notifs) {
-
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
-    // struct epoll_event* events = new struct epoll_event[_nbrNotifs];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
