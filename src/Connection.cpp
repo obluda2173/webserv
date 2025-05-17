@@ -53,15 +53,15 @@ void Connection::parseBuf() {
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
                 _state = Routing;
-            } else
+            } else {
                 _state = HandleBadRequest;
+            }
             return;
         }
         count++;
     }
     _readBuf.clear();
 }
-void Connection::setReadBuf(std::string s) { _readBuf.assign(s); } // only used for testing
 
 std::string Connection::getReadBuf() { return std::string(_readBuf.data(), _readBuf.size()); }
 

@@ -46,15 +46,16 @@ class Connection {
     ISender* _sender;
 
   public:
+    Route route;
     UploadContext uploadCtx;
     CgiContext cgiCtx;
     Buffer _readBuf;
     Buffer _sendBuf;
-    Route route;
 
     ~Connection();
     Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
     STATE getState() const;
+    void setState(Connection::STATE state);
     void readIntoBuf();
     void parseBuf();
     void sendResponse();
@@ -64,8 +65,6 @@ class Connection {
     int getFileDes() const;
     HttpRequest getRequest();
     sockaddr_storage getAddr() const;
-    void setState(Connection::STATE state);
-    void setReadBuf(std::string s);
     std::string getReadBuf();
 
     HttpRequest _request;

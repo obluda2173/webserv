@@ -16,14 +16,14 @@ typedef enum SocketType {
 
 class ConnectionHandler : public IConnectionHandler {
   private:
-    std::map<int, Connection*> _connections;
+    std::map< int, Connection* > _connections;
     IRouter* _router;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
     int _acceptNewConnection(int socketfd);
-    void _onSocketRead(int fd);
-    void _onSocketWrite(int conn);
+    void _onSocketRead(Connection* conn);
+    void _onSocketWrite(Connection* conn);
     void _handleState(Connection* conn);
     void _onClientHungUp(int conn);
     void _updateNotifier(Connection* conn);

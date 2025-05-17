@@ -23,10 +23,10 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     Connection* conn1 = setupConnWithContentLength(filename, body.length());
     Connection* conn2 = setupConnWithContentLength(filename, body.length());
 
-    conn1->setReadBuf(body.substr(0, 500));
+    conn1->_readBuf.assign(body.substr(0, 500));
     uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}});
 
-    conn2->setReadBuf(body.substr(0, 500));
+    conn2->_readBuf.assign(body.substr(0, 500));
     uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
 
     EXPECT_EQ(409, conn2->_response.statusCode);
@@ -34,14 +34,14 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     EXPECT_EQ(conn2->getState(), Connection::SendResponse);
     delete conn2;
 
-    conn1->setReadBuf(body.substr(0, 500));
+    conn1->_readBuf.assign(body.substr(0, 500));
     uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}});
 
     EXPECT_EQ(201, conn1->_response.statusCode);
     EXPECT_EQ("Created", conn1->_response.statusMessage);
 
     conn2 = setupConnWithContentLength(filename, body.length());
-    conn2->setReadBuf(body);
+    conn2->_readBuf.assign(body);
     uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
     EXPECT_EQ(200, conn2->_response.statusCode);
     EXPECT_EQ("OK", conn2->_response.statusMessage);
@@ -101,7 +101,7 @@ TEST_P(UploadHdlrFileErrorsTest, filePathNotExist) {
     int contentLength = 100;
     std::string body = getRandomString(contentLength);
     Connection* conn = setupConnWithContentLength(params.path, contentLength);
-    conn->setReadBuf(body);
+    conn->_readBuf.assign(body);
 
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});

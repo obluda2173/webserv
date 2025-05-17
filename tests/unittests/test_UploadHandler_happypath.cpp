@@ -48,7 +48,7 @@ TEST_P(UploadHdlrTest, concurrentUploadsParam) {
     while (pos < maxSize) {
         for (size_t i = 0; i < filenames.size(); i++) {
             if (pos < readBufsLengths[i]) {
-                conns[i]->setReadBuf(readBufs[i].substr(pos, batchSize));
+                conns[i]->_readBuf.assign(readBufs[i].substr(pos, batchSize));
                 uploadHdlr->handle(conns[i], conns[i]->_request, {ROOT, {}, {}, clientMaxBody, false, {}});
             }
         }

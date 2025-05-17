@@ -118,20 +118,17 @@ void ConnectionHandler::_handleState(Connection* conn) {
     _updateNotifier(conn);
 }
 
-void ConnectionHandler::_onSocketRead(int connfd) {
-    Connection* conn = _connections[connfd];
+void ConnectionHandler::_onSocketRead(Connection* conn) {
     conn->readIntoBuf();
     _handleState(conn);
     return;
 }
 
-void ConnectionHandler::_onSocketWrite(int connfd) {
-    Connection* conn = _connections[connfd];
-
+void ConnectionHandler::_onSocketWrite(Connection* conn) {
     conn->sendResponse();
 
     if (conn->_response.statusCode == 400) {
-        _removeConnection(connfd);
+        _removeConnection(conn->getFileDes());
         return;
     }
     if (conn->getState() == Connection::Reset) {
@@ -146,12 +143,13 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     if (_connections.find(fd) == _connections.end())
         return _acceptNewConnection(fd);
 
+    Connection* conn = _connections[fd];
     switch (notif) {
     case READY_TO_READ:
-        _onSocketRead(fd);
+        _onSocketRead(conn);
         break;
     case READY_TO_WRITE:
-        _onSocketWrite(fd);
+        _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:
         _onClientHungUp(fd);

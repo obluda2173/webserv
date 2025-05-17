@@ -16,7 +16,7 @@ TEST(UploadHdlrTest, changeFileExisting) {
     int contentLength = 100;
     std::string body = getRandomString(contentLength);
     Connection* conn = setupConnWithContentLength(filename, contentLength);
-    conn->setReadBuf(body);
+    conn->_readBuf.assign(body);
 
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
