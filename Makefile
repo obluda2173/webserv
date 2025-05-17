@@ -33,13 +33,13 @@ SRC_FILES := 	$(SRC_DIR)/Buffer.cpp \
 				$(SRC_DIR)/HttpParser.cpp \
 				$(SRC_DIR)/Listener.cpp \
 				$(SRC_DIR)/Logger.cpp \
-				$(SRC_DIR)/PostHandler.cpp \
 				$(SRC_DIR)/ResponseWriter.cpp \
 				$(SRC_DIR)/Router.cpp \
 				$(SRC_DIR)/Router_newRouter.cpp \
 				$(SRC_DIR)/Server.cpp \
 				$(SRC_DIR)/ServerBuilder.cpp \
 				$(SRC_DIR)/TokenStream.cpp \
+				$(SRC_DIR)/UploadHandler.cpp \
 				$(SRC_DIR)/handlerUtils.cpp \
 				$(SRC_DIR)/httpParsing.cpp \
 				$(SRC_DIR)/logging.cpp \

@@ -22,6 +22,7 @@ TEST(UploadHdlrTest2, uploading) {
         EXPECT_EQ(conn->_readBuf.size(), 0);
         pos += batchSize;
     }
+    EXPECT_FALSE(conn->uploadCtx.file->is_open());
     EXPECT_EQ(conn->getState(), Connection::SendResponse);
     delete uploadHdlr;
 

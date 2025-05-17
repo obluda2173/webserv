@@ -20,6 +20,7 @@ TEST(UploadHdlrTest, changeFileExisting) {
 
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+    EXPECT_FALSE(conn->uploadCtx.file->is_open());
 
     HttpResponse resp = conn->_response;
     delete conn; // need to delete conn to close the file and write to disk

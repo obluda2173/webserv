@@ -1,22 +1,15 @@
 #+title: Notes Kay
 
 - [X] have a complete Equal check function of ServerConfig
-
 - [X] all of the tests probably fit into maximum of 2 tests (those which throw error and those where you test for equalness)
 - [X] the same for test_config_ast.cpp and test_config_events.cpp
-
 - [X] Naming
   - [X] test_Router.cpp (not test_http_routing)
-
   - [X] ValidationRules sounds like a struct but not like a class
     - [X] what is it supposed to do (why is it not requestValidator?)
-
 - [X] why is there a buildAST function in the tests (why is getAst public in the parser? If nobody is supposed to use it?)
-
 - [X] the CommonConfig constructor is needless
-
 - [X] why does the router match return the host (which is actually part of the request)?
-
 - [X] the Router is not concerned with which port the request came from. Somebody is responsible of choosing the right Router for the port
 * TODO
 - [X] change throwing of std::runtime_error to something that makes sense
@@ -38,16 +31,20 @@ index       index.html index.htm
 - [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
 - [ ] ioNotifier.wait fills up multiples descriptors and notifications
 ** connection Handling (architecture)
-- [ ] normalization of uri needs to be done before routing
-- [ ] handle ClientHungUp
-- [ ] BrokenConnection just removes the connection
-  - [ ] check how ClientHungUp affects the behavior
-  - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
+- [X] normalization of uri needs to be done before routing
+- [ ] add a test that really uploads a file
+  - [ ] make sure that all the file descriptors are closed
+    - [ ] also a test for a broken connection and then the file should be closed
+  - [ ] add tests for normal UploadHandler to close the files after successful upload
 - [ ] implement more than one router
   - [ ] also handle cases where the routing is failing
+- [ ] handle ClientHungUp
+  - [ ] BrokenConnection just removes the connection
+  - [ ] check how ClientHungUp affects the behavior
+  - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
 - [X] probably change IHandler handle interface (add ConnectionInfo to it)
 ** Uploadhandler
 1. [X] don't upload to same file simultaneously
 2. [X] don't remove file (test for broken connection basically)
-3. [ ] only reply with a response once!
+3. [X] only reply with a response once!
 4. [ ] test for overlapping uploadBody and headers of following request

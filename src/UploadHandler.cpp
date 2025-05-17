@@ -130,6 +130,7 @@ bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
 }
 
 void UploadHandler::_renameOrRemoveFile(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
+    conn->uploadCtx.file->close();
     if (conn->uploadCtx.fileExisted) {
         std::remove((cfg.root + req.uri).c_str());
         rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
