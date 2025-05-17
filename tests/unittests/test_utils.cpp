@@ -51,14 +51,14 @@ int countOpenFileDescriptors() {
 
 void sendMsgInBatches(std::string msg, int clientfd, int batchSize) {
     // cutting the msg into parts and send
-    std::vector<std::string> chunks;
+    std::vector< std::string > chunks;
     for (std::size_t i = 0; i < msg.length(); i += batchSize) {
         send(clientfd, msg.substr(i, batchSize).c_str(), msg.substr(i, batchSize).length(), 0);
     }
 }
 
-bool allZero(std::vector<std::string> msgs) {
-    for (std::vector<std::string>::iterator it = msgs.begin(); it != msgs.end(); it++) {
+bool allZero(std::vector< std::string > msgs) {
+    for (std::vector< std::string >::iterator it = msgs.begin(); it != msgs.end(); it++) {
         if ((*it).length() > 0)
             return false;
     }
@@ -137,12 +137,12 @@ void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _co
     }
 }
 
-void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn) {
+void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* connHdlr, int fd) {
     int fds = -1;
     e_notif notif;
     _ioNotifier->wait(&fds, &notif);
     while (notif == READY_TO_READ) {
-        _connHdlr->handleConnection(_conn, READY_TO_READ);
+        connHdlr->handleConnection(fd, READY_TO_READ);
         _ioNotifier->wait(&fds, &notif);
     }
     EXPECT_NE(fds, -1);
@@ -166,7 +166,7 @@ std::string getRandomString(size_t length) {
     const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     std::string randomString;
 
-    std::srand(static_cast<unsigned int>(std::time(0))); // Seed for random number generator
+    std::srand(static_cast< unsigned int >(std::time(0))); // Seed for random number generator
 
     for (size_t i = 0; i < length; ++i) {
         randomString += chars[std::rand() % chars.length()];
