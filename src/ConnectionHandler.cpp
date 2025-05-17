@@ -27,7 +27,7 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
     case Connection::Handling:
-        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        _ioNotifier.modify(connfd, READY_TO_READ);
         break;
     case Connection::HandleBadRequest:
         _ioNotifier.modify(connfd, READY_TO_WRITE);

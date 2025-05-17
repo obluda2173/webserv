@@ -222,37 +222,27 @@ class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, in
 
 class StubUploadHdlrAdvanced : public IHandler {
   private:
-    int _nbrOfHandleCallsUntilUploadComplete;
     int _nbrOfHandleCalls;
 
   public:
-    StubUploadHdlrAdvanced(int nbrOfHandleCallsUntilUploadComplete)
-        : _nbrOfHandleCallsUntilUploadComplete(nbrOfHandleCallsUntilUploadComplete), _nbrOfHandleCalls(0) {}
-
-    std::string _uploaded;
+    static int _nbrOfHandleCallsUntilUploadComplete;
+    StubUploadHdlrAdvanced() : _nbrOfHandleCalls(0) {}
     virtual void handle(Connection* conn, const HttpRequest&, const RouteConfig&) {
-        _uploaded += conn->getReadBuf();
         conn->_readBuf.clear();
-        if (_uploaded.size() > 0) {
+        if (_nbrOfHandleCalls < _nbrOfHandleCallsUntilUploadComplete) {
             _nbrOfHandleCalls++;
-        }
-        if (_nbrOfHandleCalls < _nbrOfHandleCallsUntilUploadComplete)
             return;
+        }
         conn->uploadCtx.state = UploadContext::UploadFinished;
-        HttpResponse& resp = conn->_response;
-        resp.statusCode = 200;
-        resp.statusMessage = "OK";
-        resp.version = "HTTP/1.1";
         conn->setState(Connection::SendResponse);
     }
 };
 
-class ConnHdlrTestStubUploadHdlrAdvanced : public BaseConnHdlrTest< StubLogger, int > {
+class ConnHdlrTestStubUploadHdlrAdvanced : public BaseConnHdlrTest< StubLogger > {
   public:
     StubUploadHdlrAdvanced* _uploadHdlr;
     virtual void setupConnectionHandler() override {
-        int nbrOfHandleCallsUntilUploadComplete = GetParam();
-        _uploadHdlr = new StubUploadHdlrAdvanced(nbrOfHandleCallsUntilUploadComplete);
+        _uploadHdlr = new StubUploadHdlrAdvanced();
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {});
