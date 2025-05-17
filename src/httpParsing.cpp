@@ -211,8 +211,8 @@ bool isValidAcceptEncoding(const std::string& str) {
         } else {
             token3 = token2;
         }
-        if (token3 == "gzip" || token3 == "deflate" || token3 == "br" ||
-            token3 == "compress" || token3 == "identity" || token3 == "zstd") {
+        if (token3 == "gzip" || token3 == "deflate" || token3 == "br" || token3 == "compress" || token3 == "identity" ||
+            token3 == "zstd") {
             available = true;
         }
         if (checkQValue(token2) == false) {
@@ -395,12 +395,12 @@ bool specificHeaderValidation(
             return false;
         }
     }
-    if (key == "cookie") {
-        if (isValidCookie(value) == false) {
-            logger.log("ERROR", "specificHeaderValidation: Invalid Cookie header");
-            return false;
-        }
-    }
+    // if (key == "cookie") {
+    //     if (isValidCookie(value) == false) {
+    //         logger.log("ERROR", "specificHeaderValidation: Invalid Cookie header");
+    //         return false;
+    //     }
+    // }
     if (key == "range") {
         if (isValidRange(value) == false) {
             logger.log("ERROR", "specificHeaderValidation: Invalid Range header");

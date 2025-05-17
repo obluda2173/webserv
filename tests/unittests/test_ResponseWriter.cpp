@@ -19,7 +19,7 @@ typedef struct ResponseWriterParams {
     size_t maxSize;
 } ResponseWriterParams;
 
-class ResponseWriterTest : public testing::TestWithParam<struct ResponseWriterParams> {};
+class ResponseWriterTest : public testing::TestWithParam< struct ResponseWriterParams > {};
 
 TEST_P(ResponseWriterTest, firstTest) {
     ResponseWriterParams params = GetParam();
@@ -29,13 +29,10 @@ TEST_P(ResponseWriterTest, firstTest) {
     HttpResponse resp = newResponse(params.body);
 
     std::string want = "HTTP/1.1 200 OK\r\n";
-    if (params.body.length()) {
-        want += "Content-Length: " + std::to_string(params.body.length()) +
-                "\r\n"
-                "\r\n" +
-                params.body;
-    } else
-        want += "\r\n";
+    want += "Content-Length: " + std::to_string(params.body.length()) +
+            "\r\n"
+            "\r\n" +
+            params.body;
 
     IResponseWriter* wrtr = new ResponseWriter(resp);
     size_t writtenBytes = -1;

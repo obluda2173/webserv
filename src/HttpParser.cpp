@@ -19,6 +19,7 @@ bool HttpParser::_extractNextLine(std::string& line) {
         size_t lineSize = pos + 2;
         if (_totalProcessedSize + lineSize > _maxHeaderSize) {
             _state = STATE_ERROR;
+            _logger.log("ERROR", "_extractNextLine: header too big");
             return false;
         }
         line = _buffer.substr(0, pos);
@@ -36,8 +37,10 @@ void HttpParser::_parseRequestLine(const std::string& line) {
     if (_currentRequest.method.empty() || _currentRequest.uri.empty() || _currentRequest.version.empty() ||
         !tmp.empty()) {
         _state = STATE_ERROR;
+        _logger.log("ERROR", "_parseRequestLine: method, uri or version empty");
     } else if (!_requestLineValidation(_currentRequest.method, _currentRequest.version)) {
         _state = STATE_ERROR;
+        _logger.log("ERROR", "_parseRequestLine: method or version invalid");
     } else {
         _state = STATE_HEADERS;
     }
@@ -47,6 +50,7 @@ void HttpParser::_parseHeader(const std::string& line) {
     size_t sep = line.find(':');
     if (sep == std::string::npos) {
         _state = STATE_ERROR;
+        _logger.log("ERROR", "_parseHeader: : at the end of line");
         return;
     }
     std::string key = toLower(line.substr(0, sep));
@@ -55,11 +59,13 @@ void HttpParser::_parseHeader(const std::string& line) {
     if (key.empty() || key.size() > _maxHeaderKeySize ||
         _currentRequest.headers.count(key) > 0) { // the _currentRequest.headers.count(key) > 0 check is to prevent
                                                   // duplicate headers, but we use map so this might have some issues
+        _logger.log("ERROR", "_parseHeader: key empty or too big or double key");
         _state = STATE_ERROR;
         return;
     }
     if (!_headerLineValidation(key, value)) {
         _state = STATE_ERROR;
+        _logger.log("ERROR", "_parseHeader: invalid headerLine");
         return;
     }
     _currentRequest.headers[key] = value;
@@ -68,7 +74,9 @@ void HttpParser::_parseHeader(const std::string& line) {
 void HttpParser::_handlePartialLine() {
     if (_buffer.find("\n") != std::string::npos) {
         _state = STATE_ERROR;
+        _logger.log("ERROR", "_handlePartialLine: newline not at end of string");
     } else if (_totalProcessedSize + _buffer.size() > _maxHeaderSize) {
+        _logger.log("ERROR", "_handlePartialLine: header too big");
         _state = STATE_ERROR;
     }
 }

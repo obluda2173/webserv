@@ -62,7 +62,10 @@ void ConnectionHandler::_removeConnection(int connfd) {
     _ioNotifier.del(connfd);
 }
 
-void ConnectionHandler::_onClientHungUp(int connfd) { _removeConnection(connfd); }
+void ConnectionHandler::_onClientHungUp(int connfd) {
+    _logger.log("INFO", "Client Hung up");
+    _removeConnection(connfd);
+}
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
     struct sockaddr_storage theirAddr;
@@ -89,10 +92,11 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Routing:
+            _logger.log("INFO", "Routing");
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = _router->match(conn->getRequest());
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
-                setErrorResponse(conn->_response, 404, "Not Found", {});
+                setErrorResponse(conn->_response, 404, "Not Found", RouteConfig());
                 conn->setState(Connection::SendResponse);
                 break;
             }
@@ -100,6 +104,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
+            _logger.log("INFO", "Handling");
             conn->route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
@@ -119,12 +124,15 @@ void ConnectionHandler::_handleState(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketRead(Connection* conn) {
+    _logger.log("INFO", "Reading");
     conn->readIntoBuf();
     _handleState(conn);
     return;
 }
 
 void ConnectionHandler::_onSocketWrite(Connection* conn) {
+    _logger.log("INFO", "Sending");
+
     conn->sendResponse();
 
     if (conn->_response.statusCode == 400) {
@@ -132,9 +140,11 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
         return;
     }
     if (conn->getState() == Connection::Reset) {
+        _logger.log("INFO", "Resetting");
         conn->resetResponse();
         conn->setState(Connection::ReadingHeaders);
         _handleState(conn); // possibly data inside Connection
+        _logger.log("INFO", "Reset");
         return;
     }
 }
@@ -143,6 +153,7 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     if (_connections.find(fd) == _connections.end())
         return _acceptNewConnection(fd);
 
+    _logger.log("INFO", "Handling Connection");
     Connection* conn = _connections[fd];
     switch (notif) {
     case READY_TO_READ:
@@ -155,6 +166,7 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         _onClientHungUp(fd);
         break;
     case BROKEN_CONNECTION:
+        _logger.log("INFO", "Broken Connection");
         break;
     }
     return fd;

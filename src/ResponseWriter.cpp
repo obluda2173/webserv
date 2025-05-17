@@ -17,6 +17,8 @@ void ResponseWriter::_formatHeaders() {
     _writeStatusLine();
     if (_resp.contentLength > 0)
         _headers += "Content-Length: " + to_string(_resp.contentLength) + CRLF;
+    else
+        _headers += "Content-Length: 0" + CRLF;
 
     _headers += CRLF;
 }

@@ -30,6 +30,9 @@ index       index.html index.htm
 ** listener
 - [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
 - [ ] ioNotifier.wait fills up multiples descriptors and notifications
+** ResponseWriter
+- [ ] responseWrite needs to fill out necessary headers
+- [ ] it's the reason why some clients don't close the connection
 ** connection Handling (architecture)
 - [X] normalization of uri needs to be done before routing
 - [ ] add a test that really uploads a file

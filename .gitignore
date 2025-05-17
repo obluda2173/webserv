@@ -11,3 +11,4 @@ log.txt
 /sockets_tryout/showip
 /obj/
 /tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt
+/tests/end_to_end_tests/Config1/uploads/newFile.txt

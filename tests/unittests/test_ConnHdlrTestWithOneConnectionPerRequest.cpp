@@ -56,6 +56,7 @@ INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestAsyncMultipleConnections,
                                           "\r\n"}, // I'm sending in batch size of 3, therefore
                                                    // GET \r\n\r\n provokes 2 Bad requests
                              {"HTTP/1.1 400 Bad Request\r\n"
+                              "Content-Length: 0\r\n"
                               "\r\n",
 
                               "HTTP/1.1 200 OK\r\n"

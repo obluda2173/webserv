@@ -8,6 +8,7 @@ TEST_F(ConnHdlrTestWithOneConnection, TestBadRequestClosesConnection) {
     char buffer[1024];
     std::string request = "GET \r\n\r\n";
     std::string wantResponse = "HTTP/1.1 400 Bad Request\r\n"
+                               "Content-Length: 0\r\n"
                                "\r\n";
 
     // Send malformed request
@@ -39,8 +40,8 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInBatches) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
-    std::vector<std::string> requests = params.requests;
-    std::vector<std::string> wantResponses = params.wantResponses;
+    std::vector< std::string > requests = params.requests;
+    std::vector< std::string > wantResponses = params.wantResponses;
     // send msg
     std::string request;
     std::string wantResponse;
@@ -66,8 +67,8 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
     int connfd = _clientFdsAndConnFds[0].second;
 
     char buffer[1024];
-    std::vector<std::string> requests = params.requests;
-    std::vector<std::string> wantResponses = params.wantResponses;
+    std::vector< std::string > requests = params.requests;
+    std::vector< std::string > wantResponses = params.wantResponses;
     // send msg
     for (size_t i = 0; i < requests.size(); i++) {
         std::string request = requests[i];
@@ -95,7 +96,9 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
 
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
                          ::testing::Values(ParamsVectorRequestsResponses{{"GET \r\n"},
-                                                                         {"HTTP/1.1 400 Bad Request\r\n\r\n"}},
+                                                                         {"HTTP/1.1 400 Bad Request\r\n"
+                                                                          "Content-Length: 0\r\n"
+                                                                          "\r\n"}},
                                            ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
                                                                           "Host: test.com\r\n"
                                                                           "\r\n"},
@@ -112,7 +115,9 @@ INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
                                                                              "Content-Length: 4\r\n"
                                                                              "\r\n"
                                                                              "pong",
-                                                                             "HTTP/1.1 400 Bad Request\r\n\r\n",
+                                                                             "HTTP/1.1 400 Bad Request\r\n"
+                                                                             "Content-Length: 0\r\n"
+                                                                             "\r\n",
                                                                          }},
                                            ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
                                                                           "Host: test.com\r\n"
@@ -130,4 +135,5 @@ INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
                                                                           "\r\n"
                                                                           "pong",
                                                                           "HTTP/1.1 400 Bad Request\r\n"
+                                                                          "Content-Length: 0\r\n"
                                                                           "\r\n"}}));

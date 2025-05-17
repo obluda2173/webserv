@@ -33,6 +33,7 @@ TEST_F(ConnHdlrTestStubUploadHdlrSimple, testUpload) {
     buffer[r] = '\0';
     std::string gotResponse = buffer;
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 0\r\n"
                                "\r\n";
 
     ASSERT_EQ(wantResponse, gotResponse);
