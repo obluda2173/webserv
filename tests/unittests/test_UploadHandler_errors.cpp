@@ -33,7 +33,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     EXPECT_EQ(409, conn2->_response.statusCode);
     EXPECT_EQ("Conflict", conn2->_response.statusMessage);
     EXPECT_EQ(conn2->getState(), Connection::SendResponse);
-    conn2->resetResponse();
+    delete conn2;
 
     conn1->setReadBuf(body.substr(0, 500));
     uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}});
@@ -41,6 +41,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     EXPECT_EQ(201, conn1->_response.statusCode);
     EXPECT_EQ("Created", conn1->_response.statusMessage);
 
+    conn2 = setupConnWithContentLength(filename, body.length());
     conn2->setReadBuf(body);
     uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
     EXPECT_EQ(200, conn2->_response.statusCode);

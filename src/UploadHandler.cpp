@@ -152,9 +152,10 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
             uploadCtx.state = UploadContext::Initialising;
             break; // will fallthrough
         case UploadContext::Initialising:
-            // std::remove((cfg.root + req.uri).c_str());
-            if (!_initUploadCxt(conn, req, cfg))
+            if (!_initUploadCxt(conn, req, cfg)) {
+                conn->setState(Connection::SendResponse);
                 return;
+            }
             uploadCtx.state = UploadContext::Uploading;
             break; // will fallthrough
         case UploadContext::Uploading:
