@@ -88,48 +88,35 @@ bool isValidContentType(const std::string& str) {
 }
 
 bool checkQValue(const std::string& str) {
-    size_t pos = 0;
+    size_t pos = str.find("q=");
 
-    while (pos < str.size()) {
-        // Look for 'q'
-        if (str[pos] == 'q') {
+    while (pos != std::string::npos) {
+        pos += 2; // Skip past "q="
+
+        // Skip whitespace
+        while (pos < str.size() && str[pos] == ' ')
             ++pos;
 
-            // Skip whitespace
-            while (pos < str.size() && str[pos] == ' ')
-                ++pos;
+        // Must start with digit
+        if (pos >= str.size() || !isdigit(str[pos]))
+            return false;
 
-            // Check for '='
-            if (pos >= str.size() || str[pos] != '=')
-                return false;
-            ++pos;
+        std::string qvalue;
+        while (pos < str.size() && (isdigit(str[pos]) || str[pos] == '.'))
+            qvalue += str[pos++];
 
-            // Skip whitespace again
-            while (pos < str.size() && str[pos] == ' ')
-                ++pos;
+        std::istringstream iss(qvalue);
+        double q;
+        iss >> q;
 
-            // Must be a digit starting the qvalue
-            if (pos >= str.size() || !isdigit(str[pos]))
-                return false;
+        if (iss.fail() || !iss.eof())
+            return false;
 
-            // Parse q-value as a double
-            std::string qvalue;
-            while (pos < str.size() && (isdigit(str[pos]) || str[pos] == '.'))
-                qvalue += str[pos++];
+        if (q < 0.0 || q > 1.0)
+            return false;
 
-            std::istringstream iss(qvalue);
-            double q = 0;
-            iss >> q;
-
-            if (iss.fail() || !iss.eof())
-                return false;
-
-            // Range check
-            if (q < 0.0 || q > 1.0)
-                return false;
-        } else {
-            ++pos;
-        }
+        // Continue searching (in case there are multiple "q=" tokens)
+        pos = str.find("q=", pos);
     }
     return true;
 }
