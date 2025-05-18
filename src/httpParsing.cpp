@@ -395,12 +395,12 @@ bool specificHeaderValidation(
             return false;
         }
     }
-    // if (key == "cookie") {
-    //     if (isValidCookie(value) == false) {
-    //         logger.log("ERROR", "specificHeaderValidation: Invalid Cookie header");
-    //         return false;
-    //     }
-    // }
+    if (key == "cookie") {
+        if (isValidCookie(value) == false) {
+            logger.log("ERROR", "specificHeaderValidation: Invalid Cookie header");
+            return false;
+        }
+    }
     if (key == "range") {
         if (isValidRange(value) == false) {
             logger.log("ERROR", "specificHeaderValidation: Invalid Range header");
