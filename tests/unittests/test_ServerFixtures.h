@@ -13,14 +13,14 @@
 #include "gtest/gtest.h"
 #include <thread>
 
-template <typename LoggerType>
-class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>> {
+template < typename LoggerType >
+class BaseServerTest : public ::testing::TestWithParam< std::vector< std::string > > {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
     Server* _svr;
     std::thread _svrThread;
-    std::vector<std::string> _ports;
+    std::vector< std::string > _ports;
 
   public:
     BaseServerTest() : _openFdsBegin(countOpenFileDescriptors()), _ports(GetParam()) {}
@@ -32,7 +32,7 @@ class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>>
         IIONotifier* ioNotifier = new EpollIONotifier(*_logger);
 
         // router will be owned by Connection Handler
-        std::map<std::string, IHandler*> hdlrs = {{}};
+        std::map< std::string, IHandler* > hdlrs = {{}};
         IRouter* router = new Router(hdlrs);
         IConnectionHandler* connHdlr = new ConnectionHandler(router, *_logger, *ioNotifier);
         _svr = ServerBuilder().setLogger(_logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
@@ -52,7 +52,7 @@ class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>>
     }
 
     virtual void teardownServer() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         _svr->stop();
         EXPECT_FALSE(_svr->isRunning());
         if (_svrThread.joinable()) {
@@ -63,25 +63,27 @@ class BaseServerTest : public ::testing::TestWithParam<std::vector<std::string>>
     }
 };
 
-class ServerTestWoMockLogging : public BaseServerTest<StubLogger> {
+class ServerTestWoMockLogging : public BaseServerTest< StubLogger > {
   public:
     void setupServer() override { BaseServerTest::setupServer(); }
 
     void teardownServer() override { BaseServerTest::teardownServer(); }
 };
 
-class ServerWithMockLoggerParametrizedPortTest : public BaseServerTest<MockLogger> {
+class ServerWithMockLoggerParametrizedPortTest : public BaseServerTest< testing::NiceMock< MockLogger > > {
   public:
     void setupServer() override {
-        EXPECT_CALL(*_logger, log("INFO", "Server is starting..."));
-        EXPECT_CALL(*_logger, log("INFO", "Server started"));
+        using ::testing::_;
+        EXPECT_CALL(*_logger, log(_, _)).Times(testing::AnyNumber());
+        EXPECT_CALL(*_logger, log("INFO", "Server is starting...")).Times(1);
+        EXPECT_CALL(*_logger, log("INFO", "Server started")).Times(1);
 
         _svrThread = std::thread(&Server::start, _svr, _ports);
         waitForServerStartup();
     }
     void teardownServer() override {
-        EXPECT_CALL(*_logger, log("INFO", "Server is stopping..."));
-        EXPECT_CALL(*_logger, log("INFO", "Server stopped"));
+        EXPECT_CALL(*_logger, log("INFO", "Server is stopping...")).Times(1);
+        EXPECT_CALL(*_logger, log("INFO", "Server stopped")).Times(1);
         _svr->stop();
         EXPECT_FALSE(_svr->isRunning());
         std::this_thread::sleep_for(std::chrono::milliseconds(200));

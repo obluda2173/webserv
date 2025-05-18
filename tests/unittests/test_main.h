@@ -14,15 +14,16 @@
 #include <sys/types.h>
 #include <vector>
 
-class MockLogger;
+#include "test_mocks.h"
+// class MockLogger;
 
 // test_utils.h
 int countOpenFileDescriptors();
 
 // test_server.cpp
-void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientPort, std::string& clientIp,
-                                  struct addrinfo* svrAddrInfo);
-void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort, int nbrConns);
+void testOneConnectionWithLogging(testing::NiceMock< MockLogger >* mLogger, std::string& clientPort,
+                                  std::string& clientIp, struct addrinfo* svrAddrInfo);
+void testMultipleConnectionsWithLogging(testing::NiceMock< MockLogger >* mLogger, std::string svrPort, int nbrConns);
 void testOneConnection(std::string& clientIp, std::string& clientPort, struct addrinfo* svrAddrInfo);
 void testMultipleConnections(std::string svrPort, int nbrConns);
 void sendMsgInBatches(std::string msg, int clientfd, int batchSize);

@@ -67,7 +67,7 @@ prepare_unittests:
 	@mkdir tests/unittests/test_files/UploadHandler/uploads/dirCannotOpen || \
 	chmod 000 tests/unittests/test_files/UploadHandler/uploads/dirCannotOpen
 
-	@touch tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt || \
+	@touch tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt && \
 	chmod 000 tests/unittests/test_files/UploadHandler/uploads/existDir/fileCannotOpen.txt
 
 clean:

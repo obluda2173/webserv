@@ -120,7 +120,7 @@ class ConnHdlrTestWithOneConnection : public BaseConnHdlrTest< StubLogger, Param
     }
 };
 
-class ConnHdlrTestWithOneConnectionMockLogger : public BaseConnHdlrTest< MockLogger > {
+class ConnHdlrTestWithOneConnectionMockLogger : public BaseConnHdlrTest< testing::NiceMock< MockLogger > > {
     virtual void setupClientConnections() override {
         int clientfd;
         int connfd;

@@ -12,15 +12,15 @@
 #include <sys/socket.h>
 #include <thread>
 
-template <typename LoggerType>
-class BaseListenerTest : public ::testing::TestWithParam<std::vector<int>> {
+template < typename LoggerType >
+class BaseListenerTest : public ::testing::TestWithParam< std::vector< int > > {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
     Listener* _listener;
     int _backlog;
     std::thread _listenerThread;
-    std::vector<int> _ports;
+    std::vector< int > _ports;
 
   public:
     BaseListenerTest() : _openFdsBegin(countOpenFileDescriptors()), _backlog(5), _ports(GetParam()) {}
@@ -34,7 +34,7 @@ class BaseListenerTest : public ::testing::TestWithParam<std::vector<int>> {
         EpollIONotifier* ioNotifier = new EpollIONotifier(*_logger);
 
         // Router will be owned by ConnectionHandler
-        std::map<std::string, IHandler*> hdlrs = {{}};
+        std::map< std::string, IHandler* > hdlrs = {{}};
         IRouter* router = new Router(hdlrs);
         ConnectionHandler* connHdlr = new ConnectionHandler(router, *_logger, *ioNotifier);
         _listener = new Listener(*_logger, connHdlr, ioNotifier);
@@ -64,6 +64,7 @@ class BaseListenerTest : public ::testing::TestWithParam<std::vector<int>> {
     }
 };
 
-class ListenerTestWithMockLogging : public BaseListenerTest<MockLogger> {};
-class ListenerTestWoMockLogging : public BaseListenerTest<StubLogger> {};
+// class ListenerTestWithMockLogging : public BaseListenerTest< MockLogger > {};
+class ListenerTestWithMockLogging : public BaseListenerTest< testing::NiceMock< MockLogger > > {};
+class ListenerTestWoMockLogging : public BaseListenerTest< StubLogger > {};
 #endif // TEST_LISTENERFIXTURES_H

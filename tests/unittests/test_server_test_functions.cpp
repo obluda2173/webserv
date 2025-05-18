@@ -8,8 +8,9 @@
 #include <sys/socket.h>
 #include <thread>
 
-void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientIp, std::string& clientPort,
-                                  struct addrinfo* svrAddr) {
+void testOneConnectionWithLogging(testing::NiceMock< MockLogger >* mLogger, std::string& clientIp,
+                                  std::string& clientPort, struct addrinfo* svrAddr) {
+
     int clientfd = newSocket(clientIp, clientPort, AF_INET);
     ASSERT_GT(clientfd, 0) << "getClientSocket failed";
     EXPECT_CALL(*mLogger, log("INFO", "Connection accepted from IP: " + clientIp + ", Port: " + clientPort));
@@ -18,7 +19,7 @@ void testOneConnectionWithLogging(MockLogger* mLogger, std::string& clientIp, st
     close(clientfd);
 }
 
-void testMultipleConnectionsWithLogging(MockLogger* mLogger, std::string svrPort, int nbrConns) {
+void testMultipleConnectionsWithLogging(testing::NiceMock< MockLogger >* mLogger, std::string svrPort, int nbrConns) {
     std::random_device rd;                               // Obtain a random number from hardware
     std::mt19937 gen(rd());                              // Seed the generator
     std::uniform_int_distribution<> distr1(9000, 20000); // Define the range

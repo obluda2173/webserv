@@ -1,8 +1,6 @@
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
-#include "utils.h"
 #include <errno.h>
-#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
