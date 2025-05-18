@@ -3,6 +3,7 @@
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
 #include <cstring>
+#include <iostream>
 #include <netinet/in.h>
 #include <sys/epoll.h>
 

@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*:*TestHttpParser*";
-    // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*";
+    testing::GTEST_FLAG(filter) = "-*ListenerTestWithMockLogging*:*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ServerTest*";
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*sendMsgsAsync/ConnectionHdlrTestOneConnection.TestPersistenceSendInBatches*";
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
-    testing::GTEST_FLAG(filter) = "*ListenerTest*";
+    // testing::GTEST_FLAG(filter) = "*ListenerTestSimple.connHdlrGetsCalled*";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection:ListenerTest.multiplePortsTestWoLogging";
     // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";

@@ -66,7 +66,6 @@ class BaseServerTest : public ::testing::TestWithParam< std::vector< std::string
 class ServerTestWoMockLogging : public BaseServerTest< StubLogger > {
   public:
     void setupServer() override { BaseServerTest::setupServer(); }
-
     void teardownServer() override { BaseServerTest::teardownServer(); }
 };
 

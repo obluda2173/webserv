@@ -35,7 +35,7 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
     if (notif == READY_TO_WRITE) {
         event.events = EPOLLOUT;
     } else if (notif == READY_TO_READ) {
-        event.events = EPOLLIN | CLIENT_HUNG_UP;
+        event.events = EPOLLIN | EPOLLRDHUP;
     }
     event.data.fd = fd;
     epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event);
