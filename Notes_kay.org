@@ -27,30 +27,32 @@ index       index.html index.htm
   - [X] test for long responses where sent needs to happen more than once
   - [X] make the read and send methods adjustable in buffer size
   - [X] rename to _headersBuf and _bodyBuf
-** listener
+** DONE listener
 - [X] Listener call ConnectionHandler for multiple descriptors and notifications
 - [X] revisit listener tests and make them independent of Logging
-- [ ] see if you can write a better test for the listener
-** ResponseWriter
+- [X] see if you can write a better test for the listener
+** DONE Uploadhandler
+1. [X] don't upload to same file simultaneously
+2. [X] don't remove file (test for broken connection basically)
+3. [X] only reply with a response once!
+** TODO ResponseWriter
 - [ ] responseWrite needs to fill out necessary headers
 - [ ] it's the reason why some clients don't close the connection
-** connection Handling (architecture)
+** TODO connection Handling (architecture)
+- [ ] implement HTTP redirect
 - [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
 - [X] normalization of uri needs to be done before routing
+- [-] implement different router for different ports
+  - [X] also handle cases where the routing is failing
+  - [ ] multiple routers
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
     - [ ] also a test for a broken connection and then the file should be closed
   - [ ] add tests for normal UploadHandler to close the files after successful upload
-- [-] implement more than one router
-  - [X] also handle cases where the routing is failing
-  - [ ] multiple routers
-- [ ] handle ClientHungUp
-  - [ ] BrokenConnection just removes the connection
+  - [ ] test for overlapping uploadBody and headers of following request
+- [-] handle ClientHungUp
+  - [X] BrokenConnection just removes the connection
   - [ ] check how ClientHungUp affects the behavior
+  - [ ] write a test that makes sure, that a response is being send, even though the connection is closed
   - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
 - [X] probably change IHandler handle interface (add ConnectionInfo to it)
-** Uploadhandler
-1. [X] don't upload to same file simultaneously
-2. [X] don't remove file (test for broken connection basically)
-3. [X] only reply with a response once!
-4. [ ] test for overlapping uploadBody and headers of following request

@@ -62,8 +62,6 @@ void ConnectionHandler::_removeConnection(int connfd) {
     _ioNotifier.del(connfd);
 }
 
-void ConnectionHandler::_onClientHungUp(int connfd) { _removeConnection(connfd); }
-
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
     struct sockaddr_storage theirAddr;
     int addrlen = sizeof(theirAddr);
@@ -130,7 +128,6 @@ void ConnectionHandler::_onSocketRead(Connection* conn) {
 
 void ConnectionHandler::_onSocketWrite(Connection* conn) {
     _logger.log("INFO", "Sending");
-
     conn->sendResponse();
 
     if (conn->_response.statusCode == 400) {
@@ -158,9 +155,10 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:
-        _onClientHungUp(fd);
+        _removeConnection(fd);
         break;
     case BROKEN_CONNECTION:
+        _removeConnection(fd);
         break;
     }
     return fd;

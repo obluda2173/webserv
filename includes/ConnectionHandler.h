@@ -25,7 +25,6 @@ class ConnectionHandler : public IConnectionHandler {
     void _onSocketRead(Connection* conn);
     void _onSocketWrite(Connection* conn);
     void _handleState(Connection* conn);
-    void _onClientHungUp(int conn);
     void _updateNotifier(Connection* conn);
     void _removeConnection(int connfd);
 
