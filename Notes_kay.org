@@ -35,6 +35,7 @@ index       index.html index.htm
 - [ ] it's the reason why some clients don't close the connection
 ** connection Handling (architecture)
 - [X] normalization of uri needs to be done before routing
+- [ ] epolll doesn
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
     - [ ] also a test for a broken connection and then the file should be closed

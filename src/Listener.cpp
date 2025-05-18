@@ -1,6 +1,8 @@
 #include "Listener.h"
+#include "EpollIONotifier.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
+#include "utils.h"
 #include <cstring>
 #include <netinet/in.h>
 #include <sys/epoll.h>
@@ -16,15 +18,17 @@ Listener::~Listener() {
 void Listener::listen() {
     _isListening = true;
     while (_isListening) {
-        int fd; // TODO: take not only one connection but #ready connections
-        e_notif notif;
-        int ready = _ioNotifier->wait(&fd, &notif);
+        int fds[NBR_EVENTS_NOTIFIER]; // TODO: take not only one connection but #ready connections
+        e_notif notifs[NBR_EVENTS_NOTIFIER];
+        int ready = _ioNotifier->wait(fds, notifs);
         if (ready == 0)
             continue;
         if (!_isListening)
             break;
 
-        _connHdlr->handleConnection(fd, notif);
+        for (int i = 0; i < ready; i++) {
+            _connHdlr->handleConnection(fds[i], notifs[i]);
+        }
     }
 }
 
