@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
 
     // only run the following test
-    testing::GTEST_FLAG(filter) = "*TestHttpParser*";
+    // testing::GTEST_FLAG(filter) = "*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionMockLogger*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections.sendMsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";
-    // testing::GTEST_FLAG(filter) = "*ListenerTest*";
+    testing::GTEST_FLAG(filter) = "*ListenerTest*";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection:ListenerTest.multiplePortsTestWoLogging";
     // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";
