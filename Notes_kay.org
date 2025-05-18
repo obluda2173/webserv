@@ -28,8 +28,9 @@ index       index.html index.htm
   - [X] make the read and send methods adjustable in buffer size
   - [X] rename to _headersBuf and _bodyBuf
 ** listener
-- [ ] ioNotifier.wait fills up multiples descriptors and notifications
-- [ ] revisit listener tests and make them independent of Logging
+- [X] Listener call ConnectionHandler for multiple descriptors and notifications
+- [X] revisit listener tests and make them independent of Logging
+- [ ] see if you can write a better test for the listener
 ** ResponseWriter
 - [ ] responseWrite needs to fill out necessary headers
 - [ ] it's the reason why some clients don't close the connection
