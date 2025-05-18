@@ -272,6 +272,7 @@ bool isValidCookie(std::string str) {
     std::istringstream iss(str);
     std::string token;
     while (std::getline(iss, token, ';')) {
+        token.erase(0, token.find_first_not_of(" "));
         tokens.push_back(token);
     }
     for (size_t i = 0; i < tokens.size(); i++) {
@@ -395,12 +396,12 @@ bool specificHeaderValidation(
             return false;
         }
     }
-    // if (key == "cookie") {
-    //     if (isValidCookie(value) == false) {
-    //         logger.log("ERROR", "specificHeaderValidation: Invalid Cookie header");
-    //         return false;
-    //     }
-    // }
+    if (key == "cookie") {
+        if (isValidCookie(value) == false) {
+            logger.log("ERROR", "specificHeaderValidation: Invalid Cookie header");
+            return false;
+        }
+    }
     if (key == "range") {
         if (isValidRange(value) == false) {
             logger.log("ERROR", "specificHeaderValidation: Invalid Range header");
