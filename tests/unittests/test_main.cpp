@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInOneMsg*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTest*";
+    // testing::GTEST_FLAG(filter) = "*Listener*";
+    testing::GTEST_FLAG(filter) = "*ListenerNotificationTest*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWithMockLogging.closing*";
     // testing::GTEST_FLAG(filter) = "*ListenerTestWo*";

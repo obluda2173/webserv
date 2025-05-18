@@ -20,91 +20,139 @@ class StubConnectionHandler : public IConnectionHandler {
     }
 };
 
-TEST(ListenerTestSimple, connHdlrGetsCalled) {
-    ILogger* logger = new StubLogger();
-    EpollIONotifier* ioNotifier = new EpollIONotifier(*logger);
+class ListenerTest : public ::testing::Test {
+  protected:
+    void SetUp() override {
+        logger = new StubLogger();
+        ioNotifier = new EpollIONotifier(*logger);
+        connHdlr = new StubConnectionHandler();
+
+        // Set up server socket
+        getAddrInfoHelper(NULL, std::to_string(8080).c_str(), AF_INET, &svrAddrInfo);
+        portfd = newListeningSocket(svrAddrInfo, 5);
+        ioNotifier->add(portfd);
+
+        // Create and start listener
+        listener = new Listener(*logger, connHdlr, ioNotifier);
+        listener->add(portfd);
+        listenerThread = std::thread(&Listener::listen, listener);
+
+        // Allow time for listener to start
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
+    void TearDown() override {
+        listener->stop();
+        if (listenerThread.joinable())
+            listenerThread.join();
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+        freeaddrinfo(svrAddrInfo);
+        delete listener;
+        delete logger;
+    }
+
+    // Helper functions
+    int connectClient(const std::string& ip, const std::string& port) {
+        int clientfd = newSocket(ip, port, AF_INET);
+        EXPECT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0)
+            << "connect: " << strerror(errno);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        return clientfd;
+    }
+
+    int acceptConnection() {
+        struct sockaddr_storage theirAddr;
+        int addrlen = sizeof(theirAddr);
+        int connfd = accept(portfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
+        ioNotifier->add(connfd);
+        return connfd;
+    }
+
+    void clearHandlerCalls() { connHdlr->_calledWith = {}; }
+
+    bool isHandlerCalledWith(int fd, e_notif notification) {
+        return connHdlr->_calledWith.find(std::pair< int, e_notif >{fd, notification}) != connHdlr->_calledWith.end();
+    }
+
+    ILogger* logger;
+    EpollIONotifier* ioNotifier;
+    StubConnectionHandler* connHdlr;
     struct addrinfo* svrAddrInfo;
-    getAddrInfoHelper(NULL, std::to_string(8080).c_str(), AF_INET, &svrAddrInfo);
-    int portfd = newListeningSocket(svrAddrInfo, 5);
-    ioNotifier->add(portfd);
+    int portfd;
+    Listener* listener;
+    std::thread listenerThread;
+};
 
-    StubConnectionHandler* connHdlr = new StubConnectionHandler();
-    Listener* listener = new Listener(*logger, connHdlr, ioNotifier);
-    listener->add(portfd);
-    std::thread listenerThread = std::thread(&Listener::listen, listener);
+struct NotificationTestParams {
+    e_notif notification;
+    std::function< void(int, EpollIONotifier*, int) > setupAction;
+    std::string description;
+};
 
+class ListenerNotificationTest : public ListenerTest, public ::testing::WithParamInterface< NotificationTestParams > {};
+
+TEST_P(ListenerNotificationTest, HandlesDifferentIONotifications) {
+    const auto& params = GetParam();
+
+    // Set up client connection
+    int clientfd = connectClient("127.0.0.3", "12345");
+    ASSERT_TRUE(isHandlerCalledWith(portfd, READY_TO_READ));
+
+    // Accept connection
+    int connfd = acceptConnection();
+    clearHandlerCalls();
+
+    // Perform setup action to trigger notification
+    params.setupAction(clientfd, ioNotifier, connfd);
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
-    std::string clientPort = "12345";
-    std::string clientIp = "127.0.0.3";
-    int clientfd = newSocket(clientIp, clientPort, AF_INET);
-    ASSERT_EQ(connect(clientfd, svrAddrInfo->ai_addr, svrAddrInfo->ai_addrlen), 0) << "connect: " << strerror(errno);
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    // Verify correct notification was processed
+    ASSERT_TRUE(isHandlerCalledWith(connfd, params.notification));
+
+    // Clean up client connection if needed
+    if (clientfd > 0 && params.notification != BROKEN_CONNECTION) {
+        close(clientfd);
+    }
+}
+
+// Define test parameters
+INSTANTIATE_TEST_SUITE_P(
+    ListenerIOEvents, ListenerNotificationTest,
+    ::testing::Values(
+        NotificationTestParams{READY_TO_READ,
+                               [](int clientfd, EpollIONotifier*, int) { send(clientfd, "message", 7, 0); },
+                               "Connection is ready to read"},
+        NotificationTestParams{
+            READY_TO_WRITE,
+            [](int, EpollIONotifier* notifier, int connfd) { notifier->modify(connfd, READY_TO_WRITE); },
+            "Connection is ready to write"},
+        NotificationTestParams{CLIENT_HUNG_UP, [](int clientfd, EpollIONotifier*, int) { shutdown(clientfd, SHUT_WR); },
+                               "Client hung up"},
+        NotificationTestParams{BROKEN_CONNECTION,
+                               [](int clientfd, EpollIONotifier*, int) {
+                                   struct linger so_linger;
+                                   so_linger.l_onoff = 1;  // Enable linger
+                                   so_linger.l_linger = 0; // Zero timeout - immediate RST
+                                   setsockopt(clientfd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger));
+                                   close(clientfd);
+                               },
+                               "Connection is broken"}),
+    [](const testing::TestParamInfo< NotificationTestParams >& info) {
+        // Create test name based on notification type
+        std::string name = info.param.description;
+        // Remove spaces and special characters for a valid test name
+        std::replace(name.begin(), name.end(), ' ', '_');
+        std::replace(name.begin(), name.end(), '-', '_');
+        return name;
+    });
+
+// Simple test for initial connection
+TEST_F(ListenerTest, ConnectionHandlerReceivesNewConnection) {
+    int clientfd = connectClient("127.0.0.3", "12345");
     ASSERT_EQ(connHdlr->_calledWith.size(), 1);
-    ASSERT_TRUE(connHdlr->_calledWith.find(std::pair< int, e_notif >{portfd, READY_TO_READ}) !=
-                connHdlr->_calledWith.end());
-
-    struct sockaddr_storage theirAddr;
-    int addrlen = sizeof(theirAddr);
-    int connfd = accept(portfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
-
-    ioNotifier->add(connfd);
-    ASSERT_FALSE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, READY_TO_READ}) !=
-                 connHdlr->_calledWith.end());
-    send(clientfd, "message", 7, 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    ASSERT_TRUE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, READY_TO_READ}) !=
-                connHdlr->_calledWith.end());
-    char buffer[1024];
-    recv(connfd, buffer, 1024, 0);
-
-    ASSERT_FALSE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, READY_TO_WRITE}) !=
-                 connHdlr->_calledWith.end());
-    ioNotifier->modify(connfd, READY_TO_WRITE);
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    ASSERT_TRUE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, READY_TO_WRITE}) !=
-                connHdlr->_calledWith.end());
-
-    connHdlr->_calledWith = {};
-    ASSERT_FALSE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, READY_TO_READ}) !=
-                 connHdlr->_calledWith.end());
-    ioNotifier->modify(connfd, READY_TO_READ);
-    send(clientfd, "message", 7, 0);
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    ASSERT_TRUE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, READY_TO_READ}) !=
-                connHdlr->_calledWith.end());
-    recv(connfd, buffer, 1024, 0);
-
-    connHdlr->_calledWith = {};
-    struct linger so_linger;
-    so_linger.l_onoff = 1;  // Enable linger
-    so_linger.l_linger = 0; // Zero timeout - immediate RST
-
-    setsockopt(clientfd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger));
-    close(clientfd); // This should now trigger EPOLLHUP on the server side
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    ASSERT_TRUE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, BROKEN_CONNECTION}) !=
-                connHdlr->_calledWith.end());
-
-    // connHdlr->_calledWith = {};
-    // close(clientfd);
-    // // shutdown(clientfd, SHUT_WR);
-    // std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    // ASSERT_EQ(connHdlr->_calledWith.size(), 1);
-    // ASSERT_TRUE(connHdlr->_calledWith.find(std::pair< int, e_notif >{connfd, CLIENT_HUNG_UP}) !=
-    //             connHdlr->_calledWith.end());
-    // size_t r = recv(connfd, buffer, 1024, 0);
-    // ASSERT_EQ(0, r);
-
-    freeaddrinfo(svrAddrInfo);
-
-    listener->stop();
-    if (listenerThread.joinable())
-        listenerThread.join();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-    delete listener;
-    delete logger;
+    ASSERT_TRUE(isHandlerCalledWith(portfd, READY_TO_READ));
+    close(clientfd);
 }
 
 TEST_P(ListenerTestWithMockLogging, closingAConnection) {
