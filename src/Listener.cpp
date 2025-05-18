@@ -2,7 +2,6 @@
 #include "EpollIONotifier.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
-#include "utils.h"
 #include <cstring>
 #include <netinet/in.h>
 #include <sys/epoll.h>
@@ -26,9 +25,8 @@ void Listener::listen() {
         if (!_isListening)
             break;
 
-        for (int i = 0; i < ready; i++) {
+        for (int i = 0; i < ready; i++)
             _connHdlr->handleConnection(fds[i], notifs[i]);
-        }
     }
 }
 

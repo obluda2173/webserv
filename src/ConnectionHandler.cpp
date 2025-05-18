@@ -4,7 +4,6 @@
 #include "IIONotifier.h"
 #include "handlerUtils.h"
 #include "logging.h"
-#include "utils.h"
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -51,7 +50,6 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
 
 void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
     logConnection(_logger, theirAddr);
-    _logger.log("INFO", "\t New file descriptor: " + to_string(connfd));
     Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
     _connections[connfd] = conn;
     _ioNotifier.add(connfd);
@@ -64,10 +62,7 @@ void ConnectionHandler::_removeConnection(int connfd) {
     _ioNotifier.del(connfd);
 }
 
-void ConnectionHandler::_onClientHungUp(int connfd) {
-    _logger.log("INFO", "Client Hung up");
-    _removeConnection(connfd);
-}
+void ConnectionHandler::_onClientHungUp(int connfd) { _removeConnection(connfd); }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
     struct sockaddr_storage theirAddr;
@@ -126,11 +121,9 @@ void ConnectionHandler::_handleState(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketRead(Connection* conn) {
-    _logger.log("INFO", "Reading");
     conn->readIntoBuf();
-    if (conn->_readBuf.size() == 0) {
-        return _onClientHungUp(conn->getFileDes());
-    }
+    if (conn->_readBuf.size() == 0) // EOF
+        return _removeConnection(conn->getFileDes());
     _handleState(conn);
     return;
 }
@@ -145,11 +138,9 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
         return;
     }
     if (conn->getState() == Connection::Reset) {
-        _logger.log("INFO", "Resetting");
         conn->resetResponse();
         conn->setState(Connection::ReadingHeaders);
         _handleState(conn); // possibly data inside Connection
-        _logger.log("INFO", "Reset");
         return;
     }
 }
@@ -158,24 +149,18 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     if (_connections.find(fd) == _connections.end())
         return _acceptNewConnection(fd);
 
-    _logger.log("INFO", "Handling Connection");
-    _logger.log("INFO", "\t Notif: " + to_string(notif));
     Connection* conn = _connections[fd];
     switch (notif) {
     case READY_TO_READ:
-        _logger.log("INFO", "Handling Read");
         _onSocketRead(conn);
         break;
     case READY_TO_WRITE:
-        _logger.log("INFO", "Handling Write");
         _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:
-        _logger.log("INFO", "Handling Client Hung Up");
         _onClientHungUp(fd);
         break;
     case BROKEN_CONNECTION:
-        _logger.log("INFO", "Handling Broken Connection");
         break;
     }
     return fd;

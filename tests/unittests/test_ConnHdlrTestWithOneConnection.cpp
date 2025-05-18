@@ -1,5 +1,16 @@
+#include "IIONotifier.h"
 #include "test_ConnectionHandlerFixture.h"
+#include <sys/socket.h>
 #include <thread>
+
+TEST_F(ConnHdlrTestWithOneConnectionMockLogger, TestShutdownClosesConnection) {
+    int clientfd = _clientFdsAndConnFds[0].first;
+    int connfd = _clientFdsAndConnFds[0].second;
+
+    close(clientfd);
+    EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Disconnect IP")));
+    _connHdlr->handleConnection(connfd, READY_TO_READ);
+}
 
 TEST_F(ConnHdlrTestWithOneConnection, TestBadRequestClosesConnection) {
     // testing that a bad request is going to close the connection

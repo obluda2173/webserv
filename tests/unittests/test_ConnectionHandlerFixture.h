@@ -11,6 +11,7 @@
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
+#include "gmock/gmock.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <netdb.h>
@@ -113,6 +114,22 @@ class ConnHdlrTestWithOneConnection : public BaseConnHdlrTest< StubLogger, Param
         clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
         ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
             << "connect: " << std::strerror(errno) << std::endl;
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
+    }
+};
+
+class ConnHdlrTestWithOneConnectionMockLogger : public BaseConnHdlrTest< MockLogger > {
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int connfd;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+
+        EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Connection accepted from IP: ")));
         connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
         fcntl(clientfd, F_SETFL, O_NONBLOCK);
         _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});

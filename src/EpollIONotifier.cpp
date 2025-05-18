@@ -48,15 +48,6 @@ int EpollIONotifier::wait(int* fds, e_notif* notifs) {
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 1000);
 
     if (ready > 0) {
-        _logger.log("INFO", to_string(ready) + " events were polled");
-        for (int i = 0; i < ready; i++) {
-            _logger.log("INFO", "\t Fd: " + to_string(events[i].data.fd) + " was polled");
-            _logger.log("INFO", "\t Event: " + to_string(events[i].events) + " was polled");
-        }
-    }
-
-    sleep(2);
-    if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             fds[i] = events[i].data.fd;
             if (events[i].events & EPOLLHUP)
