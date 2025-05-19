@@ -21,7 +21,7 @@ TEST_P(ConnHdlrTestAsyncMultipleConnections, sendMsgsAsync) {
             int connfd = _clientFdsAndConnFds[count].second;
 
             send(clientfd, toBeSent.c_str(), toBeSent.length(), 0);
-            readTillNothingMoreToRead(_ioNotifier, _connHdlr, connfd, 2);
+            readTillNothingMoreToRead(_ioNotifier, _connHdlr, connfd);
 
             recv(clientfd, buffer, 1024, 0);
             ASSERT_EQ(errno, EWOULDBLOCK);

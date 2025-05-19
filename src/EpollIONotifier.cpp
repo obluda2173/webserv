@@ -41,28 +41,7 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
     epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event);
 }
 
-int EpollIONotifier::wait(int* fds, e_notif* notifs) {
-    struct epoll_event events[NBR_EVENTS_NOTIFIER];
-    int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
-
-    if (ready > 0) {
-        for (int i = 0; i < ready; i++) {
-            fds[i] = events[i].data.fd;
-            if (events[i].events & EPOLLHUP)
-                notifs[i] = BROKEN_CONNECTION;
-            else if (events[i].events & EPOLLRDHUP) {
-                notifs[i] = CLIENT_HUNG_UP;
-            } else if (events[i].events & EPOLLIN)
-                notifs[i] = READY_TO_READ;
-            else if (events[i].events & EPOLLOUT)
-                notifs[i] = READY_TO_WRITE;
-        }
-    } else
-        *fds = -1;
-    return ready;
-}
-
-std::vector< t_notif > EpollIONotifier::waitVector(void) {
+std::vector< t_notif > EpollIONotifier::wait(void) {
     std::vector< t_notif > results;
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);

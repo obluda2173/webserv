@@ -32,7 +32,7 @@ bool allZero(std::vector< std::string > msgs);
 bool checkNotification(IIONotifier* ioNotifier, t_notif wantNotif);
 
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
-void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents);
+void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
 std::string getRandomString(size_t length);
 Router newRouterTest();

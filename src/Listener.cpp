@@ -18,7 +18,7 @@ void Listener::listen() {
     _isListening = true;
     while (_isListening) {
         std::vector< t_notif > notifs;
-        notifs = _ioNotifier->waitVector();
+        notifs = _ioNotifier->wait();
         if (notifs.size() == 0)
             continue;
         if (!_isListening)

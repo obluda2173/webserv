@@ -27,7 +27,7 @@ TEST(IONotifierTest, DetectsBrokenConnection) {
     close(clientSocket);
 
     // Wait for the notification
-    std::vector< t_notif > notifs = ioNotifier.waitVector();
+    std::vector< t_notif > notifs = ioNotifier.wait();
 
     // Check that we got the correct notification
     ASSERT_GT(notifs.size(), 0) << "No events detected";
@@ -57,7 +57,7 @@ TEST(IONotifierTest, DetectsBrokenConnection2) {
     shutdown(clientSocket, SHUT_RDWR);
 
     // Wait for the notification
-    std::vector< t_notif > notifs = ioNotifier.waitVector();
+    std::vector< t_notif > notifs = ioNotifier.wait();
 
     // Check that we got the correct notification
     ASSERT_GT(notifs.size(), 0) << "No events detected";
@@ -87,7 +87,7 @@ TEST(IONotifierTest, DetectsClientHungUp) {
     shutdown(clientSocket, SHUT_WR);
 
     // Wait for the notification
-    std::vector< t_notif > notifs = ioNotifier.waitVector();
+    std::vector< t_notif > notifs = ioNotifier.wait();
 
     // Check that we got the correct notification
     ASSERT_GT(notifs.size(), 0) << "No events detected";

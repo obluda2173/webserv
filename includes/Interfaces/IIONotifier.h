@@ -14,8 +14,7 @@ class IIONotifier {
     virtual ~IIONotifier(void) {}
     virtual void add(int fd) = 0;
     virtual void del(int fd) = 0;
-    virtual int wait(int* fds, e_notif* notif) = 0;
-    virtual std::vector< t_notif > waitVector(void) = 0;
+    virtual std::vector< t_notif > wait(void) = 0;
     virtual void modify(int fd, e_notif notif) = 0;
 };
 
