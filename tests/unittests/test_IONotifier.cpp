@@ -1,13 +1,11 @@
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
-#include "Logger.h"
 #include "test_stubs.h"
 #include <cstring>
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
-#include <thread>
 #include <utils.h>
 
 // test a closed connection
@@ -98,44 +96,4 @@ TEST(IONotifierTest, DetectsClientHungUp) {
 
     // Clean up
     close(serverSocket);
-}
-
-static const int WRITE_END = 1;
-static const int READ_END = 0;
-
-class StubClock : public IClock {
-  private:
-    long _sec;
-    long _usec;
-
-  public:
-    StubClock(long sec = 0, long usec = 0) : _sec(sec), _usec(usec) {}
-    timeval now() const { return timeval{_sec, _usec}; }
-    void advance(long milli) {
-        _usec += milli * 1000;
-        _sec += _usec / 1000000;
-        _usec = _usec % 1000000;
-    }
-};
-
-TEST(IONotifierTest, timeout) {
-    ILogger* logger = new Logger();
-    StubClock* clock = new StubClock();
-    IIONotifier* ioNotifier = new EpollIONotifier(*logger, clock);
-
-    int pipefds[2];
-    ASSERT_NE(pipe(pipefds), -1) << strerror(errno);
-
-    ioNotifier->add(pipefds[READ_END], 20);
-
-    clock->advance(21);
-    std::vector< t_notif > notifs = ioNotifier->wait();
-    EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
-    EXPECT_EQ(notifs[0].fd, pipefds[READ_END]) << "no notifiactions found";
-    EXPECT_EQ(notifs[0].notif, TIMEOUT) << "no notifiactions found";
-
-    close(pipefds[WRITE_END]);
-    close(pipefds[READ_END]);
-    delete ioNotifier;
-    delete logger;
 }

@@ -1,8 +1,10 @@
 #ifndef EPOLLMANAGER_H
 #define EPOLLMANAGER_H
 
+#include "IClock.h"
 #include "IIONotifier.h"
 #include "ILogger.h"
+#include "SystemClock.h"
 #include <ctime>
 #include <sys/epoll.h>
 #include <sys/time.h>
@@ -11,21 +13,6 @@
 #ifndef NBR_EVENTS_NOTIFIER
 #define NBR_EVENTS_NOTIFIER 10
 #endif
-
-class IClock {
-  public:
-    virtual ~IClock() {}
-    virtual timeval now() const = 0;
-};
-
-class SystemClock : public IClock {
-  public:
-    timeval now() const {
-        timeval now_;
-        gettimeofday(&now_, NULL);
-        return now_;
-    }
-};
 
 class EpollIONotifier : public IIONotifier {
   private:
