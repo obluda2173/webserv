@@ -18,6 +18,7 @@ class ConnectionHandler : public IConnectionHandler {
   private:
     std::map< int, Connection* > _connections;
     IRouter* _router;
+    std::map< int, IRouter* > _routers;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
@@ -30,6 +31,7 @@ class ConnectionHandler : public IConnectionHandler {
 
   public:
     ConnectionHandler(IRouter*, ILogger&, IIONotifier&);
+    ConnectionHandler(std::map< int, IRouter* >, ILogger&, IIONotifier&);
     ~ConnectionHandler(void);
     int handleConnection(int conn, e_notif notif);
 };
