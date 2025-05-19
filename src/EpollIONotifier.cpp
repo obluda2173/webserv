@@ -29,7 +29,8 @@ void EpollIONotifier::add(int fd, long timeout_ms) {
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
-    _fdInfos[fd] = FdInfo{_clock->now(), timeout_ms};
+    _fdInfos[fd].lastActivity = _clock->now();
+    _fdInfos[fd].timeout_ms = timeout_ms;
 }
 
 void EpollIONotifier::addNoTimeout(int fd) {
@@ -71,22 +72,31 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             int fd = events[i].data.fd;
+            t_notif notif;
+            notif.fd = fd;
             if (_fdInfos.find(fd) != _fdInfos.end())
                 _fdInfos[fd].lastActivity = _now;
+
             if (events[i].events & EPOLLHUP)
-                results.push_back(t_notif{fd, BROKEN_CONNECTION});
+                notif.notif = BROKEN_CONNECTION;
             else if (events[i].events & EPOLLRDHUP)
-                results.push_back(t_notif{fd, CLIENT_HUNG_UP});
+                notif.notif = CLIENT_HUNG_UP;
             else if (events[i].events & EPOLLIN)
-                results.push_back(t_notif{fd, READY_TO_READ});
+                notif.notif = READY_TO_READ;
             else if (events[i].events & EPOLLOUT)
-                results.push_back(t_notif{fd, READY_TO_WRITE});
+                notif.notif = READY_TO_WRITE;
+
+            results.push_back(notif);
         }
     }
 
     for (std::map< int, FdInfo >::iterator it = _fdInfos.begin(); it != _fdInfos.end(); it++) {
-        if (it->second.timeout_ms <= diffTime(it->second.lastActivity, _now))
-            results.push_back(t_notif{it->first, TIMEOUT});
+        if (it->second.timeout_ms <= diffTime(it->second.lastActivity, _now)) {
+            t_notif notif;
+            notif.fd = it->first;
+            notif.notif = TIMEOUT;
+            results.push_back(notif);
+        }
     }
 
     return results;

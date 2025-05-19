@@ -41,7 +41,10 @@ index       index.html index.htm
 - [ ] it's the reason why some clients don't close the connection
 ** TODO connection Handling (architecture)
 - [ ] implement HTTP redirect
-- [ ] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
+- [-] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
+  - [X] built the mechanism inside notifier
+  - [ ] log the timeout correctly
+  - [ ] test that the connection is removed from ioNotifier when the connectionHandler is called with a timeout
 - [X] normalization of uri needs to be done before routing
 - [-] implement different router for different ports
   - [X] also handle cases where the routing is failing
@@ -57,3 +60,4 @@ index       index.html index.htm
   - [ ] write a test that makes sure, that a response is being send, even though the connection is closed
   - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
 - [X] probably change IHandler handle interface (add ConnectionInfo to it)
+- [ ] there is still == 400 in the onSocketWrite

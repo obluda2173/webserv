@@ -63,6 +63,17 @@ void ConnectionHandler::_removeConnection(int connfd) {
 }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
+
+    // sockaddr_in addr;
+    // socklen_t addr_len = sizeof(addr);
+    // if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
+    //     std::cerr << "Error getting socket information" << std::endl;
+    // }
+
+    // // Get the port number, noting that network byte order must be converted to host byte order
+    // int port = ntohs(addr.sin_port);
+    // std::cout << "Socket is bound to port: " << port << std::endl;
+
     struct sockaddr_storage theirAddr;
     int addrlen = sizeof(theirAddr);
     int fd = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);

@@ -1,5 +1,4 @@
 #include "Listener.h"
-#include "EpollIONotifier.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
 #include <cstring>
