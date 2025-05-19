@@ -25,7 +25,7 @@ EpollIONotifier::~EpollIONotifier(void) {
     delete _clock;
 }
 
-void EpollIONotifier::add(int fd, unsigned int timeout_ms) {
+void EpollIONotifier::add(int fd, long timeout_ms) {
     _timeout_ms = timeout_ms;
     _lastTime = _clock->now();
     _fd = fd;

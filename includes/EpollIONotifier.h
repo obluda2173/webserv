@@ -19,7 +19,7 @@ class EpollIONotifier : public IIONotifier {
     ILogger& _logger;
     IClock* _clock;
     int _epfd;
-    unsigned int _timeout_ms;
+    long _timeout_ms;
     timeval _lastTime;
     timeval _now;
     int _fd;
@@ -27,7 +27,7 @@ class EpollIONotifier : public IIONotifier {
   public:
     EpollIONotifier(ILogger& logger, IClock* clock = new SystemClock());
     ~EpollIONotifier(void);
-    void add(int fd, unsigned int timeout_ms = 30000);
+    void add(int fd, long timeout_ms = 30000);
     void modify(int fd, e_notif notif);
     void del(int fd);
     std::vector< t_notif > wait(void);
