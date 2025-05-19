@@ -103,6 +103,15 @@ TEST(IONotifierTest, DetectsClientHungUp) {
 static const int WRITE_END = 1;
 static const int READ_END = 0;
 
+class StubClock : public IClock {
+  private:
+    long _sec;
+    long _usec;
+
+  public:
+    timeval now() { return timeval{_sec, _usec}; }
+};
+
 TEST(IONotifierTest, timeout) {
     ILogger* logger = new Logger();
     IIONotifier* ioNotifier = new EpollIONotifier(*logger);

@@ -5,22 +5,39 @@
 #include "ILogger.h"
 #include <ctime>
 #include <sys/epoll.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #ifndef NBR_EVENTS_NOTIFIER
 #define NBR_EVENTS_NOTIFIER 10
 #endif
 
+class IClock {
+  public:
+    virtual ~IClock() {}
+    virtual timeval now() = 0;
+};
+
+class SystemClock : public IClock {
+  public:
+    timeval now() {
+        timeval now_;
+        gettimeofday(&now_, NULL);
+        return now_;
+    }
+};
+
 class EpollIONotifier : public IIONotifier {
   private:
     ILogger& _logger;
+    IClock* _clock;
     int _epfd;
-    int _timeout_ms;
+    unsigned int _timeout_ms;
     timeval _lastTime;
     timeval _now;
 
   public:
-    EpollIONotifier(ILogger& logger);
+    EpollIONotifier(ILogger& logger, IClock* clock = new SystemClock());
     ~EpollIONotifier(void);
     void add(int fd, unsigned int timeout_ms = 30000);
     void modify(int fd, e_notif notif);

@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-EpollIONotifier::EpollIONotifier(ILogger& logger) : _logger(logger) {
+EpollIONotifier::EpollIONotifier(ILogger& logger, IClock* clock) : _logger(logger), _clock(clock) {
     _epfd = epoll_create(1);
     if (_epfd == -1) {
         _logger.log("ERROR", "epoll_create: " + std::string(strerror(errno)));
@@ -21,11 +21,12 @@ EpollIONotifier::~EpollIONotifier(void) {
         _logger.log("ERROR", "close: " + std::string(strerror(errno)));
         exit(1);
     }
+    delete _clock;
 }
 
 void EpollIONotifier::add(int fd, unsigned int timeout_ms) {
     _timeout_ms = timeout_ms;
-    gettimeofday(&_lastTime, NULL);
+    _lastTime = _clock->now();
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
@@ -57,7 +58,7 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
 
-    gettimeofday(&_now, nullptr);
+    _now = _clock->now();
 
     if (_timeout_ms < diffTime(_lastTime, _now)) {
         results.push_back(t_notif{-1, READY_TO_READ});

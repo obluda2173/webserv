@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
 
     // only run the following test
-    testing::GTEST_FLAG(filter) = "*IONotifierTest*";
+    // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections*";
     // testing::GTEST_FLAG(filter) = "*TestHttpParser*";
