@@ -109,7 +109,13 @@ class StubClock : public IClock {
     long _usec;
 
   public:
-    timeval now() { return timeval{_sec, _usec}; }
+    StubClock(long sec = 0, long usec = 0) : _sec(sec), _usec(usec) {}
+    timeval now() const { return timeval{_sec, _usec}; }
+    void advance(long milli) {
+        _usec += milli * 1000;
+        _sec += _usec / 1000000;
+        _usec = _usec % 1000000;
+    }
 };
 
 TEST(IONotifierTest, timeout) {

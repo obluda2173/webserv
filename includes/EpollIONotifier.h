@@ -15,12 +15,12 @@
 class IClock {
   public:
     virtual ~IClock() {}
-    virtual timeval now() = 0;
+    virtual timeval now() const = 0;
 };
 
 class SystemClock : public IClock {
   public:
-    timeval now() {
+    timeval now() const {
         timeval now_;
         gettimeofday(&now_, NULL);
         return now_;
