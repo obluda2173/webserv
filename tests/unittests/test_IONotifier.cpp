@@ -1,11 +1,13 @@
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
+#include "Logger.h"
 #include "test_stubs.h"
 #include <cstring>
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <thread>
 #include <utils.h>
 
 // test a closed connection
@@ -96,4 +98,27 @@ TEST(IONotifierTest, DetectsClientHungUp) {
 
     // Clean up
     close(serverSocket);
+}
+
+static const int WRITE_END = 1;
+static const int READ_END = 0;
+
+TEST(IONotifierTest, timeout) {
+    ILogger* logger = new Logger();
+    IIONotifier* ioNotifier = new EpollIONotifier(*logger);
+    (void)ioNotifier;
+
+    int pipefds[2];
+    ASSERT_NE(pipe(pipefds), -1) << strerror(errno);
+
+    ioNotifier->add(pipefds[READ_END], 20);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::vector< t_notif > notifs = ioNotifier->wait();
+    // ASSERT_NE(notifs.size(), 0) << "no notifiactions found";
+
+    close(pipefds[WRITE_END]);
+    close(pipefds[READ_END]);
+    delete ioNotifier;
+    delete logger;
 }

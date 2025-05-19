@@ -21,7 +21,8 @@ EpollIONotifier::~EpollIONotifier(void) {
     }
 }
 
-void EpollIONotifier::add(int fd) {
+void EpollIONotifier::add(int fd, int timeout_ms) {
+    (void)timeout_ms;
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
