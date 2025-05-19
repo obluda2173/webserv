@@ -38,12 +38,8 @@ TEST(HttpParserTest, test1) {
             if (_prsr->error() || _prsr->ready()) {
                 memmove(_readBuf.data(), b + 1, _readBufUsedSize - (count + 1));
                 _readBufUsedSize -= (count + 1);
-                if (_prsr->ready()) {
-                    std::cout << "parsing ready" << std::endl;
+                if (_prsr->ready())
                     _prsr->getRequest();
-                } else {
-                    std::cout << "parsing error" << std::endl;
-                }
                 break;
             }
             b++;

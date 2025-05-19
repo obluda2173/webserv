@@ -17,16 +17,15 @@ Listener::~Listener() {
 void Listener::listen() {
     _isListening = true;
     while (_isListening) {
-        int fds[NBR_EVENTS_NOTIFIER]; // TODO: take not only one connection but #ready connections
-        e_notif notifs[NBR_EVENTS_NOTIFIER];
-        int ready = _ioNotifier->wait(fds, notifs);
-        if (ready == 0)
+        std::vector< t_notif > notifs;
+        notifs = _ioNotifier->waitVector();
+        if (notifs.size() == 0)
             continue;
         if (!_isListening)
             break;
 
-        for (int i = 0; i < ready; i++)
-            _connHdlr->handleConnection(fds[i], notifs[i]);
+        for (size_t i = 0; i < notifs.size(); i++)
+            _connHdlr->handleConnection(notifs[i].fd, notifs[i].notif);
     }
 }
 

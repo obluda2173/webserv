@@ -27,14 +27,12 @@ TEST(IONotifierTest, DetectsBrokenConnection) {
     close(clientSocket);
 
     // Wait for the notification
-    int fd;
-    e_notif notification;
-    int ready = ioNotifier.wait(&fd, &notification);
+    std::vector< t_notif > notifs = ioNotifier.waitVector();
 
     // Check that we got the correct notification
-    ASSERT_GT(ready, 0) << "No events detected";
-    EXPECT_EQ(fd, serverSocket);
-    EXPECT_EQ(notification, BROKEN_CONNECTION);
+    ASSERT_GT(notifs.size(), 0) << "No events detected";
+    EXPECT_EQ(notifs[0].fd, serverSocket);
+    EXPECT_EQ(notifs[0].notif, BROKEN_CONNECTION);
 
     // Clean up
     close(serverSocket);
@@ -59,14 +57,12 @@ TEST(IONotifierTest, DetectsBrokenConnection2) {
     shutdown(clientSocket, SHUT_RDWR);
 
     // Wait for the notification
-    int fd;
-    e_notif notification;
-    int ready = ioNotifier.wait(&fd, &notification);
+    std::vector< t_notif > notifs = ioNotifier.waitVector();
 
     // Check that we got the correct notification
-    ASSERT_GT(ready, 0) << "No events detected";
-    EXPECT_EQ(fd, serverSocket);
-    EXPECT_EQ(notification, BROKEN_CONNECTION);
+    ASSERT_GT(notifs.size(), 0) << "No events detected";
+    EXPECT_EQ(notifs[0].fd, serverSocket);
+    EXPECT_EQ(notifs[0].notif, BROKEN_CONNECTION);
 
     // Clean up
     close(serverSocket);
@@ -91,14 +87,12 @@ TEST(IONotifierTest, DetectsClientHungUp) {
     shutdown(clientSocket, SHUT_WR);
 
     // Wait for the notification
-    int fd;
-    e_notif notification;
-    int ready = ioNotifier.wait(&fd, &notification);
+    std::vector< t_notif > notifs = ioNotifier.waitVector();
 
     // Check that we got the correct notification
-    ASSERT_GT(ready, 0) << "No events detected";
-    EXPECT_EQ(fd, serverSocket);
-    EXPECT_EQ(notification, CLIENT_HUNG_UP);
+    ASSERT_GT(notifs.size(), 0) << "No events detected";
+    EXPECT_EQ(notifs[0].fd, serverSocket);
+    EXPECT_EQ(notifs[0].notif, CLIENT_HUNG_UP);
 
     // Clean up
     close(serverSocket);
