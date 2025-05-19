@@ -61,3 +61,24 @@ int EpollIONotifier::wait(int* fds, e_notif* notifs) {
         *fds = -1;
     return ready;
 }
+
+std::vector< t_notif > EpollIONotifier::waitVector(void) {
+    std::vector< t_notif > results;
+    struct epoll_event events[NBR_EVENTS_NOTIFIER];
+    int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
+
+    if (ready > 0) {
+        for (int i = 0; i < ready; i++) {
+            int fd = events[i].data.fd;
+            if (events[i].events & EPOLLHUP)
+                results.push_back(t_notif{fd, BROKEN_CONNECTION});
+            else if (events[i].events & EPOLLRDHUP)
+                results.push_back(t_notif{fd, CLIENT_HUNG_UP});
+            else if (events[i].events & EPOLLIN)
+                results.push_back(t_notif{fd, READY_TO_READ});
+            else if (events[i].events & EPOLLOUT)
+                results.push_back(t_notif{fd, READY_TO_WRITE});
+        }
+    }
+    return results;
+}

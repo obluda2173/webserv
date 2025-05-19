@@ -23,6 +23,7 @@ class EpollIONotifier : public IIONotifier {
     void modify(int fd, e_notif notif);
     void del(int fd);
     int wait(int* fds, e_notif* notif);
+    std::vector< t_notif > waitVector(void);
 };
 
 #endif // EPOLLMANAGER_H
