@@ -28,6 +28,7 @@ EpollIONotifier::~EpollIONotifier(void) {
 void EpollIONotifier::add(int fd, unsigned int timeout_ms) {
     _timeout_ms = timeout_ms;
     _lastTime = _clock->now();
+    _fd = fd;
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
@@ -66,7 +67,7 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     _now = _clock->now();
 
     if (_timeout_ms < diffTime(_lastTime, _now)) {
-        results.push_back(t_notif{-1, READY_TO_READ});
+        results.push_back(t_notif{_fd, TIMEOUT});
     }
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {

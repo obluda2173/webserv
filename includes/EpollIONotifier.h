@@ -35,6 +35,7 @@ class EpollIONotifier : public IIONotifier {
     unsigned int _timeout_ms;
     timeval _lastTime;
     timeval _now;
+    int _fd;
 
   public:
     EpollIONotifier(ILogger& logger, IClock* clock = new SystemClock());

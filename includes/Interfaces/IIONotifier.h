@@ -2,7 +2,7 @@
 #define IIONOTIFIER_H
 
 #include <vector>
-typedef enum e_notif { CLIENT_HUNG_UP, READY_TO_READ, READY_TO_WRITE, BROKEN_CONNECTION } e_notif;
+typedef enum e_notif { CLIENT_HUNG_UP, READY_TO_READ, READY_TO_WRITE, BROKEN_CONNECTION, TIMEOUT } e_notif;
 
 typedef struct t_notif {
     int fd;

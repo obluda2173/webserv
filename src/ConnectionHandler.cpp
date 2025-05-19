@@ -160,6 +160,9 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     case BROKEN_CONNECTION:
         _removeConnection(fd);
         break;
+    case TIMEOUT:
+        _removeConnection(fd);
+        break;
     }
     return fd;
 }
