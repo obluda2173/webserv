@@ -45,17 +45,21 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
     epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event);
 }
 
+double diffTime(timeval start, timeval end) {
+    long seconds = end.tv_sec - start.tv_sec;
+    long microseconds = end.tv_usec - start.tv_usec;
+    double elapsedMillis = seconds * 1000.0 + microseconds / 1000.0;
+    return elapsedMillis;
+}
+
 std::vector< t_notif > EpollIONotifier::wait(void) {
     std::vector< t_notif > results;
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
 
     gettimeofday(&_now, nullptr);
-    long seconds = _now.tv_sec - _lastTime.tv_sec;
-    long microseconds = _now.tv_usec - _lastTime.tv_usec;
-    double elapsedMillis = seconds * 1000.0 + microseconds / 1000.0;
 
-    if (_timeout_ms < elapsedMillis) {
+    if (_timeout_ms < diffTime(_lastTime, _now)) {
         results.push_back(t_notif{-1, READY_TO_READ});
     }
     if (ready > 0) {
