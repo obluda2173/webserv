@@ -76,15 +76,8 @@ bool checkNotification(IIONotifier* ioNotifier, t_notif wantNotif) {
 }
 
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* connHdlr, int fd) {
-    int fds = -1;
-    e_notif notif;
-    _ioNotifier->wait(&fds, &notif);
-    while (notif == READY_TO_READ) {
+    while (!checkNotification(_ioNotifier, t_notif{fd, READY_TO_WRITE}))
         connHdlr->handleConnection(fd, READY_TO_READ);
-        _ioNotifier->wait(&fds, &notif);
-    }
-    EXPECT_NE(fds, -1);
-    EXPECT_EQ(notif, READY_TO_WRITE);
 }
 
 void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents) {
