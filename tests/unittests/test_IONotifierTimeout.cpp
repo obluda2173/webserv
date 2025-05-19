@@ -115,14 +115,44 @@ TEST_F(IONotifierTestTimeout, EventAtTheTimeOfTimeoutShouldBeNoTimeout) {
     EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
     expectNotif(notifs[0], _pipes[0][READ_END], READY_TO_READ);
 
+    _readOutFd(_pipes[0][READ_END]);
+
+    // times out 20 ms after
+    _clock->advance(20);
+    notifs = _ioNotifier->wait();
+    EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
+    expectNotif(notifs[0], _pipes[0][READ_END], TIMEOUT);
+}
+
+TEST_F(IONotifierTestTimeout, addFdWithoutTimeout) {
+    std::vector< t_notif > notifs;
+
+    int connPipe[2];
+    connPipe[READ_END] = _pipes[0][READ_END];
+    connPipe[WRITE_END] = _pipes[0][WRITE_END];
+
+    int serverPipe[2];
+    serverPipe[READ_END] = _pipes[1][READ_END];
+    serverPipe[WRITE_END] = _pipes[1][WRITE_END];
+
+    // adding one with timeout
+    _ioNotifier->add(connPipe[READ_END], 20);
+    // adding one without timeout
+    _ioNotifier->addNoTimeout(serverPipe[READ_END]);
+
+    _writeHelloToPipe(_pipes[1][WRITE_END]);
+
+    _clock->advance(30);
+    notifs = _ioNotifier->wait();
+    EXPECT_EQ(notifs.size(), 2) << "not 2 notifications";
+
+    // expectNotif(notifs[0], _pipes[0][READ_END], READY_TO_READ);
+
     // _readOutFd(_pipes[0][READ_END]);
 
-    // // expect no more notifs
+    // // times out 20 ms after
+    // _clock->advance(20);
     // notifs = _ioNotifier->wait();
-    // EXPECT_EQ(notifs.size(), 0) << "there was a notification";
-
-    // // now there it's the original timeout but we're going to expect no timeout
-    // _clock->advance(10);
-    // notifs = _ioNotifier->wait();
-    // EXPECT_EQ(notifs.size(), 0) << "there was a notification";
+    // EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
+    // expectNotif(notifs[0], _pipes[0][READ_END], TIMEOUT);
 }
