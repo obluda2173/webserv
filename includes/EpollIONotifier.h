@@ -22,7 +22,7 @@ class EpollIONotifier : public IIONotifier {
   public:
     EpollIONotifier(ILogger& logger);
     ~EpollIONotifier(void);
-    void add(int fd, int timeout_ms = 30000);
+    void add(int fd, unsigned int timeout_ms = 30000);
     void modify(int fd, e_notif notif);
     void del(int fd);
     std::vector< t_notif > wait(void);

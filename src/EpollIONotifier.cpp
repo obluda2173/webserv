@@ -23,7 +23,7 @@ EpollIONotifier::~EpollIONotifier(void) {
     }
 }
 
-void EpollIONotifier::add(int fd, int timeout_ms) {
+void EpollIONotifier::add(int fd, unsigned int timeout_ms) {
     _timeout_ms = timeout_ms;
     gettimeofday(&_lastTime, NULL);
     struct epoll_event event;

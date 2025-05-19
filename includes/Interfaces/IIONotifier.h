@@ -12,7 +12,7 @@ typedef struct t_notif {
 class IIONotifier {
   public:
     virtual ~IIONotifier(void) {}
-    virtual void add(int fd, int timeout_ms = 30000) = 0;
+    virtual void add(int fd, unsigned int timeout_ms = 30000) = 0;
     virtual void del(int fd) = 0;
     virtual std::vector< t_notif > wait(void) = 0;
     virtual void modify(int fd, e_notif notif) = 0;
