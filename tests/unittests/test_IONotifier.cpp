@@ -120,17 +120,19 @@ class StubClock : public IClock {
 
 TEST(IONotifierTest, timeout) {
     ILogger* logger = new Logger();
-    IIONotifier* ioNotifier = new EpollIONotifier(*logger);
-    (void)ioNotifier;
+    StubClock* clock = new StubClock();
+    IIONotifier* ioNotifier = new EpollIONotifier(*logger, clock);
 
     int pipefds[2];
     ASSERT_NE(pipe(pipefds), -1) << strerror(errno);
 
     ioNotifier->add(pipefds[READ_END], 20);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    clock->advance(21);
     std::vector< t_notif > notifs = ioNotifier->wait();
-    ASSERT_NE(notifs.size(), 0) << "no notifiactions found";
+    EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
+    EXPECT_EQ(notifs[0].fd, pipefds[READ_END]) << "no notifiactions found";
+    EXPECT_EQ(notifs[0].notif, TIMEOUT) << "no notifiactions found";
 
     close(pipefds[WRITE_END]);
     close(pipefds[READ_END]);

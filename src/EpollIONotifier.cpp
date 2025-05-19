@@ -2,6 +2,7 @@
 #include "IIONotifier.h"
 #include <ctime>
 #include <errno.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
@@ -51,6 +52,10 @@ double diffTime(timeval start, timeval end) {
     long microseconds = end.tv_usec - start.tv_usec;
     double elapsedMillis = seconds * 1000.0 + microseconds / 1000.0;
     return elapsedMillis;
+}
+
+void printTimeval(const timeval& tv) {
+    std::cout << "Seconds: " << tv.tv_sec << ", Microseconds: " << tv.tv_usec << std::endl;
 }
 
 std::vector< t_notif > EpollIONotifier::wait(void) {
