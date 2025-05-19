@@ -31,6 +31,7 @@ index       index.html index.htm
 - [X] Listener call ConnectionHandler for multiple descriptors and notifications
 - [X] revisit listener tests and make them independent of Logging
 - [X] see if you can write a better test for the listener
+- [X] refactor listenerTests
 ** DONE Uploadhandler
 1. [X] don't upload to same file simultaneously
 2. [X] don't remove file (test for broken connection basically)

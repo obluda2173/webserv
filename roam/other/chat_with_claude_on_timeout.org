@@ -1,0 +1,795 @@
+:PROPERTIES:
+:GPTEL_MODEL: claude-3-7-sonnet-20250219
+:GPTEL_BACKEND: Claude
+:GPTEL_SYSTEM: You are a large language model living in Emacs and a helpful assistant. Avoid long answers.
+:GPTEL_BOUNDS: ((response (467 2967) (3051 6291) (6340 10414) (10572 12448) (12451 14846) (15001 20371) (20525 27920)))
+:END:
+
+*** I need to write a test which checks for connections which time out. Time out means that there hasn't been notification received on a file descriptor.
+
+To test connections that time out, you'll need to create a test case that:
+
+1. Sets up a connection
+2. Simulates the passage of time without activity
+3. Verifies the connection handler closes timed-out connections
+
+Here's a suggested test implementation:
+
+#+begin_src cpp
+class ConnHdlrTestTimeout : public BaseConnHdlrTest<StubLogger> {
+protected:
+    static const int TIMEOUT_SECONDS = 5; // Define your desired timeout
+
+    virtual void setupConnectionHandler() override {
+        std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
+        IRouter* router = new Router(hdlrs);
+        router->add("test.com", "", "GET", {});
+
+        // Create a ConnectionHandler with timeout
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier, TIMEOUT_SECONDS);
+    }
+
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int connfd;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+    }
+};
+
+TEST_F(ConnHdlrTestTimeout, ConnectionTimesOutAfterInactivity) {
+    // Get the connection file descriptor
+    int connfd = _clientFdsAndConnFds[0].second;
+
+    // Verify the connection exists initially
+    ASSERT_NE(_connHdlr->getConnections().find(connfd), _connHdlr->getConnections().end());
+
+    // Simulate time passing (connection becoming stale)
+    // This requires adding a method to ConnectionHandler to check for timeouts
+    _connHdlr->checkTimeouts(TIMEOUT_SECONDS + 1);
+
+    // Verify connection was closed due to timeout
+    EXPECT_EQ(_connHdlr->getConnections().find(connfd), _connHdlr->getConnections().end());
+}
+#+end_src
+
+You'll need to modify the =ConnectionHandler= class to support timeouts:
+
+1. Add a timeout parameter to the constructor
+2. Add a last activity timestamp to each Connection
+3. Add a method to check for timeouts
+4. Add a getter for the connections map
+5. Update the timestamp whenever there's activity on a connection
+
+These changes would include adding a =getConnections()= method to the ConnectionHandler class and implementing a =checkTimeouts(time_t currentTime)= method to close inactive connections.
+
+*** this test couples the implementation to the test. Is there something better?
+
+You're right. The previous approach couples the test to implementation details. A better approach would be to test the behavior through the public interface without making assumptions about how timeouts are implemented. Here's an improved approach:
+
+#+begin_src cpp
+class ConnHdlrTestTimeout : public BaseConnHdlrTest<MockLogger> {
+protected:
+    virtual void setupConnectionHandler() override {
+        std::map<std::string, IHandler*> hdlrs = {{"GET", new PingHandler()}};
+        IRouter* router = new Router(hdlrs);
+        router->add("test.com", "", "GET", {});
+        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+    }
+
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int connfd;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+
+        // Expect connection log message
+        EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Connection accepted from IP: ")));
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientFdsAndConnFds.push_back(std::pair<int, int>{clientfd, connfd});
+    }
+};
+
+TEST_F(ConnHdlrTestTimeout, ConnectionTimesOutAfterInactivity) {
+    int connfd = _clientFdsAndConnFds[0].second;
+
+    // Expect disconnect log message to be called when connection times out
+    EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Client disconnected IP: ")));
+
+    // Simulate the IIONotifier signaling that the connection timed out
+    // by sending the TIMEOUT notification for the connection
+    _connHdlr->handleConnection(connfd, TIMEOUT);
+
+    // Verify connection was closed - how to test this without exposing internals?
+    // 1. Send data to the client fd and verify it fails with ECONNRESET
+    char buffer[10] = "test";
+    int result = send(_clientFdsAndConnFds[0].first, buffer, 5, 0);
+    EXPECT_TRUE(result < 0 && (errno == ECONNRESET || errno == EPIPE));
+
+    // 2. Alternatively, try to use the connection again and expect appropriate behavior
+    // If we try to process this connection again, it should be treated as an invalid FD
+    EXPECT_CALL(*_logger, log("ERROR", testing::HasSubstr("Invalid connection")))
+        .Times(testing::AtLeast(0));  // This might not be called if implementation just returns
+    _connHdlr->handleConnection(connfd, READY_TO_READ);
+}
+#+end_src
+
+For this test to work, you would need:
+
+1. Add a =TIMEOUT= notification type to your =e_notif= enum in =IIONotifier.h=
+2. Have the IIONotifier implementation emit this event when timeouts occur
+3. Update the ConnectionHandler to handle this notification type by closing the connection
+
+This approach tests the behavior (connection is closed on timeout) rather than the specific implementation (how timeouts are tracked). It uses the public interface (=handleConnection=) and verifies the expected outcome (connection is closed).
+
+The mock logger helps verify that appropriate log messages are generated when timeouts occur without coupling to internal implementation details.
+
+*** May I implement this behavior with epoll?
+
+Yes, you can implement timeout behavior with epoll quite effectively. Epoll provides a way to handle socket timeouts through its timeout mechanism. Here's how you can implement and test it:
+
+**** Implementation Approach:
+
+1. Use the =EPOLLRDHUP= event to detect when a client disconnects
+2. Set a timeout value when adding file descriptors to the epoll instance
+3. Use =epoll_wait= with a timeout parameter to detect inactivity
+
+**** In your EpollIONotifier class:
+
+#+begin_src cpp
+void EpollIONotifier::add(int fd, int timeout_ms) {
+    struct epoll_event ev;
+    ev.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
+    ev.data.fd = fd;
+
+    if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+        throw std::runtime_error("Failed to add file descriptor to epoll");
+    }
+
+    // Store the last activity time and timeout value
+    _fdTimeouts[fd] = {
+        std::chrono::steady_clock::now(),
+        std::chrono::milliseconds(timeout_ms)
+    };
+}
+
+std::vector<std::pair<int, e_notif>> EpollIONotifier::wait(int timeout_ms) {
+    struct epoll_event events[MAX_EVENTS];
+    std::vector<std::pair<int, e_notif>> results;
+
+    // Check for timed-out connections
+    auto now = std::chrono::steady_clock::now();
+    for (auto& [fd, timeout_info] : _fdTimeouts) {
+        auto elapsed = now - timeout_info.last_activity;
+        if (elapsed > timeout_info.timeout) {
+            results.push_back({fd, TIMEOUT});
+            // Remove from _fdTimeouts once handled in ConnectionHandler
+        }
+    }
+
+    int nfds = epoll_wait(_epollfd, events, MAX_EVENTS, timeout_ms);
+    if (nfds == -1) {
+        throw std::runtime_error("epoll_wait error");
+    }
+
+    for (int i = 0; i < nfds; i++) {
+        int fd = events[i].data.fd;
+        e_notif event_type;
+
+        // Update last activity time
+        if (_fdTimeouts.find(fd) != _fdTimeouts.end()) {
+            _fdTimeouts[fd].last_activity = now;
+        }
+
+        if (events[i].events & EPOLLIN) {
+            event_type = READY_TO_READ;
+        } else if (events[i].events & EPOLLOUT) {
+            event_type = READY_TO_WRITE;
+        } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP)) {
+            event_type = CLIENT_HUNG_UP;
+        } else {
+            event_type = BROKEN_CONNECTION;
+        }
+
+        results.push_back({fd, event_type});
+    }
+
+    return results;
+}
+#+end_src
+
+**** In ConnectionHandler:
+
+#+begin_src cpp
+void ConnectionHandler::handleTimeout(int fd) {
+    _logger.log("INFO", "Connection timed out, closing it");
+    _removeConnection(fd);
+}
+
+int ConnectionHandler::handleConnection(int fd, e_notif notif) {
+    // ... existing code ...
+
+    switch (notif) {
+    // ... existing cases ...
+    case TIMEOUT:
+        handleTimeout(fd);
+        break;
+    }
+
+    // ... existing code ...
+}
+#+end_src
+
+**** For testing:
+
+Create a test fixture that extends your existing one:
+
+#+begin_src cpp
+class ConnHdlrTestWithTimeout : public BaseConnHdlrTest<MockLogger> {
+protected:
+    MockEpollIONotifier* _mockIoNotifier;
+
+    void SetUp() override {
+        _openFdsBegin = countOpenFileDescriptors();
+        _logger = new MockLogger();
+
+        // Use a mock IO notifier instead of a real one
+        _mockIoNotifier = new MockEpollIONotifier();
+        _ioNotifier = _mockIoNotifier;
+
+        setupConnectionHandler();
+        setupServer();
+        setupClientConnections();
+    }
+
+    // Override TearDown to delete the mock notifier
+};
+
+TEST_F(ConnHdlrTestWithTimeout, ClosesConnectionOnTimeout) {
+    int connfd = _clientFdsAndConnFds[0].second;
+
+    // Expect the logger to log the timeout
+    EXPECT_CALL(*_logger, log("INFO", testing::HasSubstr("Connection timed out")));
+
+    // Expect the connection to be closed (IONotifier will be asked to delete it)
+    EXPECT_CALL(*_mockIoNotifier, del(connfd));
+
+    // Simulate a timeout notification from the IONotifier
+    _connHdlr->handleConnection(connfd, TIMEOUT);
+}
+#+end_src
+
+This approach tests that the ConnectionHandler correctly handles timeout events from the IONotifier without coupling to the specific timeout implementation details.
+
+***
+*** In this implementation, it can happen that 2 types of events for the same filedescriptor appear: TIMEOUT and READY_TO_READ for example. Am I wrong?
+#+begin_src cpp
+void EpollIONotifier::add(int fd, int timeout_ms) {
+    struct epoll_event ev;
+    ev.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
+    ev.data.fd = fd;
+
+    if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+        throw std::runtime_error("Failed to add file descriptor to epoll");
+    }
+
+    // Store the last activity time and timeout value
+    _fdTimeouts[fd] = {
+        std::chrono::steady_clock::now(),
+        std::chrono::milliseconds(timeout_ms)
+    };
+}
+
+std::vector<std::pair<int, e_notif>> EpollIONotifier::wait(int timeout_ms) {
+    struct epoll_event events[MAX_EVENTS];
+    std::vector<std::pair<int, e_notif>> results;
+
+    // Check for timed-out connections
+    auto now = std::chrono::steady_clock::now();
+    for (auto& [fd, timeout_info] : _fdTimeouts) {
+        auto elapsed = now - timeout_info.last_activity;
+        if (elapsed > timeout_info.timeout) {
+            results.push_back({fd, TIMEOUT});
+            // Remove from _fdTimeouts once handled in ConnectionHandler
+        }
+    }
+
+    int nfds = epoll_wait(_epollfd, events, MAX_EVENTS, timeout_ms);
+    if (nfds == -1) {
+        throw std::runtime_error("epoll_wait error");
+    }
+
+    for (int i = 0; i < nfds; i++) {
+        int fd = events[i].data.fd;
+        e_notif event_type;
+
+        // Update last activity time
+        if (_fdTimeouts.find(fd) != _fdTimeouts.end()) {
+            _fdTimeouts[fd].last_activity = now;
+        }
+
+        if (events[i].events & EPOLLIN) {
+            event_type = READY_TO_READ;
+        } else if (events[i].events & EPOLLOUT) {
+            event_type = READY_TO_WRITE;
+        } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP)) {
+            event_type = CLIENT_HUNG_UP;
+        } else {
+            event_type = BROKEN_CONNECTION;
+        }
+
+        results.push_back({fd, event_type});
+    }
+
+    return results;
+}
+#+end_src
+
+
+
+
+You're absolutely right! In this implementation, it's possible for the same file descriptor to appear twice in the results with different event types: once for TIMEOUT and once for an actual I/O event like READY_TO_READ.
+
+This could lead to problems if the ConnectionHandler removes the connection due to timeout, and then tries to process it again for the READY_TO_READ event.
+
+Here's how to fix this:
+
+1. Skip adding a TIMEOUT event for a descriptor if it has actual activity in this same wait cycle:
+
+#+begin_src cpp
+std::vector<std::pair<int, e_notif>> EpollIONotifier::wait(int timeout_ms) {
+    struct epoll_event events[MAX_EVENTS];
+    std::vector<std::pair<int, e_notif>> results;
+    std::set<int> active_fds;  // Track fds with actual activity
+
+    // First, get all active descriptors from epoll
+    int nfds = epoll_wait(_epollfd, events, MAX_EVENTS, timeout_ms);
+    if (nfds == -1) {
+        throw std::runtime_error("epoll_wait error");
+    }
+
+    auto now = std::chrono::steady_clock::now();
+
+    // Process actual events first
+    for (int i = 0; i < nfds; i++) {
+        int fd = events[i].data.fd;
+        e_notif event_type;
+
+        // Track this fd as having activity
+        active_fds.insert(fd);
+
+        // Update last activity time
+        if (_fdTimeouts.find(fd) != _fdTimeouts.end()) {
+            _fdTimeouts[fd].last_activity = now;
+        }
+
+        if (events[i].events & EPOLLIN) {
+            event_type = READY_TO_READ;
+        } else if (events[i].events & EPOLLOUT) {
+            event_type = READY_TO_WRITE;
+        } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP)) {
+            event_type = CLIENT_HUNG_UP;
+        } else {
+            event_type = BROKEN_CONNECTION;
+        }
+
+        results.push_back({fd, event_type});
+    }
+
+    // Then check for timeouts, only for inactive fds
+    for (auto& [fd, timeout_info] : _fdTimeouts) {
+        // Skip fds that had activity in this cycle
+        if (active_fds.find(fd) != active_fds.end()) {
+            continue;
+        }
+
+        auto elapsed = now - timeout_info.last_activity;
+        if (elapsed > timeout_info.timeout) {
+            results.push_back({fd, TIMEOUT});
+        }
+    }
+
+    return results;
+}
+#+end_src
+
+This solution ensures that a file descriptor won't get both a TIMEOUT event and a normal activity event in the same cycle, which should prevent the issue you identified.
+
+*** I also wouldn't like that thing to run every time but rather when a certain amount of time since the last overall check has passed (a second maybe)
+
+Good point! Checking each connection for timeout on every epoll_wait call is inefficient, especially for servers with many connections. It's better to perform timeout checks at a less frequent interval, like once per second. Here's an improved implementation:
+
+#+begin_src cpp
+class EpollIONotifier : public IIONotifier {
+private:
+    int _epollfd;
+    std::map<int, struct {
+        std::chrono::steady_clock::time_point last_activity;
+        std::chrono::milliseconds timeout;
+    }> _fdTimeouts;
+
+    // Last time we performed a timeout check
+    std::chrono::steady_clock::time_point _lastTimeoutCheck;
+
+    // How often to check for timeouts (e.g., once per second)
+    std::chrono::milliseconds _timeoutCheckInterval{1000}; // 1 second default
+
+public:
+    EpollIONotifier(ILogger& logger) : _logger(logger) {
+        _epollfd = epoll_create1(0);
+        if (_epollfd == -1) {
+            throw std::runtime_error("Failed to create epoll instance");
+        }
+        _lastTimeoutCheck = std::chrono::steady_clock::now();
+    }
+
+    void setTimeoutCheckInterval(int ms) {
+        _timeoutCheckInterval = std::chrono::milliseconds(ms);
+    }
+
+    void add(int fd, int timeout_ms = 30000) { // 30 seconds default timeout
+        struct epoll_event ev;
+        ev.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
+        ev.data.fd = fd;
+
+        if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+            throw std::runtime_error("Failed to add file descriptor to epoll");
+        }
+
+        // Store the last activity time and timeout value
+        _fdTimeouts[fd] = {
+            std::chrono::steady_clock::now(),
+            std::chrono::milliseconds(timeout_ms)
+        };
+    }
+
+    // ... other methods ...
+
+    std::vector<std::pair<int, e_notif>> wait(int timeout_ms) {
+        struct epoll_event events[MAX_EVENTS];
+        std::vector<std::pair<int, e_notif>> results;
+        std::set<int> active_fds;
+
+        auto now = std::chrono::steady_clock::now();
+
+        // Check if it's time to look for timeouts
+        bool checkTimeouts = (now - _lastTimeoutCheck) >= _timeoutCheckInterval;
+
+        if (checkTimeouts) {
+            _lastTimeoutCheck = now;
+        }
+
+        // Get events from epoll
+        int nfds = epoll_wait(_epollfd, events, MAX_EVENTS, timeout_ms);
+        if (nfds == -1) {
+            throw std::runtime_error("epoll_wait error");
+        }
+
+        // Process actual events first
+        for (int i = 0; i < nfds; i++) {
+            int fd = events[i].data.fd;
+            e_notif event_type;
+
+            active_fds.insert(fd);
+
+            // Update last activity time
+            if (_fdTimeouts.find(fd) != _fdTimeouts.end()) {
+                _fdTimeouts[fd].last_activity = now;
+            }
+
+            if (events[i].events & EPOLLIN) {
+                event_type = READY_TO_READ;
+            } else if (events[i].events & EPOLLOUT) {
+                event_type = READY_TO_WRITE;
+            } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP)) {
+                event_type = CLIENT_HUNG_UP;
+            } else {
+                event_type = BROKEN_CONNECTION;
+            }
+
+            results.push_back({fd, event_type});
+        }
+
+        // Check for timeouts only if it's time to do so
+        if (checkTimeouts) {
+            _logger.log("DEBUG", "Performing timeout check");
+            for (auto& [fd, timeout_info] : _fdTimeouts) {
+                // Skip fds that had activity in this cycle
+                if (active_fds.find(fd) != active_fds.end()) {
+                    continue;
+                }
+
+                auto elapsed = now - timeout_info.last_activity;
+                if (elapsed > timeout_info.timeout) {
+                    _logger.log("DEBUG", "Detected timeout for fd " + std::to_string(fd));
+                    results.push_back({fd, TIMEOUT});
+                }
+            }
+        }
+
+        return results;
+    }
+};
+#+end_src
+
+This approach:
+
+1. Only checks for timeouts periodically (default: once per second)
+2. Avoids redundant timeout checks on every epoll_wait call
+3. Still properly updates the last_activity timestamp for active connections
+4. Prevents the same file descriptor from having both activity and timeout events
+
+For testing this behavior, you can create a simplified test that focuses on the timeout check interval:
+
+#+begin_src cpp
+TEST_F(ConnHdlrTestWithTimeout, ChecksTimeoutsAtCorrectInterval) {
+    MockEpollIONotifier* mockNotifier = new MockEpollIONotifier();
+
+    // Set the timeout check interval to 500ms for faster testing
+    mockNotifier->setTimeoutCheckInterval(500);
+
+    // We should not see timeout checks initially
+    EXPECT_CALL(*mockNotifier, performTimeoutCheck()).Times(0);
+    mockNotifier->wait(0);
+
+    // Fast-forward time by 400ms - still not enough for timeout check
+    // (This would need a time simulation mechanism in your test)
+    simulateTimeAdvance(400);
+    EXPECT_CALL(*mockNotifier, performTimeoutCheck()).Times(0);
+    mockNotifier->wait(0);
+
+    // Fast-forward time to exceed the 500ms interval
+    simulateTimeAdvance(200);  // 400 + 200 = 600ms, which exceeds 500ms
+    EXPECT_CALL(*mockNotifier, performTimeoutCheck()).Times(1);
+    mockNotifier->wait(0);
+}
+#+end_src
+
+Note: For simulating time advancement in tests, you might need to use dependency injection to provide a clock abstraction that can be mocked.
+
+*** there are also some filedescriptors which i don't want to include into the timeoutcheck. In particular my sockets that are listening on the ports.
+
+You're absolutely right - listening sockets should never time out! Let's modify the design to exclude certain file descriptors from timeout checks:
+
+#+begin_src cpp
+class EpollIONotifier : public IIONotifier {
+private:
+    int _epollfd;
+
+    // Timeout information for file descriptors
+    struct FdInfo {
+        std::chrono::steady_clock::time_point last_activity;
+        std::chrono::milliseconds timeout;
+        bool check_timeout;  // Whether this fd should be checked for timeouts
+    };
+
+    std::map<int, FdInfo> _fdInfo;
+
+    // Last time we performed a timeout check
+    std::chrono::steady_clock::time_point _lastTimeoutCheck;
+
+    // How often to check for timeouts (e.g., once per second)
+    std::chrono::milliseconds _timeoutCheckInterval{1000}; // 1 second default
+
+    ILogger& _logger;
+
+public:
+    EpollIONotifier(ILogger& logger) : _logger(logger) {
+        _epollfd = epoll_create1(0);
+        if (_epollfd == -1) {
+            throw std::runtime_error("Failed to create epoll instance");
+        }
+        _lastTimeoutCheck = std::chrono::steady_clock::now();
+    }
+
+    ~EpollIONotifier() {
+        close(_epollfd);
+    }
+
+    void setTimeoutCheckInterval(int ms) {
+        _timeoutCheckInterval = std::chrono::milliseconds(ms);
+    }
+
+    // Add a file descriptor with timeout checking enabled (client connections)
+    void add(int fd, int events = EPOLLIN, int timeout_ms = 30000) {
+        addInternal(fd, events, timeout_ms, true);
+    }
+
+    // Add a file descriptor without timeout checking (listening sockets)
+    void addNoTimeout(int fd, int events = EPOLLIN) {
+        addInternal(fd, events, 0, false);
+    }
+
+    // Internal method to add file descriptors
+    void addInternal(int fd, int events, int timeout_ms, bool check_timeout) {
+        struct epoll_event ev;
+        ev.events = events | EPOLLRDHUP | EPOLLET;
+        ev.data.fd = fd;
+
+        if (epoll_ctl(_epollfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+            throw std::runtime_error("Failed to add file descriptor to epoll");
+        }
+
+        // Store info for this fd
+        _fdInfo[fd] = {
+            std::chrono::steady_clock::now(),
+            std::chrono::milliseconds(timeout_ms),
+            check_timeout
+        };
+    }
+
+    void modify(int fd, e_notif event) {
+        // Convert e_notif to epoll events
+        int events = 0;
+        if (event == READY_TO_READ) {
+            events = EPOLLIN;
+        } else if (event == READY_TO_WRITE) {
+            events = EPOLLOUT;
+        }
+
+        struct epoll_event ev;
+        ev.events = events | EPOLLRDHUP | EPOLLET;
+        ev.data.fd = fd;
+
+        if (epoll_ctl(_epollfd, EPOLL_CTL_MOD, fd, &ev) == -1) {
+            throw std::runtime_error("Failed to modify epoll event");
+        }
+
+        // Update last activity time
+        if (_fdInfo.find(fd) != _fdInfo.end()) {
+            _fdInfo[fd].last_activity = std::chrono::steady_clock::now();
+        }
+    }
+
+    void del(int fd) {
+        epoll_ctl(_epollfd, EPOLL_CTL_DEL, fd, NULL);
+        _fdInfo.erase(fd);
+    }
+
+    std::vector<std::pair<int, e_notif>> wait(int timeout_ms) {
+        struct epoll_event events[MAX_EVENTS];
+        std::vector<std::pair<int, e_notif>> results;
+        std::set<int> active_fds;
+
+        auto now = std::chrono::steady_clock::now();
+
+        // Check if it's time to look for timeouts
+        bool checkTimeouts = (now - _lastTimeoutCheck) >= _timeoutCheckInterval;
+        if (checkTimeouts) {
+            _lastTimeoutCheck = now;
+        }
+
+        // Get events from epoll
+        int nfds = epoll_wait(_epollfd, events, MAX_EVENTS, timeout_ms);
+        if (nfds == -1) {
+            throw std::runtime_error("epoll_wait error");
+        }
+
+        // Process actual events first
+        for (int i = 0; i < nfds; i++) {
+            int fd = events[i].data.fd;
+            e_notif event_type;
+
+            active_fds.insert(fd);
+
+            // Update last activity time
+            if (_fdInfo.find(fd) != _fdInfo.end()) {
+                _fdInfo[fd].last_activity = now;
+            }
+
+            if (events[i].events & EPOLLIN) {
+                event_type = READY_TO_READ;
+            } else if (events[i].events & EPOLLOUT) {
+                event_type = READY_TO_WRITE;
+            } else if (events[i].events & (EPOLLRDHUP | EPOLLHUP)) {
+                event_type = CLIENT_HUNG_UP;
+            } else {
+                event_type = BROKEN_CONNECTION;
+            }
+
+            results.push_back({fd, event_type});
+        }
+
+        // Check for timeouts only if it's time to do so
+        if (checkTimeouts) {
+            for (auto& [fd, info] : _fdInfo) {
+                // Skip:
+                // 1. FDs marked as not checking for timeout (listening sockets)
+                // 2. FDs that had activity in this cycle
+                if (!info.check_timeout || active_fds.find(fd) != active_fds.end()) {
+                    continue;
+                }
+
+                auto elapsed = now - info.last_activity;
+                if (elapsed > info.timeout) {
+                    _logger.log("DEBUG", "Detected timeout for fd " + std::to_string(fd));
+                    results.push_back({fd, TIMEOUT});
+                }
+            }
+        }
+
+        return results;
+    }
+};
+#+end_src
+
+With this implementation:
+
+1. You have two methods to add file descriptors:
+   - =add()= - For client connections that should time out
+   - =addNoTimeout()= - For listening sockets that should never time out
+
+2. In your server setup code, you would use:
+
+#+begin_src cpp
+// For listening sockets
+_ioNotifier->addNoTimeout(listenSocketFd);
+
+// For client connections
+_ioNotifier->add(clientSocketFd);
+#+end_src
+
+3. The timeout check logic now skips any file descriptor marked with =check_timeout = false=
+
+This approach cleanly separates persistent connections (like listening sockets) from normal client connections that should be subject to timeout checks.
+
+For testing this behavior:
+
+#+begin_src cpp
+class IONotifierTimeoutTest : public ::testing::Test {
+protected:
+    MockLogger* _logger;
+    EpollIONotifier* _notifier;
+
+    void SetUp() override {
+        _logger = new MockLogger();
+        _notifier = new EpollIONotifier(*_logger);
+        _notifier->setTimeoutCheckInterval(100); // Short interval for testing
+    }
+
+    void TearDown() override {
+        delete _notifier;
+        delete _logger;
+    }
+};
+
+TEST_F(IONotifierTimeoutTest, ListeningSocketsDoNotTimeout) {
+    // Create a socket pair for testing
+    int sockets[2];
+    ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sockets), 0);
+
+    // Add one as a "listening socket" (no timeout)
+    _notifier->addNoTimeout(sockets[0]);
+
+    // Add one as a "client socket" (with timeout)
+    _notifier->add(sockets[1], EPOLLIN, 50); // Very short timeout
+
+    // Sleep to exceed the timeout
+    usleep(200000); // 200ms
+
+    // Simulate time advancement and check events
+    auto events = _notifier->wait(0);
+
+    // We should have exactly one timeout event (for the client socket)
+    ASSERT_EQ(events.size(), 1);
+    EXPECT_EQ(events[0].first, sockets[1]);
+    EXPECT_EQ(events[0].second, TIMEOUT);
+
+    // Clean up
+    close(sockets[0]);
+    close(sockets[1]);
+}
+#+end_src
+
+This test verifies that listening sockets won't time out, even when they exceed the timeout duration.
+
+***
