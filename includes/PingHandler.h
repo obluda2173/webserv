@@ -27,8 +27,8 @@ class PingHandler2 : public IHandler {
         HttpResponse& resp = conn->_response;
         resp.statusCode = 200;
         resp.statusMessage = "OK";
-        resp.contentLength = 4;
-        resp.body = new StringBodyProvider("pong2");
+        resp.contentLength = 24;
+        resp.body = new StringBodyProvider("a totally different body");
         resp.version = "HTTP/1.1";
         conn->setState(Connection::SendResponse);
         return;
