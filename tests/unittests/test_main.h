@@ -42,5 +42,6 @@ std::string buildUri(std::string script,
                      std::vector< std::pair< std::string, std::vector< std::string > > > queryParams);
 
 std::string getOutput(Connection* conn);
+void expectNotif(t_notif notif, int fd, e_notif eNotif);
 
 #endif // TEST_MAIN_H_

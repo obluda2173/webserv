@@ -70,6 +70,7 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             int fd = events[i].data.fd;
+            _fdInfos[fd].lastActivity = _now;
             if (events[i].events & EPOLLHUP)
                 results.push_back(t_notif{fd, BROKEN_CONNECTION});
             else if (events[i].events & EPOLLRDHUP)

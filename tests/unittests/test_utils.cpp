@@ -110,3 +110,8 @@ std::string getRandomString(size_t length) {
 
     return randomString;
 }
+
+void expectNotif(t_notif notif, int fd, e_notif eNotif) {
+    EXPECT_EQ(notif.fd, fd) << "not the correct filedescriptor";
+    EXPECT_EQ(notif.notif, eNotif) << "no notifiactions found";
+}
