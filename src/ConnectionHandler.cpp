@@ -71,14 +71,14 @@ void ConnectionHandler::_removeConnection(int connfd) {
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
 
-    // sockaddr_in addr;
-    // socklen_t addr_len = sizeof(addr);
-    // if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
-    //     std::cerr << "Error getting socket information" << std::endl;
-    // }
+    sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
+        std::cerr << "Error getting socket information" << std::endl;
+    }
 
-    // // Get the port number, noting that network byte order must be converted to host byte order
-    // int port = ntohs(addr.sin_port);
+    // Get the port number, noting that network byte order must be converted to host byte order
+    int port = ntohs(addr.sin_port);
     // std::cout << "Socket is bound to port: " << port << std::endl;
 
     struct sockaddr_storage theirAddr;
@@ -89,12 +89,14 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
         return -1;
     }
     _addClientConnection(fd, theirAddr);
+    _connections[fd]->_port = port;
     return fd;
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
     HttpResponse resp;
     IHandler* hdlr;
+    IRouter* router;
     Route route;
     bool continueProcessing = true;
     while (continueProcessing) {
@@ -105,9 +107,14 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Routing:
+            if (!_router) {
+                router = _routers[conn->_port];
+            } else {
+                router = _router;
+            }
             _logger.log("INFO", "Routing");
             conn->_request.uri = normalizePath("", conn->_request.uri);
-            route = _router->match(conn->getRequest());
+            route = router->match(conn->getRequest());
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
                 setErrorResponse(conn->_response, 404, "Not Found", RouteConfig());
                 conn->setState(Connection::SendResponse);
