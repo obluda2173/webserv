@@ -61,12 +61,6 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
 
     _now = _clock->now();
-
-    for (std::map< int, FdInfo >::iterator it = _fdInfos.begin(); it != _fdInfos.end(); it++) {
-        if (it->second.timeout_ms <= diffTime(it->second.lastActivity, _now))
-            results.push_back(t_notif{it->first, TIMEOUT});
-    }
-
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             int fd = events[i].data.fd;
@@ -81,5 +75,11 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
                 results.push_back(t_notif{fd, READY_TO_WRITE});
         }
     }
+
+    for (std::map< int, FdInfo >::iterator it = _fdInfos.begin(); it != _fdInfos.end(); it++) {
+        if (it->second.timeout_ms <= diffTime(it->second.lastActivity, _now))
+            results.push_back(t_notif{it->first, TIMEOUT});
+    }
+
     return results;
 }

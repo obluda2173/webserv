@@ -81,7 +81,7 @@ TEST_F(IONotifierTestTimeout, addAndDeleteFds) {
     }
 }
 
-TEST_F(IONotifierTestTimeout, resetActivity) {
+TEST_F(IONotifierTestTimeout, updateActivity) {
     std::vector< t_notif > notifs;
 
     _ioNotifier->add(_pipes[0][READ_END], 20);
@@ -102,19 +102,27 @@ TEST_F(IONotifierTestTimeout, resetActivity) {
     _clock->advance(10);
     notifs = _ioNotifier->wait();
     EXPECT_EQ(notifs.size(), 0) << "there was a notification";
+}
 
-    // while (time++ < 20)
-    //     _clock->advance(1);
-    // // now at time 20
+TEST_F(IONotifierTestTimeout, EventAtTheTimeOfTimeoutShouldBeNoTimeout) {
+    std::vector< t_notif > notifs;
 
-    // for (size_t i = 0; i < _pipes.size(); i++) {
-    //     notifs = _ioNotifier->wait();
-    //     EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
-    //     EXPECT_EQ(notifs[0].fd, _pipes[i][READ_END]) << "not the correct filedescriptor";
-    //     EXPECT_EQ(notifs[0].notif, TIMEOUT) << "no notifiactions found";
-    //     _ioNotifier->del(notifs[0].fd);
+    _ioNotifier->add(_pipes[0][READ_END], 20);
+    _clock->advance(20);
+    _writeHelloToPipe(_pipes[0][WRITE_END]);
 
-    //     time++;
-    //     _clock->advance(1);
-    // }
+    notifs = _ioNotifier->wait();
+    EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
+    expectNotif(notifs[0], _pipes[0][READ_END], READY_TO_READ);
+
+    // _readOutFd(_pipes[0][READ_END]);
+
+    // // expect no more notifs
+    // notifs = _ioNotifier->wait();
+    // EXPECT_EQ(notifs.size(), 0) << "there was a notification";
+
+    // // now there it's the original timeout but we're going to expect no timeout
+    // _clock->advance(10);
+    // notifs = _ioNotifier->wait();
+    // EXPECT_EQ(notifs.size(), 0) << "there was a notification";
 }
