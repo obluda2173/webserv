@@ -13,59 +13,59 @@
 static const int WRITE_END = 1;
 static const int READ_END = 0;
 
-TEST(IONotifierTest, timeoutFirstTest) {
-    int openFdsBegin = countOpenFileDescriptors();
-    ILogger* logger = new Logger();
-    StubClock* clock = new StubClock();
-    IIONotifier* ioNotifier = new EpollIONotifier(*logger, clock);
+class IONotifierTestTimeout : public testing::Test {
+  protected:
+    int _openFdsBegin;
+    ILogger* _logger;
+    StubClock* _clock;
+    IIONotifier* _ioNotifier;
+    int _nbrOfPipes;
+    std::vector< int[2] > _pipes;
+
+  public:
+    virtual void SetUp() override {
+        _openFdsBegin = countOpenFileDescriptors();
+        _logger = new Logger();
+        _clock = new StubClock();
+        _ioNotifier = new EpollIONotifier(*_logger, _clock);
+        _nbrOfPipes = 10;
+        _pipes = std::vector< int[2] >(_nbrOfPipes);
+    }
+
+    virtual void TearDown() override {
+        for (int i = 0; i < _nbrOfPipes; i++) {
+            close(_pipes[i][READ_END]);
+            close(_pipes[i][WRITE_END]);
+        }
+        delete _ioNotifier;
+        delete _logger;
+        EXPECT_EQ(_openFdsBegin, countOpenFileDescriptors());
+    }
+};
+
+TEST_F(IONotifierTestTimeout, addAndDeleteFds) {
     std::vector< t_notif > notifs;
 
-    int pipefds[2];
-    ASSERT_NE(pipe(pipefds), -1) << strerror(errno);
+    int time = 0;
+    for (int i = 0; i < _nbrOfPipes; i++) {
+        ASSERT_NE(pipe(_pipes[i]), -1);
+        _ioNotifier->add(_pipes[i][READ_END], 20);
+        _clock->advance(1);
+        time++;
+    }
 
-    ioNotifier->add(pipefds[READ_END], 20);
-    clock->advance(21);
-    notifs = ioNotifier->wait();
-    EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
-    EXPECT_EQ(notifs[0].fd, pipefds[READ_END]) << "no notifiactions found";
-    EXPECT_EQ(notifs[0].notif, TIMEOUT) << "no notifiactions found";
+    while (time++ < 20)
+        _clock->advance(1);
+    // now at time 20
 
-    close(pipefds[WRITE_END]);
-    close(pipefds[READ_END]);
-    delete ioNotifier;
-    delete logger;
-    EXPECT_EQ(openFdsBegin, countOpenFileDescriptors());
+    for (size_t i = 0; i < _pipes.size(); i++) {
+        notifs = _ioNotifier->wait();
+        EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
+        EXPECT_EQ(notifs[0].fd, _pipes[i][READ_END]) << "not the correct filedescriptor";
+        EXPECT_EQ(notifs[0].notif, TIMEOUT) << "no notifiactions found";
+        _ioNotifier->del(notifs[0].fd);
+
+        time++;
+        _clock->advance(1);
+    }
 }
-
-// TEST(IONotifierTest, timeoutSecondTest) {
-//     int openFdsBegin = countOpenFileDescriptors();
-//     ILogger* logger = new Logger();
-//     StubClock* clock = new StubClock();
-//     IIONotifier* ioNotifier = new EpollIONotifier(*logger, clock);
-//     std::vector< t_notif > notifs;
-
-//     int time = 0;
-//     int nbrPipes = 10;
-//     std::vector< int[2] > pipes(nbrPipes);
-//     for (int i = 0; i < nbrPipes; i++) {
-//         ASSERT_NE(pipe(pipes[i]), -1);
-//         ioNotifier->add(pipes[i][READ_END], 20);
-//         clock->advance(++time);
-//     }
-
-//     while (time < 20)
-//         clock->advance(++time);
-
-//     notifs = ioNotifier->wait();
-//     EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
-//     EXPECT_EQ(notifs[0].fd, pipes[0][READ_END]) << "not the correct filedescriptor";
-//     // EXPECT_EQ(notifs[0].notif, TIMEOUT) << "no notifiactions found";
-
-//     for (int i = 0; i < nbrPipes; i++) {
-//         close(pipes[i][READ_END]);
-//         close(pipes[i][WRITE_END]);
-//     }
-//     delete ioNotifier;
-//     delete logger;
-//     EXPECT_EQ(openFdsBegin, countOpenFileDescriptors());
-// }

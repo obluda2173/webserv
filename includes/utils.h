@@ -19,4 +19,6 @@ std::string to_string(const T& value) {
 
 std::string toLower(const std::string& str);
 
+void printTimeval(const timeval& tv);
+
 #endif // UTILS_H

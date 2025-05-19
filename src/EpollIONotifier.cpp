@@ -2,7 +2,6 @@
 #include "IIONotifier.h"
 #include <ctime>
 #include <errno.h>
-#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
@@ -26,16 +25,17 @@ EpollIONotifier::~EpollIONotifier(void) {
 }
 
 void EpollIONotifier::add(int fd, long timeout_ms) {
-    _timeout_ms = timeout_ms;
-    _lastTime = _clock->now();
-    _fd = fd;
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
     epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
+    _fdInfos[fd] = FdInfo{_clock->now(), timeout_ms};
 }
 
-void EpollIONotifier::del(int fd) { epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL); }
+void EpollIONotifier::del(int fd) {
+    _fdInfos.erase(fd);
+    epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL);
+}
 
 void EpollIONotifier::modify(int fd, e_notif notif) {
     struct epoll_event event;
@@ -55,10 +55,6 @@ double diffTime(timeval start, timeval end) {
     return elapsedMillis;
 }
 
-void printTimeval(const timeval& tv) {
-    std::cout << "Seconds: " << tv.tv_sec << ", Microseconds: " << tv.tv_usec << std::endl;
-}
-
 std::vector< t_notif > EpollIONotifier::wait(void) {
     std::vector< t_notif > results;
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
@@ -66,9 +62,11 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
 
     _now = _clock->now();
 
-    if (_timeout_ms < diffTime(_lastTime, _now)) {
-        results.push_back(t_notif{_fd, TIMEOUT});
+    for (std::map< int, FdInfo >::iterator it = _fdInfos.begin(); it != _fdInfos.end(); it++) {
+        if (it->second.timeout_ms <= diffTime(it->second.lastActivity, _now))
+            results.push_back(t_notif{it->first, TIMEOUT});
     }
+
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             int fd = events[i].data.fd;

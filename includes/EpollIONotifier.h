@@ -6,6 +6,7 @@
 #include "ILogger.h"
 #include "SystemClock.h"
 #include <ctime>
+#include <map>
 #include <sys/epoll.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -14,15 +15,18 @@
 #define NBR_EVENTS_NOTIFIER 10
 #endif
 
+struct FdInfo {
+    timeval lastActivity;
+    long timeout_ms;
+};
+
 class EpollIONotifier : public IIONotifier {
   private:
+    std::map< int, FdInfo > _fdInfos;
     ILogger& _logger;
     IClock* _clock;
     int _epfd;
-    long _timeout_ms;
-    timeval _lastTime;
     timeval _now;
-    int _fd;
 
   public:
     EpollIONotifier(ILogger& logger, IClock* clock = new SystemClock());

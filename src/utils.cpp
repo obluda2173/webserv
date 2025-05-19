@@ -89,3 +89,7 @@ std::string toLower(const std::string& str) {
     }
     return result;
 }
+
+void printTimeval(const timeval& tv) {
+    std::cout << "Seconds: " << tv.tv_sec << ", Microseconds: " << tv.tv_usec << std::endl;
+}
