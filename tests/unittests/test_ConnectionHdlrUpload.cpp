@@ -58,7 +58,7 @@ TEST_F(ConnHdlrTestStubUploadHdlrAdvanced, testUpload) {
     int calls = 0;
     while (calls < nbrOfHandleCallsUntilUploadComplete) {
         send(clientfd, body.data(), body.length(), 0);
-        verifyNotification(_ioNotifier, t_notif{connfd, READY_TO_READ});
+        ASSERT_TRUE(checkNotification(_ioNotifier, t_notif{connfd, READY_TO_READ}));
         _connHdlr->handleConnection(connfd, READY_TO_READ);
         calls++;
     }

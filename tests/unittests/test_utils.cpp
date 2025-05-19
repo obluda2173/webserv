@@ -65,16 +65,26 @@ bool allZero(std::vector< std::string > msgs) {
     return true;
 }
 
-void verifyNotification(IIONotifier* ioNotifier, t_notif wantNotif) {
+bool checkNotification(IIONotifier* ioNotifier, t_notif wantNotif) {
     std::vector< t_notif > notifs = ioNotifier->waitVector();
-    ASSERT_TRUE(notifs.size() > 0);
-
     for (size_t i = 0; i < notifs.size(); i++) {
         if (wantNotif.notif == notifs[i].notif && wantNotif.fd == notifs[i].fd)
-            return;
+            return true;
     }
 
-    FAIL() << "notif not found, conn: " << wantNotif.fd << "notif: " << wantNotif.notif;
+    return false;
+}
+
+void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* connHdlr, int fd) {
+    int fds = -1;
+    e_notif notif;
+    _ioNotifier->wait(&fds, &notif);
+    while (notif == READY_TO_READ) {
+        connHdlr->handleConnection(fd, READY_TO_READ);
+        _ioNotifier->wait(&fds, &notif);
+    }
+    EXPECT_NE(fds, -1);
+    EXPECT_EQ(notif, READY_TO_WRITE);
 }
 
 void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents) {
@@ -109,18 +119,6 @@ void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _co
         delete[] fds;
         delete[] notifs;
     }
-}
-
-void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* connHdlr, int fd) {
-    int fds = -1;
-    e_notif notif;
-    _ioNotifier->wait(&fds, &notif);
-    while (notif == READY_TO_READ) {
-        connHdlr->handleConnection(fd, READY_TO_READ);
-        _ioNotifier->wait(&fds, &notif);
-    }
-    EXPECT_NE(fds, -1);
-    EXPECT_EQ(notif, READY_TO_WRITE);
 }
 
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd) {
