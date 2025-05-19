@@ -29,9 +29,7 @@ void testMultipleConnections(std::string svrPort, int nbrConns);
 void sendMsgInBatches(std::string msg, int clientfd, int batchSize);
 bool allZero(std::vector< std::string > msgs);
 
-void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn);
-void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn);
-void verifyNotificationConnIsREADY_TO_WRITE(IIONotifier* ioNotifier, int conn);
+void verifyNotification(IIONotifier* ioNotifier, t_notif wantNotif);
 
 void readUntilREADY_TO_WRITE(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn);
 void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents);

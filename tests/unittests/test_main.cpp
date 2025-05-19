@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
 
     // only run the following test
-    testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlr*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections*";
     // testing::GTEST_FLAG(filter) = "*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionMockLogger*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections.sendMsgsAsync*";

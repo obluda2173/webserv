@@ -40,7 +40,7 @@ TEST_P(ConnHdlrTestAsyncMultipleConnections, sendMsgsAsync) {
     for (size_t i = 0; i < _clientFdsAndConnFds.size(); i++) {
         int clientfd = _clientFdsAndConnFds[i].first;
         int connfd = _clientFdsAndConnFds[i].second;
-        verifyNotificationConnIsREADY_TO_WRITE(_ioNotifier, connfd);
+        verifyNotification(_ioNotifier, t_notif{connfd, READY_TO_WRITE});
         _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         ssize_t r = recv(clientfd, buffer, 1024, 0);
         buffer[r] = '\0';

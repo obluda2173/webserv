@@ -65,40 +65,16 @@ bool allZero(std::vector< std::string > msgs) {
     return true;
 }
 
-void verifyNotificationConnIsREADY_TO_WRITE(IIONotifier* ioNotifier, int conn) {
+void verifyNotification(IIONotifier* ioNotifier, t_notif wantNotif) {
     std::vector< t_notif > notifs = ioNotifier->waitVector();
     ASSERT_TRUE(notifs.size() > 0);
 
-    int fd = -1;
-    e_notif eNotif;
     for (size_t i = 0; i < notifs.size(); i++) {
-        t_notif notif = notifs[i];
-        if (notif.fd == conn) {
-            fd = notif.fd;
-            eNotif = notif.notif;
-        }
+        if (wantNotif.notif == notifs[i].notif && wantNotif.fd == notifs[i].fd)
+            return;
     }
 
-    ASSERT_EQ(fd, conn);
-    ASSERT_EQ(eNotif, READY_TO_WRITE);
-}
-
-void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn) {
-    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    int fds;
-    e_notif notif;
-    ioNotifier->wait(&fds, &notif);
-    ASSERT_EQ(fds, conn);
-    ASSERT_EQ(notif, READY_TO_WRITE);
-}
-
-void verifyThatConnIsSetToREADY_TO_READinsideIIONotifier(IIONotifier* ioNotifier, int conn) {
-    // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should initiate)
-    int fds;
-    e_notif notif;
-    ioNotifier->wait(&fds, &notif);
-    ASSERT_EQ(fds, conn);
-    ASSERT_EQ(notif, READY_TO_READ);
+    FAIL() << "notif not found, conn: " << wantNotif.fd << "notif: " << wantNotif.notif;
 }
 
 void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _connHdlr, int _conn, int maxEvents) {

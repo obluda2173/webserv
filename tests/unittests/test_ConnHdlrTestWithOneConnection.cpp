@@ -1,5 +1,6 @@
 #include "IIONotifier.h"
 #include "test_ConnectionHandlerFixture.h"
+#include "test_main.h"
 #include <sys/socket.h>
 #include <thread>
 
@@ -91,7 +92,7 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
 
         // verify that the connection in IONotifier is set to READY_TO_WRITE (which the connectionHandler should
         // initiate)
-        verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(_ioNotifier, connfd);
+        verifyNotification(_ioNotifier, t_notif{connfd, READY_TO_WRITE});
 
         // check that nothing is sent back yet
         recv(clientfd, buffer, 1024, 0);
