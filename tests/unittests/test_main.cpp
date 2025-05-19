@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
 
     // only run the following test
+    testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections*";
     // testing::GTEST_FLAG(filter) = "*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionMockLogger*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections.sendMsgsAsync*";
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*UploadHdlrFileErrorsTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestUpload*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestResend*";
-    testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithBigResponseBody*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithBigResponseBody*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestBadRequestClosesConnection*";

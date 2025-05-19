@@ -22,10 +22,9 @@ TEST_F(ConnHdlrTestStubUploadHdlrSimple, testUpload) {
     ASSERT_EQ(body.length(), _uploadHdlr->_uploaded.length());
     ASSERT_EQ(body, _uploadHdlr->_uploaded);
 
-    int fd;
-    e_notif notif;
-    _ioNotifier->wait(&fd, &notif);
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    std::vector< t_notif > notifs = _ioNotifier->waitVector();
+    ASSERT_EQ(notifs.size(), 1);
+    ASSERT_EQ(notifs[0].notif, READY_TO_WRITE);
     _connHdlr->handleConnection(connfd, READY_TO_WRITE);
 
     char buffer[1025];
@@ -64,8 +63,7 @@ TEST_F(ConnHdlrTestStubUploadHdlrAdvanced, testUpload) {
         calls++;
     }
 
-    int fd = -1;
-    e_notif notif = READY_TO_READ;
-    _ioNotifier->wait(&fd, &notif);
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    std::vector< t_notif > notifs = _ioNotifier->waitVector();
+    ASSERT_EQ(notifs.size(), 1);
+    ASSERT_EQ(notifs[0].notif, READY_TO_WRITE);
 }

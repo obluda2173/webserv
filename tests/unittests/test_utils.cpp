@@ -65,24 +65,22 @@ bool allZero(std::vector< std::string > msgs) {
     return true;
 }
 
-void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifierWithMaxEvents(IIONotifier* ioNotifier, int conn,
-                                                                       int maxEvents) {
-    int* fds = new int[maxEvents]();
-    e_notif* notifs = new e_notif[maxEvents](); // uninitialized
+void verifyNotificationConnIsREADY_TO_WRITE(IIONotifier* ioNotifier, int conn) {
+    std::vector< t_notif > notifs = ioNotifier->waitVector();
+    ASSERT_TRUE(notifs.size() > 0);
 
-    ioNotifier->wait(fds, notifs);
     int fd = -1;
-    e_notif notif;
-    for (int i = 0; i < maxEvents; i++) {
-        if (fds[i] == conn) {
-            fd = fds[i];
-            notif = notifs[i];
+    e_notif eNotif;
+    for (size_t i = 0; i < notifs.size(); i++) {
+        t_notif notif = notifs[i];
+        if (notif.fd == conn) {
+            fd = notif.fd;
+            eNotif = notif.notif;
         }
     }
-    delete[] fds;
-    delete[] notifs;
+
     ASSERT_EQ(fd, conn);
-    ASSERT_EQ(notif, READY_TO_WRITE);
+    ASSERT_EQ(eNotif, READY_TO_WRITE);
 }
 
 void verifyThatConnIsSetToREADY_TO_WRITEinsideIIONotifier(IIONotifier* ioNotifier, int conn) {
