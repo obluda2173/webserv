@@ -12,9 +12,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-ConnectionHandler::ConnectionHandler(IRouter* router, ILogger& l, IIONotifier& ep)
-    : _router(router), _logger(l), _ioNotifier(ep) {}
-
 ConnectionHandler::ConnectionHandler(std::map< int, IRouter* > routers, ILogger& l, IIONotifier& io)
     : _router(NULL), _routers(routers), _logger(l), _ioNotifier(io) {}
 
@@ -24,9 +21,6 @@ ConnectionHandler::~ConnectionHandler(void) {
 
     for (std::map< int, IRouter* >::iterator it = _routers.begin(); it != _routers.end(); it++)
         delete it->second;
-
-    if (_router)
-        delete _router;
 }
 
 void ConnectionHandler::_updateNotifier(Connection* conn) {
@@ -96,11 +90,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Routing:
-            if (!_router) {
-                router = _routers[conn->getPort()];
-            } else {
-                router = _router;
-            }
+            router = _routers[conn->getPort()];
             _logger.log("INFO", "Routing");
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());

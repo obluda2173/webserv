@@ -36,7 +36,10 @@ class BaseListenerTest : public ::testing::TestWithParam< std::vector< int > > {
         // Router will be owned by ConnectionHandler
         std::map< std::string, IHandler* > hdlrs = {{}};
         IRouter* router = new Router(hdlrs);
-        ConnectionHandler* connHdlr = new ConnectionHandler(router, *_logger, *ioNotifier);
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        ConnectionHandler* connHdlr = new ConnectionHandler(routers, *_logger, *ioNotifier);
+
         _listener = new Listener(*_logger, connHdlr, ioNotifier);
 
         for (size_t i = 0; i < _ports.size(); i++) {

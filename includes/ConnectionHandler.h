@@ -30,7 +30,6 @@ class ConnectionHandler : public IConnectionHandler {
     void _removeConnection(int connfd);
 
   public:
-    ConnectionHandler(IRouter*, ILogger&, IIONotifier&);
     ConnectionHandler(std::map< int, IRouter* >, ILogger&, IIONotifier&);
     ~ConnectionHandler(void);
     int handleConnection(int conn, e_notif notif);

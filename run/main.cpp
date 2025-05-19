@@ -17,7 +17,10 @@ int main() {
     hdlrs["GET"] = new GetHandler();
     hdlrs["POST"] = new UploadHandler();
     Router router = newRouter(cfgPrsr->getServersConfig(), hdlrs);
-    ConnectionHandler* connHdlr = new ConnectionHandler(&router, *logger, *ioNotifier);
+
+    std::map< int, IRouter* > routers;
+    routers[8080] = &router;
+    ConnectionHandler* connHdlr = new ConnectionHandler(routers, *logger, *ioNotifier);
 
     Server* svr = ServerBuilder().setLogger(logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
 

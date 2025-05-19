@@ -34,7 +34,11 @@ class BaseServerTest : public ::testing::TestWithParam< std::vector< std::string
         // router will be owned by Connection Handler
         std::map< std::string, IHandler* > hdlrs = {{}};
         IRouter* router = new Router(hdlrs);
-        IConnectionHandler* connHdlr = new ConnectionHandler(router, *_logger, *ioNotifier);
+
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        IConnectionHandler* connHdlr = new ConnectionHandler(routers, *_logger, *ioNotifier);
+
         _svr = ServerBuilder().setLogger(_logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
         setupServer();
     }

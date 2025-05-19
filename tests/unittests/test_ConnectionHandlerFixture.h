@@ -48,7 +48,9 @@ class BaseConnHdlrTest : public ::testing::TestWithParam< ParamType > {
         std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupServer() {
@@ -76,7 +78,10 @@ class ConnHdlrTestTestRouting : public BaseConnHdlrTest< StubLogger > {
         std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "/images", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {
@@ -141,7 +146,10 @@ class ConnHdlrTestAsyncMultipleConnections : public BaseConnHdlrTest< StubLogger
         std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {
@@ -203,7 +211,10 @@ class ConnHdlrTestWithBigResponseBody : public BaseConnHdlrTest< StubLogger, int
         std::map< std::string, IHandler* > hdlrs = {{"GET", new BigRespBodyGetHandler(_body)}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {
@@ -242,7 +253,10 @@ class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, in
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {
@@ -284,7 +298,10 @@ class ConnHdlrTestStubUploadHdlrAdvanced : public BaseConnHdlrTest< StubLogger >
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {});
-        _connHdlr = new ConnectionHandler(router, *_logger, *_ioNotifier);
+
+        std::map< int, IRouter* > routers;
+        routers[8080] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupClientConnections() override {

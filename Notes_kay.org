@@ -48,7 +48,8 @@ index       index.html index.htm
 - [X] normalization of uri needs to be done before routing
 - [-] implement different router for different ports
   - [X] also handle cases where the routing is failing
-  - [ ] multiple routers
+  - [X] multiple routers in connectionhandler
+  - [ ] build with multiple routers
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
     - [ ] also a test for a broken connection and then the file should be closed
