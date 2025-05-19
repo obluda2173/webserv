@@ -1,11 +1,11 @@
 #ifndef EPOLLMANAGER_H
 #define EPOLLMANAGER_H
 
-#include <ILogger.h>
+#include "IIONotifier.h"
+#include "ILogger.h"
+#include <ctime>
 #include <sys/epoll.h>
 #include <unistd.h>
-
-#include <IIONotifier.h>
 
 #ifndef NBR_EVENTS_NOTIFIER
 #define NBR_EVENTS_NOTIFIER 10
@@ -15,6 +15,8 @@ class EpollIONotifier : public IIONotifier {
   private:
     ILogger& _logger;
     int _epfd;
+    int _timeout_ms;
+    std::time_t _last_time;
 
   public:
     EpollIONotifier(ILogger& logger);

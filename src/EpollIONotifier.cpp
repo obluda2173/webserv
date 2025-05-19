@@ -1,5 +1,6 @@
 #include "EpollIONotifier.h"
 #include "IIONotifier.h"
+#include <ctime>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +23,8 @@ EpollIONotifier::~EpollIONotifier(void) {
 }
 
 void EpollIONotifier::add(int fd, int timeout_ms) {
-    (void)timeout_ms;
+    _timeout_ms = timeout_ms;
+    _last_time = std::time(NULL);
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
@@ -47,6 +49,9 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
 
+    if (_timeout_ms < std::time(NULL) - _last_time) {
+        results.push_back(t_notif{-1, READY_TO_READ});
+    }
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             int fd = events[i].data.fd;
