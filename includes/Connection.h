@@ -41,6 +41,7 @@ class Connection {
     STATE _state;
     sockaddr_storage _addr;
     int _fd;
+    int _port;
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;
@@ -51,10 +52,9 @@ class Connection {
     CgiContext cgiCtx;
     Buffer _readBuf;
     Buffer _sendBuf;
-    int _port;
 
     ~Connection();
-    Connection(sockaddr_storage addr, int fd, IHttpParser* prsr, ISender* = new SystemSender());
+    Connection(sockaddr_storage addr, int fd, int port, IHttpParser* prsr, ISender* = new SystemSender());
     STATE getState() const;
     void setState(Connection::STATE state);
     void readIntoBuf();
@@ -67,6 +67,7 @@ class Connection {
     HttpRequest getRequest();
     sockaddr_storage getAddr() const;
     std::string getReadBuf();
+    int getPort() { return _port; }
 
     HttpRequest _request;
     HttpResponse _response;

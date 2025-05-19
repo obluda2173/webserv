@@ -20,11 +20,10 @@ RouteConfig createConfig(bool enableCgi = true) {
     return cfg;
 }
 
-
 TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
     CgiHandler cgiHandler;
     int dummyFd = socket(AF_INET, SOCK_STREAM, 0);
-    Connection* cgiConn = new Connection({}, dummyFd, NULL);
+    Connection* cgiConn = new Connection({}, dummyFd, 0, NULL);
     HttpRequest cgiRequest = createRequest("GET", "/test_slow_script.sh");
     RouteConfig cgiConfig = createConfig(true);
 
@@ -32,9 +31,7 @@ TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
     cgiHandler.handle(cgiConn, cgiRequest, cgiConfig);
     auto handlerReturnTime = std::chrono::steady_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-        handlerReturnTime - startTime
-    ).count();
+    auto duration = std::chrono::duration_cast< std::chrono::milliseconds >(handlerReturnTime - startTime).count();
     EXPECT_LT(duration, 100) << "CGI handler is blocking!";
 
     bool cgiCompleted = false;

@@ -28,7 +28,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
 
     req.uri = buildUri(params.scriptName, params.queryParams);
 
-    Connection* conn = new Connection({}, -1, NULL, NULL);
+    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
     cgiHdlr.handle(conn, req, cfg);
 
     bool cgiCompleted = false;

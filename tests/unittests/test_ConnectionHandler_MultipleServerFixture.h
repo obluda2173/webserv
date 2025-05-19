@@ -12,7 +12,6 @@
 #include <gtest/gtest.h>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <utility>
 #include <utils.h>
 
 const static int backlog = 5;

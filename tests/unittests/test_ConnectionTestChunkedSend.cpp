@@ -7,7 +7,7 @@
 size_t random_up_to(size_t size) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_int_distribution<std::size_t> dist(0, size);
+    std::uniform_int_distribution< std::size_t > dist(0, size);
     return dist(gen);
 }
 
@@ -24,7 +24,7 @@ class MockSender : public ISender {
 
 TEST(ConnectionTestChunkedSend, testPartiallySending) {
     MockSender* sender = new MockSender();
-    Connection conn({}, -1, NULL, sender);
+    Connection conn({}, -1, 0, NULL, sender);
     std::string body = getRandomString(10000);
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
                                "Content-Length: " +

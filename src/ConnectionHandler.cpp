@@ -4,6 +4,7 @@
 #include "IIONotifier.h"
 #include "handlerUtils.h"
 #include "logging.h"
+#include "utils.h"
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -55,9 +56,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     }
 }
 
-void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr) {
+void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr, int port) {
     logConnection(_logger, theirAddr);
-    Connection* conn = new Connection(theirAddr, connfd, new HttpParser(_logger));
+    Connection* conn = new Connection(theirAddr, connfd, port, new HttpParser(_logger));
     _connections[connfd] = conn;
     _ioNotifier.add(connfd);
 }
@@ -70,17 +71,6 @@ void ConnectionHandler::_removeConnection(int connfd) {
 }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
-
-    sockaddr_in addr;
-    socklen_t addr_len = sizeof(addr);
-    if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
-        std::cerr << "Error getting socket information" << std::endl;
-    }
-
-    // Get the port number, noting that network byte order must be converted to host byte order
-    int port = ntohs(addr.sin_port);
-    // std::cout << "Socket is bound to port: " << port << std::endl;
-
     struct sockaddr_storage theirAddr;
     int addrlen = sizeof(theirAddr);
     int fd = accept(socketfd, (struct sockaddr*)&theirAddr, (socklen_t*)&addrlen);
@@ -88,8 +78,7 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
         _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
         return -1;
     }
-    _addClientConnection(fd, theirAddr);
-    _connections[fd]->_port = port;
+    _addClientConnection(fd, theirAddr, getPort(socketfd));
     return fd;
 }
 
@@ -108,7 +97,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             break;
         case Connection::Routing:
             if (!_router) {
-                router = _routers[conn->_port];
+                router = _routers[conn->getPort()];
             } else {
                 router = _router;
             }

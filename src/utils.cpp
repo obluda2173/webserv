@@ -83,6 +83,17 @@ int newListeningSocket(std::string ip, std::string port, int protocol, int backl
     return socketfd;
 }
 
+int getPort(int socketfd) {
+    sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
+        std::cerr << "Error getting socket information" << std::endl;
+    }
+
+    // Get the port number, noting that network byte order must be converted to host byte order
+    return ntohs(addr.sin_port);
+}
+
 std::string toLower(const std::string& str) {
     std::string result = str;
     for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {

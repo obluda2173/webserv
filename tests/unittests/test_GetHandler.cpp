@@ -12,7 +12,7 @@ class TestGetHandler : public ::testing::TestWithParam< TestGetHandlerParams > {
 TEST_P(TestGetHandler, ResponseFilling) {
     auto& params = GetParam();
     GetHandler handler;
-    Connection* conn = new Connection({}, -1, nullptr);
+    Connection* conn = new Connection({}, -1, 0, nullptr);
     conn->setState(Connection::Handling);
     handler.handle(conn, params.req, params.cfg);
     assertEqualHttpResponse(params.wantResp, conn->_response); // Use shared function

@@ -59,7 +59,7 @@ class TestDeleteHandler : public ::testing::TestWithParam< TestDeleteHandlerPara
 TEST_P(TestDeleteHandler, FileDeletionTests) {
     auto& param = GetParam();
     DeleteHandler handler;
-    Connection* conn = new Connection({}, -1, nullptr);
+    Connection* conn = new Connection({}, -1, 0, nullptr);
     struct stat st;
     handler.handle(conn, param.req, param.cfg);
     assertEqualHttpResponse(param.wantResp, conn->_response);

@@ -21,7 +21,7 @@ class ConnectionHandler : public IConnectionHandler {
     std::map< int, IRouter* > _routers;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
-    void _addClientConnection(int conn, struct sockaddr_storage theirAddr);
+    void _addClientConnection(int connfd, struct sockaddr_storage theirAddr, int port);
     int _acceptNewConnection(int socketfd);
     void _onSocketRead(Connection* conn);
     void _onSocketWrite(Connection* conn);
