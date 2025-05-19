@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "IIONotifier.h"
 #include <sstream>
 #include <string>
 
@@ -20,5 +21,6 @@ std::string to_string(const T& value) {
 std::string toLower(const std::string& str);
 
 void printTimeval(const timeval& tv);
+void printNotif(const t_notif& notif);
 
 #endif // UTILS_H

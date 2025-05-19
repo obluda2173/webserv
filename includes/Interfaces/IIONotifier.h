@@ -13,6 +13,7 @@ class IIONotifier {
   public:
     virtual ~IIONotifier(void) {}
     virtual void add(int fd, long timeout_ms = 30000) = 0;
+    virtual void addNoTimeout(int fd) = 0;
     virtual void del(int fd) = 0;
     virtual std::vector< t_notif > wait(void) = 0;
     virtual void modify(int fd, e_notif notif) = 0;

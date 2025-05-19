@@ -1,3 +1,4 @@
+#include "IIONotifier.h"
 #include <arpa/inet.h>
 #include <cstring>
 #include <dirent.h>
@@ -92,4 +93,25 @@ std::string toLower(const std::string& str) {
 
 void printTimeval(const timeval& tv) {
     std::cout << "Seconds: " << tv.tv_sec << ", Microseconds: " << tv.tv_usec << std::endl;
+}
+
+const char* notifToString(e_notif notif) {
+    switch (notif) {
+    case CLIENT_HUNG_UP:
+        return "CLIENT_HUNG_UP";
+    case READY_TO_READ:
+        return "READY_TO_READ";
+    case READY_TO_WRITE:
+        return "READY_TO_WRITE";
+    case BROKEN_CONNECTION:
+        return "BROKEN_CONNECTION";
+    case TIMEOUT:
+        return "TIMEOUT";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+void printNotif(const t_notif& notif) {
+    std::cout << "File Descriptor: " << notif.fd << ", Notification: " << notifToString(notif.notif) << std::endl;
 }

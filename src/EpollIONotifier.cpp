@@ -32,6 +32,13 @@ void EpollIONotifier::add(int fd, long timeout_ms) {
     _fdInfos[fd] = FdInfo{_clock->now(), timeout_ms};
 }
 
+void EpollIONotifier::addNoTimeout(int fd) {
+    struct epoll_event event;
+    event.events = EPOLLIN | EPOLLRDHUP;
+    event.data.fd = fd;
+    epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
+}
+
 void EpollIONotifier::del(int fd) {
     _fdInfos.erase(fd);
     epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL);
@@ -64,7 +71,8 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     if (ready > 0) {
         for (int i = 0; i < ready; i++) {
             int fd = events[i].data.fd;
-            _fdInfos[fd].lastActivity = _now;
+            if (_fdInfos.find(fd) != _fdInfos.end())
+                _fdInfos[fd].lastActivity = _now;
             if (events[i].events & EPOLLHUP)
                 results.push_back(t_notif{fd, BROKEN_CONNECTION});
             else if (events[i].events & EPOLLRDHUP)

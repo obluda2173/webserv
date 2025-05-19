@@ -140,19 +140,9 @@ TEST_F(IONotifierTestTimeout, addFdWithoutTimeout) {
     // adding one without timeout
     _ioNotifier->addNoTimeout(serverPipe[READ_END]);
 
-    _writeHelloToPipe(_pipes[1][WRITE_END]);
+    _writeHelloToPipe(serverPipe[WRITE_END]);
 
     _clock->advance(30);
     notifs = _ioNotifier->wait();
     EXPECT_EQ(notifs.size(), 2) << "not 2 notifications";
-
-    // expectNotif(notifs[0], _pipes[0][READ_END], READY_TO_READ);
-
-    // _readOutFd(_pipes[0][READ_END]);
-
-    // // times out 20 ms after
-    // _clock->advance(20);
-    // notifs = _ioNotifier->wait();
-    // EXPECT_EQ(notifs.size(), 1) << "no notifiactions found";
-    // expectNotif(notifs[0], _pipes[0][READ_END], TIMEOUT);
 }
