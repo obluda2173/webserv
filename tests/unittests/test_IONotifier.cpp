@@ -115,7 +115,7 @@ TEST(IONotifierTest, timeout) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     std::vector< t_notif > notifs = ioNotifier->wait();
-    // ASSERT_NE(notifs.size(), 0) << "no notifiactions found";
+    ASSERT_NE(notifs.size(), 0) << "no notifiactions found";
 
     close(pipefds[WRITE_END]);
     close(pipefds[READ_END]);

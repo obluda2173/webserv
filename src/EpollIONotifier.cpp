@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 EpollIONotifier::EpollIONotifier(ILogger& logger) : _logger(logger) {
@@ -24,7 +25,7 @@ EpollIONotifier::~EpollIONotifier(void) {
 
 void EpollIONotifier::add(int fd, int timeout_ms) {
     _timeout_ms = timeout_ms;
-    _last_time = std::time(NULL);
+    gettimeofday(&_lastTime, NULL);
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
@@ -49,7 +50,12 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
     struct epoll_event events[NBR_EVENTS_NOTIFIER];
     int ready = epoll_wait(_epfd, events, NBR_EVENTS_NOTIFIER, 10);
 
-    if (_timeout_ms < std::time(NULL) - _last_time) {
+    gettimeofday(&_now, nullptr);
+    long seconds = _now.tv_sec - _lastTime.tv_sec;
+    long microseconds = _now.tv_usec - _lastTime.tv_usec;
+    double elapsedMillis = seconds * 1000.0 + microseconds / 1000.0;
+
+    if (_timeout_ms < elapsedMillis) {
         results.push_back(t_notif{-1, READY_TO_READ});
     }
     if (ready > 0) {

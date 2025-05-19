@@ -16,7 +16,8 @@ class EpollIONotifier : public IIONotifier {
     ILogger& _logger;
     int _epfd;
     int _timeout_ms;
-    std::time_t _last_time;
+    timeval _lastTime;
+    timeval _now;
 
   public:
     EpollIONotifier(ILogger& logger);
