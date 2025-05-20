@@ -1,6 +1,7 @@
 #ifndef IROUTER_H
 #define IROUTER_H
 
+#include "HttpRequest.h"
 #include "Route.h"
 #include "RouteConfig.h"
 #include <string>

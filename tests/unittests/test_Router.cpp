@@ -60,22 +60,24 @@ TEST_P(RouterTest, testWithConfigParsing) {
     std::vector< ServerConfig > svrCfgs = cfgPrsr->getServersConfig();
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig svrCfg = svrCfgs[i];
-        std::map< std::string, IHandler* > hdlrs = {
-            {"GET", new StubHandler("GET")},
-            {"POST", new StubHandler("POST")},
-            {"DELETE", new StubHandler("DELETE")},
-        };
-        IRouter* r = new Router(hdlrs);
-        addSvrToRouter(r, svrCfg);
         for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
-            routers[it->first + ":" + to_string(it->second)] = r;
+            if (routers.find(it->first + ":" + to_string(it->second)) != routers.end()) {
+                addSvrToRouter(routers[it->first + ":" + to_string(it->second)], svrCfg);
+            } else {
+                std::map< std::string, IHandler* > hdlrs = {
+                    {"GET", new StubHandler("GET")},
+                    {"POST", new StubHandler("POST")},
+                    {"DELETE", new StubHandler("DELETE")},
+                };
+                IRouter* r = new Router(hdlrs);
+                addSvrToRouter(r, svrCfg);
+                routers[it->first + ":" + to_string(it->second)] = r;
+            }
         }
     }
 
     IRouter* r = routers[params.socketAddr];
     // here end to build router ==============================-
-
-    // Router r = newRouter(cfgPrsr->getServersConfig(), hdlrs);
 
     Route gotRoute = r->match(request);
     // check root

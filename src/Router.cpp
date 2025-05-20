@@ -37,7 +37,12 @@ void Router::add(std::string svrName, std::string prefix, std::string method, Ro
         _defaultSvr = svrName;
     if (_svrs.find(svrName) == _svrs.end())
         _svrs.insert(svrName);
+
+    if (_svrKnownPrefixPlusMethod[svrName].find(prefix + method) != _svrKnownPrefixPlusMethod[svrName].end())
+        return;
+
     _routeToRoutes[svrName + prefix].cfg = cfg;
     _routeToRoutes[svrName + prefix].hdlrs[method] = _hdlrs[method];
     _svrToLocs[svrName].insert(prefix);
+    _svrKnownPrefixPlusMethod[svrName].insert(prefix + method);
 }

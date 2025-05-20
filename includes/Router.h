@@ -14,6 +14,7 @@ class Router : public IRouter {
     std::string _defaultSvr;
     std::set< std::string > _svrs;
     std::map< std::string, std::set< std::string > > _svrToLocs;
+    std::map< std::string, std::set< std::string > > _svrKnownPrefixPlusMethod;
     std::map< std::string, Route > _routeToRoutes;
     std::string _matchLocations(HttpRequest req);
 
