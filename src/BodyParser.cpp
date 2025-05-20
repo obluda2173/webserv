@@ -1,5 +1,6 @@
 #include "BodyParser.h"
 #include "Connection.h"
+#include "handlerUtils.h"
 #include <sstream>
 
 void BodyParser::parse(Connection* conn) {
@@ -9,6 +10,11 @@ void BodyParser::parse(Connection* conn) {
     if (bodyCtx.contentLength == 0) {
         std::stringstream ss(conn->_request.headers["content-length"]);
         ss >> bodyCtx.contentLength;
+        if (bodyCtx.contentLength > conn->route.cfg.clientMaxBody) {
+            setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
+            conn->setState(Connection::SendResponse);
+            return;
+        }
     }
 
     if ((bodyCtx.bytesReceived + readBuf.size()) < bodyCtx.contentLength) {

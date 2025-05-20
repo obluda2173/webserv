@@ -107,6 +107,8 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
+            // BodyParsing
+            // check for Connection::SendResponse
             _logger.log("INFO", "Handling");
             conn->route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
             continueProcessing = (conn->getState() != currentState);
