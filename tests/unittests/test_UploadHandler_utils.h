@@ -8,7 +8,8 @@ static std::string PREFIX = "/uploads/";
 std::string getFileContents(const std::string& filename);
 Connection* setupConnWithContentLength(std::string filename, size_t contentLength);
 Connection* setupConnWithoutContentLength(std::string filename);
+Connection* setupConnWithTransferEncoding(std::string filename);
 void removeFile(std::string filepath);
-
+int getRandomNumber(int min = 10, int max = 50);
 
 #endif // TEST_UPLOADHANDLER_UTILS_H
