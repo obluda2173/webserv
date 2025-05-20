@@ -52,6 +52,8 @@ class Connection {
     CgiContext cgiCtx;
     Buffer _readBuf;
     Buffer _sendBuf;
+    bool _bodyFinished;
+    std::string _tempBody;
 
     ~Connection();
     Connection(sockaddr_storage addr, int fd, int port, IHttpParser* prsr, ISender* = new SystemSender());

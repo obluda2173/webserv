@@ -17,6 +17,8 @@
 #include "test_mocks.h"
 // class MockLogger;
 
+static std::string ROOT = "tests/unittests/test_files/UploadHandler";
+static std::string PREFIX = "/uploads/";
 // test_utils.h
 int countOpenFileDescriptors();
 
@@ -36,6 +38,16 @@ void readTillNothingMoreToRead(IIONotifier* _ioNotifier, IConnectionHandler* _co
 std::string getResponseConnHdlr(int _conn, IConnectionHandler* _connHdlr, int _clientfd);
 std::string getRandomString(size_t length);
 Router newRouterTest();
+
+// setup conns requests
+Connection* setupConnWithContentLength(std::string filename, size_t contentLength);
+Connection* setupConnWithoutContentLength(std::string filename);
+Connection* setupConnWithTransferEncoding(std::string filename);
+
+// other
+std::string getFileContents(const std::string& filename);
+void removeFile(std::string filepath);
+int getRandomNumber(int min = 10, int max = 50);
 
 // CgiHandlerTest utils
 std::string buildUri(std::string script,

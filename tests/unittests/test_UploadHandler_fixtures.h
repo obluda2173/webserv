@@ -2,7 +2,6 @@
 #define TEST_UPLOADHANDLER_FIXTURES_H
 
 #include "Connection.h"
-#include "test_UploadHandler_utils.h"
 #include "test_main.h"
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
