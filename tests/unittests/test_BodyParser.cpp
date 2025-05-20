@@ -4,7 +4,8 @@
 #include <gtest/gtest.h>
 #include <string>
 
-TEST(BodyParserTest, firstTest) {
+// TODO: check with the clientMaxBody of the RouteConfig
+TEST(BodyParserTest, bodyWithoutOverlap) {
     BodyParser* bodyPrsr = new BodyParser();
     int contentLength = 12345;
     std::string body = getRandomString(contentLength);
@@ -27,6 +28,7 @@ TEST(BodyParserTest, firstTest) {
         conn->_readBuf.assign(bodyChunk);
         bodyPrsr->parse(conn);
         EXPECT_EQ(conn->_tempBody, bodyChunk);
+        EXPECT_EQ(conn->_readBuf.size(), 0);
     }
 
     EXPECT_TRUE(conn->_bodyFinished);
@@ -35,33 +37,73 @@ TEST(BodyParserTest, firstTest) {
     delete bodyPrsr;
 }
 
-TEST(BodyParserTestContentLength, concurrently) {
-    BodyParser* bodyPrsr = new BodyParser();
+class BodyParserTestContentLength : public ::testing::TestWithParam< int > {
+  protected:
+    BodyParser* bodyPrsr;
 
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
-    int contentLength = 9876;
+    void SetUp() override { bodyPrsr = new BodyParser(); }
 
-    conn->_request.method = "";
-    conn->_request.uri = "";
-    conn->_request.version = "";
-    conn->_request.headers["content-length"] = std::to_string(contentLength);
-    conn->setState(Connection::Handling);
-    conn->_bodyFinished = false;
+    void TearDown() override { delete bodyPrsr; }
+};
 
-    std::string body = getRandomString(contentLength);
-    std::string bytes = body + getRandomString(10000 - contentLength);
+TEST_P(BodyParserTestContentLength, BodyWithOverlappppppppp) {
+    const int connectionCount = GetParam();
+    std::vector< Connection* > connections;
+    std::vector< std::string > bodies;
+    std::vector< std::string > bytesList;
+    std::vector< size_t > positions;
 
-    size_t pos = 0;
-    while (pos < bytes.length()) {
-        int chunkSize = getRandomNumber(10, 50);
-        std::string bytesChunk = bytes.substr(pos, chunkSize);
-        pos += chunkSize;
-        conn->_readBuf.assign(bytesChunk);
+    // Setup all connections
+    for (int i = 0; i < connectionCount; i++) {
+        Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+        int contentLength = 9876;
+        conn->_request.headers["content-length"] = std::to_string(contentLength);
+        conn->_bodyFinished = false;
 
-        bodyPrsr->parse(conn);
+        std::string body = getRandomString(contentLength);
+        std::string bytes = body + getRandomString(10000 - contentLength);
 
-        if (pos <= body.length()) {
-            EXPECT_EQ(conn->_tempBody, bytesChunk);
+        connections.push_back(conn);
+        bodies.push_back(body);
+        bytesList.push_back(bytes);
+        positions.push_back(0);
+    }
+
+    // Process all connections until complete
+    bool allDone = false;
+    while (!allDone) {
+        allDone = true;
+
+        for (size_t i = 0; i < connections.size(); i++) {
+            size_t& pos = positions[i];
+            if (pos < bodies[i].length()) {
+                allDone = false;
+
+                int chunkSize = getRandomNumber(10, 50);
+                std::string bytesChunk = bytesList[i].substr(pos, chunkSize);
+                connections[i]->_readBuf.assign(bytesChunk);
+
+                bodyPrsr->parse(connections[i]);
+
+                std::string restOfBody = bodies[i].substr(pos);
+                pos += chunkSize;
+
+                if (pos < bodies[i].length()) {
+                    EXPECT_EQ(connections[i]->_tempBody, bytesChunk);
+                    EXPECT_EQ(connections[i]->_readBuf.size(), 0);
+                } else {
+                    EXPECT_EQ(connections[i]->_tempBody, restOfBody);
+                    EXPECT_EQ(connections[i]->_readBuf.size(), chunkSize - restOfBody.size());
+                }
+            }
         }
     }
+
+    // Cleanup
+    for (auto conn : connections) {
+        delete conn;
+    }
 }
+
+// Run the test with 1, 5, and 10 concurrent connections
+INSTANTIATE_TEST_SUITE_P(ConcurrentConnections, BodyParserTestContentLength, ::testing::Values(1, 5, 10));
