@@ -41,6 +41,8 @@ void ConfigParser::_parseListen(const Directive& directive, ServerConfig& config
             addr = directive.args[i].substr(0, colon_pos);
             port_str = directive.args[i].substr(colon_pos + 1);
             if (addr.size() >= 2 && addr[0] == '[' && addr[addr.size() - 1] == ']') {
+                // implies IPv6 notation
+                // do not support yet
                 addr = addr.substr(1, addr.size() - 2);
             }
         } else {

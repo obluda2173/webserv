@@ -92,8 +92,12 @@ void ConnectionHandler::_handleState(Connection* conn) {
         case Connection::Routing:
             router = _routers[conn->getPort()];
             _logger.log("INFO", "Routing");
+
             conn->_request.uri = normalizePath("", conn->_request.uri);
+
             route = router->match(conn->getRequest());
+            // redirection should probably be here (checking route.cfg.redirect)
+            // possible state change: SetRedirectResponse and SendResponse
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
                 setErrorResponse(conn->_response, 404, "Not Found", RouteConfig());
                 conn->setState(Connection::SendResponse);
