@@ -46,7 +46,7 @@ class BodyParserTestContentLength : public ::testing::TestWithParam< int > {
     void TearDown() override { delete bodyPrsr; }
 };
 
-TEST_P(BodyParserTestContentLength, BodyWithOverlappppppppp) {
+TEST_P(BodyParserTestContentLength, BodyWithOverlap) {
     const int connectionCount = GetParam();
     std::vector< Connection* > connections;
     std::vector< std::string > bodies;
@@ -107,3 +107,34 @@ TEST_P(BodyParserTestContentLength, BodyWithOverlappppppppp) {
 
 // Run the test with 1, 5, and 10 concurrent connections
 INSTANTIATE_TEST_SUITE_P(ConcurrentConnections, BodyParserTestContentLength, ::testing::Values(1, 5, 10));
+
+TEST(BodyParserTest, respectsClientMaxBodySize) {
+    BodyParser* bodyPrsr = new BodyParser();
+
+    // Setup connection with a RouteConfig that has a limited clientMaxBody
+    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    const size_t maxBodySize = 100;
+    conn->route.cfg.clientMaxBody = maxBodySize;
+
+    // Set a content-length that exceeds the max body size
+    const int contentLength = maxBodySize + 50;
+    conn->_request.headers["content-length"] = std::to_string(contentLength);
+    conn->setState(Connection::Handling);
+    conn->_bodyFinished = false;
+
+    // Create a body that's larger than allowed
+    std::string body = getRandomString(contentLength);
+
+    // First chunk within limits
+    int firstChunkSize = 80;
+    conn->_readBuf.assign(body.substr(0, firstChunkSize));
+    bodyPrsr->parse(conn);
+
+    // This should be accepted
+    EXPECT_EQ(conn->getState(), Connection::SendResponse);
+    EXPECT_EQ(conn->_response.statusCode, 413);
+    EXPECT_EQ(conn->_response.statusMessage, "Content Too Large");
+
+    delete conn;
+    delete bodyPrsr;
+}
