@@ -1,10 +1,12 @@
 #include "ConnectionHandler.h"
 #include "BadRequestHandler.h"
+#include "BodyParser.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "handlerUtils.h"
 #include "logging.h"
 #include "utils.h"
+#include <chrono>
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -13,9 +15,12 @@
 #include <unistd.h>
 
 ConnectionHandler::ConnectionHandler(std::map< int, IRouter* > routers, ILogger& l, IIONotifier& io)
-    : _routers(routers), _logger(l), _ioNotifier(io) {}
+    : _routers(routers), _logger(l), _ioNotifier(io) {
+    _bodyPrsr = new BodyParser();
+}
 
 ConnectionHandler::~ConnectionHandler(void) {
+    delete _bodyPrsr;
     for (std::map< int, Connection* >::iterator it = _connections.begin(); it != _connections.end(); it++)
         delete it->second;
 
@@ -82,6 +87,9 @@ void ConnectionHandler::_handleState(Connection* conn) {
     IRouter* router;
     Route route;
     bool continueProcessing = true;
+    // std::chrono::duration< double > duration;
+    // std::chrono::high_resolution_clock::time_point start;
+    // std::chrono::high_resolution_clock::time_point end;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
         switch (currentState) {
@@ -107,10 +115,10 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
-            // BodyParsing
-            // check for Connection::SendResponse
-            _logger.log("INFO", "Handling");
-            conn->route.hdlrs[conn->getRequest().method]->handle(conn, conn->_request, route.cfg);
+            _bodyPrsr->parse(conn);
+            if (!conn->_hdlr)
+                conn->_hdlr = conn->route.hdlrs[conn->getRequest().method];
+            conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::HandleBadRequest:

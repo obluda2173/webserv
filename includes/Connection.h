@@ -61,6 +61,7 @@ class Connection {
     BodyContext bodyCtx;
     bool _bodyFinished;
     std::string _tempBody;
+    IHandler* _hdlr;
 
     ~Connection();
     Connection(sockaddr_storage addr, int fd, int port, IHttpParser* prsr, ISender* = new SystemSender());

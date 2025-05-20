@@ -1,6 +1,7 @@
 #ifndef CONNECTIONHANDLER_H
 #define CONNECTIONHANDLER_H
 
+#include "BodyParser.h"
 #include "Connection.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
@@ -20,6 +21,7 @@ class ConnectionHandler : public IConnectionHandler {
     std::map< int, IRouter* > _routers;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
+    BodyParser* _bodyPrsr;
     void _addClientConnection(int connfd, struct sockaddr_storage theirAddr, int port);
     int _acceptNewConnection(int socketfd);
     void _onSocketRead(Connection* conn);

@@ -6,7 +6,6 @@
 void BodyParser::parse(Connection* conn) {
     BodyContext& bodyCtx = conn->bodyCtx;
     Buffer& readBuf = conn->_readBuf;
-
     if (bodyCtx.contentLength == 0) {
         std::stringstream ss(conn->_request.headers["content-length"]);
         ss >> bodyCtx.contentLength;

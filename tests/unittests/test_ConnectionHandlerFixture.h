@@ -236,7 +236,10 @@ class StubUploadHdlrSimple : public IHandler {
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
         (void)req;
         (void)cfg;
-        _uploaded += conn->getReadBuf();
+
+        _uploaded += conn->_tempBody;
+        if (!conn->_bodyFinished)
+            return;
         HttpResponse& resp = conn->_response;
         resp.statusCode = 200;
         resp.statusMessage = "OK";
@@ -252,7 +255,7 @@ class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, in
         _uploadHdlr = new StubUploadHdlrSimple();
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
-        router->add("test.com", "", "POST", {});
+        router->add("test.com", "", "POST", {"", {}, {}, 10000, false, {}});
 
         std::map< int, IRouter* > routers;
         routers[8080] = router;
@@ -272,49 +275,4 @@ class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, in
     }
 };
 
-class StubUploadHdlrAdvanced : public IHandler {
-  private:
-    int _nbrOfHandleCalls;
-
-  public:
-    static int _nbrOfHandleCallsUntilUploadComplete;
-    StubUploadHdlrAdvanced() : _nbrOfHandleCalls(0) {}
-    virtual void handle(Connection* conn, const HttpRequest&, const RouteConfig&) {
-        conn->_readBuf.clear();
-        if (_nbrOfHandleCalls < _nbrOfHandleCallsUntilUploadComplete) {
-            _nbrOfHandleCalls++;
-            return;
-        }
-        conn->uploadCtx.state = UploadContext::UploadFinished;
-        conn->setState(Connection::SendResponse);
-    }
-};
-
-class ConnHdlrTestStubUploadHdlrAdvanced : public BaseConnHdlrTest< StubLogger > {
-  public:
-    StubUploadHdlrAdvanced* _uploadHdlr;
-    virtual void setupConnectionHandler() override {
-        _uploadHdlr = new StubUploadHdlrAdvanced();
-        std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
-        IRouter* router = new Router(hdlrs);
-        router->add("test.com", "", "POST", {});
-
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
-        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
-    }
-
-    virtual void setupClientConnections() override {
-        int clientfd;
-        int connfd;
-        int port = 23456;
-        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
-        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
-            << "connect: " << std::strerror(errno) << std::endl;
-        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
-        fcntl(clientfd, F_SETFL, O_NONBLOCK);
-        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
-    }
-};
-
-#endif // TEST_CONNECTIONHANDLERTESTFIXTURE_H
+#endif

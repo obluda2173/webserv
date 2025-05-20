@@ -26,6 +26,7 @@ TEST(UploadHdlrTest2, uploading) {
     int count = 0;
     while (count++ < 3)
         uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false, {}});
+
     EXPECT_FALSE(conn->uploadCtx.file->is_open());
     EXPECT_EQ(conn->getState(), Connection::SendResponse);
     delete uploadHdlr;
