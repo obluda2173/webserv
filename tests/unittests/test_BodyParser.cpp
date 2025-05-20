@@ -4,7 +4,8 @@
 #include <gtest/gtest.h>
 #include <string>
 
-// TODO: check with the clientMaxBody of the RouteConfig
+// TODO: check Content equals 0
+// TODO: check neither Content-Length nor Transfer-Encoding given
 TEST(BodyParserTest, bodyWithoutOverlap) {
     BodyParser* bodyPrsr = new BodyParser();
     int contentLength = 12345;

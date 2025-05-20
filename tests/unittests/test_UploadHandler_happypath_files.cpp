@@ -15,7 +15,8 @@ TEST(UploadHdlrTest, changeFileExisting) {
     int contentLength = 100;
     std::string body = getRandomString(contentLength);
     Connection* conn = setupConnWithContentLength(filename, contentLength);
-    conn->_readBuf.assign(body);
+    conn->_tempBody = body;
+    conn->_bodyFinished = true;
 
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
@@ -44,7 +45,11 @@ TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
 
     IHandler* uploadHdlr = new UploadHandler();
     while (conn->uploadCtx.state != UploadContext::UploadFinished) {
-        conn->_readBuf.assign(body.substr(pos, batchSize));
+        conn->_tempBody = std::string(body.substr(pos, batchSize));
+        pos += batchSize;
+        if (pos >= body.length())
+            conn->_bodyFinished = true;
+
         uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
         struct stat statStruct;
         bool fileExists = !stat((ROOT + PREFIX + filename).c_str(), &statStruct);
@@ -56,7 +61,6 @@ TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
             EXPECT_EQ(fileExists, true);
             EXPECT_EQ(tempExists, false);
         }
-        pos += batchSize;
     }
     delete uploadHdlr;
 
@@ -87,7 +91,10 @@ TEST(UploadHdlrTest, testTempFileExistFileExist) {
 
     IHandler* uploadHdlr = new UploadHandler();
     while (conn->uploadCtx.state != UploadContext::UploadFinished) {
-        conn->_readBuf.assign(body.substr(pos, batchSize));
+        conn->_tempBody = std::string(body.substr(pos, batchSize));
+        pos += batchSize;
+        if (pos >= body.length())
+            conn->_bodyFinished = true;
         uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
         struct stat statStruct;
         bool fileExists = !stat((ROOT + PREFIX + filename).c_str(), &statStruct);
@@ -101,7 +108,6 @@ TEST(UploadHdlrTest, testTempFileExistFileExist) {
             EXPECT_EQ(fileExists, true);
             EXPECT_EQ(tempExists, false);
         }
-        pos += batchSize;
     }
     delete uploadHdlr;
 

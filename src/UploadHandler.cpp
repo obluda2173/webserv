@@ -12,15 +12,9 @@ UploadHandler::~UploadHandler() {}
 
 void UploadHandler::uploadNewContent(Connection* conn) {
     UploadContext& ctx = conn->uploadCtx;
-    if ((ctx.bytesUploaded + conn->_readBuf.size()) < ctx.contentLength) {
-        ctx.file->write(reinterpret_cast< const char* >(conn->_readBuf.data()), conn->_readBuf.size());
-        ctx.bytesUploaded += conn->_readBuf.size();
-        conn->_readBuf.clear();
-    } else {
-        ctx.file->write(reinterpret_cast< const char* >(conn->_readBuf.data()), ctx.contentLength - ctx.bytesUploaded);
-        ctx.bytesUploaded = ctx.contentLength;
-        conn->_readBuf.clear();
-    }
+    ctx.file->write(conn->_tempBody.data(), conn->_tempBody.size());
+    if (conn->_bodyFinished)
+        ctx.state = UploadContext::UploadFinished;
 }
 
 bool UploadHandler::_validateContentLength(Connection* conn, const RouteConfig& cfg) {
@@ -104,8 +98,8 @@ bool UploadHandler::_validateNotActive(Connection* conn, const HttpRequest& req,
 }
 
 bool UploadHandler::_validation(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-    if (!_validateContentLength(conn, cfg))
-        return false;
+    // if (!_validateContentLength(conn, cfg))
+    //     return false;
 
     if (!_validateNotActive(conn, req, cfg))
         return false;
@@ -146,22 +140,18 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         UploadContext& uploadCtx = conn->uploadCtx;
         switch (uploadCtx.state) {
         case UploadContext::Validation:
-            if (!_validation(conn, req, cfg)) {
-                conn->setState(Connection::SendResponse);
-                return;
-            }
+            if (!_validation(conn, req, cfg))
+                return conn->setState(Connection::SendResponse);
             uploadCtx.state = UploadContext::Initialising;
             break; // will fallthrough
         case UploadContext::Initialising:
-            if (!_initUploadCxt(conn, req, cfg)) {
-                conn->setState(Connection::SendResponse);
-                return;
-            }
+            if (!_initUploadCxt(conn, req, cfg))
+                return conn->setState(Connection::SendResponse);
             uploadCtx.state = UploadContext::Uploading;
             break; // will fallthrough
         case UploadContext::Uploading:
-            uploadNewContent(conn);
-            if (uploadCtx.bytesUploaded < uploadCtx.contentLength)
+            uploadCtx.file->write(conn->_tempBody.data(), conn->_tempBody.size());
+            if (!conn->_bodyFinished)
                 return;
             uploadCtx.state = UploadContext::UploadFinished;
             break; // will fallthrough
