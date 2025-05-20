@@ -58,6 +58,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
         {"POST", new StubHandler("POST")},
         {"DELETE", new StubHandler("DELETE")},
     };
+    // std::map<int, IRouter*>
     Router r = newRouter(cfgPrsr->getServersConfig(), hdlrs);
 
     Route gotRoute = r.match(request);

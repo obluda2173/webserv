@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 ConnectionHandler::ConnectionHandler(std::map< int, IRouter* > routers, ILogger& l, IIONotifier& io)
-    : _router(NULL), _routers(routers), _logger(l), _ioNotifier(io) {}
+    : _routers(routers), _logger(l), _ioNotifier(io) {}
 
 ConnectionHandler::~ConnectionHandler(void) {
     for (std::map< int, Connection* >::iterator it = _connections.begin(); it != _connections.end(); it++)

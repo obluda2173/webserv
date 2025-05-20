@@ -17,7 +17,6 @@ typedef enum SocketType {
 class ConnectionHandler : public IConnectionHandler {
   private:
     std::map< int, Connection* > _connections;
-    IRouter* _router;
     std::map< int, IRouter* > _routers;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
