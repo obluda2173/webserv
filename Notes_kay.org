@@ -40,16 +40,18 @@ index       index.html index.htm
 - [ ] responseWrite needs to fill out necessary headers
 - [ ] it's the reason why some clients don't close the connection
 ** TODO connection Handling (architecture)
+- [-] implement different router for different ports
+  - [X] also handle cases where the routing is failing
+  - [X] multiple routers in connectionhandler
+  - [ ] build with multiple routers
+- [ ] router needs handle cgi
+  - [ ] check on how to differentiate between cgi and other handlers
 - [ ] implement HTTP redirect
 - [-] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
   - [X] built the mechanism inside notifier
   - [ ] log the timeout correctly
   - [ ] test that the connection is removed from ioNotifier when the connectionHandler is called with a timeout
 - [X] normalization of uri needs to be done before routing
-- [-] implement different router for different ports
-  - [X] also handle cases where the routing is failing
-  - [X] multiple routers in connectionhandler
-  - [ ] build with multiple routers
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
     - [ ] also a test for a broken connection and then the file should be closed

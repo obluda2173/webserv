@@ -79,6 +79,16 @@ TEST_P(RouterTest, testWithConfigParsing) {
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
     for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
         EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
+
+    // check cgi
+    for (std::map< std::string, std::string >::iterator it = wantCfg.cgi.begin(); it != wantCfg.cgi.end(); it++) {
+        std::string wantKey = it->first;
+        std::string wantVal = it->second;
+        std::map< std::string, std::string > gotCgi = gotRoute.cfg.cgi;
+        EXPECT_TRUE(gotCgi.find(wantKey) != gotCgi.end());
+        EXPECT_EQ(gotCgi[wantKey], wantVal);
+    }
+
     delete cfgPrsr;
 }
 
@@ -100,7 +110,7 @@ INSTANTIATE_TEST_SUITE_P(
                           {"/data/scripts", {}, {}, 12 * oneMB, false, {}}},
                       RouterTestParams{HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
                                        {"GET", "POST", "DELETE"},
-                                       {"/data", {}, {}, oneMB, false, {}}},
+                                       {"/data", {}, {}, oneMB, false, {{".php", "/usr/bin/php-cgi"}}}},
                       RouterTestParams{HttpRequest{"GET", "/css/themes/", "HTTP/1.1", {{"host", "example.com"}}},
                                        {"GET", "POST"},
                                        {"/data/static", {}, {}, oneMB, false, {}}},
