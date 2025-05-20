@@ -14,6 +14,12 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+typedef struct BodyContext {
+    size_t bytesReceived;
+    size_t contentLength;
+    BodyContext() : bytesReceived(0), contentLength(0) {}
+} BodyContext;
+
 typedef struct UploadContext {
     enum STATE { Validation, Initialising, Uploading, UploadFinished };
     size_t bytesUploaded;
@@ -52,6 +58,7 @@ class Connection {
     CgiContext cgiCtx;
     Buffer _readBuf;
     Buffer _sendBuf;
+    BodyContext bodyCtx;
     bool _bodyFinished;
     std::string _tempBody;
 

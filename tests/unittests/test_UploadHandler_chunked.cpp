@@ -1,15 +1,15 @@
-// #include "Connection.h"
-// #include "UploadHandler.h"
-// #include "test_UploadHandler_utils.h"
-// #include "test_main.h"
-// #include "gtest/gtest.h"
-#include <gtest/gtest.h>
+// // #include "Connection.h"
+// // #include "UploadHandler.h"
+// // #include "test_UploadHandler_utils.h"
+// // #include "test_main.h"
+// // #include "gtest/gtest.h"
+// #include <gtest/gtest.h>
 
-std::string numberToHexString(int number) {
-    std::ostringstream oss;
-    oss << std::hex << number; // Convert number to hexadecimal
-    return oss.str();
-}
+// std::string numberToHexString(int number) {
+//     std::ostringstream oss;
+//     oss << std::hex << number; // Convert number to hexadecimal
+//     return oss.str();
+// }
 
 // TEST(UploadHdlrTest, chunked) {
 //     IHandler* uploadHdlr = new UploadHandler();
