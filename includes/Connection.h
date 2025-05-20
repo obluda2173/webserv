@@ -33,10 +33,10 @@ typedef struct UploadContext {
 
 struct CgiContext {
     pid_t cgiPid;               // Store CGI process ID
-    int cgiPipeFd;              // Store CGI output pipe
+    int cgiPipeStdout;              // Store CGI output pipe
     std::string cgiOutput;      // Accumulate CGI output
     RouteConfig cgiRouteConfig; // Store RouteConfig for response
-    CgiContext() : cgiPid(-1), cgiPipeFd(-1) {}
+    CgiContext() : cgiPid(-1), cgiPipeStdout(-1) {}
 };
 
 class Connection {

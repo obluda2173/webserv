@@ -12,8 +12,9 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         return;
     }
 
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
+    int pipeStdin[2];
+    int pipeStdout[2];
+    if (pipe(pipeStdin) == -1 || pipe(pipeStdout) == -1) {
         setErrorResponse(resp, 500, "Internal Server Error", config);
         conn->setState(Connection::SendResponse);
         return;
@@ -21,8 +22,10 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
 
     pid_t pid = fork();
     if (pid == -1) {
-        close(pipefd[0]);
-        close(pipefd[1]);
+        close(pipeStdin[0]);
+        close(pipeStdin[1]);
+        close(pipeStdout[0]);
+        close(pipeStdout[1]);
         setErrorResponse(resp, 500, "Internal Server Error", config);
         conn->setState(Connection::SendResponse);
         return;
@@ -30,13 +33,13 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
 
     if (pid == 0) {
         ExecParams params;
-        _setupChildProcess(pipefd);
+        _setupChildProcess(pipeStdin, pipeStdout);
         _prepareExecParams(request, params);
         execve(params.argv[0], const_cast< char* const* >(params.argv.data()),
                const_cast< char* const* >(params.env.data()));
         exit(EXIT_FAILURE);
     } else {
-        _setupParentProcess(conn, pipefd, pid, config);
+        _setupParentProcess(conn, pipeStdin, pipeStdout, pid, config);
     }
 }
 

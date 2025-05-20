@@ -90,17 +90,26 @@ void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& para
     params.env.push_back(NULL);
 }
 
-void CgiHandler::_setupChildProcess(int pipefd[2]) {
-    close(pipefd[0]);
-    dup2(pipefd[1], STDOUT_FILENO);
-    close(pipefd[1]);
+void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2]) {
+    close(pipeStdin[1]);
+    close(pipeStdout[0]);
+    dup2(pipeStdin[0], STDIN_FILENO);
+    dup2(pipeStdout[1], STDOUT_FILENO);
+    close(pipeStdin[0]);
+    close(pipeStdout[1]);
 }
 
-void CgiHandler::_setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& config) {
-    close(pipefd[1]);
-    fcntl(pipefd[0], F_SETFL, O_NONBLOCK);
+void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config) {
+    close(pipeStdin[0]);
+    while (!conn->_bodyFinished) {
+        // conn->BodyParser.parse(conn);
+        // write(pipeStdin[1], &conn->_tempBody, conn->_tempBody.size());
+    }
+    close(pipeStdin[1]);
+    close(pipeStdout[1]);
+    fcntl(pipeStdout[0], F_SETFL, O_NONBLOCK);
     conn->cgiCtx.cgiPid = pid;
-    conn->cgiCtx.cgiPipeFd = pipefd[0];
+    conn->cgiCtx.cgiPipeStdout = pipeStdout[0];
     conn->cgiCtx.cgiRouteConfig = config;
     conn->setState(Connection::HandlingCgi);
 }
@@ -171,19 +180,19 @@ ProcessState CgiHandler::_checkProcess(CgiContext& ctx, int& status) {
 }
 
 bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
-    if (cgiCtx.cgiPipeFd == -1) {
+    if (cgiCtx.cgiPipeStdout == -1) {
         return false;
     }
 
     do {
         char buffer[4096];
-        const ssize_t count = read(cgiCtx.cgiPipeFd, buffer, sizeof(buffer));
+        const ssize_t count = read(cgiCtx.cgiPipeStdout, buffer, sizeof(buffer));
         if (count > 0) {
             cgiCtx.cgiOutput.append(buffer, count);
         } else {
             if (count == 0 || (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
-                close(cgiCtx.cgiPipeFd);
-                cgiCtx.cgiPipeFd = -1;
+                close(cgiCtx.cgiPipeStdout);
+                cgiCtx.cgiPipeStdout = -1;
 
                 if (count == -1) {
                     return false;
@@ -196,7 +205,7 @@ bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
 }
 
 void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int status) {
-    if (ctx.cgiPipeFd != -1) {
+    if (ctx.cgiPipeStdout != -1) {
         _readPipeData(ctx, true);
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
