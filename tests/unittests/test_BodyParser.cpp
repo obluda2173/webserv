@@ -12,10 +12,6 @@ TEST(BodyParserTest, bodyWithoutOverlap) {
     std::string body = getRandomString(contentLength);
 
     Connection* conn = new Connection({}, -1, 0, NULL, NULL);
-
-    conn->_request.method = "";
-    conn->_request.uri = "";
-    conn->_request.version = "";
     conn->_request.headers["content-length"] = std::to_string(contentLength);
     conn->setState(Connection::Handling);
     conn->_bodyFinished = false;
@@ -135,6 +131,28 @@ TEST(BodyParserTest, respectsClientMaxBodySize) {
     EXPECT_EQ(conn->getState(), Connection::SendResponse);
     EXPECT_EQ(conn->_response.statusCode, 413);
     EXPECT_EQ(conn->_response.statusMessage, "Content Too Large");
+
+    delete conn;
+    delete bodyPrsr;
+}
+
+TEST(BodyParserTest, noContentLengthSetsBodyToFinished) {
+    BodyParser* bodyPrsr = new BodyParser();
+
+    // Setup connection with a RouteConfig that has a limited clientMaxBody
+    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    const size_t maxBodySize = 100;
+    conn->route.cfg.clientMaxBody = maxBodySize;
+
+    // Set a content-length that exceeds the max body size
+    conn->setState(Connection::Handling);
+    conn->_bodyFinished = false;
+
+    bodyPrsr->parse(conn);
+
+    // This should be accepted
+    EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(conn->getState(), Connection::Handling);
 
     delete conn;
     delete bodyPrsr;

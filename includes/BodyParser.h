@@ -4,9 +4,11 @@
 #include "Connection.h"
 
 class BodyParser {
-  public:
-	void parse(Connection* conn);
-};
+  private:
+    bool _checkContentLength(Connection* conn, BodyContext& bodyCtx);
 
+  public:
+    void parse(Connection* conn);
+};
 
 #endif // BODYPARSER_H
