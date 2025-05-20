@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*testingBatchSizesSending*";
     // testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
     // testing::GTEST_FLAG(filter) = "*multipleRequestsOneConnectionInBatches*";
+    // testing::GTEST_FLAG(filter) = "*RouterTest.testWithConfigParsing*";
     // testing::GTEST_FLAG(filter) = "*RouterTest*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTest.send2MsgsAsync*";

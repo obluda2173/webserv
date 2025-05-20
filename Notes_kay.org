@@ -43,6 +43,7 @@ index       index.html index.htm
 - [-] implement different router for different ports
   - [X] also handle cases where the routing is failing
   - [X] multiple routers in connectionhandler
+  - [ ] probably need to change from ports to complete address of the socket
   - [ ] build with multiple routers
 - [ ] router needs to handle cgi
   - [ ] check on how to differentiate between cgi and other handlers
