@@ -11,7 +11,7 @@ TEST(BodyParserTest, bodyWithoutOverlap) {
     int contentLength = 12345;
     std::string body = getRandomString(contentLength);
 
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     conn->_request.headers["content-length"] = std::to_string(contentLength);
     conn->setState(Connection::Handling);
     conn->_bodyFinished = false;
@@ -52,7 +52,7 @@ TEST_P(BodyParserTestContentLength, BodyWithOverlap) {
 
     // Setup all connections
     for (int i = 0; i < connectionCount; i++) {
-        Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+        Connection* conn = new Connection({}, -1, "", NULL, NULL);
         int contentLength = 9876;
         conn->_request.headers["content-length"] = std::to_string(contentLength);
         conn->_bodyFinished = false;
@@ -109,7 +109,7 @@ TEST(BodyParserTest, respectsClientMaxBodySize) {
     BodyParser* bodyPrsr = new BodyParser();
 
     // Setup connection with a RouteConfig that has a limited clientMaxBody
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     const size_t maxBodySize = 100;
     conn->route.cfg.clientMaxBody = maxBodySize;
 
@@ -140,7 +140,7 @@ TEST(BodyParserTest, noContentLengthSetsBodyToFinished) {
     BodyParser* bodyPrsr = new BodyParser();
 
     // Setup connection with a RouteConfig that has a limited clientMaxBody
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     const size_t maxBodySize = 100;
     conn->route.cfg.clientMaxBody = maxBodySize;
 
