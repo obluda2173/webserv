@@ -47,8 +47,10 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
     _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
     _envStorage.push_back("PATH_INFO=" + _path);
-    _envStorage.push_back("PATH_TRANSLATED=" + _path);
-    _envStorage.push_back("QUERY_STRING=" + _query);
+    _envStorage.push_back("PATH_TRANSLATED=" + _path); // "PATH_TRANSLATED=" + config.root + _path
+    if (request.method == "GET") {
+        _envStorage.push_back("QUERY_STRING=" + _query);
+    }
     _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : ""));
     // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
     _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
@@ -100,18 +102,15 @@ void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2]) {
 }
 
 void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config) {
+    (void)config;
     close(pipeStdin[0]);
-    while (!conn->_bodyFinished) {
-        // conn->BodyParser.parse(conn);
-        // write(pipeStdin[1], &conn->_tempBody, conn->_tempBody.size());
-    }
-    close(pipeStdin[1]);
     close(pipeStdout[1]);
-    fcntl(pipeStdout[0], F_SETFL, O_NONBLOCK);
-    conn->cgiCtx.cgiPid = pid;
+    conn->cgiCtx.cgiPipeStdin = pipeStdin[1];
     conn->cgiCtx.cgiPipeStdout = pipeStdout[0];
-    conn->cgiCtx.cgiRouteConfig = config;
-    conn->setState(Connection::HandlingCgi);
+    conn->cgiCtx.cgiPid = pid;
+    conn->cgiCtx.state = CgiContext::WritingStdin;
+    fcntl(conn->cgiCtx.cgiPipeStdin, F_SETFL, O_NONBLOCK);
+    fcntl(conn->cgiCtx.cgiPipeStdout, F_SETFL, O_NONBLOCK);
 }
 
 std::string CgiHandler::_trimWhiteSpace(const std::string& str) {
@@ -169,14 +168,6 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         }
     }
     resp.body = new StringBodyProvider(body);
-}
-
-ProcessState CgiHandler::_checkProcess(CgiContext& ctx, int& status) {
-    pid_t result = waitpid(ctx.cgiPid, &status, WNOHANG);
-    if (result == -1) {
-        return ProcessState::Error;
-    }
-    return result > 0 ? ProcessState::Exited : ProcessState::Running;
 }
 
 bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {

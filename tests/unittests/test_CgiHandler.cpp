@@ -26,9 +26,11 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
     // IHandler* cgiHdlr = new CgiHandler();
     CgiHandler cgiHdlr;
 
+    req.method = "GET";
     req.uri = buildUri(params.scriptName, params.queryParams);
 
     Connection* conn = new Connection({}, -1, "", NULL, NULL);
+    conn->setState(Connection::Handling);
     cgiHdlr.handle(conn, req, cfg);
 
     bool cgiCompleted = false;
@@ -38,7 +40,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
             cgiCompleted = true;
             break;
         }
-        if (conn->getState() == Connection::HandlingCgi) {
+        if (conn->getState() == Connection::Handling || conn->getState() == Connection::HandlingCgi) {
             cgiHdlr.handleCgiProcess(conn);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
