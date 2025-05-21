@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestTestRouting*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestStubUploadHdlr*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestUpload*";
-    // testing::GTEST_FLAG(filter) = "*CgiHandlerTest*";
+    // testing::GTEST_FLAG(filter) = "*Cgi*";
     // testing::GTEST_FLAG(filter) = "*HttpParserTest*";
     // testing::GTEST_FLAG(filter) = "*DeleteHandler*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlr*";
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection";
     // testing::GTEST_FLAG(filter) = "ListenerTest.closingAConnection:ListenerTest.multiplePortsTestWoLogging";
     // testing::GTEST_FLAG(filter) = "ServerWithMockLoggerParametrizedPortTest";
-    testing::GTEST_FLAG(filter) = "*ServerTest*";
+    // testing::GTEST_FLAG(filter) = "*ServerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParser*";
     // testing::GTEST_FLAG(filter) = "*HandlerTest*";
     // testing::GTEST_FLAG(filter) = "*ServerConfig*";

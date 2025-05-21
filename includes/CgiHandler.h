@@ -2,13 +2,12 @@
 #define CGIHANDLER_H
 
 #include <fcntl.h>
-#include <sys/wait.h>
+#include <sstream>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "Connection.h"
 #include "IHandler.h"
-
-enum class ProcessState { Running, Exited, Error };
 
 struct ExecParams {
     std::vector< const char* > argv;
@@ -29,11 +28,11 @@ class CgiHandler : public IHandler {
     void _replace(std::string& str, char what, char with);
     void _setCgiEnvironment(const HttpRequest& request);
     void _prepareExecParams(const HttpRequest& request, ExecParams& params);
-    void _setupChildProcess(int pipefd[2]);
-    void _setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& cfg);
+    void _setupChildProcess(int pipeStdin[2], int pipeStdout[2]);
+    void _setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config);
     std::string _trimWhiteSpace(const std::string& str);
     void _cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp);
-    ProcessState _checkProcess(CgiContext& ctx, int& status);
+    bool _writeToStdin(Connection* conn, CgiContext& ctx);
     bool _readPipeData(CgiContext& cgiCtx, bool drain);
     void _handleProcessExit(Connection* conn, CgiContext& ctx, int status);
 

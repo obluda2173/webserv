@@ -47,8 +47,10 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
     _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
     _envStorage.push_back("PATH_INFO=" + _path);
-    _envStorage.push_back("PATH_TRANSLATED=" + _path);
-    _envStorage.push_back("QUERY_STRING=" + _query);
+    _envStorage.push_back("PATH_TRANSLATED=" + _path); // "PATH_TRANSLATED=" + config.root + _path
+    if (request.method == "GET") {
+        _envStorage.push_back("QUERY_STRING=" + _query);
+    }
     _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : ""));
     // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
     _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
@@ -90,19 +92,25 @@ void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& para
     params.env.push_back(NULL);
 }
 
-void CgiHandler::_setupChildProcess(int pipefd[2]) {
-    close(pipefd[0]);
-    dup2(pipefd[1], STDOUT_FILENO);
-    close(pipefd[1]);
+void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2]) {
+    close(pipeStdin[1]);
+    close(pipeStdout[0]);
+    dup2(pipeStdin[0], STDIN_FILENO);
+    dup2(pipeStdout[1], STDOUT_FILENO);
+    close(pipeStdin[0]);
+    close(pipeStdout[1]);
 }
 
-void CgiHandler::_setupParentProcess(Connection* conn, int pipefd[2], pid_t pid, const RouteConfig& config) {
-    close(pipefd[1]);
-    fcntl(pipefd[0], F_SETFL, O_NONBLOCK);
+void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config) {
+    (void)config;
+    close(pipeStdin[0]);
+    close(pipeStdout[1]);
+    conn->cgiCtx.cgiPipeStdin = pipeStdin[1];
+    conn->cgiCtx.cgiPipeStdout = pipeStdout[0];
     conn->cgiCtx.cgiPid = pid;
-    conn->cgiCtx.cgiPipeFd = pipefd[0];
-    conn->cgiCtx.cgiRouteConfig = config;
-    conn->setState(Connection::HandlingCgi);
+    conn->cgiCtx.state = CgiContext::WritingStdin;
+    fcntl(conn->cgiCtx.cgiPipeStdin, F_SETFL, O_NONBLOCK);
+    fcntl(conn->cgiCtx.cgiPipeStdout, F_SETFL, O_NONBLOCK);
 }
 
 std::string CgiHandler::_trimWhiteSpace(const std::string& str) {
@@ -162,28 +170,20 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
     resp.body = new StringBodyProvider(body);
 }
 
-ProcessState CgiHandler::_checkProcess(CgiContext& ctx, int& status) {
-    pid_t result = waitpid(ctx.cgiPid, &status, WNOHANG);
-    if (result == -1) {
-        return ProcessState::Error;
-    }
-    return result > 0 ? ProcessState::Exited : ProcessState::Running;
-}
-
 bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
-    if (cgiCtx.cgiPipeFd == -1) {
+    if (cgiCtx.cgiPipeStdout == -1) {
         return false;
     }
 
     do {
         char buffer[4096];
-        const ssize_t count = read(cgiCtx.cgiPipeFd, buffer, sizeof(buffer));
+        const ssize_t count = read(cgiCtx.cgiPipeStdout, buffer, sizeof(buffer));
         if (count > 0) {
             cgiCtx.cgiOutput.append(buffer, count);
         } else {
             if (count == 0 || (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
-                close(cgiCtx.cgiPipeFd);
-                cgiCtx.cgiPipeFd = -1;
+                close(cgiCtx.cgiPipeStdout);
+                cgiCtx.cgiPipeStdout = -1;
 
                 if (count == -1) {
                     return false;
@@ -196,7 +196,7 @@ bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
 }
 
 void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int status) {
-    if (ctx.cgiPipeFd != -1) {
+    if (ctx.cgiPipeStdout != -1) {
         _readPipeData(ctx, true);
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
