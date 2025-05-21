@@ -143,7 +143,7 @@ int getRandomNumber(int min, int max) {
 }
 
 Connection* setupConnWithTransferEncoding(std::string filename) {
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     conn->_request.method = "POST";
     conn->_request.uri = PREFIX + filename;
     conn->_request.version = "HTTP/1.1";
@@ -153,7 +153,7 @@ Connection* setupConnWithTransferEncoding(std::string filename) {
 }
 
 Connection* setupConnWithContentLength(std::string filename, size_t contentLength) {
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     conn->_request.method = "POST";
     conn->_request.uri = PREFIX + filename;
     conn->_request.version = "HTTP/1.1";
@@ -163,7 +163,7 @@ Connection* setupConnWithContentLength(std::string filename, size_t contentLengt
 }
 
 Connection* setupConnWithoutContentLength(std::string filename) {
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     conn->_request.method = "POST";
     conn->_request.uri = PREFIX + filename;
     conn->_request.version = "HTTP/1.1";

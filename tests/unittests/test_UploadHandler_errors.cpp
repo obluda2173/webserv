@@ -77,7 +77,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
 
 // TEST(UploadHdlrErrorTest, missingHeaders) {
 //     RouteConfig cfg;
-//     Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+//     Connection* conn = new Connection({}, -1, "", NULL, NULL);
 //     IHandler* uploadHdlr = new UploadHandler();
 //     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false, {}});
 

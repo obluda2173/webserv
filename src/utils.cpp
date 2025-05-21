@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "IIONotifier.h"
 #include <arpa/inet.h>
 #include <cstring>
@@ -92,6 +93,28 @@ int getPort(int socketfd) {
 
     // Get the port number, noting that network byte order must be converted to host byte order
     return ntohs(addr.sin_port);
+}
+
+std::string getAddressAndPort(int socketfd) {
+    sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
+        std::cerr << "Error getting socket information" << std::endl;
+        return "";
+    }
+
+    // Get IP address as string
+    char ip[INET_ADDRSTRLEN];
+    if (inet_ntop(AF_INET, &(addr.sin_addr), ip, INET_ADDRSTRLEN) == NULL) {
+        std::cerr << "Error converting IP address" << std::endl;
+        return "";
+    }
+
+    // Get port (convert from network to host byte order)
+    int port = ntohs(addr.sin_port);
+
+    // Combine them into address:port format
+    return to_string(ip) + ":" + to_string(port);
 }
 
 std::string toLower(const std::string& str) {

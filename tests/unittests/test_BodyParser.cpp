@@ -11,11 +11,7 @@ TEST(BodyParserTest, bodyWithoutOverlap) {
     int contentLength = 12345;
     std::string body = getRandomString(contentLength);
 
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
-
-    conn->_request.method = "";
-    conn->_request.uri = "";
-    conn->_request.version = "";
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     conn->_request.headers["content-length"] = std::to_string(contentLength);
     conn->setState(Connection::Handling);
     conn->_bodyFinished = false;
@@ -56,7 +52,7 @@ TEST_P(BodyParserTestContentLength, BodyWithOverlap) {
 
     // Setup all connections
     for (int i = 0; i < connectionCount; i++) {
-        Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+        Connection* conn = new Connection({}, -1, "", NULL, NULL);
         int contentLength = 9876;
         conn->_request.headers["content-length"] = std::to_string(contentLength);
         conn->_bodyFinished = false;
@@ -113,7 +109,7 @@ TEST(BodyParserTest, respectsClientMaxBodySize) {
     BodyParser* bodyPrsr = new BodyParser();
 
     // Setup connection with a RouteConfig that has a limited clientMaxBody
-    Connection* conn = new Connection({}, -1, 0, NULL, NULL);
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
     const size_t maxBodySize = 100;
     conn->route.cfg.clientMaxBody = maxBodySize;
 
@@ -135,6 +131,28 @@ TEST(BodyParserTest, respectsClientMaxBodySize) {
     EXPECT_EQ(conn->getState(), Connection::SendResponse);
     EXPECT_EQ(conn->_response.statusCode, 413);
     EXPECT_EQ(conn->_response.statusMessage, "Content Too Large");
+
+    delete conn;
+    delete bodyPrsr;
+}
+
+TEST(BodyParserTest, noContentLengthSetsBodyToFinished) {
+    BodyParser* bodyPrsr = new BodyParser();
+
+    // Setup connection with a RouteConfig that has a limited clientMaxBody
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
+    const size_t maxBodySize = 100;
+    conn->route.cfg.clientMaxBody = maxBodySize;
+
+    // Set a content-length that exceeds the max body size
+    conn->setState(Connection::Handling);
+    conn->_bodyFinished = false;
+
+    bodyPrsr->parse(conn);
+
+    // This should be accepted
+    EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(conn->getState(), Connection::Handling);
 
     delete conn;
     delete bodyPrsr;

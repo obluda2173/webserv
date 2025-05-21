@@ -24,7 +24,7 @@ class MockSender : public ISender {
 
 TEST(ConnectionTestChunkedSend, testPartiallySending) {
     MockSender* sender = new MockSender();
-    Connection conn({}, -1, 0, NULL, sender);
+    Connection conn({}, -1, "", NULL, sender);
     std::string body = getRandomString(10000);
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
                                "Content-Length: " +
