@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "IIONotifier.h"
 #include <arpa/inet.h>
 #include <cstring>
@@ -113,7 +114,7 @@ std::string getAddressAndPort(int socketfd) {
     int port = ntohs(addr.sin_port);
 
     // Combine them into address:port format
-    return std::string(ip) + ":" + std::to_string(port);
+    return to_string(ip) + ":" + to_string(port);
 }
 
 std::string toLower(const std::string& str) {

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <set>
 #include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
@@ -17,12 +18,12 @@ class Server {
     ILogger* _logger;
     IListener* _listener;
     bool _isRunning;
-    std::vector<int> _portfds;
+    std::vector< int > _portfds;
 
   public:
     explicit Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotifier);
     ~Server();
     bool isRunning() const;
-    void start(std::vector<std::string> ports);
+    void start(std::set< std::pair< std::string, std::string > > addrPorts);
     void stop();
 };

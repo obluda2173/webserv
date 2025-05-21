@@ -86,9 +86,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
     IRouter* router;
     Route route;
     bool continueProcessing = true;
-    // std::chrono::duration< double > duration;
-    // std::chrono::high_resolution_clock::time_point start;
-    // std::chrono::high_resolution_clock::time_point end;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
         switch (currentState) {

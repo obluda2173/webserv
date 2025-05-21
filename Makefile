@@ -42,6 +42,7 @@ SRC_FILES := 	$(SRC_DIR)/Buffer.cpp \
 				$(SRC_DIR)/UploadHandler.cpp \
 				$(SRC_DIR)/handlerUtils.cpp \
 				$(SRC_DIR)/httpParsing.cpp \
+				$(SRC_DIR)/BodyParser.cpp \
 				$(SRC_DIR)/logging.cpp \
 				$(SRC_DIR)/utils.cpp
 
