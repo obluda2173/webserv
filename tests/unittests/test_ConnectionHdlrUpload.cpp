@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
 
-TEST_F(ConnHdlrTestStubUploadHdlrSimple, testUpload) {
+TEST_F(ConnHdlrTestStubUploadHdlr, testUpload) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
@@ -38,7 +38,7 @@ TEST_F(ConnHdlrTestStubUploadHdlrSimple, testUpload) {
     ASSERT_EQ(wantResponse, gotResponse);
 }
 
-TEST_F(ConnHdlrTestStubUploadHdlrSimple, testBigUpload) {
+TEST_F(ConnHdlrTestStubUploadHdlr, testBigUpload) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 

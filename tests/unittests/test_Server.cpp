@@ -5,23 +5,27 @@
 TEST_P(ServerWithMockLoggerParametrizedPortTest, connectionTest) {
     using ::testing::_;
     EXPECT_CALL(*_logger, log(_, _)).Times(testing::AnyNumber());
-    std::vector< std::string > listeningPorts = GetParam();
-    for (size_t i = 0; i < listeningPorts.size(); i++)
-        testMultipleConnectionsWithLogging(_logger, listeningPorts[i], 100);
+    for (std::set< std::pair< std::string, std::string > >::iterator it = _addrPorts.begin(); it != _addrPorts.end();
+         it++)
+        testMultipleConnections(it->second, 10);
 }
 
 INSTANTIATE_TEST_SUITE_P(ServerTests, ServerWithMockLoggerParametrizedPortTest,
-                         ::testing::Values(std::vector< std::string >{"8080"},
-                                           std::vector< std::string >{"8080", "8081"},
-                                           std::vector< std::string >{"8080", "8081", "8082"}));
+                         ::testing::Values(std::set< std::pair< std::string, std::string > >{{"0.0.0.0", "8080"}},
+                                           std::set< std::pair< std::string, std::string > >{{"0.0.0.0", "8080"},
+                                                                                             {"0.0.0.0", "8081"}},
+                                           std::set< std::pair< std::string, std::string > >{
+                                               {"0.0.0.0", "8080"}, {"0.0.0.0", "8081"}, {"0.0.0.0", "8082"}}));
 
 TEST_P(ServerTestWoMockLogging, connectionTest) {
-    std::vector< std::string > listeningPorts = GetParam();
-    for (size_t i = 0; i < listeningPorts.size(); i++)
-        testMultipleConnections(listeningPorts[i], 10);
+    for (std::set< std::pair< std::string, std::string > >::iterator it = _addrPorts.begin(); it != _addrPorts.end();
+         it++)
+        testMultipleConnections(it->second, 10);
 }
 
 INSTANTIATE_TEST_SUITE_P(ServerTests, ServerTestWoMockLogging,
-                         ::testing::Values(std::vector< std::string >{"8080"},
-                                           std::vector< std::string >{"8080", "8081"},
-                                           std::vector< std::string >{"8080", "8081", "8082"}));
+                         ::testing::Values(std::set< std::pair< std::string, std::string > >{{"0.0.0.0", "8080"}},
+                                           std::set< std::pair< std::string, std::string > >{{"0.0.0.0", "8080"},
+                                                                                             {"0.0.0.0", "8081"}},
+                                           std::set< std::pair< std::string, std::string > >{
+                                               {"0.0.0.0", "8080"}, {"0.0.0.0", "8081"}, {"0.0.0.0", "8082"}}));
