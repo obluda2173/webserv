@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     //     "-*pingTestInBatches*:*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
 
     // only run the following test
-    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestStubUploadHdlrSimple*";
+    testing::GTEST_FLAG(filter) = "-*ConnHdlrTestMultipleRouter*";
     // testing::GTEST_FLAG(filter) = "*BodyParserTest*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlrTest.chunked*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";

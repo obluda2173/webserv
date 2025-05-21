@@ -18,11 +18,11 @@ typedef enum SocketType {
 class ConnectionHandler : public IConnectionHandler {
   private:
     std::map< int, Connection* > _connections;
-    std::map< int, IRouter* > _routers;
+    std::map< std::string, IRouter* > _routers;
     ILogger& _logger;
     IIONotifier& _ioNotifier;
     BodyParser* _bodyPrsr;
-    void _addClientConnection(int connfd, struct sockaddr_storage theirAddr, int port);
+    void _addClientConnection(int connfd, struct sockaddr_storage theirAddr, std::string addrPort);
     int _acceptNewConnection(int socketfd);
     void _onSocketRead(Connection* conn);
     void _onSocketWrite(Connection* conn);
@@ -31,7 +31,7 @@ class ConnectionHandler : public IConnectionHandler {
     void _removeConnection(int connfd);
 
   public:
-    ConnectionHandler(std::map< int, IRouter* >, ILogger&, IIONotifier&);
+    ConnectionHandler(std::map< std::string, IRouter* >, ILogger&, IIONotifier&);
     ~ConnectionHandler(void);
     int handleConnection(int conn, e_notif notif);
 };

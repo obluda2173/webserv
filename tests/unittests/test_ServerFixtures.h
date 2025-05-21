@@ -35,8 +35,8 @@ class BaseServerTest : public ::testing::TestWithParam< std::vector< std::string
         std::map< std::string, IHandler* > hdlrs = {{}};
         IRouter* router = new Router(hdlrs);
 
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
         IConnectionHandler* connHdlr = new ConnectionHandler(routers, *_logger, *ioNotifier);
 
         _svr = ServerBuilder().setLogger(_logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();

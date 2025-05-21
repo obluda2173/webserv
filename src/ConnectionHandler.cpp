@@ -13,7 +13,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-ConnectionHandler::ConnectionHandler(std::map< int, IRouter* > routers, ILogger& l, IIONotifier& io)
+ConnectionHandler::ConnectionHandler(std::map< std::string, IRouter* > routers, ILogger& l, IIONotifier& io)
     : _routers(routers), _logger(l), _ioNotifier(io) {
     _bodyPrsr = new BodyParser();
 }
@@ -23,7 +23,7 @@ ConnectionHandler::~ConnectionHandler(void) {
     for (std::map< int, Connection* >::iterator it = _connections.begin(); it != _connections.end(); it++)
         delete it->second;
 
-    for (std::map< int, IRouter* >::iterator it = _routers.begin(); it != _routers.end(); it++)
+    for (std::map< std::string, IRouter* >::iterator it = _routers.begin(); it != _routers.end(); it++)
         delete it->second;
 }
 
@@ -54,9 +54,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     }
 }
 
-void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr, int port) {
+void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage theirAddr, std::string addrPort) {
     logConnection(_logger, theirAddr);
-    Connection* conn = new Connection(theirAddr, connfd, port, new HttpParser(_logger));
+    Connection* conn = new Connection(theirAddr, connfd, addrPort, new HttpParser(_logger));
     _connections[connfd] = conn;
     _ioNotifier.add(connfd);
 }
@@ -76,7 +76,7 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
         _logger.log("ERROR", "accept: " + std::string(strerror(errno)));
         return -1;
     }
-    _addClientConnection(fd, theirAddr, getPort(socketfd));
+    _addClientConnection(fd, theirAddr, getAddressAndPort(socketfd));
     return fd;
 }
 
@@ -97,7 +97,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Routing:
-            router = _routers[conn->getPort()];
+            router = _routers[conn->getAddrPort()];
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
             // redirection should probably be here (checking route.cfg.redirect)

@@ -94,6 +94,28 @@ int getPort(int socketfd) {
     return ntohs(addr.sin_port);
 }
 
+std::string getAddressAndPort(int socketfd) {
+    sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
+        std::cerr << "Error getting socket information" << std::endl;
+        return "";
+    }
+
+    // Get IP address as string
+    char ip[INET_ADDRSTRLEN];
+    if (inet_ntop(AF_INET, &(addr.sin_addr), ip, INET_ADDRSTRLEN) == NULL) {
+        std::cerr << "Error converting IP address" << std::endl;
+        return "";
+    }
+
+    // Get port (convert from network to host byte order)
+    int port = ntohs(addr.sin_port);
+
+    // Combine them into address:port format
+    return std::string(ip) + ":" + std::to_string(port);
+}
+
 std::string toLower(const std::string& str) {
     std::string result = str;
     for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {

@@ -48,13 +48,13 @@ class BaseConnHdlrTest : public ::testing::TestWithParam< ParamType > {
         std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupServer() {
-        getAddrInfoHelper(NULL, "8080", AF_INET, &_svrAddrInfo);
+        getAddrInfoHelper("0.0.0.0", "8080", AF_INET, &_svrAddrInfo);
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
     }
 
@@ -79,8 +79,8 @@ class ConnHdlrTestTestRouting : public BaseConnHdlrTest< StubLogger > {
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "/images", "GET", {});
 
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
@@ -147,8 +147,8 @@ class ConnHdlrTestAsyncMultipleConnections : public BaseConnHdlrTest< StubLogger
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
 
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
@@ -212,8 +212,8 @@ class ConnHdlrTestWithBigResponseBody : public BaseConnHdlrTest< StubLogger, int
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
 
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
@@ -257,8 +257,8 @@ class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, in
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {"", {}, {}, 10000, false, {}});
 
-        std::map< int, IRouter* > routers;
-        routers[8080] = router;
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 

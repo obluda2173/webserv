@@ -46,17 +46,17 @@ class ConnHdlrTestMultipleRouter : public ::testing::Test {
     }
 
     virtual void setupConnectionHandler() {
-        std::map< int, IRouter* > routers;
+        std::map< std::string, IRouter* > routers;
 
         std::map< std::string, IHandler* > hdlrs = {{"GET", new PingHandler()}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        routers[8080] = router;
+        routers["0.0.0.0:8080"] = router;
 
         hdlrs = {{"GET", new PingHandler2()}};
         router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        routers[8081] = router;
+        routers["0.0.0.0:8080"] = router;
 
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
