@@ -6,7 +6,6 @@
 #include "handlerUtils.h"
 #include "logging.h"
 #include "utils.h"
-#include <chrono>
 #include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -99,10 +98,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             break;
         case Connection::Routing:
             router = _routers[conn->getPort()];
-            _logger.log("INFO", "Routing");
-
             conn->_request.uri = normalizePath("", conn->_request.uri);
-
             route = router->match(conn->getRequest());
             // redirection should probably be here (checking route.cfg.redirect)
             // possible state change: SetRedirectResponse and SendResponse
@@ -112,12 +108,11 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 break;
             }
             conn->route = route;
+            conn->_hdlr = conn->route.hdlrs[conn->getRequest().method];
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
             _bodyPrsr->parse(conn);
-            if (!conn->_hdlr)
-                conn->_hdlr = conn->route.hdlrs[conn->getRequest().method];
             conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
