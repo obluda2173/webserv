@@ -18,13 +18,13 @@ TEST(BodyParserTest, bodyWithoutOverlap) {
 
     size_t pos = 0;
     while (!conn->_bodyFinished) {
-        int chunkSize = getRandomNumber(10, 50);
-        std::string bodyChunk = body.substr(pos, chunkSize);
-        pos += chunkSize;
+        int batchSize = getRandomNumber(10, 50);
+        std::string bodyBatch = body.substr(pos, batchSize);
+        pos += batchSize;
 
-        conn->_readBuf.assign(bodyChunk);
+        conn->_readBuf.assign(bodyBatch);
         bodyPrsr->parse(conn);
-        EXPECT_EQ(conn->_tempBody, bodyChunk);
+        EXPECT_EQ(conn->_tempBody, bodyBatch);
         EXPECT_EQ(conn->_readBuf.size(), 0);
     }
 
@@ -76,21 +76,21 @@ TEST_P(BodyParserTestContentLength, BodyWithOverlap) {
             if (pos < bodies[i].length()) {
                 allDone = false;
 
-                int chunkSize = getRandomNumber(10, 50);
-                std::string bytesChunk = bytesList[i].substr(pos, chunkSize);
-                connections[i]->_readBuf.assign(bytesChunk);
+                int batchSize = getRandomNumber(10, 50);
+                std::string bytesBatch = bytesList[i].substr(pos, batchSize);
+                connections[i]->_readBuf.assign(bytesBatch);
 
                 bodyPrsr->parse(connections[i]);
 
                 std::string restOfBody = bodies[i].substr(pos);
-                pos += chunkSize;
+                pos += batchSize;
 
                 if (pos < bodies[i].length()) {
-                    EXPECT_EQ(connections[i]->_tempBody, bytesChunk);
+                    EXPECT_EQ(connections[i]->_tempBody, bytesBatch);
                     EXPECT_EQ(connections[i]->_readBuf.size(), 0);
                 } else {
                     EXPECT_EQ(connections[i]->_tempBody, restOfBody);
-                    EXPECT_EQ(connections[i]->_readBuf.size(), chunkSize - restOfBody.size());
+                    EXPECT_EQ(connections[i]->_readBuf.size(), batchSize - restOfBody.size());
                 }
             }
         }
@@ -122,9 +122,9 @@ TEST(BodyParserTest, respectsClientMaxBodySize) {
     // Create a body that's larger than allowed
     std::string body = getRandomString(contentLength);
 
-    // First chunk within limits
-    int firstChunkSize = 80;
-    conn->_readBuf.assign(body.substr(0, firstChunkSize));
+    // First batch within limits
+    int firstBatchSize = 80;
+    conn->_readBuf.assign(body.substr(0, firstBatchSize));
     bodyPrsr->parse(conn);
 
     // This should be accepted
