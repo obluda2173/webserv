@@ -56,16 +56,16 @@ class ConnHdlrTestMultipleRouter : public ::testing::Test {
         hdlrs = {{"GET", new PingHandler2()}};
         router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});
-        routers["0.0.0.0:8080"] = router;
+        routers["0.0.0.0:8081"] = router;
 
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
     }
 
     virtual void setupServer() {
-        getAddrInfoHelper(NULL, "8080", AF_INET, &_svrAddrInfo8080);
+        getAddrInfoHelper("0.0.0.0", "8080", AF_INET, &_svrAddrInfo8080);
         _serverfd8080 = newListeningSocket(_svrAddrInfo8080, backlog);
 
-        getAddrInfoHelper(NULL, "8081", AF_INET, &_svrAddrInfo8081);
+        getAddrInfoHelper("0.0.0.0", "8081", AF_INET, &_svrAddrInfo8081);
         _serverfd8081 = newListeningSocket(_svrAddrInfo8081, backlog);
     }
 

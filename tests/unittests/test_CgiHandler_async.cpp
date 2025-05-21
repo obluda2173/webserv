@@ -23,7 +23,7 @@ RouteConfig createConfig(bool enableCgi = true) {
 TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
     CgiHandler cgiHandler;
     int dummyFd = socket(AF_INET, SOCK_STREAM, 0);
-    Connection* cgiConn = new Connection({}, dummyFd, 0, NULL);
+    Connection* cgiConn = new Connection({}, dummyFd, "", NULL);
     HttpRequest cgiRequest = createRequest("GET", "/test_slow_script.sh");
     RouteConfig cgiConfig = createConfig(true);
 
