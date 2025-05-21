@@ -230,9 +230,10 @@ class ConnHdlrTestWithBigResponseBody : public BaseConnHdlrTest< StubLogger, int
     }
 };
 
-class StubUploadHdlrSimple : public IHandler {
+class StubUploadHdlr : public IHandler {
   public:
     std::string _uploaded;
+
     virtual void handle(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
         (void)req;
         (void)cfg;
@@ -240,19 +241,21 @@ class StubUploadHdlrSimple : public IHandler {
         _uploaded += conn->_tempBody;
         if (!conn->_bodyFinished)
             return;
+
         HttpResponse& resp = conn->_response;
         resp.statusCode = 200;
         resp.statusMessage = "OK";
         resp.version = "HTTP/1.1";
+
         conn->setState(Connection::SendResponse);
     }
 };
 
-class ConnHdlrTestStubUploadHdlrSimple : public BaseConnHdlrTest< StubLogger, int > {
+class ConnHdlrTestStubUploadHdlr : public BaseConnHdlrTest< StubLogger, int > {
   public:
-    StubUploadHdlrSimple* _uploadHdlr;
+    StubUploadHdlr* _uploadHdlr;
     virtual void setupConnectionHandler() override {
-        _uploadHdlr = new StubUploadHdlrSimple();
+        _uploadHdlr = new StubUploadHdlr();
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {"", {}, {}, 10000, false, {}});

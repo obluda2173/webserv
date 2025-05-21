@@ -11,19 +11,20 @@
 #include "test_stubs.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <set>
 #include <thread>
 
 template < typename LoggerType >
-class BaseServerTest : public ::testing::TestWithParam< std::vector< std::string > > {
+class BaseServerTest : public ::testing::TestWithParam< std::set< std::pair< std::string, std::string > > > {
   protected:
     int _openFdsBegin;
     LoggerType* _logger;
     Server* _svr;
     std::thread _svrThread;
-    std::vector< std::string > _ports;
+    std::set< std::pair< std::string, std::string > > _addrPorts;
 
   public:
-    BaseServerTest() : _openFdsBegin(countOpenFileDescriptors()), _ports(GetParam()) {}
+    BaseServerTest() : _openFdsBegin(countOpenFileDescriptors()), _addrPorts(GetParam()) {}
 
     virtual ~BaseServerTest() {} // only for childs
 
@@ -51,7 +52,7 @@ class BaseServerTest : public ::testing::TestWithParam< std::vector< std::string
     }
 
     virtual void setupServer() {
-        _svrThread = std::thread(&Server::start, _svr, _ports);
+        _svrThread = std::thread(&Server::start, _svr, _addrPorts);
         waitForServerStartup();
     }
 
@@ -81,7 +82,7 @@ class ServerWithMockLoggerParametrizedPortTest : public BaseServerTest< testing:
         EXPECT_CALL(*_logger, log("INFO", "Server is starting...")).Times(1);
         EXPECT_CALL(*_logger, log("INFO", "Server started")).Times(1);
 
-        _svrThread = std::thread(&Server::start, _svr, _ports);
+        _svrThread = std::thread(&Server::start, _svr, _addrPorts);
         waitForServerStartup();
     }
     void teardownServer() override {
