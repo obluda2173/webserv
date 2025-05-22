@@ -17,7 +17,7 @@ option(BUILD_TEST "Build tests" ON)
 file(GLOB SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 if(BUILD_TEST)
-  set(CMAKE_CXX_FLAGS "-Wall -Werror -Wextra -fsanitize=address")
+  set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Werror -Wextra -fsanitize=address")
 
   file(GLOB UNITTEST_FILES "tests/unittests/*")
   set(UNITTEST_EXECUTABLE "run_unittests")

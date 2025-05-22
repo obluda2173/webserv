@@ -17,7 +17,7 @@ class ResponseWriter : public IResponseWriter {
     STATE _state;
     HttpResponse _resp;
     std::string _headers;
-    bool _headersWritten;
+    // bool _headersWritten;
     void _formatHeaders();
     void _writeStatusLine();
     size_t _writeHeaders(char* buffer, size_t maxSize);
@@ -26,7 +26,9 @@ class ResponseWriter : public IResponseWriter {
     static const std::string CRLF;
     static const std::string WS;
 
-    ResponseWriter(HttpResponse& resp) : _state(FormatHeaders), _resp(resp), _headersWritten(false) {}
+    ResponseWriter(HttpResponse& resp)
+        : _state(FormatHeaders), _resp(resp) // , _headersWritten(false)
+    {}
 
     virtual size_t write(char* buffer, size_t maxSize);
 };

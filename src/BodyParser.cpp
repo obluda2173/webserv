@@ -74,7 +74,7 @@ void BodyParser::_parseContentLength(Connection* conn) {
 
 bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connection* conn) {
     try {
-        chunkSize = custom_stol(readBufStr, nullptr, 16);
+        chunkSize = custom_stol(readBufStr, NULL, 16);
     } catch (const std::invalid_argument& e) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);

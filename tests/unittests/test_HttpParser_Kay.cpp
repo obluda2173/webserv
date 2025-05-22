@@ -31,12 +31,12 @@ TEST(HttpParserTest, test1) {
             "220X19StBUSef0W0PPLb4c5Q%22%2Cnull%2Cnull%2Cnull%5D\r\n\r\n";
 
         size_t _readBufUsedSize = _readBuf.size();
-        char* b = _readBuf.data();
+        const char* b = _readBuf.data();
         size_t count = 0;
         while (count < _readBufUsedSize) {
             _prsr->feed(b, 1);
             if (_prsr->error() || _prsr->ready()) {
-                memmove(_readBuf.data(), b + 1, _readBufUsedSize - (count + 1));
+                memmove((void*)_readBuf.data(), b + 1, _readBufUsedSize - (count + 1));
                 _readBufUsedSize -= (count + 1);
                 if (_prsr->ready())
                     _prsr->getRequest();
