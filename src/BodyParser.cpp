@@ -109,6 +109,8 @@ void BodyParser::_verifyCarriageReturn(std::string& readBufStr, Connection* conn
             return;
         }
         readBufStr = readBufStr.substr(2);
+    } else {
+        return;
     }
 
     _lastChunkSizeStr = readBufStr;

@@ -69,6 +69,10 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
         EXPECT_FALSE(conn->_bodyFinished);
         pos += batchSize;
     }
+    conn->_readBuf.assign("\r\n");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_tempBody, "");
+    EXPECT_FALSE(conn->_bodyFinished);
 
     conn->_readBuf.assign("0\r\n\r\nNextRequest");
     bodyPrsr->parse(conn);
