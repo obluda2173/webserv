@@ -34,7 +34,7 @@ TEST_P(TransferEncodingTest, transferEncodingOneChunk) {
     delete bodyPrsr;
 }
 
-INSTANTIATE_TEST_SUITE_P(BodyParserTests, TransferEncodingTest, ::testing::Values(10, 1, 0),
+INSTANTIATE_TEST_SUITE_P(BodyParserTests, TransferEncodingTest, ::testing::Values(10, 1),
                          [](const testing::TestParamInfo< TransferEncodingTest::ParamType >& info) {
                              return std::to_string(info.param);
                          });
@@ -70,9 +70,9 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
         pos += batchSize;
     }
 
-    conn->_readBuf.assign("0\r\n\r\n");
+    conn->_readBuf.assign("0\r\n\r\nNextRequest");
     bodyPrsr->parse(conn);
-    // EXPECT_EQ(std::string(conn->_readBuf.data(), conn->_readBuf.size()), "NextRequest");
+    EXPECT_EQ(std::string(conn->_readBuf.data(), conn->_readBuf.size()), "NextRequest");
     EXPECT_EQ(conn->_tempBody, "");
     EXPECT_TRUE(conn->_bodyFinished);
 

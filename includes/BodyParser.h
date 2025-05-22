@@ -15,6 +15,7 @@ class BodyParser {
     bool _validateHex(size_t& chunkSize, std::string readBufStr, Connection* conn);
     void _parseTransferEncoding(Connection* conn);
     void _parseChunkSize(std::string& readBufStr, Connection* conn);
+    void _verifyCarriageReturn(std::string& readBufStr, Connection* conn);
 
   public:
     BodyParser();
