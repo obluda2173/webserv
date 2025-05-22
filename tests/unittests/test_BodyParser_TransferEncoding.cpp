@@ -50,10 +50,12 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
     // assign only substring of hexNumber
     conn->_readBuf.assign("18");
     bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
     EXPECT_FALSE(conn->_bodyFinished);
 
     conn->_readBuf.assign("1CD\r\n");
     bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
     EXPECT_FALSE(conn->_bodyFinished);
 
     size_t batchSize = 1024;
@@ -62,10 +64,18 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
         std::string batch = chunk.substr(pos, batchSize);
         conn->_readBuf.assign(batch);
         bodyPrsr->parse(conn);
-        EXPECT_EQ(conn->_tempBody.length(), batch.length());
+        EXPECT_EQ(conn->_readBuf.size(), 0);
+        EXPECT_EQ(conn->_tempBody, batch);
         EXPECT_FALSE(conn->_bodyFinished);
         pos += batchSize;
     }
+
+    conn->_readBuf.assign("0\r\n\r\n");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, "");
+    // EXPECT_FALSE(conn->_bodyFinished);
+
     delete conn;
     delete bodyPrsr;
 }
@@ -81,15 +91,18 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches2) {
     // assign only substring of hexNumber
     conn->_readBuf.assign("1A");
     bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
     EXPECT_FALSE(conn->_bodyFinished);
 
     conn->_readBuf.assign("\r\n");
     bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
     EXPECT_FALSE(conn->_bodyFinished);
 
     conn->_readBuf.assign(chunk);
     bodyPrsr->parse(conn);
-    EXPECT_EQ(conn->_tempBody.length(), chunk.length());
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, chunk);
     EXPECT_FALSE(conn->_bodyFinished);
 
     delete conn;

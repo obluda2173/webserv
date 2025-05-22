@@ -62,7 +62,6 @@ void BodyParser::_parseContentLength(Connection* conn) {
     if ((bodyCtx.bytesReceived + readBuf.size()) < bodyCtx.contentLength) {
         conn->_tempBody = std::string(conn->_readBuf.data(), conn->_readBuf.size());
         bodyCtx.bytesReceived += conn->_tempBody.size();
-        readBuf.clear();
     } else {
         int countRest = bodyCtx.contentLength - bodyCtx.bytesReceived;
         conn->_tempBody = std::string(readBuf.data(), bodyCtx.contentLength - bodyCtx.bytesReceived);
@@ -92,6 +91,7 @@ long long BodyParser::_validateHex(std::string readBufStr, Connection* conn) {
 
 void BodyParser::_parseTransferEncoding(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
+    conn->_readBuf.clear();
 
     if (_transferEncodingState == "readingChunkSize") {
         _lastReadBufStr += readBufStr;
@@ -108,6 +108,11 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     }
 
     conn->_tempBody = readBufStr.substr(0, _chunkSize);
+    if (readBufStr == "0\r\n\r\n") {
+        conn->_tempBody = "";
+        conn->_bodyFinished = true;
+        return;
+    }
 
     try {
         readBufStr = readBufStr.substr(_chunkSize + 2);
@@ -117,8 +122,6 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
 
     if (readBufStr == "0\r\n\r\n")
         conn->_bodyFinished = true;
-
-    conn->_readBuf.clear();
 }
 
 bool BodyParser::_checkType(Connection* conn) {
