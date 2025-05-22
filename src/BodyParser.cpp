@@ -12,14 +12,14 @@
 
 BodyParser::BodyParser() : _transferEncodingState("readingChunkSize") {}
 
-long long custom_stoll(const std::string& str, size_t* idx = 0, int base = 10) {
+size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
     char* end;
 
     // Reset errno before the conversion
     errno = 0;
 
     const char* start = str.c_str();
-    long long result = strtoll(start, &end, base);
+    size_t result = strtoll(start, &end, base);
 
     // Calculate position where parsing stopped (if needed)
     if (idx)
@@ -72,22 +72,35 @@ void BodyParser::_parseContentLength(Connection* conn) {
     }
 }
 
-long long BodyParser::_validateHex(std::string readBufStr, Connection* conn) {
-    long long r;
+bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connection* conn) {
     try {
-        r = custom_stoll(readBufStr, nullptr, 16);
+        chunkSize = custom_stol(readBufStr, nullptr, 16);
     } catch (const std::invalid_argument& e) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
-        return -1;
+        return false;
     } catch (const std::out_of_range& e) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
-        return -1;
+        return false;
     }
-    return r;
+    return true;
+}
+
+void BodyParser::_parseChunkSize(std::string& readBufStr, Connection* conn) {
+    _lastChunkSizeStr += readBufStr;
+
+    size_t pos = 0;
+    if ((pos = readBufStr.find("\r\n")) == std::string::npos) // test if end of chunk-size
+        return;
+
+    if (!_validateHex(_chunkSize, _lastChunkSizeStr + readBufStr, conn))
+        return;
+
+    readBufStr = readBufStr.substr(pos + 2);
+    _transferEncodingState = "readingChunk";
 }
 
 void BodyParser::_parseTransferEncoding(Connection* conn) {
@@ -101,22 +114,14 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     }
 
     if (_transferEncodingState == "readingChunkSize") {
-        _lastReadBufStr += readBufStr;
-
-        size_t pos = 0;
-        if ((pos = readBufStr.find("\r\n")) == std::string::npos) // test if end of chunk-size
+        _parseChunkSize(readBufStr, conn);
+        if (_transferEncodingState == "readingChunkSize")
             return;
-
-        if ((_chunkSize = _validateHex(_lastReadBufStr + readBufStr, conn)) == -1)
-            return;
-
-        readBufStr = readBufStr.substr(pos + 2);
-        _transferEncodingState = "readingChunk";
     }
 
     conn->_tempBody = readBufStr.substr(0, _chunkSize);
 
-    if ((long long)readBufStr.length() > _chunkSize && readBufStr.substr(_chunkSize) != "\r\n") {
+    if (readBufStr.length() > _chunkSize && readBufStr.substr(_chunkSize) != "\r\n") {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
