@@ -94,7 +94,12 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches2) {
     EXPECT_EQ(conn->_readBuf.size(), 0);
     EXPECT_FALSE(conn->_bodyFinished);
 
-    conn->_readBuf.assign("\r\n");
+    conn->_readBuf.assign("\r");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_FALSE(conn->_bodyFinished);
+
+    conn->_readBuf.assign("\n");
     bodyPrsr->parse(conn);
     EXPECT_EQ(conn->_readBuf.size(), 0);
     EXPECT_FALSE(conn->_bodyFinished);
