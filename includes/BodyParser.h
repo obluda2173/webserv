@@ -7,16 +7,16 @@ class BodyParser {
   private:
     BodyContext::TE_STAGE _transferEncodingState;
     // long long _chunkBytesRead;
-    size_t _chunkSize;
-    std::string _lastChunkSizeStr;
+    size_t _currentChunkSize;
+    std::string _bodyBuf;
     bool _checkContentLength(Connection* conn, BodyContext& bodyCtx);
     void _parseContentLength(Connection* conn);
     bool _checkType(Connection* conn);
     bool _validateHex(size_t& chunkSize, std::string readBufStr, Connection* conn);
     void _parseTransferEncoding(Connection* conn);
-    void _parseChunkSize(std::string& readBufStr, Connection* conn);
-    void _parseChunk(std::string& readBufStr, Connection* conn);
-    void _verifyCarriageReturn(std::string& readBufStr, Connection* conn);
+    void _parseChunkSize(Connection* conn);
+    void _parseChunk(Connection* conn);
+    void _verifyCarriageReturn(Connection* conn);
 
   public:
     BodyParser();
