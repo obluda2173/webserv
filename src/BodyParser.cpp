@@ -62,6 +62,7 @@ void BodyParser::_parseContentLength(Connection* conn) {
     if ((bodyCtx.bytesReceived + readBuf.size()) < bodyCtx.contentLength) {
         conn->_tempBody = std::string(conn->_readBuf.data(), conn->_readBuf.size());
         bodyCtx.bytesReceived += conn->_tempBody.size();
+        conn->_readBuf.clear();
     } else {
         int countRest = bodyCtx.contentLength - bodyCtx.bytesReceived;
         conn->_tempBody = std::string(readBuf.data(), bodyCtx.contentLength - bodyCtx.bytesReceived);
@@ -78,7 +79,7 @@ long long BodyParser::_validateHex(std::string readBufStr, Connection* conn) {
     } catch (const std::invalid_argument& e) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
-        setErrorResponse(conn->_response, 404, "Bad Request", conn->route.cfg);
+        setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
         return -1;
     } catch (const std::out_of_range& e) {
         conn->_bodyFinished = true;
@@ -114,6 +115,13 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     }
 
     conn->_tempBody = readBufStr.substr(0, _chunkSize);
+
+    if ((long long)readBufStr.length() > _chunkSize && readBufStr.substr(_chunkSize) != "\r\n") {
+        conn->_bodyFinished = true;
+        conn->setState(Connection::SendResponse);
+        setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
+        return;
+    }
 
     try {
         readBufStr = readBufStr.substr(_chunkSize + 2);

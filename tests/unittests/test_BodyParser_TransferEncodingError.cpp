@@ -21,10 +21,8 @@ class TransferEncodingErrorTest : public ::testing::Test {
         delete bodyPrsr;
     }
 
-    void testChunkedBodyError(const std::string& hexValue, int expectedStatusCode,
+    void testChunkedBodyError(const std::string& hexValue, std::string body, int expectedStatusCode,
                               const std::string& expectedStatusMessage) {
-        std::string body = getRandomString(10);
-
         std::ostringstream oss;
         oss << hexValue << "\r\n";
         oss << body << "\r\n";
@@ -41,8 +39,14 @@ class TransferEncodingErrorTest : public ::testing::Test {
     }
 };
 
-TEST_F(TransferEncodingErrorTest, ContentTooLarge) {
-    testChunkedBodyError("F000000000000000", 413, "Content Too Large");
+TEST_F(TransferEncodingErrorTest, ChunkLongerThenChunkSize) {
+    testChunkedBodyError("B", getRandomString(10), 400, "Bad Request");
 }
 
-TEST_F(TransferEncodingErrorTest, InvalidHexValue) { testChunkedBodyError("notAhex", 404, "Bad Request"); }
+TEST_F(TransferEncodingErrorTest, ContentTooLarge) {
+    testChunkedBodyError("F000000000000000", getRandomString(10), 413, "Content Too Large");
+}
+
+TEST_F(TransferEncodingErrorTest, InvalidHexValue) {
+    testChunkedBodyError("notAhex", getRandomString(10), 400, "Bad Request");
+}
