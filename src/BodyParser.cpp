@@ -101,15 +101,15 @@ void BodyParser::_parseChunk(std::string& readBufStr, Connection* conn) {
 }
 
 void BodyParser::_verifyCarriageReturn(std::string& readBufStr, Connection* conn) {
-    if (readBufStr.length() > 0 && readBufStr.substr(0, 2) != "\r\n") {
-        conn->_bodyFinished = true;
-        conn->setState(Connection::SendResponse);
-        setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
-        return;
-    }
-
-    if (readBufStr.length() > 0)
+    if (readBufStr.length() > 0) {
+        if (readBufStr.substr(0, 2) != "\r\n") {
+            conn->_bodyFinished = true;
+            conn->setState(Connection::SendResponse);
+            setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
+            return;
+        }
         readBufStr = readBufStr.substr(2);
+    }
 
     _lastChunkSizeStr = readBufStr;
     _transferEncodingState = BodyContext::ReadingChunkSize;
