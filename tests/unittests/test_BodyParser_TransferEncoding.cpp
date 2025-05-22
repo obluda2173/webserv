@@ -1,14 +1,54 @@
 #include "BodyParser.h"
 #include "Connection.h"
 #include "test_main.h"
+#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include <ostream>
 #include <string>
 
-TEST(BodyParserTest, transferEncoding) {
+Connection* setupConnectionTransferEncoding() {
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
+    conn->_request.headers["transfer-encoding"] = "chunked";
+    conn->setState(Connection::Handling);
+    conn->_bodyFinished = false;
+    return conn;
+}
+
+TEST(BodyParserTest, transferEncodingHexErrorInvalidArg) {
     BodyParser* bodyPrsr = new BodyParser();
-    int contentLength = 10;
     std::string body = getRandomString(10);
+
+    std::ostringstream oss;
+    oss << "notAhex" << "\r\n";
+    oss << body << "\r\n";
+    oss << "0\r\n\r\n";
+    std::string chunkedBody = oss.str();
+
+    Connection* conn = setupConnectionTransferEncoding();
+
+    conn->_readBuf.assign(chunkedBody);
+    bodyPrsr->parse(conn);
+
+    std::string bodyReceived;
+    EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(conn->getState(), Connection::SendResponse);
+    EXPECT_EQ(conn->_response.statusCode, 404);
+    EXPECT_EQ(conn->_response.statusMessage, "Bad Request");
+
+    // bodyReceived += conn->_tempBody;
+    // EXPECT_EQ(conn->_readBuf.size(), 0);
+    // EXPECT_EQ(body, bodyReceived);
+
+    delete conn;
+    delete bodyPrsr;
+}
+
+class BodyParserTest : public testing::TestWithParam< int > {};
+
+TEST_P(BodyParserTest, transferEncodingOneChunk) {
+    int bodyLength = GetParam();
+    BodyParser* bodyPrsr = new BodyParser();
+    std::string body = getRandomString(bodyLength);
 
     std::ostringstream oss;
     oss << std::hex << body.length() << "\r\n";
@@ -16,10 +56,7 @@ TEST(BodyParserTest, transferEncoding) {
     oss << "0\r\n\r\n";
     std::string chunkedBody = oss.str();
 
-    Connection* conn = new Connection({}, -1, "", NULL, NULL);
-    conn->_request.headers["transfer-encoding"] = std::to_string(contentLength);
-    conn->setState(Connection::Handling);
-    conn->_bodyFinished = false;
+    Connection* conn = setupConnectionTransferEncoding();
 
     conn->_readBuf.assign(chunkedBody);
     bodyPrsr->parse(conn);
@@ -33,6 +70,11 @@ TEST(BodyParserTest, transferEncoding) {
     delete conn;
     delete bodyPrsr;
 }
+
+INSTANTIATE_TEST_SUITE_P(BodyParserTests, BodyParserTest, ::testing::Values(10, 1, 0),
+                         [](const testing::TestParamInfo< BodyParserTest::ParamType >& info) {
+                             return std::to_string(info.param);
+                         });
 
 // std::string createChunkedBody(const std::string& body) {
 //     std::ostringstream oss;

@@ -2,6 +2,8 @@
 #include "Connection.h"
 #include "handlerUtils.h"
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 bool BodyParser::_checkContentLength(Connection* conn, BodyContext& bodyCtx) {
     if (conn->_request.headers.find("content-length") == conn->_request.headers.end()) {
@@ -41,9 +43,18 @@ void BodyParser::_parseContentLength(Connection* conn) {
     }
 }
 void BodyParser::_parseChunked(Connection* conn) {
-    // BodyContext& bodyCtx = conn->bodyCtx;
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
-    conn->_tempBody = readBufStr.substr(3, 10);
+    long long r;
+    try {
+        r = std::stol(readBufStr, nullptr, 16);
+    } catch (const std::invalid_argument& e) {
+        conn->setState(Connection::SendResponse);
+        setErrorResponse(conn->_response, 404, "Bad Request", conn->route.cfg);
+    }
+
+    size_t pos = readBufStr.find("\r\n");
+
+    conn->_tempBody = readBufStr.substr(pos + 2, r);
     conn->_readBuf.clear();
     conn->_bodyFinished = true;
 }
