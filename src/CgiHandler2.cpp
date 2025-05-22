@@ -48,7 +48,7 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
     _envStorage.push_back("PATH_INFO=" + _path);
     _envStorage.push_back("PATH_TRANSLATED=" + _path); // "PATH_TRANSLATED=" + config.root + _path
-    if (request.method == "GET") {
+    if (!_query.empty()) {
         _envStorage.push_back("QUERY_STRING=" + _query);
     }
     _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : ""));
@@ -58,22 +58,16 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_URI=" + request.uri);
     // REMOTE_ADDR
     // REMOTE_HOST
-
-    if (request.method == "POST") {
-        if (request.headers.count("content-length")) {
-            _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
-        }
-        if (request.headers.count("content-type")) {
-            _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
-        }
-    } else {
-        _envStorage.push_back("CONTENT_LENGTH=");
+    if (request.headers.count("content-length")) {
+        _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
-
-    for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end();
-         ++it) {
-        if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization")
+    if (request.headers.count("content-type")) {
+        _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+    }
+    for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
+        if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") {
             continue;
+        }
         std::string varName = "HTTP_" + _toUpper(it->first);
         _replace(varName, '-', '_');
         _envStorage.push_back(varName + "=" + it->second);
