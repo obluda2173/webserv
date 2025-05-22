@@ -90,6 +90,12 @@ bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connect
 }
 
 void BodyParser::_parseChunkSize(std::string& readBufStr, Connection* conn) {
+
+    if (readBufStr == "0\r\n\r\n") {
+        conn->_bodyFinished = true;
+        return;
+    }
+
     _lastChunkSizeStr += readBufStr;
 
     size_t pos = 0;
@@ -107,12 +113,6 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
     conn->_readBuf.clear();
 
-    if (readBufStr == "0\r\n\r\n") {
-        conn->_tempBody = "";
-        conn->_bodyFinished = true;
-        return;
-    }
-
     if (_transferEncodingState == "readingChunkSize") {
         _parseChunkSize(readBufStr, conn);
         if (_transferEncodingState == "readingChunkSize")
@@ -123,29 +123,24 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     _chunkSize -= conn->_tempBody.size();
 
     if (_chunkSize == 0) {
-        _transferEncodingState = "readingChunkSize";
         readBufStr = readBufStr.substr(conn->_tempBody.size());
+        if (readBufStr.length() > 0 && readBufStr.substr(0, 2) != "\r\n") {
+            conn->_bodyFinished = true;
+            conn->setState(Connection::SendResponse);
+            setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
+            return;
+        }
+
+        if (readBufStr.length() > 0)
+            readBufStr = readBufStr.substr(2);
+
+        _transferEncodingState = "readingChunkSize";
         _lastChunkSizeStr = readBufStr;
-    }
+        if (readBufStr.length() == 0)
+            return;
 
-    if (_transferEncodingState == "readingChunkSize") {
+        return _parseChunkSize(readBufStr, conn);
     }
-
-    if (readBufStr.length() > _chunkSize && readBufStr.substr(_chunkSize) != "\r\n") {
-        conn->_bodyFinished = true;
-        conn->setState(Connection::SendResponse);
-        setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
-        return;
-    }
-
-    try {
-        readBufStr = readBufStr.substr(_chunkSize + 2);
-    } catch (const std::out_of_range& e) {
-        return;
-    }
-
-    if (readBufStr == "0\r\n\r\n")
-        conn->_bodyFinished = true;
 }
 
 bool BodyParser::_checkType(Connection* conn) {
