@@ -15,9 +15,6 @@ BodyParser::BodyParser() : _transferEncodingState(BodyContext::ReadingChunkSize)
 size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
     char* end;
 
-    // Reset errno before the conversion
-    errno = 0;
-
     const char* start = str.c_str();
     size_t result = strtoll(start, &end, base);
 
