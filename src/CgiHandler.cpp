@@ -43,6 +43,7 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     }
 }
 
+// maybe add another verification fo written bytes?
 void CgiHandler::handleCgiProcess(Connection* conn) {
     CgiContext& ctx = conn->cgiCtx;
     int status = 0;

@@ -43,17 +43,18 @@ void CgiHandler::_replace(std::string& str, char what, char with) {
     }
 }
 
+// check whether I need the Authorization header
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
     _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
-    _envStorage.push_back("PATH_INFO=" + _path);
-    _envStorage.push_back("PATH_TRANSLATED=" + _path); // "PATH_TRANSLATED=" + config.root + _path
+    // _envStorage.push_back("PATH_INFO=" + _path); // everything that is in between or cgi and query
+    // _envStorage.push_back("PATH_TRANSLATED=" + _path); // root + PATH_INFO
     if (!_query.empty()) {
         _envStorage.push_back("QUERY_STRING=" + _query);
     }
-    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : ""));
+    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
     // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
-    _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
+    _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("REQUEST_URI=" + request.uri);
     // REMOTE_ADDR
@@ -82,6 +83,7 @@ void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& para
     _setCgiEnvironment(request);
     for (size_t i = 0; i < _envStorage.size(); i++) {
         params.env.push_back(_envStorage[i].c_str());
+        // std::cout << _envStorage[i] << "\n";
     }
     params.env.push_back(NULL);
 }
@@ -115,6 +117,8 @@ std::string CgiHandler::_trimWhiteSpace(const std::string& str) {
     return str.substr(first, (last - first + 1));
 }
 
+// missing handling of status header
+// maybe add another headers to a map
 void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp) {
     resp.statusCode = 200;
     resp.statusMessage = "OK";
