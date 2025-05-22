@@ -129,9 +129,16 @@ std::string getFileContents(const std::string& filename) {
     return contents;
 }
 
+bool fileExists(const std::string& filename) {
+    std::ifstream file(filename);
+    return file.good();
+}
+
 void removeFile(std::string filepath) {
     std::remove(filepath.data());
-    ASSERT_FALSE(std::filesystem::exists(filepath));
+
+    ASSERT_FALSE(fileExists(filepath.data()));
+    // ASSERT_FALSE(std::filesystem::exists(filepath));
 }
 
 int getRandomNumber(int min, int max) {
