@@ -14,6 +14,31 @@ Connection* setupConnectionTransferEncoding() {
     return conn;
 }
 
+TEST(BodyParserTest, transferEncodingHexErrorContentTooLarge) {
+    BodyParser* bodyPrsr = new BodyParser();
+    std::string body = getRandomString(10);
+
+    std::ostringstream oss;
+    oss << "F000000000000000" << "\r\n";
+    oss << body << "\r\n";
+    oss << "0\r\n\r\n";
+    std::string chunkedBody = oss.str();
+
+    Connection* conn = setupConnectionTransferEncoding();
+
+    conn->_readBuf.assign(chunkedBody);
+    bodyPrsr->parse(conn);
+
+    std::string bodyReceived;
+    EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(conn->getState(), Connection::SendResponse);
+    EXPECT_EQ(conn->_response.statusCode, 413);
+    EXPECT_EQ(conn->_response.statusMessage, "Content Too Large");
+
+    delete conn;
+    delete bodyPrsr;
+}
+
 TEST(BodyParserTest, transferEncodingHexErrorInvalidArg) {
     BodyParser* bodyPrsr = new BodyParser();
     std::string body = getRandomString(10);
@@ -34,10 +59,6 @@ TEST(BodyParserTest, transferEncodingHexErrorInvalidArg) {
     EXPECT_EQ(conn->getState(), Connection::SendResponse);
     EXPECT_EQ(conn->_response.statusCode, 404);
     EXPECT_EQ(conn->_response.statusMessage, "Bad Request");
-
-    // bodyReceived += conn->_tempBody;
-    // EXPECT_EQ(conn->_readBuf.size(), 0);
-    // EXPECT_EQ(body, bodyReceived);
 
     delete conn;
     delete bodyPrsr;

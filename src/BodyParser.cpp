@@ -50,6 +50,9 @@ void BodyParser::_parseChunked(Connection* conn) {
     } catch (const std::invalid_argument& e) {
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 404, "Bad Request", conn->route.cfg);
+    } catch (const std::out_of_range& e) {
+        conn->setState(Connection::SendResponse);
+        setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
     }
 
     size_t pos = readBufStr.find("\r\n");
