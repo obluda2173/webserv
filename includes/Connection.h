@@ -15,9 +15,11 @@
 #include <unistd.h>
 
 typedef struct BodyContext {
+    enum TYPE { Undetermined, ContentLength, Chunked };
+    BodyContext::TYPE type;
     size_t bytesReceived;
     size_t contentLength;
-    BodyContext() : bytesReceived(0), contentLength(0) {}
+    BodyContext() : type(Undetermined), bytesReceived(0), contentLength(0) {}
 } BodyContext;
 
 typedef struct UploadContext {
