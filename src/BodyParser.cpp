@@ -90,20 +90,31 @@ long long BodyParser::_validateHex(std::string readBufStr, Connection* conn) {
 
 void BodyParser::_parseChunked(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
-    long long r;
-    if ((r = _validateHex(readBufStr, conn)) == -1)
-        return;
 
-    size_t pos;
-    if ((pos = readBufStr.find("\r\n")) == std::string::npos) {
-        _lastReadBufStr = readBufStr;
+    if (!_readingChunk) {
+        if ((_chunkSize = _validateHex(_lastReadBufStr + readBufStr, conn)) == -1)
+            return;
+
+        size_t pos = 0;
+        if ((pos = readBufStr.find("\r\n")) == std::string::npos) {
+            _lastReadBufStr += readBufStr;
+            return;
+        }
+
+        readBufStr = readBufStr.substr(pos + 2);
+        _readingChunk = true;
+    }
+
+    conn->_tempBody = readBufStr.substr(0, _chunkSize);
+    conn->_readBuf.clear();
+
+    try {
+        readBufStr = readBufStr.substr(_chunkSize + 2);
+    } catch (const std::out_of_range& e) {
         return;
     }
 
-    conn->_tempBody = readBufStr.substr(pos + 2, r);
-    conn->_readBuf.clear();
-
-    if (readBufStr.substr(readBufStr.size() - 5) == "0\r\n\r\n")
+    if (readBufStr == "0\r\n\r\n")
         conn->_bodyFinished = true;
 }
 

@@ -5,6 +5,9 @@
 
 class BodyParser {
   private:
+    long long _chunkBytesRead;
+    long long _chunkSize;
+    bool _readingChunk;
     std::string _lastReadBufStr;
     bool _checkContentLength(Connection* conn, BodyContext& bodyCtx);
     void _parseContentLength(Connection* conn);

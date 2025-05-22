@@ -59,8 +59,10 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
     size_t batchSize = 1024;
     size_t pos = 0;
     while (pos < chunkSize) {
-        conn->_readBuf.assign(chunk.substr(pos, batchSize));
+        std::string batch = chunk.substr(pos, batchSize);
+        conn->_readBuf.assign(batch);
         bodyPrsr->parse(conn);
+        EXPECT_EQ(conn->_tempBody.length(), batch.length());
         EXPECT_FALSE(conn->_bodyFinished);
         pos += batchSize;
     }
