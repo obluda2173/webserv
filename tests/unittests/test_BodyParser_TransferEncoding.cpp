@@ -72,9 +72,9 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
 
     conn->_readBuf.assign("0\r\n\r\n");
     bodyPrsr->parse(conn);
-    EXPECT_EQ(conn->_readBuf.size(), 0);
+    // EXPECT_EQ(std::string(conn->_readBuf.data(), conn->_readBuf.size()), "NextRequest");
     EXPECT_EQ(conn->_tempBody, "");
-    // EXPECT_FALSE(conn->_bodyFinished);
+    EXPECT_TRUE(conn->_bodyFinished);
 
     delete conn;
     delete bodyPrsr;

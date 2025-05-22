@@ -119,7 +119,17 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
             return;
     }
 
-    conn->_tempBody = readBufStr.substr(0, _chunkSize);
+    conn->_tempBody += readBufStr.substr(0, _chunkSize);
+    _chunkSize -= conn->_tempBody.size();
+
+    if (_chunkSize == 0) {
+        _transferEncodingState = "readingChunkSize";
+        readBufStr = readBufStr.substr(conn->_tempBody.size());
+        _lastChunkSizeStr = readBufStr;
+    }
+
+    if (_transferEncodingState == "readingChunkSize") {
+    }
 
     if (readBufStr.length() > _chunkSize && readBufStr.substr(_chunkSize) != "\r\n") {
         conn->_bodyFinished = true;
@@ -151,6 +161,7 @@ bool BodyParser::_checkType(Connection* conn) {
 }
 
 void BodyParser::parse(Connection* conn) {
+    conn->_tempBody = "";
     while (true) {
         switch (conn->bodyCtx.type) {
         case BodyContext::Undetermined:
