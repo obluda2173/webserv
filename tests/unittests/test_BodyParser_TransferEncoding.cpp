@@ -123,6 +123,45 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches2) {
     EXPECT_EQ(conn->_tempBody, "");
     EXPECT_FALSE(conn->_bodyFinished);
 
+    conn->_readBuf.assign("\n");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, "");
+    EXPECT_FALSE(conn->_bodyFinished);
+
+    std::cout << "From Here:" << std::endl;
+
+    conn->_readBuf.assign("0");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, "");
+    EXPECT_FALSE(conn->_bodyFinished);
+
+    conn->_readBuf.assign("\r");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, "");
+    EXPECT_FALSE(conn->_bodyFinished);
+
+    conn->_readBuf.assign("\n");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, "");
+    EXPECT_FALSE(conn->_bodyFinished);
+
+    std::cout << "Next:" << std::endl;
+    conn->_readBuf.assign("\r");
+    bodyPrsr->parse(conn);
+    EXPECT_EQ(conn->_readBuf.size(), 0);
+    EXPECT_EQ(conn->_tempBody, "");
+    EXPECT_FALSE(conn->_bodyFinished);
+
+    // conn->_readBuf.assign("\n");
+    // bodyPrsr->parse(conn);
+    // EXPECT_EQ(conn->_readBuf.size(), 0);
+    // EXPECT_EQ(conn->_tempBody, "");
+    // EXPECT_TRUE(conn->_bodyFinished);
+
     delete conn;
     delete bodyPrsr;
 }
