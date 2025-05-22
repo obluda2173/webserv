@@ -40,6 +40,9 @@ index       index.html index.htm
 - [ ] responseWrite needs to fill out necessary headers
 - [ ] it's the reason why some clients don't close the connection
 ** TODO connection Handling (architecture)
+- [ ] test a config with no serverNames
+  - [ ] one time without the directive
+  - [ ] one time with directive but empty
 - [-] implement different router for different ports
   - [X] also handle cases where the routing is failing
   - [X] multiple routers in connectionhandler

@@ -10,6 +10,8 @@
 #include <stdexcept> // for exceptions
 #include <string>
 
+BodyParser::BodyParser() : _transferEncodingState("readingChunkSize") {}
+
 long long custom_stoll(const std::string& str, size_t* idx = 0, int base = 10) {
     char* end;
 
@@ -88,25 +90,24 @@ long long BodyParser::_validateHex(std::string readBufStr, Connection* conn) {
     return r;
 }
 
-void BodyParser::_parseChunked(Connection* conn) {
+void BodyParser::_parseTransferEncoding(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
 
-    if (!_readingChunk) {
+    if (_transferEncodingState == "readingChunkSize") {
+        _lastReadBufStr += readBufStr;
+
+        size_t pos = 0;
+        if ((pos = readBufStr.find("\r\n")) == std::string::npos) // test if end of chunk-size
+            return;
+
         if ((_chunkSize = _validateHex(_lastReadBufStr + readBufStr, conn)) == -1)
             return;
 
-        size_t pos = 0;
-        if ((pos = readBufStr.find("\r\n")) == std::string::npos) {
-            _lastReadBufStr += readBufStr;
-            return;
-        }
-
         readBufStr = readBufStr.substr(pos + 2);
-        _readingChunk = true;
+        _transferEncodingState = "readingChunk";
     }
 
     conn->_tempBody = readBufStr.substr(0, _chunkSize);
-    conn->_readBuf.clear();
 
     try {
         readBufStr = readBufStr.substr(_chunkSize + 2);
@@ -116,6 +117,8 @@ void BodyParser::_parseChunked(Connection* conn) {
 
     if (readBufStr == "0\r\n\r\n")
         conn->_bodyFinished = true;
+
+    conn->_readBuf.clear();
 }
 
 bool BodyParser::_checkType(Connection* conn) {
@@ -140,7 +143,7 @@ void BodyParser::parse(Connection* conn) {
         case BodyContext::ContentLength:
             return _parseContentLength(conn);
         case BodyContext::Chunked:
-            return _parseChunked(conn);
+            return _parseTransferEncoding(conn);
         }
     }
 }

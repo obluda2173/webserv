@@ -5,17 +5,18 @@
 
 class BodyParser {
   private:
+    std::string _transferEncodingState;
     long long _chunkBytesRead;
     long long _chunkSize;
-    bool _readingChunk;
     std::string _lastReadBufStr;
     bool _checkContentLength(Connection* conn, BodyContext& bodyCtx);
     void _parseContentLength(Connection* conn);
     bool _checkType(Connection* conn);
     long long _validateHex(std::string readBufStr, Connection* conn);
-    void _parseChunked(Connection* conn);
+    void _parseTransferEncoding(Connection* conn);
 
   public:
+    BodyParser();
     void parse(Connection* conn);
 };
 
