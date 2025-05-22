@@ -16,13 +16,18 @@ struct ExecParams {
 
 class CgiHandler : public IHandler {
   private:
+    std::string _path;
     std::string _query;
     std::string _interpreter;
-    std::string _path;
+    std::string _scriptName;
+    std::string _pathInfo;
+    std::string _pathTranslated;
     struct stat _pathStat;
     std::vector< std::string > _envStorage;
     std::string _extractQuery(const std::string& uri);
     std::string _findInterpreter(std::map< std::string, std::string > cgiMap);
+    std::string _getScriptName(const std::string& uri);
+    std::string _getPathInfo(const std::string& uri);
     bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
     std::string _toUpper(const std::string& str);
     void _replace(std::string& str, char what, char with);

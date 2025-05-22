@@ -16,9 +16,32 @@ std::string CgiHandler::_findInterpreter(std::map< std::string, std::string > cg
     return it != cgiMap.end() ? it->second : "";
 }
 
+std::string CgiHandler::_getPathInfo(const std::string& uri) {
+    size_t dot = uri.rfind('.');
+    if (dot == std::string::npos)
+        return "";
+    size_t start = uri.find_first_of("/", dot);
+    size_t end = uri.find_first_of("#?", start);
+    if (start != std::string::npos) {
+        return uri.substr(start, end - start);
+    }
+    return "";
+}
+
+std::string CgiHandler::_getScriptName(const std::string& uri) {
+    size_t dot = uri.rfind('.');
+    if (dot == std::string::npos)
+        return "";
+    size_t end = uri.find_first_of("/?#", dot);
+    return uri.substr(0, end);
+}
+
 bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp) {
-    _path = normalizePath(config.root, request.uri);
     _query = _extractQuery(request.uri);
+    _scriptName = _getScriptName(request.uri);
+    _pathInfo = _getPathInfo(request.uri);
+    _pathTranslated = _pathInfo.empty() ? "" : (config.root + _pathInfo); 
+    _path = normalizePath(config.root, _scriptName);
     _interpreter = _findInterpreter(config.cgi);
     if (_interpreter.empty()) {
         setErrorResponse(resp, 403, "Forbidden", config);
@@ -46,9 +69,9 @@ void CgiHandler::_replace(std::string& str, char what, char with) {
 // check whether I need the Authorization header
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
-    // _envStorage.push_back("PATH_INFO=" + _path); // everything that is in between or cgi and query
-    // _envStorage.push_back("PATH_TRANSLATED=" + _path); // root + PATH_INFO
+    _envStorage.push_back("SCRIPT_NAME=" + _scriptName);
+    _envStorage.push_back("PATH_INFO=" + _pathInfo);
+    _envStorage.push_back("PATH_TRANSLATED=" + _pathTranslated);
     if (!_query.empty()) {
         _envStorage.push_back("QUERY_STRING=" + _query);
     }
@@ -83,7 +106,6 @@ void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& para
     _setCgiEnvironment(request);
     for (size_t i = 0; i < _envStorage.size(); i++) {
         params.env.push_back(_envStorage[i].c_str());
-        // std::cout << _envStorage[i] << "\n";
     }
     params.env.push_back(NULL);
 }
