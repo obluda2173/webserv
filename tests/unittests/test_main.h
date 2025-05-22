@@ -42,7 +42,7 @@ Router newRouterTest();
 // setup conns requests
 Connection* setupConnWithContentLength(std::string filename, size_t contentLength);
 Connection* setupConnWithoutContentLength(std::string filename);
-Connection* setupConnWithTransferEncoding(std::string filename);
+Connection* setupConnectionTransferEncoding();
 
 // other
 std::string getFileContents(const std::string& filename);

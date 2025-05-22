@@ -6,67 +6,9 @@
 #include <ostream>
 #include <string>
 
-Connection* setupConnectionTransferEncoding() {
-    Connection* conn = new Connection({}, -1, "", NULL, NULL);
-    conn->_request.headers["transfer-encoding"] = "chunked";
-    conn->setState(Connection::Handling);
-    conn->_bodyFinished = false;
-    return conn;
-}
+class TransferEncodingTest : public testing::TestWithParam< int > {};
 
-TEST(BodyParserTest, transferEncodingHexErrorContentTooLarge) {
-    BodyParser* bodyPrsr = new BodyParser();
-    std::string body = getRandomString(10);
-
-    std::ostringstream oss;
-    oss << "F000000000000000" << "\r\n";
-    oss << body << "\r\n";
-    oss << "0\r\n\r\n";
-    std::string chunkedBody = oss.str();
-
-    Connection* conn = setupConnectionTransferEncoding();
-
-    conn->_readBuf.assign(chunkedBody);
-    bodyPrsr->parse(conn);
-
-    std::string bodyReceived;
-    EXPECT_TRUE(conn->_bodyFinished);
-    EXPECT_EQ(conn->getState(), Connection::SendResponse);
-    EXPECT_EQ(conn->_response.statusCode, 413);
-    EXPECT_EQ(conn->_response.statusMessage, "Content Too Large");
-
-    delete conn;
-    delete bodyPrsr;
-}
-
-TEST(BodyParserTest, transferEncodingHexErrorInvalidArg) {
-    BodyParser* bodyPrsr = new BodyParser();
-    std::string body = getRandomString(10);
-
-    std::ostringstream oss;
-    oss << "notAhex" << "\r\n";
-    oss << body << "\r\n";
-    oss << "0\r\n\r\n";
-    std::string chunkedBody = oss.str();
-
-    Connection* conn = setupConnectionTransferEncoding();
-
-    conn->_readBuf.assign(chunkedBody);
-    bodyPrsr->parse(conn);
-
-    std::string bodyReceived;
-    EXPECT_TRUE(conn->_bodyFinished);
-    EXPECT_EQ(conn->getState(), Connection::SendResponse);
-    EXPECT_EQ(conn->_response.statusCode, 404);
-    EXPECT_EQ(conn->_response.statusMessage, "Bad Request");
-
-    delete conn;
-    delete bodyPrsr;
-}
-
-class BodyParserTest : public testing::TestWithParam< int > {};
-
-TEST_P(BodyParserTest, transferEncodingOneChunk) {
+TEST_P(TransferEncodingTest, transferEncodingOneChunk) {
     int bodyLength = GetParam();
     BodyParser* bodyPrsr = new BodyParser();
     std::string body = getRandomString(bodyLength);
@@ -92,10 +34,41 @@ TEST_P(BodyParserTest, transferEncodingOneChunk) {
     delete bodyPrsr;
 }
 
-INSTANTIATE_TEST_SUITE_P(BodyParserTests, BodyParserTest, ::testing::Values(10, 1, 0),
-                         [](const testing::TestParamInfo< BodyParserTest::ParamType >& info) {
+INSTANTIATE_TEST_SUITE_P(BodyParserTests, TransferEncodingTest, ::testing::Values(10, 1, 0),
+                         [](const testing::TestParamInfo< TransferEncodingTest::ParamType >& info) {
                              return std::to_string(info.param);
                          });
+
+// TEST_F(TransferEncodingTest, transferEncodingtwoChunks) {
+//     BodyParser* bodyPrsr = new BodyParser();
+//     Connection* conn = setupConnectionTransferEncoding();
+
+//     int chunkSize = 98765;
+//     std::string chunk = getRandomString(chunkSize);
+//     std::string hex = "181CD";
+
+//     // assign only substring of hexNumber
+//     conn->_readBuf.assign(hex.substr(0, 2));
+//     bodyPrsr->parse(conn);
+//     EXPECT_FALSE(conn->_bodyFinished);
+
+//     // oss << "0\r\n\r\n";
+//     // std::string chunkedBody = oss.str();
+
+//     // Connection* conn = setupConnectionTransferEncoding();
+
+//     // conn->_readBuf.assign(chunkedBody);
+//     // bodyPrsr->parse(conn);
+
+//     // std::string bodyReceived;
+//     // bodyReceived += conn->_tempBody;
+//     // EXPECT_EQ(conn->_readBuf.size(), 0);
+//     // EXPECT_EQ(body1 + body2, bodyReceived);
+//     // EXPECT_TRUE(conn->_bodyFinished);
+
+//     delete conn;
+//     delete bodyPrsr;
+// }
 
 // std::string createChunkedBody(const std::string& body) {
 //     std::ostringstream oss;

@@ -5,6 +5,33 @@
 #include <stdexcept>
 #include <string>
 
+#include <cerrno>    // for errno
+#include <cstdlib>   // for strtoll
+#include <stdexcept> // for exceptions
+#include <string>
+
+long long custom_stoll(const std::string& str, size_t* idx = 0, int base = 10) {
+    char* end;
+
+    // Reset errno before the conversion
+    errno = 0;
+
+    const char* start = str.c_str();
+    long long result = strtoll(start, &end, base);
+
+    // Calculate position where parsing stopped (if needed)
+    if (idx)
+        *idx = end - start;
+
+    // Handle errors like C++11's stoll
+    if (errno == ERANGE)
+        throw std::out_of_range("stoll: out of range");
+    if (end == start)
+        throw std::invalid_argument("stoll: invalid argument");
+
+    return result;
+}
+
 bool BodyParser::_checkContentLength(Connection* conn, BodyContext& bodyCtx) {
     if (conn->_request.headers.find("content-length") == conn->_request.headers.end()) {
         conn->_bodyFinished = true;
@@ -42,24 +69,38 @@ void BodyParser::_parseContentLength(Connection* conn) {
         readBuf.advance(countRest);
     }
 }
+
+long long BodyParser::_validateHex(std::string readBufStr, Connection* conn) {
+    long long r;
+    try {
+        r = custom_stoll(readBufStr, nullptr, 16);
+    } catch (const std::invalid_argument& e) {
+        conn->_bodyFinished = true;
+        conn->setState(Connection::SendResponse);
+        setErrorResponse(conn->_response, 404, "Bad Request", conn->route.cfg);
+        return -1;
+    } catch (const std::out_of_range& e) {
+        conn->_bodyFinished = true;
+        conn->setState(Connection::SendResponse);
+        setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
+        return -1;
+    }
+    return r;
+}
+
 void BodyParser::_parseChunked(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
     long long r;
-    try {
-        r = std::stol(readBufStr, nullptr, 16);
-    } catch (const std::invalid_argument& e) {
-        conn->setState(Connection::SendResponse);
-        setErrorResponse(conn->_response, 404, "Bad Request", conn->route.cfg);
-    } catch (const std::out_of_range& e) {
-        conn->setState(Connection::SendResponse);
-        setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
-    }
+    if ((r = _validateHex(readBufStr, conn)) == -1)
+        return;
 
     size_t pos = readBufStr.find("\r\n");
 
     conn->_tempBody = readBufStr.substr(pos + 2, r);
     conn->_readBuf.clear();
-    conn->_bodyFinished = true;
+
+    if (readBufStr.substr(readBufStr.size() - 5) == "0\r\n\r\n")
+        conn->_bodyFinished = true;
 }
 
 bool BodyParser::_checkType(Connection* conn) {

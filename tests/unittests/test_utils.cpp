@@ -142,13 +142,11 @@ int getRandomNumber(int min, int max) {
     return distr(eng);
 }
 
-Connection* setupConnWithTransferEncoding(std::string filename) {
+Connection* setupConnectionTransferEncoding() {
     Connection* conn = new Connection({}, -1, "", NULL, NULL);
-    conn->_request.method = "POST";
-    conn->_request.uri = PREFIX + filename;
-    conn->_request.version = "HTTP/1.1";
     conn->_request.headers["transfer-encoding"] = "chunked";
     conn->setState(Connection::Handling);
+    conn->_bodyFinished = false;
     return conn;
 }
 
