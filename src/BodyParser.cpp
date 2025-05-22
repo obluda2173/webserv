@@ -10,7 +10,7 @@
 #include <stdexcept> // for exceptions
 #include <string>
 
-BodyParser::BodyParser() : _transferEncodingState("readingChunkSize") {}
+BodyParser::BodyParser() : _transferEncodingState(BodyContext::ReadingChunkSize) {}
 
 size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
     char* end;
@@ -106,7 +106,7 @@ void BodyParser::_parseChunkSize(std::string& readBufStr, Connection* conn) {
         return;
 
     readBufStr = readBufStr.substr(pos + 2);
-    _transferEncodingState = "readingChunk";
+    _transferEncodingState = BodyContext::ReadingChunk;
     _parseChunk(readBufStr, conn);
 }
 
@@ -124,7 +124,7 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
     conn->_readBuf.clear();
 
-    if (_transferEncodingState == "readingChunkSize")
+    if (_transferEncodingState == BodyContext::ReadingChunkSize)
         return _parseChunkSize(readBufStr, conn);
 
     return _parseChunk(readBufStr, conn);
@@ -141,7 +141,7 @@ void BodyParser::_verifyCarriageReturn(std::string& readBufStr, Connection* conn
     if (readBufStr.length() > 0)
         readBufStr = readBufStr.substr(2);
 
-    _transferEncodingState = "readingChunkSize";
+    _transferEncodingState = BodyContext::ReadingChunkSize;
     _lastChunkSizeStr = readBufStr;
     if (readBufStr.length() == 0)
         return;
@@ -153,7 +153,7 @@ bool BodyParser::_checkType(Connection* conn) {
     BodyContext& bodyCtx = conn->bodyCtx;
 
     if (conn->_request.headers.find("transfer-encoding") != conn->_request.headers.end())
-        bodyCtx.type = BodyContext::Chunked;
+        bodyCtx.type = BodyContext::TransferEncoding;
     else if (_checkContentLength(conn, bodyCtx))
         bodyCtx.type = BodyContext::ContentLength;
     else
@@ -171,7 +171,7 @@ void BodyParser::parse(Connection* conn) {
             break;
         case BodyContext::ContentLength:
             return _parseContentLength(conn);
-        case BodyContext::Chunked:
+        case BodyContext::TransferEncoding:
             return _parseTransferEncoding(conn);
         }
     }

@@ -15,8 +15,10 @@
 #include <unistd.h>
 
 typedef struct BodyContext {
-    enum TYPE { Undetermined, ContentLength, Chunked };
+    enum TYPE { Undetermined, ContentLength, TransferEncoding };
+    enum TE_STAGE { ReadingChunkSize, ReadingChunk, VerifyCarriageReturn };
     BodyContext::TYPE type;
+    BodyContext::TE_STAGE te_stage;
     size_t bytesReceived;
     size_t contentLength;
     BodyContext() : type(Undetermined), bytesReceived(0), contentLength(0) {}

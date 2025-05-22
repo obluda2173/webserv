@@ -5,7 +5,7 @@
 
 class BodyParser {
   private:
-    std::string _transferEncodingState;
+    BodyContext::TE_STAGE _transferEncodingState;
     // long long _chunkBytesRead;
     size_t _chunkSize;
     std::string _lastChunkSizeStr;
