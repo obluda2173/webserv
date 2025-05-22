@@ -58,6 +58,14 @@ std::string CgiHandler::_toUpper(const std::string& str) {
     return result;
 }
 
+std::string CgiHandler::_toLower(const std::string& str) {
+    std::string result = str;
+    for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
+        *ptr = static_cast< char >(tolower(*ptr));
+    }
+    return result;
+}
+
 void CgiHandler::_replace(std::string& str, char what, char with) {
     for (size_t i = 0; i < str.size(); i++) {
         if (str[i] == what) {
@@ -139,8 +147,6 @@ std::string CgiHandler::_trimWhiteSpace(const std::string& str) {
     return str.substr(first, (last - first + 1));
 }
 
-// missing handling of status header
-// maybe add another headers to a map
 void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp) {
     resp.statusCode = 200;
     resp.statusMessage = "OK";
@@ -179,12 +185,25 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         if (colon == std::string::npos)
             continue;
 
-        std::string headerKey = _trimWhiteSpace(line.substr(0, colon));
+        std::string headerKey = _toLower(_trimWhiteSpace(line.substr(0, colon)));
         std::string headerValue = _trimWhiteSpace(line.substr(colon + 1));
-        if (headerKey == "Content-Length") {
-            resp.contentLength = std::stoi(headerValue);
-        } else if (headerKey == "Content-Type") {
+
+        if (headerKey == "status") {
+            size_t spacePos = headerValue.find(' ');
+            if (spacePos != std::string::npos) {
+                resp.statusCode = std::strtoul(headerValue.substr(0, spacePos).c_str(), NULL, 10);
+                resp.statusMessage = headerValue.substr(spacePos + 1);
+            } else {
+                resp.statusCode = std::strtoul(headerValue.c_str(), NULL, 10);
+                resp.statusMessage = "Unknown";
+            }
+        }
+        else if (headerKey == "content-length") {
+            resp.contentLength = std::strtoul(headerValue.c_str(), NULL, 10);
+        } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
+        // } else {
+        //     resp.headers[headerKey] = headerValue; // wait for Kay's work
         }
     }
     resp.body = new StringBodyProvider(body);

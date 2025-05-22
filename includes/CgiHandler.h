@@ -30,6 +30,7 @@ class CgiHandler : public IHandler {
     std::string _getPathInfo(const std::string& uri);
     bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
     std::string _toUpper(const std::string& str);
+    std::string _toLower(const std::string& str);
     void _replace(std::string& str, char what, char with);
     void _setCgiEnvironment(const HttpRequest& request);
     void _prepareExecParams(const HttpRequest& request, ExecParams& params);
