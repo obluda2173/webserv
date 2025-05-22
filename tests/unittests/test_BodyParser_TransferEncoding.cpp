@@ -123,6 +123,7 @@ TEST_F(TransferEncodingTest, transferEncodingChunkInBatches2) {
     EXPECT_EQ(conn->_tempBody, "");
     EXPECT_FALSE(conn->_bodyFinished);
 
+    std::cout << "From Here1:" << std::endl;
     conn->_readBuf.assign("\n");
     bodyPrsr->parse(conn);
     EXPECT_EQ(conn->_readBuf.size(), 0);

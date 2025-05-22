@@ -10,7 +10,7 @@
 #include <stdexcept> // for exceptions
 #include <string>
 
-BodyParser::BodyParser() : _transferEncodingState(BodyContext::ReadingChunkSize) {}
+BodyParser::BodyParser() : _transferEncodingState(BodyContext::ReadingChunkSize), _chunkRestSize(1) {}
 
 size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
     char* end;
@@ -87,11 +87,11 @@ bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connect
 }
 
 void BodyParser::_parseChunk(Connection* conn) {
-    conn->_tempBody += _bodyBuf.substr(0, _currentChunkSize);
-    _currentChunkSize -= conn->_tempBody.size();
+    conn->_tempBody += _bodyBuf.substr(0, _chunkRestSize);
+    _chunkRestSize -= conn->_tempBody.size();
 
     _bodyBuf = _bodyBuf.substr(conn->_tempBody.size());
-    if (_currentChunkSize != 0)
+    if (_chunkRestSize != 0)
         return;
 
     _transferEncodingState = BodyContext::VerifyCarriageReturn;
@@ -105,6 +105,12 @@ void BodyParser::_verifyCarriageReturn(Connection* conn) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
+        return;
+    }
+
+    if (_currentChunkSize == 0) {
+        conn->_bodyFinished = true;
+        conn->_readBuf.assign(_bodyBuf.substr(2));
         return;
     }
 
@@ -125,6 +131,7 @@ void BodyParser::_parseChunkSize(Connection* conn) {
 
     if (!_validateHex(_currentChunkSize, _bodyBuf, conn))
         return;
+    _chunkRestSize = _currentChunkSize;
 
     _bodyBuf = _bodyBuf.substr(pos + 2);
     _transferEncodingState = BodyContext::ReadingChunk;
@@ -140,14 +147,19 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
         current_stage = _transferEncodingState;
         switch (_transferEncodingState) {
         case BodyContext::ReadingChunkSize:
+            std::cout << "ReadingChunkSize" << std::endl;
+
             _parseChunkSize(conn);
             continueProcessing = (_transferEncodingState != current_stage);
             break;
         case BodyContext::ReadingChunk:
+            std::cout << "chunk" << std::endl;
+
             _parseChunk(conn);
             continueProcessing = (_transferEncodingState != current_stage);
             break;
         case BodyContext::VerifyCarriageReturn:
+            std::cout << "verify" << std::endl;
             _verifyCarriageReturn(conn);
             continueProcessing = (_transferEncodingState != current_stage);
             break;
