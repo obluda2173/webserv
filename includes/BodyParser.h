@@ -5,6 +5,7 @@
 
 class BodyParser {
   private:
+    std::string _lastReadBufStr;
     bool _checkContentLength(Connection* conn, BodyContext& bodyCtx);
     void _parseContentLength(Connection* conn);
     bool _checkType(Connection* conn);

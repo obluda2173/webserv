@@ -94,7 +94,11 @@ void BodyParser::_parseChunked(Connection* conn) {
     if ((r = _validateHex(readBufStr, conn)) == -1)
         return;
 
-    size_t pos = readBufStr.find("\r\n");
+    size_t pos;
+    if ((pos = readBufStr.find("\r\n")) == std::string::npos) {
+        _lastReadBufStr = readBufStr;
+        return;
+    }
 
     conn->_tempBody = readBufStr.substr(pos + 2, r);
     conn->_readBuf.clear();

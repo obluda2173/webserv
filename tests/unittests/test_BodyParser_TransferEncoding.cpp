@@ -39,36 +39,53 @@ INSTANTIATE_TEST_SUITE_P(BodyParserTests, TransferEncodingTest, ::testing::Value
                              return std::to_string(info.param);
                          });
 
-// TEST_F(TransferEncodingTest, transferEncodingtwoChunks) {
-//     BodyParser* bodyPrsr = new BodyParser();
-//     Connection* conn = setupConnectionTransferEncoding();
+TEST_F(TransferEncodingTest, transferEncodingChunkInBatches) {
+    BodyParser* bodyPrsr = new BodyParser();
+    Connection* conn = setupConnectionTransferEncoding();
 
-//     int chunkSize = 98765;
-//     std::string chunk = getRandomString(chunkSize);
-//     std::string hex = "181CD";
+    size_t chunkSize = 98765;
+    std::string chunk = getRandomString(chunkSize);
+    std::string hex = "181CD";
 
-//     // assign only substring of hexNumber
-//     conn->_readBuf.assign(hex.substr(0, 2));
-//     bodyPrsr->parse(conn);
-//     EXPECT_FALSE(conn->_bodyFinished);
+    // assign only substring of hexNumber
+    conn->_readBuf.assign("18");
+    bodyPrsr->parse(conn);
+    EXPECT_FALSE(conn->_bodyFinished);
 
-//     // oss << "0\r\n\r\n";
-//     // std::string chunkedBody = oss.str();
+    conn->_readBuf.assign("1CD\r\n");
+    bodyPrsr->parse(conn);
+    EXPECT_FALSE(conn->_bodyFinished);
 
-//     // Connection* conn = setupConnectionTransferEncoding();
+    size_t batchSize = 1024;
+    size_t pos = 0;
+    while (pos < chunkSize) {
+        conn->_readBuf.assign(chunk.substr(pos, batchSize));
+        bodyPrsr->parse(conn);
+        EXPECT_FALSE(conn->_bodyFinished);
+        pos += batchSize;
+    }
 
-//     // conn->_readBuf.assign(chunkedBody);
-//     // bodyPrsr->parse(conn);
+    // conn->_readBuf.assign("0\r\n");
+    // bodyPrsr->parse(conn);
+    // EXPECT_TRUE(conn->_bodyFinished);
 
-//     // std::string bodyReceived;
-//     // bodyReceived += conn->_tempBody;
-//     // EXPECT_EQ(conn->_readBuf.size(), 0);
-//     // EXPECT_EQ(body1 + body2, bodyReceived);
-//     // EXPECT_TRUE(conn->_bodyFinished);
+    // oss << "0\r\n\r\n";
+    // std::string chunkedBody = oss.str();
 
-//     delete conn;
-//     delete bodyPrsr;
-// }
+    // Connection* conn = setupConnectionTransferEncoding();
+
+    // conn->_readBuf.assign(chunkedBody);
+    // bodyPrsr->parse(conn);
+
+    // std::string bodyReceived;
+    // bodyReceived += conn->_tempBody;
+    // EXPECT_EQ(conn->_readBuf.size(), 0);
+    // EXPECT_EQ(body1 + body2, bodyReceived);
+    // EXPECT_TRUE(conn->_bodyFinished);
+
+    delete conn;
+    delete bodyPrsr;
+}
 
 // std::string createChunkedBody(const std::string& body) {
 //     std::ostringstream oss;
