@@ -93,6 +93,12 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
     conn->_readBuf.clear();
 
+    if (readBufStr == "0\r\n\r\n") {
+        conn->_tempBody = "";
+        conn->_bodyFinished = true;
+        return;
+    }
+
     if (_transferEncodingState == "readingChunkSize") {
         _lastReadBufStr += readBufStr;
 
@@ -108,11 +114,6 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
     }
 
     conn->_tempBody = readBufStr.substr(0, _chunkSize);
-    if (readBufStr == "0\r\n\r\n") {
-        conn->_tempBody = "";
-        conn->_bodyFinished = true;
-        return;
-    }
 
     try {
         readBufStr = readBufStr.substr(_chunkSize + 2);
