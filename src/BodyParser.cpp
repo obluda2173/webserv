@@ -107,27 +107,6 @@ void BodyParser::_parseChunkSize(std::string& readBufStr, Connection* conn) {
 
     readBufStr = readBufStr.substr(pos + 2);
     _transferEncodingState = BodyContext::ReadingChunk;
-    _parseChunk(readBufStr, conn);
-}
-
-void BodyParser::_parseChunk(std::string& readBufStr, Connection* conn) {
-    conn->_tempBody += readBufStr.substr(0, _chunkSize);
-    _chunkSize -= conn->_tempBody.size();
-
-    if (_chunkSize == 0) {
-        readBufStr = readBufStr.substr(conn->_tempBody.size());
-        return _verifyCarriageReturn(readBufStr, conn);
-    }
-}
-
-void BodyParser::_parseTransferEncoding(Connection* conn) {
-    std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
-    conn->_readBuf.clear();
-
-    if (_transferEncodingState == BodyContext::ReadingChunkSize)
-        return _parseChunkSize(readBufStr, conn);
-
-    return _parseChunk(readBufStr, conn);
 }
 
 void BodyParser::_verifyCarriageReturn(std::string& readBufStr, Connection* conn) {
@@ -143,10 +122,42 @@ void BodyParser::_verifyCarriageReturn(std::string& readBufStr, Connection* conn
 
     _transferEncodingState = BodyContext::ReadingChunkSize;
     _lastChunkSizeStr = readBufStr;
-    if (readBufStr.length() == 0)
-        return;
+}
 
-    return _parseChunkSize(readBufStr, conn);
+void BodyParser::_parseChunk(std::string& readBufStr, Connection* conn) {
+    conn->_tempBody += readBufStr.substr(0, _chunkSize);
+    _chunkSize -= conn->_tempBody.size();
+
+    if (_chunkSize == 0) {
+        readBufStr = readBufStr.substr(conn->_tempBody.size());
+        _transferEncodingState = BodyContext::VerifyCarriageReturn;
+    }
+}
+
+void BodyParser::_parseTransferEncoding(Connection* conn) {
+    std::string readBufStr = std::string(conn->_readBuf.data(), conn->_readBuf.size());
+    conn->_readBuf.clear();
+
+    bool continueProcessing = true;
+    BodyContext::TE_STAGE current_stage;
+    while (continueProcessing) {
+        current_stage = _transferEncodingState;
+        switch (_transferEncodingState) {
+        case BodyContext::ReadingChunkSize:
+            _parseChunkSize(readBufStr, conn);
+            continueProcessing = (_transferEncodingState != current_stage);
+            break;
+        case BodyContext::ReadingChunk:
+            _parseChunk(readBufStr, conn);
+            continueProcessing = (_transferEncodingState != current_stage);
+            break;
+        case BodyContext::VerifyCarriageReturn:
+            _verifyCarriageReturn(readBufStr, conn);
+            continueProcessing = (_transferEncodingState != current_stage);
+            break;
+        }
+    }
+    return;
 }
 
 bool BodyParser::_checkType(Connection* conn) {
