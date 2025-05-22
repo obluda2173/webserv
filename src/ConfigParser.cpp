@@ -132,6 +132,9 @@ void ConfigParser::_parseServerContext(const Context& serverContext) {
         throw std::runtime_error("Server context doesn't accept parameters");
     }
     _processServerDirectives(serverContext, config);
+    if (config.serverNames.empty()) {
+        config.serverNames.push_back("");
+    }
     for (std::vector< Context >::const_iterator it = serverContext.children.begin(); it != serverContext.children.end();
          ++it) {
         if (it->name == "location") {
@@ -173,8 +176,6 @@ void ConfigParser::_validateServerContext(const Context& context) {
         throw std::runtime_error("Unexpected context type: " + context.name);
     } else if (!_findDirective(context, "listen")) {
         throw std::runtime_error("Server block missing required listen directive");
-    } else if (!_findDirective(context, "server_name")) {
-        throw std::runtime_error("Server block missing required server_name directive");
     } else if (!_findDirective(context, "root")) {
         throw std::runtime_error("Server block missing required root directive");
     }

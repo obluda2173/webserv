@@ -16,6 +16,28 @@ class ServerConfigTest : public ::testing::Test {
     }
 };
 
+TEST_F(ServerConfigTest, NoServername1) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen 80;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    ASSERT_EQ(config[0].serverNames.size(), 1);
+    EXPECT_EQ(config[0].serverNames[0], "");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_TRUE(config[0].locations.empty());
+}
+
+TEST_F(ServerConfigTest, NoServername2) {
+    EXPECT_THROW(parseConfig("server {\n"
+                 "    listen 80;\n"
+                 "    server_name ;\n"
+                 "    root /var/www/html;\n"
+                 "}\n"),
+                std::runtime_error);
+}
+
 TEST_F(ServerConfigTest, BasicServerConfiguration) {
     std::vector<ServerConfig> config = parseConfig("server {\n"
                                                    "    listen 80;\n"

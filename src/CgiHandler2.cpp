@@ -16,9 +16,32 @@ std::string CgiHandler::_findInterpreter(std::map< std::string, std::string > cg
     return it != cgiMap.end() ? it->second : "";
 }
 
+std::string CgiHandler::_getPathInfo(const std::string& uri) {
+    size_t dot = uri.rfind('.');
+    if (dot == std::string::npos)
+        return "";
+    size_t start = uri.find_first_of("/", dot);
+    size_t end = uri.find_first_of("#?", start);
+    if (start != std::string::npos) {
+        return uri.substr(start, end - start);
+    }
+    return "";
+}
+
+std::string CgiHandler::_getScriptName(const std::string& uri) {
+    size_t dot = uri.rfind('.');
+    if (dot == std::string::npos)
+        return "";
+    size_t end = uri.find_first_of("/?#", dot);
+    return uri.substr(0, end);
+}
+
 bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp) {
-    _path = normalizePath(config.root, request.uri);
     _query = _extractQuery(request.uri);
+    _scriptName = _getScriptName(request.uri);
+    _pathInfo = _getPathInfo(request.uri);
+    _pathTranslated = _pathInfo.empty() ? "" : (config.root + _pathInfo); 
+    _path = normalizePath(config.root, _scriptName);
     _interpreter = _findInterpreter(config.cgi);
     if (_interpreter.empty()) {
         setErrorResponse(resp, 403, "Forbidden", config);
@@ -35,6 +58,14 @@ std::string CgiHandler::_toUpper(const std::string& str) {
     return result;
 }
 
+std::string CgiHandler::_toLower(const std::string& str) {
+    std::string result = str;
+    for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
+        *ptr = static_cast< char >(tolower(*ptr));
+    }
+    return result;
+}
+
 void CgiHandler::_replace(std::string& str, char what, char with) {
     for (size_t i = 0; i < str.size(); i++) {
         if (str[i] == what) {
@@ -43,37 +74,32 @@ void CgiHandler::_replace(std::string& str, char what, char with) {
     }
 }
 
+// check whether I need the Authorization header
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + _path.substr(_path.find_last_of("/")));
-    _envStorage.push_back("PATH_INFO=" + _path);
-    _envStorage.push_back("PATH_TRANSLATED=" + _path); // "PATH_TRANSLATED=" + config.root + _path
-    if (request.method == "GET") {
+    _envStorage.push_back("SCRIPT_NAME=" + _scriptName);
+    _envStorage.push_back("PATH_INFO=" + _pathInfo);
+    _envStorage.push_back("PATH_TRANSLATED=" + _pathTranslated);
+    if (!_query.empty()) {
         _envStorage.push_back("QUERY_STRING=" + _query);
     }
-    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : ""));
+    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
     // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
-    _envStorage.push_back("SERVER_PROTOCOL=" + request.version);
+    _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("REQUEST_URI=" + request.uri);
     // REMOTE_ADDR
     // REMOTE_HOST
-
-    if (request.method == "POST") {
-        if (request.headers.count("content-length")) {
-            _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
-        }
-        if (request.headers.count("content-type")) {
-            _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
-        }
-    } else {
-        _envStorage.push_back("CONTENT_LENGTH=");
+    if (request.headers.count("content-length")) {
+        _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
-
-    for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end();
-         ++it) {
-        if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization")
+    if (request.headers.count("content-type")) {
+        _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
+    }
+    for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
+        if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") {
             continue;
+        }
         std::string varName = "HTTP_" + _toUpper(it->first);
         _replace(varName, '-', '_');
         _envStorage.push_back(varName + "=" + it->second);
@@ -159,12 +185,25 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         if (colon == std::string::npos)
             continue;
 
-        std::string headerKey = _trimWhiteSpace(line.substr(0, colon));
+        std::string headerKey = _toLower(_trimWhiteSpace(line.substr(0, colon)));
         std::string headerValue = _trimWhiteSpace(line.substr(colon + 1));
-        if (headerKey == "Content-Length") {
-            resp.contentLength = std::stoi(headerValue);
-        } else if (headerKey == "Content-Type") {
+
+        if (headerKey == "status") {
+            size_t spacePos = headerValue.find(' ');
+            if (spacePos != std::string::npos) {
+                resp.statusCode = std::strtoul(headerValue.substr(0, spacePos).c_str(), NULL, 10);
+                resp.statusMessage = headerValue.substr(spacePos + 1);
+            } else {
+                resp.statusCode = std::strtoul(headerValue.c_str(), NULL, 10);
+                resp.statusMessage = "Unknown";
+            }
+        }
+        else if (headerKey == "content-length") {
+            resp.contentLength = std::strtoul(headerValue.c_str(), NULL, 10);
+        } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
+        // } else {
+        //     resp.headers[headerKey] = headerValue; // wait for Kay's work
         }
     }
     resp.body = new StringBodyProvider(body);

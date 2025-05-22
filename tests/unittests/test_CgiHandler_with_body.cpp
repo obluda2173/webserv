@@ -90,27 +90,63 @@ INSTANTIATE_TEST_SUITE_P(
                 200,
                 "name kay\nhobby coding\n" 
             },
+        },
+        CgiTestParams2{
+            CgiTestParams2{
+                "MoreReasonableTest1",
+                "hello_process.py",
+                "name=Erik&happy=yes",
+                "application/x-www-form-urlencoded",
+                200,
+                "\n<html><body style='text-align:center;'>\n" 
+                "<h1 style='color: green;'>GeeksforGeeks</h1>\n" 
+                "<h2>Hello, Erik!</h2>\n" 
+                "<p>Thank you for using our script.</p>\n" 
+                "<p>Yayy! We're happy too! \?\?\?\?</p>\n" 
+                "</body></html>\n"
+            },
+        },
+        CgiTestParams2{
+            CgiTestParams2{
+                "MoreReasonableTest2",
+                "hello_process.py",
+                "name=Erik&happy=no&sad=yes",
+                "application/x-www-form-urlencoded",
+                200,
+                "\n<html><body style='text-align:center;'>\n" 
+                "<h1 style='color: green;'>GeeksforGeeks</h1>\n" 
+                "<h2>Hello, Erik!</h2>\n" 
+                "<p>Thank you for using our script.</p>\n" 
+                "<p>Oh no! Why are you sad? \?\?\?\?</p>\n" 
+                "</body></html>\n"
+            },
+        },
+        CgiTestParams2{
+            CgiTestParams2{
+                "MissingNameParameter",
+                "hello_process.py",
+                "happy=yes",
+                "application/x-www-form-urlencoded",
+                200,
+                "\n<html><body style='text-align:center;'>\n" 
+                "<h1 style='color: green;'>GeeksforGeeks</h1>\n" 
+                "<p>Yayy! We're happy too! \?\?\?\?</p>\n" 
+                "</body></html>\n"
+            }
         }
+        // currently not working, asd I don't understand how boyd actually works
+        // CgiTestParams2{
+        //     CgiTestParams2{
+        //         "OversizedBody",
+        //         "form_processor.py",
+        //         std::string(10'000'000, 'a'),  // 10MB body (adjust to your server limit)
+        //         "application/x-www-form-urlencoded",
+        //         413,  // Payload Too Large
+        //         ""
+        //     }
+        // }
     ),
     [](const testing::TestParamInfo<CgiTestParams2>& info) {
         return info.param.testName;
     }
 );
-
-// INSTANTIATE_TEST_SUITE_P(
-//     QueryParamTests,
-//     CgiPostHandlerTest,
-//     testing::Values(
-//         CgiTestParams2{
-//             "GetWithParams",
-//             "MqueryParams.py",
-//             "",  // Empty body for GET
-//             "",
-//             200,
-//             "name kay\nhobby coding, running\n"
-//         }
-//     ),
-//     [](const testing::TestParamInfo<CgiTestParams2>& info) {
-//         return info.param.testName;
-//     }
-// );

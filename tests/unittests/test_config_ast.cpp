@@ -116,6 +116,7 @@ TEST(ASTTest, ThrowsOnMissingServerName) {
     file.open("configTest.conf");
     file << "server {\n"
          << "    listen 80;\n"
+         << "    server_name ;\n"
          << "    root /var/www/html;\n"
          << "}\n";
     file.close();
