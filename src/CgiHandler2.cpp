@@ -3,7 +3,7 @@
 
 bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
     _path = normalizePath(config.root, request.uri);
-    _interpreter = _findInterpreter(config.cgi, request.uri);
+    _interpreter = findInterpreter(config.cgi, request.uri);
     if (_interpreter.empty()) {
         setErrorResponse(conn->_response, 403, "Forbidden", config);
         return false;
@@ -13,15 +13,15 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
 
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + _getScriptName(config.cgi, request.uri));
-    _envStorage.push_back("PATH_INFO=" + _getPathInfo(config.cgi, request.uri));
-    _envStorage.push_back("PATH_TRANSLATED=" + _getPathInfo(config.cgi, request.uri).empty() ? "" : (config.root + _getPathInfo(config.cgi, request.uri)));
-    _envStorage.push_back("QUERY_STRING=" + _extractQuery(request.uri));
+    _envStorage.push_back("SCRIPT_NAME=" + getScriptName(config.cgi, request.uri));
+    _envStorage.push_back("PATH_INFO=" + getPathInfo(config.cgi, request.uri));
+    _envStorage.push_back("PATH_TRANSLATED=" + getPathInfo(config.cgi, request.uri).empty() ? "" : (config.root + getPathInfo(config.cgi, request.uri)));
+    _envStorage.push_back("QUERY_STRING=" + extractQuery(request.uri));
     _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
-    _envStorage.push_back("SERVER_PORT=" + _getServerPort(conn));
+    _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
     _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    _envStorage.push_back("REMOTE_ADDR=" + _getRemoteAddr(conn));
+    _envStorage.push_back("REMOTE_ADDR=" + getRemoteAddr(conn));
     if (request.headers.count("content-length")) {
         _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
@@ -32,8 +32,8 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfi
         if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") {
             continue;
         }
-        std::string varName = "HTTP_" + _toUpper(it->first);
-        _replace(varName, '-', '_');
+        std::string varName = "HTTP_" + toUpper(it->first);
+        replace(varName, '-', '_');
         _envStorage.push_back(varName + "=" + it->second);
     }
 }
@@ -106,8 +106,8 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         if (colon == std::string::npos)
             continue;
 
-        std::string headerKey = _toLower(_trimWhiteSpace(line.substr(0, colon)));
-        std::string headerValue = _trimWhiteSpace(line.substr(colon + 1));
+        std::string headerKey = toLower(trimWhiteSpace(line.substr(0, colon)));
+        std::string headerValue = trimWhiteSpace(line.substr(colon + 1));
 
         if (headerKey == "status") {
             size_t spacePos = headerValue.find(' ');
