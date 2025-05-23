@@ -87,10 +87,6 @@ bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connect
 }
 
 void BodyParser::_parseChunk(Connection* conn) {
-    std::cout << "In parse Chunk" << std::endl;
-    std::cout << "BodyBuf size: " << _bodyBuf.size() << std::endl;
-    std::cout << "_chunkRestSize: " << _chunkRestSize << std::endl;
-
     std::string newTmp = _bodyBuf.substr(0, _chunkRestSize);
     conn->_tempBody += newTmp;
     _chunkRestSize -= newTmp.size();
@@ -103,7 +99,6 @@ void BodyParser::_parseChunk(Connection* conn) {
 }
 
 void BodyParser::_verifyCarriageReturn(Connection* conn) {
-    std::cout << "In verify Carriage Return: " << std::endl;
     if (_bodyBuf.length() < 2)
         return;
 
@@ -115,7 +110,6 @@ void BodyParser::_verifyCarriageReturn(Connection* conn) {
     }
 
     if (_currentChunkSize == 0) {
-        std::cout << "_currentChunkSize is zero" << std::endl;
         conn->_bodyFinished = true;
         conn->_readBuf.assign(_bodyBuf.substr(2));
         return;
@@ -126,7 +120,6 @@ void BodyParser::_verifyCarriageReturn(Connection* conn) {
 }
 
 void BodyParser::_parseChunkSize(Connection* conn) {
-    std::cout << "In parse Chunk size: " << std::endl;
     size_t pos = 0;
     if ((pos = _bodyBuf.find("\r\n")) == std::string::npos) // test if end of chunk-size
         return;
@@ -142,7 +135,6 @@ void BodyParser::_parseChunkSize(Connection* conn) {
 void BodyParser::_parseTransferEncoding(Connection* conn) {
     _bodyBuf += std::string(conn->_readBuf.data(), conn->_readBuf.size());
     conn->_readBuf.clear();
-    std::cout << "stage: " << _transferEncodingState << std::endl;
 
     bool continueProcessing = true;
     BodyContext::TE_STAGE current_stage;
@@ -164,7 +156,6 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
         }
     }
 
-    std::cout << "stage: " << _transferEncodingState << std::endl;
     return;
 }
 

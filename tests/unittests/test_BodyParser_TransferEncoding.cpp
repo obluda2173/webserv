@@ -166,7 +166,7 @@ std::string createChunkedBody(const std::string& body) {
     std::size_t pos = 0;
 
     while (pos < body.length()) {
-        std::size_t len = std::min((size_t)getRandomNumber(0, 50), body.length() - pos);
+        std::size_t len = std::min((size_t)getRandomNumber(1, 50), body.length() - pos);
         // Add chunk size in hexadecimal form
         oss << std::hex << len << "\r\n";
         // Add chunk data
@@ -192,10 +192,6 @@ TEST_F(TransferEncodingTest, transferEncoding) {
         int batchSize = getRandomNumber(0, 50);
 
         std::string bodyBatch = chunkedBody.substr(pos, batchSize);
-        std::cout << std::endl << "new circle:" << std::endl;
-        std::cout << "pos: " << pos << std::endl;
-        std::cout << "bodyBatch: " << bodyBatch.size() << std::endl;
-
         pos += batchSize;
 
         conn->_readBuf.assign(bodyBatch);
@@ -205,8 +201,7 @@ TEST_F(TransferEncodingTest, transferEncoding) {
         EXPECT_EQ(conn->_readBuf.size(), 0);
     }
 
-    // EXPECT_EQ(bodyReceived, body);
-    // EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(bodyReceived, body);
 
     delete conn;
     delete bodyPrsr;
