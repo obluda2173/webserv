@@ -45,8 +45,8 @@ index       index.html index.htm
   - [X] multiple routers in connectionhandler
   - [X] probably need to change from ports to complete address of the socket
   - [X] build with multiple routers
+  - [X] use the real port instead of the string in the config
   - [ ] maybe need to seperate address from port
-  - [ ] use the real port instead of the string in the config
 - [ ] test the tester
   - [ ] need to find out about Put requests and how to do the .bla extension stuff
 

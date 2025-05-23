@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "ConfigStructure.h"
 #include "IIONotifier.h"
 #include <sstream>
 #include <string>
@@ -14,6 +15,8 @@ int getPort(int socketfd);
 std::string getIpv4String(struct sockaddr_in* addr_in);
 std::string getIpv6String(struct sockaddr_in6* addr);
 std::string getAddressAndPort(int socketfd);
+void mustGetAddrInfo(std::string addr, std::string port, struct addrinfo** svrAddrInfo);
+void mustTranslateToRealIps(std::vector< ServerConfig >& svrCfgs);
 
 template < typename T >
 std::string to_string(const T& value) {

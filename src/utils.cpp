@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "ConfigStructure.h"
 #include "IIONotifier.h"
 #include "utils.h"
 #include <arpa/inet.h>
@@ -167,4 +168,40 @@ std::string getIpv6String(struct sockaddr_in6* addr) {
             res << ":";
     }
     return res.str();
+}
+
+void mustGetAddrInfo(std::string addr, std::string port, struct addrinfo** svrAddrInfo) {
+    try {
+        getAddrInfoHelper(addr.c_str(), port.c_str(), AF_INET, svrAddrInfo);
+    } catch (std::runtime_error& e) {
+        try {
+            getAddrInfoHelper(addr.c_str(), port.c_str(), AF_INET6, svrAddrInfo);
+        } catch (std::runtime_error& e2) {
+            std::cerr << "Caught exception: " << e2.what() << std::endl;
+            exit(1);
+        }
+    }
+}
+
+void mustTranslateToRealIps(std::vector< ServerConfig >& svrCfgs) {
+    for (size_t i = 0; i < svrCfgs.size(); i++) {
+        ServerConfig& svrCfg = svrCfgs[i];
+        std::map< std::string, int > newListenMap;
+        for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
+            std::string ip = it->first;
+            std::string port = to_string(it->second);
+
+            struct addrinfo* svrAddrInfo = NULL;
+            mustGetAddrInfo(ip, port, &svrAddrInfo);
+
+            if (svrAddrInfo->ai_family == AF_INET)
+                ip = getIpv4String((sockaddr_in*)svrAddrInfo->ai_addr);
+            else
+                ip = getIpv6String((sockaddr_in6*)svrAddrInfo->ai_addr);
+
+            newListenMap[ip] = it->second;
+            freeaddrinfo(svrAddrInfo);
+        }
+        svrCfg.listen = newListenMap;
+    }
 }
