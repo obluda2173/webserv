@@ -74,6 +74,7 @@ prepare_unittests:
 clean:
 	rm -rf .cache
 	rm -rf build
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)
