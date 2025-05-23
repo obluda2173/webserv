@@ -17,7 +17,7 @@ void logConnection(ILogger& l, struct sockaddr_storage addr) {
     }
     if (addr.ss_family == AF_INET6) {
         sockaddr_in6* addr_in6 = (sockaddr_in6*)&addr;
-        info << getIpv6String(*addr_in6);
+        info << getIpv6String(addr_in6);
         info << ", Port: " << ntohs(addr_in6->sin6_port);
     }
     l.log("INFO", info.str());

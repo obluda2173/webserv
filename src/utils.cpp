@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "IIONotifier.h"
+#include "utils.h"
 #include <arpa/inet.h>
 #include <cstring>
 #include <dirent.h>
@@ -96,25 +97,24 @@ int getPort(int socketfd) {
 }
 
 std::string getAddressAndPort(int socketfd) {
-    sockaddr_in addr;
+    sockaddr_storage addr;
     socklen_t addr_len = sizeof(addr);
-    if (getsockname(socketfd, reinterpret_cast< sockaddr* >(&addr), &addr_len) == -1) {
+    if (getsockname(socketfd, (sockaddr*)&addr, &addr_len) == -1) {
         std::cerr << "Error getting socket information" << std::endl;
         return "";
     }
 
-    // Get IP address as string
-    char ip[INET_ADDRSTRLEN];
-    if (inet_ntop(AF_INET, &(addr.sin_addr), ip, INET_ADDRSTRLEN) == NULL) {
-        std::cerr << "Error converting IP address" << std::endl;
-        return "";
-    }
+    std::string ip;
+    if (addr.ss_family == AF_INET)
+        ip = getIpv4String((sockaddr_in*)&addr);
+    else
+        ip = getIpv6String((sockaddr_in6*)&addr);
 
     // Get port (convert from network to host byte order)
-    int port = ntohs(addr.sin_port);
+    int port = getPort(socketfd);
 
     // Combine them into address:port format
-    return to_string(ip) + ":" + to_string(port);
+    return ip + ":" + to_string(port);
 }
 
 std::string toLower(const std::string& str) {
@@ -158,9 +158,9 @@ std::string getIpv4String(struct sockaddr_in* addr_in) {
     return res.str();
 }
 
-std::string getIpv6String(struct sockaddr_in6& addr) {
+std::string getIpv6String(struct sockaddr_in6* addr) {
     std::stringstream res;
-    const uint8_t* bytes = addr.sin6_addr.s6_addr;
+    const uint8_t* bytes = addr->sin6_addr.s6_addr;
     for (int i = 0; i < 16; i += 2) {
         res << std::hex << static_cast< int >(bytes[i]) << static_cast< int >(bytes[i + 1]);
         if (i < 14)

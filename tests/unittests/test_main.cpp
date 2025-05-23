@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestUpload*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestResend*";
     // testing::GTEST_FLAG(filter) = "*noContentLengthSetsBodyToFinished*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithMockLoggerIPv6.acceptANewConnection*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestBadRequestClosesConnection*";

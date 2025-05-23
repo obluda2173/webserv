@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
             if (svrAddrInfo->ai_family == AF_INET) {
                 addr = getIpv4String((sockaddr_in*)svrAddrInfo->ai_addr);
             } else {
-                addr = getIpv6String(*(sockaddr_in6*)svrAddrInfo->ai_addr);
+                addr = getIpv6String((sockaddr_in6*)svrAddrInfo->ai_addr);
             }
             freeaddrinfo(svrAddrInfo);
 

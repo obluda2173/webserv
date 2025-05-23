@@ -12,7 +12,7 @@ int newListeningSocket(struct addrinfo* addrInfo, int backlog);
 int newListeningSocket(std::string ip, std::string port, int protocol, int backlog);
 int getPort(int socketfd);
 std::string getIpv4String(struct sockaddr_in* addr_in);
-std::string getIpv6String(struct sockaddr_in6& addr);
+std::string getIpv6String(struct sockaddr_in6* addr);
 std::string getAddressAndPort(int socketfd);
 
 template < typename T >
