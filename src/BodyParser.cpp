@@ -162,13 +162,15 @@ void BodyParser::_parseTransferEncoding(Connection* conn) {
 bool BodyParser::_checkType(Connection* conn) {
     BodyContext& bodyCtx = conn->bodyCtx;
 
-    if (conn->_request.headers.find("transfer-encoding") != conn->_request.headers.end())
+    if (conn->_request.headers.find("transfer-encoding") != conn->_request.headers.end()) {
         bodyCtx.type = BodyContext::TransferEncoding;
-    else if (_checkContentLength(conn, bodyCtx))
+        return true;
+    }
+    if (_checkContentLength(conn, bodyCtx)) {
         bodyCtx.type = BodyContext::ContentLength;
-    else
-        return false;
-    return true;
+        return true;
+    }
+    return false;
 }
 
 void BodyParser::parse(Connection* conn) {

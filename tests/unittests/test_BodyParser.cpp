@@ -6,6 +6,22 @@
 
 // TODO: check Content equals 0
 // TODO: check neither Content-Length nor Transfer-Encoding given
+TEST(BodyParserTest, NoContentLengthNorTransferEncoding) {
+    BodyParser* bodyPrsr = new BodyParser();
+    int contentLength = 12345;
+    std::string body = getRandomString(contentLength);
+
+    Connection* conn = new Connection({}, -1, "", NULL, NULL);
+    conn->setState(Connection::Handling);
+    conn->_bodyFinished = false;
+
+    bodyPrsr->parse(conn);
+    EXPECT_TRUE(conn->_bodyFinished);
+
+    delete conn;
+    delete bodyPrsr;
+}
+
 TEST(BodyParserTest, bodyWithoutOverlap) {
     BodyParser* bodyPrsr = new BodyParser();
     int contentLength = 12345;

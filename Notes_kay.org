@@ -43,11 +43,13 @@ index       index.html index.htm
 - [ ] test a config with no serverNames
   - [ ] one time without the directive
   - [ ] one time with directive but empty
-- [-] implement different router for different ports
+
+- [X] implement different router for different ports
   - [X] also handle cases where the routing is failing
   - [X] multiple routers in connectionhandler
-  - [ ] probably need to change from ports to complete address of the socket
-  - [ ] build with multiple routers
+  - [X] probably need to change from ports to complete address of the socket
+  - [X] build with multiple routers
+  - [ ] maybe need to seperate address from port
 - [ ] router needs to handle cgi
   - [ ] check on how to differentiate between cgi and other handlers
 - [ ] implement HTTP redirect
