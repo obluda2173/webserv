@@ -12,9 +12,9 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
 }
 
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
-    const std::string scriptName = getScriptName(config.cgi, request.uri);
-    const std::string pathInfo = getPathInfo(config.cgi, scriptName);
-    const std::string query = extractQuery(request.uri);
+    std::string scriptName = getScriptName(config.cgi, request.uri);
+    std::string pathInfo = getPathInfo(config.cgi, scriptName);
+    std::string query = extractQuery(request.uri);
 
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("PATH_INFO=" + pathInfo);
@@ -23,7 +23,7 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfi
     _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
     _envStorage.push_back("REMOTE_ADDR=" + getRemoteAddr(conn));
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("PATH_TRANSLATED=" + pathInfo.empty() ? "" : (config.root + pathInfo));
+    _envStorage.push_back("PATH_TRANSLATED=" + (pathInfo.empty() ? "" : config.root + pathInfo));
     _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
     _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
     if (request.headers.count("content-length")) {
@@ -51,13 +51,16 @@ void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connect
     close(pipeStdin[0]);
     close(pipeStdout[1]);
 
+    // std::ofstream outfile ("test.txt");
     _execParams.argv.push_back(_interpreter.c_str());
     _execParams.argv.push_back(_path.c_str());
     _execParams.argv.push_back(NULL);
     _setCgiEnvironment(request, config, conn);
     for (size_t i = 0; i < _envStorage.size(); i++) {
         _execParams.env.push_back(_envStorage[i].c_str());
+        // outfile << _envStorage[i] << std::endl;
     }
+    // outfile.close();
     _execParams.env.push_back(NULL);
 }
 

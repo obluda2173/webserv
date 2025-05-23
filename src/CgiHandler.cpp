@@ -81,7 +81,7 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
     }
 
     case CgiContext::Exited:
-        _handleProcessExit(conn, ctx, status);
-        break;
+            _handleProcessExit(conn, ctx, status);
+            break;
     }
 }

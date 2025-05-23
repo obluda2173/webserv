@@ -95,17 +95,7 @@ std::string getRemoteAddr(Connection* conn) {
 }
 
 std::string getServerPort(Connection* conn) {
-    struct sockaddr_storage addr = conn->getAddr();
-    std::ostringstream ss;
-    if (addr.ss_family == AF_INET) {
-        sockaddr_in* addr_in = (sockaddr_in*)&addr;
-        ss << ntohs(addr_in->sin_port);
-        return ss.str();
-    }
-    if (addr.ss_family == AF_INET6) {
-        sockaddr_in6* addr_in6 = (sockaddr_in6*)&addr;
-        ss << ntohs(addr_in6->sin6_port);
-        return ss.str();
-    }
-    return "";
+    std::string rawPort = conn->getAddrPort();
+    size_t pos = rawPort.rfind(":");
+    return (pos == std::string::npos ? rawPort : rawPort.substr(pos + 1));
 }
