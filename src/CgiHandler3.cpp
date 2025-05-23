@@ -109,4 +109,3 @@ std::string getServerPort(Connection* conn) {
     }
     return "";
 }
-

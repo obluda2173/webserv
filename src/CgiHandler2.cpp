@@ -12,22 +12,27 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
 }
 
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
-    _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + getScriptName(config.cgi, request.uri));
-    _envStorage.push_back("PATH_INFO=" + getPathInfo(config.cgi, request.uri));
-    _envStorage.push_back("PATH_TRANSLATED=" + getPathInfo(config.cgi, request.uri).empty() ? "" : (config.root + getPathInfo(config.cgi, request.uri)));
-    _envStorage.push_back("QUERY_STRING=" + extractQuery(request.uri));
-    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
-    _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
-    _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
+    const std::string scriptName = getScriptName(config.cgi, request.uri);
+    const std::string pathInfo = getPathInfo(config.cgi, scriptName);
+    const std::string query = extractQuery(request.uri);
+
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    _envStorage.push_back("PATH_INFO=" + pathInfo);
+    _envStorage.push_back("QUERY_STRING=" + query);
+    _envStorage.push_back("SCRIPT_NAME=" + scriptName);
+    _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
     _envStorage.push_back("REMOTE_ADDR=" + getRemoteAddr(conn));
+    _envStorage.push_back("REQUEST_METHOD=" + request.method);
+    _envStorage.push_back("PATH_TRANSLATED=" + pathInfo.empty() ? "" : (config.root + pathInfo));
+    _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
+    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
     if (request.headers.count("content-length")) {
         _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
     if (request.headers.count("content-type")) {
         _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
+
     for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
         if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") {
             continue;
