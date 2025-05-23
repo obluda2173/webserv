@@ -7,7 +7,7 @@ CgiHandler::~CgiHandler() {}
 void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
 
-    if (!_validateAndPrepareContext(request, config, resp)) {
+    if (!_validateAndPrepareContext(request, config, conn)) {
         conn->setState(Connection::SendResponse);
         return;
     }

@@ -6,8 +6,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include "Connection.h"
+#include "logging.h"
 #include "IHandler.h"
+#include "Connection.h"
 
 struct ExecParams {
     std::vector< const char* > argv;
@@ -22,13 +23,17 @@ class CgiHandler : public IHandler {
     std::string _scriptName;
     std::string _pathInfo;
     std::string _pathTranslated;
+    std::string _serverPort;
+    std::string _remoteAddr;
     struct stat _pathStat;
     std::vector< std::string > _envStorage;
     std::string _extractQuery(const std::string& uri);
-    std::string _findInterpreter(std::map< std::string, std::string > cgiMap);
-    std::string _getScriptName(const std::string& uri);
-    std::string _getPathInfo(const std::string& uri);
-    bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
+    std::string _findInterpreter(std::map< std::string, std::string > cgiMap, const std::string& uri);
+    std::string _getScriptName(const std::map<std::string, std::string>& cgiMap, const std::string& uri);
+    std::string _getPathInfo(std::map< std::string, std::string > cgiMap, const std::string& uri);
+    std::string _getServerPort(Connection* conn);
+    std::string _getRemoteAddr(Connection* conn);
+    bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, Connection* conn);
     std::string _toUpper(const std::string& str);
     std::string _toLower(const std::string& str);
     void _replace(std::string& str, char what, char with);
