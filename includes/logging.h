@@ -8,5 +8,7 @@
 void logConnection(ILogger& l, sockaddr_storage addr);
 void logDisconnect(ILogger& logger, sockaddr_storage addr);
 void logHttpRequest(ILogger& logger, HttpRequest req);
+std::string getIpv4String(struct sockaddr_in* addr_in);
+std::string getIpv6String(struct sockaddr_in6& addr);
 
 #endif // LOGGING_H

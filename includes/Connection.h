@@ -55,9 +55,9 @@ class Connection {
 
   private:
     STATE _state;
-    sockaddr_storage _addr;
+    sockaddr_storage _addr; // address of client
     int _fd;
-    std::string _addrPort;
+    std::string _addrPort; // port of server that was hit with the request
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;

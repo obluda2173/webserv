@@ -21,8 +21,8 @@ void getAddrInfoHelper(const char* node, const char* port, int protocol, struct 
     hints.ai_family = protocol;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    if ((status = getaddrinfo(node, port, &hints, addrInfo) == -1))
-        std::cerr << "getaddrinfo error: " << gai_strerror(status);
+    if ((status = getaddrinfo(node, port, &hints, addrInfo) != 0))
+        throw std::runtime_error(std::string("getaddrinfo error: ") + gai_strerror(status));
 }
 
 int newSocket(addrinfo* addrInfo) {
