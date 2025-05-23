@@ -33,8 +33,7 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
 
     if (pid == 0) {
         ExecParams params;
-        _setupChildProcess(pipeStdin, pipeStdout);
-        _prepareExecParams(request, params, config, conn);
+        _setupChildProcess(pipeStdin, pipeStdout, conn, request, config, params);
         execve(params.argv[0], const_cast< char* const* >(params.argv.data()),
                const_cast< char* const* >(params.env.data()));
         exit(EXIT_FAILURE);
