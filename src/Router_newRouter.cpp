@@ -1,5 +1,8 @@
 #include "Router.h"
 #include "ConfigStructure.h"
+#include "GetHandler.h"
+#include "UploadHandler.h"
+#include "utils.h"
 
 void addAllMethods(std::string svrName, std::string prefix, RouteConfig cfg, IRouter* r) {
     r->add(svrName, prefix, "GET", cfg);
@@ -38,6 +41,28 @@ void addSvrToRouter(IRouter* r, ServerConfig svrCfg) {
         addMethods(svrCfg.common.allowMethods, *itSvrName, "", cfg, r);
         addLocations(svrCfg.locations, *itSvrName, r);
     }
+}
+
+std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCfgs) {
+    std::map< std::string, IRouter* > routers;
+    for (size_t i = 0; i < svrCfgs.size(); i++) {
+        ServerConfig svrCfg = svrCfgs[i];
+        for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
+            std::string ip = it->first;
+            std::string port = to_string(it->second);
+            if (routers.find(ip + ":" + port) != routers.end()) {
+                addSvrToRouter(routers[ip + ":" + port], svrCfg);
+            } else {
+                std::map< std::string, IHandler* > hdlrs;
+                hdlrs["GET"] = new GetHandler();
+                hdlrs["POST"] = new UploadHandler();
+                IRouter* r = new Router(hdlrs);
+                addSvrToRouter(r, svrCfg);
+                routers[ip + ":" + port] = r;
+            }
+        }
+    }
+    return routers;
 }
 
 Router newRouter(std::vector< ServerConfig > svrCfgs, std::map< std::string, IHandler* > hdlrs) {

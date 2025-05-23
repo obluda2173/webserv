@@ -40,6 +40,7 @@ class Router : public IRouter {
     void printSvrMap();
 };
 
+std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCfgs);
 Router newRouter(std::vector< ServerConfig > svrCfgs, std::map< std::string, IHandler* > hdlrs);
 void addSvrToRouter(IRouter* r, ServerConfig svrCfg);
 Router newRouterTest();

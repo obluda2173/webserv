@@ -3,6 +3,7 @@
 
 #include "ConfigStructure.h"
 #include "IIONotifier.h"
+#include <set>
 #include <sstream>
 #include <string>
 
@@ -17,6 +18,7 @@ std::string getIpv6String(struct sockaddr_in6* addr);
 std::string getAddressAndPort(int socketfd);
 void mustGetAddrInfo(std::string addr, std::string port, struct addrinfo** svrAddrInfo);
 void mustTranslateToRealIps(std::vector< ServerConfig >& svrCfgs);
+std::set< std::pair< std::string, std::string > > fillAddrAndPorts(std::vector< ServerConfig > svrCfgs);
 
 template < typename T >
 std::string to_string(const T& value) {
