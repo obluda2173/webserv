@@ -1,7 +1,6 @@
 #include "CgiHandler.h"
 #include "handlerUtils.h"
 
-
 std::string CgiHandler::_extractQuery(const std::string& uri) {
     const size_t pos = uri.find('?');
     return (pos != std::string::npos) ? uri.substr(pos + 1) : "";

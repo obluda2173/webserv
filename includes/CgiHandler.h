@@ -18,13 +18,7 @@ struct ExecParams {
 class CgiHandler : public IHandler {
   private:
     std::string _path;
-    std::string _query;
     std::string _interpreter;
-    std::string _scriptName;
-    std::string _pathInfo;
-    std::string _pathTranslated;
-    std::string _serverPort;
-    std::string _remoteAddr;
     struct stat _pathStat;
     std::vector< std::string > _envStorage;
     std::string _extractQuery(const std::string& uri);
@@ -37,8 +31,8 @@ class CgiHandler : public IHandler {
     std::string _toUpper(const std::string& str);
     std::string _toLower(const std::string& str);
     void _replace(std::string& str, char what, char with);
-    void _setCgiEnvironment(const HttpRequest& request);
-    void _prepareExecParams(const HttpRequest& request, ExecParams& params);
+    void _setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn);
+    void _prepareExecParams(const HttpRequest& request, ExecParams& params, const RouteConfig& config, Connection* conn);
     void _setupChildProcess(int pipeStdin[2], int pipeStdout[2]);
     void _setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config);
     std::string _trimWhiteSpace(const std::string& str);

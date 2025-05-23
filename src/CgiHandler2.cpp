@@ -2,14 +2,8 @@
 #include "handlerUtils.h"
 
 bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
-    _query = _extractQuery(request.uri);
-    _scriptName = _getScriptName(config.cgi, request.uri);
-    _pathInfo = _getPathInfo(config.cgi, request.uri);
-    _pathTranslated = _pathInfo.empty() ? "" : (config.root + _pathInfo); 
-    _path = normalizePath(config.root, _scriptName);
+    _path = normalizePath(config.root, request.uri);
     _interpreter = _findInterpreter(config.cgi, request.uri);
-    _serverPort = _getServerPort(conn);
-    _remoteAddr = _getRemoteAddr(conn);
     if (_interpreter.empty()) {
         setErrorResponse(conn->_response, 403, "Forbidden", config);
         return false;
@@ -17,20 +11,17 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
     return validateRequest(conn->_response, request, config, _path, _pathStat);
 }
 
-
-void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
+void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
     _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + _scriptName);
-    _envStorage.push_back("PATH_INFO=" + _pathInfo);
-    _envStorage.push_back("PATH_TRANSLATED=" + _pathTranslated);
-    if (!_query.empty()) {
-        _envStorage.push_back("QUERY_STRING=" + _query);
-    }
+    _envStorage.push_back("SCRIPT_NAME=" + _getScriptName(config.cgi, request.uri));
+    _envStorage.push_back("PATH_INFO=" + _getPathInfo(config.cgi, request.uri));
+    _envStorage.push_back("PATH_TRANSLATED=" + _getPathInfo(config.cgi, request.uri).empty() ? "" : (config.root + _getPathInfo(config.cgi, request.uri)));
+    _envStorage.push_back("QUERY_STRING=" + _extractQuery(request.uri));
     _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
-    _envStorage.push_back("SERVER_PORT=" + _serverPort);
+    _envStorage.push_back("SERVER_PORT=" + _getServerPort(conn));
     _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    _envStorage.push_back("REMOTE_ADDR=" + _remoteAddr);
+    _envStorage.push_back("REMOTE_ADDR=" + _getRemoteAddr(conn));
     if (request.headers.count("content-length")) {
         _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
@@ -47,12 +38,12 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
     }
 }
 
-void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params) {
+void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params, const RouteConfig& config, Connection* conn) {
     params.argv.push_back(_interpreter.c_str());
     params.argv.push_back(_path.c_str());
     params.argv.push_back(NULL);
 
-    _setCgiEnvironment(request);
+    _setCgiEnvironment(request, config, conn);
     for (size_t i = 0; i < _envStorage.size(); i++) {
         params.env.push_back(_envStorage[i].c_str());
     }
