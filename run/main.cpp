@@ -7,16 +7,25 @@
 #include "ServerBuilder.h"
 #include "UploadHandler.h"
 #include "utils.h"
+#include <iostream>
 
-int main() {
+int main(int argc, char** argv) {
+    (void)argv;
 
-    IConfigParser* cfgPrsr = new ConfigParser("tests/end_to_end_tests/Config1/config1.conf");
+    if (argc != 2) {
+        std::cerr << "We expect exactly one Configuration File!" << std::endl;
+        exit(1);
+    }
+
+    std::string filename = std::string(argv[1]);
+    IConfigParser* cfgPrsr = new ConfigParser(filename);
     Logger* logger = new Logger();
     EpollIONotifier* ioNotifier = new EpollIONotifier(*logger);
 
     std::map< std::string, IRouter* > routers;
-    std::set< std::pair<std::string, std::string > > addrPorts;
+    std::set< std::pair< std::string, std::string > > addrPorts;
     std::vector< ServerConfig > svrCfgs = cfgPrsr->getServersConfig();
+
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig svrCfg = svrCfgs[i];
         for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
@@ -30,7 +39,7 @@ int main() {
                 addSvrToRouter(r, svrCfg);
                 routers[it->first + ":" + to_string(it->second)] = r;
 
-                addrPorts.insert(std::pair<std::string, std::string>(it->first, to_string(it->second)));
+                addrPorts.insert(std::pair< std::string, std::string >(it->first, to_string(it->second)));
             }
         }
     }
@@ -38,7 +47,6 @@ int main() {
     ConnectionHandler* connHdlr = new ConnectionHandler(routers, *logger, *ioNotifier);
 
     Server* svr = ServerBuilder().setLogger(logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
-
 
     svr->start(addrPorts);
 

@@ -40,34 +40,40 @@ index       index.html index.htm
 - [ ] responseWrite needs to fill out necessary headers
 - [ ] it's the reason why some clients don't close the connection
 ** TODO connection Handling (architecture)
-- [ ] test a config with no serverNames
-  - [ ] one time without the directive
-  - [ ] one time with directive but empty
-
-- [X] implement different router for different ports
-  - [X] also handle cases where the routing is failing
-  - [X] multiple routers in connectionhandler
-  - [X] probably need to change from ports to complete address of the socket
-  - [X] build with multiple routers
-  - [ ] maybe need to seperate address from port
+- [ ] test the tester
 - [ ] router needs to handle cgi
   - [ ] check on how to differentiate between cgi and other handlers
 - [ ] implement HTTP redirect
-- [-] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
-  - [X] built the mechanism inside notifier
-  - [ ] log the timeout correctly
-  - [ ] change interface of handleConnection (only take a t_notif)
-  - [ ] test that the connection is removed from ioNotifier when the connectionHandler is called with a timeout
-- [X] normalization of uri needs to be done before routing
+
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
     - [ ] also a test for a broken connection and then the file should be closed
   - [ ] add tests for normal UploadHandler to close the files after successful upload
   - [ ] test for overlapping uploadBody and headers of following request
+
+- [ ] Rework sending the Response
+  - [ ] there is still == 400 in the onSocketWrite
+
+- [ ] better error handling in the ConfigParser
+  - [ ] right now the Core Dumps (maybe just exit with the appropriate error message)
 - [-] handle ClientHungUp
   - [X] BrokenConnection just removes the connection
   - [ ] check how ClientHungUp affects the behavior
   - [ ] write a test that makes sure, that a response is being send, even though the connection is closed
   - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
+- [-] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
+  - [X] built the mechanism inside notifier
+  - [ ] log the timeout correctly
+  - [ ] change interface of handleConnection (only take a t_notif)
+  - [ ] test that the connection is removed from ioNotifier when the connectionHandler is called with a timeout
+- [-] implement different router for different ports
+  - [X] also handle cases where the routing is failing
+  - [X] multiple routers in connectionhandler
+  - [X] probably need to change from ports to complete address of the socket
+  - [X] build with multiple routers
+  - [ ] maybe need to seperate address from port
 - [X] probably change IHandler handle interface (add ConnectionInfo to it)
-- [ ] there is still == 400 in the onSocketWrite
+- [X] normalization of uri needs to be done before routing
+- [X] test a config with no serverNames
+  - [X] one time without the directive
+  - [X] one time with directive but empty
