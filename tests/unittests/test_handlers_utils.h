@@ -76,9 +76,6 @@ class ResponseBuilder {
         resp.contentLanguage = "en-US";
         resp.contentLength = 0;
         resp.body = nullptr;
-        resp.isRange = false;
-        resp.isClosed = false;
-        resp.isChunked = false;
     }
     ResponseBuilder& withStatusCode(int code) {
         resp.statusCode = code;
