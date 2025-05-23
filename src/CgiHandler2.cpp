@@ -38,7 +38,7 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfi
     }
 }
 
-void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config, ExecParams& params) {
+void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     close(pipeStdin[1]);
     close(pipeStdout[0]);
     dup2(pipeStdin[0], STDIN_FILENO);
@@ -46,14 +46,14 @@ void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connect
     close(pipeStdin[0]);
     close(pipeStdout[1]);
 
-    params.argv.push_back(_interpreter.c_str());
-    params.argv.push_back(_path.c_str());
-    params.argv.push_back(NULL);
+    _execParams.argv.push_back(_interpreter.c_str());
+    _execParams.argv.push_back(_path.c_str());
+    _execParams.argv.push_back(NULL);
     _setCgiEnvironment(request, config, conn);
     for (size_t i = 0; i < _envStorage.size(); i++) {
-        params.env.push_back(_envStorage[i].c_str());
+        _execParams.env.push_back(_envStorage[i].c_str());
     }
-    params.env.push_back(NULL);
+    _execParams.env.push_back(NULL);
 }
 
 void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config) {

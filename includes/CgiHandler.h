@@ -19,6 +19,7 @@ class CgiHandler : public IHandler {
   private:
     std::string _path;
     std::string _interpreter;
+    ExecParams _execParams;
     struct stat _pathStat;
     std::vector< std::string > _envStorage;
     std::string _extractQuery(const std::string& uri);
@@ -32,7 +33,7 @@ class CgiHandler : public IHandler {
     std::string _toLower(const std::string& str);
     void _replace(std::string& str, char what, char with);
     void _setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn);
-    void _setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config, ExecParams& params);
+    void _setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config);
     void _setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config);
     std::string _trimWhiteSpace(const std::string& str);
     void _cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp);
