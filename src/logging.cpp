@@ -1,29 +1,11 @@
 #include "HttpRequest.h"
 #include "ILogger.h"
+#include "utils.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <netinet/in.h>
 #include <sstream>
 #include <sys/socket.h>
-
-std::string getIpv4String(struct sockaddr_in* addr_in) {
-    std::stringstream res;
-    unsigned char* ip = reinterpret_cast< unsigned char* >(&addr_in->sin_addr.s_addr);
-    res << static_cast< int >(ip[0]) << '.' << static_cast< int >(ip[1]) << '.' << static_cast< int >(ip[2]) << '.'
-        << static_cast< int >(ip[3]);
-    return res.str();
-}
-
-std::string getIpv6String(struct sockaddr_in6& addr) {
-    std::stringstream res;
-    const uint8_t* bytes = addr.sin6_addr.s6_addr;
-    for (int i = 0; i < 16; i += 2) {
-        res << std::hex << static_cast< int >(bytes[i]) << static_cast< int >(bytes[i + 1]);
-        if (i < 14)
-            res << ":";
-    }
-    return res.str();
-}
 
 void logConnection(ILogger& l, struct sockaddr_storage addr) {
     std::stringstream info;

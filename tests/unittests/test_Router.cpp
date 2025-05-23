@@ -1,7 +1,6 @@
 #include "ConfigParser.h"
 #include "ConfigStructure.h"
 #include "HttpRequest.h"
-#include "logging.h"
 #include "test_stubs.h"
 #include "utils.h"
 #include "gtest/gtest.h"
@@ -51,8 +50,6 @@ TEST_P(RouterTest, testWithArtificialConfig) {
         EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
 }
 
-enum class IPType { IPv4, IPv6, Invalid };
-
 TEST_P(RouterTest, testWithConfigParsing) {
     // Parameters
     RouterTestParams params = GetParam();
@@ -66,31 +63,28 @@ TEST_P(RouterTest, testWithConfigParsing) {
     // // here start to build router ==============================-
     std::map< std::string, IRouter* > routers;
     std::vector< ServerConfig > svrCfgs = cfgPrsr->getServersConfig();
+
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig svrCfg = svrCfgs[i];
         for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
             struct addrinfo* svrAddrInfo;
-            IPType ipType;
             try {
                 getAddrInfoHelper(it->first.c_str(), to_string(it->second).c_str(), AF_INET, &svrAddrInfo);
-                ipType = IPType::IPv4;
             } catch (std::runtime_error& e) {
                 try {
                     getAddrInfoHelper(it->first.c_str(), to_string(it->second).c_str(), AF_INET6, &svrAddrInfo);
-                    ipType = IPType::IPv6;
                 } catch (std::runtime_error& e) {
                     std::cerr << "Caught exception: " << e.what() << std::endl;
                     exit(1);
                 }
             }
             std::string addr;
-            if (ipType == IPType::IPv4) {
+            if (svrAddrInfo->ai_family == AF_INET) {
                 addr = getIpv4String((sockaddr_in*)svrAddrInfo->ai_addr);
             } else {
                 addr = getIpv6String(*(sockaddr_in6*)svrAddrInfo->ai_addr);
             }
             freeaddrinfo(svrAddrInfo);
-            std::cout << addr << std::endl;
 
             if (routers.find(addr + ":" + to_string(it->second)) != routers.end()) {
                 addSvrToRouter(routers[addr + ":" + to_string(it->second)], svrCfg);
