@@ -149,17 +149,24 @@ void ConnectionHandler::_onSocketRead(Connection* conn) {
 
 void ConnectionHandler::_onSocketWrite(Connection* conn) {
     _logger.log("INFO", "Sending");
-    conn->sendResponse();
 
-    if (conn->_response.statusCode == 400) {
-        _removeConnection(conn->getFileDes());
-        return;
+    if (conn->getState() == Connection::HandlingCgi) {
+        conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
     }
-    if (conn->getState() == Connection::Reset) {
-        conn->resetResponse();
-        conn->setState(Connection::ReadingHeaders);
-        _handleState(conn); // possibly data inside Connection
-        return;
+
+    if (conn->getState() == Connection::SendResponse) {
+        conn->sendResponse();
+
+        if (conn->_response.statusCode == 400) {
+            _removeConnection(conn->getFileDes());
+            return;
+        }
+        if (conn->getState() == Connection::Reset) {
+            conn->resetResponse();
+            conn->setState(Connection::ReadingHeaders);
+            _handleState(conn); // possibly data inside Connection
+            return;
+        }
     }
 }
 
