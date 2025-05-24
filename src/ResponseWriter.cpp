@@ -14,7 +14,19 @@ void ResponseWriter::_writeStatusLine() {
 }
 
 void ResponseWriter::_formatHeaders() {
+    // status line
     _writeStatusLine();
+
+    // headers
+    if (!_resp.contentType.empty()) {
+        _headers += "Content-Type: " + _resp.contentType + CRLF;
+    }
+    if (!_resp.contentType.empty()) {
+        _headers += "Content-Language: " + _resp.contentLanguage + CRLF;
+    }
+    for (std::map<std::string, std::string>::iterator it = _resp.headers.begin(); it != _resp.headers.end(); it++) {
+        _headers += it->first + ": " + it->second + CRLF;
+    }
     if (_resp.contentLength > 0)
         _headers += "Content-Length: " + to_string(_resp.contentLength) + CRLF;
     else
