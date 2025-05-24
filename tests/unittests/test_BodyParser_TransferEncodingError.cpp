@@ -36,6 +36,7 @@ class TransferEncodingErrorTest : public ::testing::Test {
         EXPECT_EQ(conn->getState(), Connection::SendResponse);
         EXPECT_EQ(conn->_response.statusCode, expectedStatusCode);
         EXPECT_EQ(conn->_response.statusMessage, expectedStatusMessage);
+        EXPECT_EQ(conn->bodyCtx.type, BodyContext::Undetermined);
     }
 };
 

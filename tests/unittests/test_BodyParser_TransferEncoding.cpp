@@ -201,6 +201,7 @@ TEST_F(TransferEncodingTest, transferEncoding) {
         EXPECT_EQ(conn->_readBuf.size(), 0);
     }
 
+    EXPECT_EQ(conn->bodyCtx.type, BodyContext::Undetermined);
     EXPECT_EQ(bodyReceived, body);
 
     delete conn;

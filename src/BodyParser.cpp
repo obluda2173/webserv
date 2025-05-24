@@ -65,6 +65,7 @@ void BodyParser::_parseContentLength(Connection* conn) {
         conn->_tempBody = std::string(readBuf.data(), bodyCtx.contentLength - bodyCtx.bytesReceived);
         bodyCtx.bytesReceived = bodyCtx.contentLength;
         conn->_bodyFinished = true;
+        conn->bodyCtx.type = BodyContext::Undetermined;
         readBuf.advance(countRest);
     }
 }
@@ -76,11 +77,13 @@ bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connect
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
+        conn->bodyCtx.type = BodyContext::Undetermined;
         return false;
     } catch (const std::out_of_range& e) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
+        conn->bodyCtx.type = BodyContext::Undetermined;
         return false;
     }
     return true;
@@ -106,12 +109,14 @@ void BodyParser::_verifyCarriageReturn(Connection* conn) {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
+        conn->bodyCtx.type = BodyContext::Undetermined;
         return;
     }
 
     if (_currentChunkSize == 0) {
         conn->_bodyFinished = true;
         conn->_readBuf.assign(_bodyBuf.substr(2));
+        conn->bodyCtx.type = BodyContext::Undetermined;
         return;
     }
 

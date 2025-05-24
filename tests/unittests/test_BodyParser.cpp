@@ -45,6 +45,7 @@ TEST(BodyParserTest, bodyWithoutOverlap) {
     }
 
     EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(conn->bodyCtx.type, BodyContext::Undetermined);
 
     delete conn;
     delete bodyPrsr;
