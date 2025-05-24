@@ -15,6 +15,9 @@ void addMethods(std::vector< std::string > methods, std::string svrName, std::st
     for (size_t i = 0; i < methods.size(); i++)
         r->add(svrName, prefix, methods[i], cfg);
 
+    if (!cfg.cgi.empty())
+        r->add(svrName, prefix, "CGI", cfg);
+
     if (methods.empty())
         addAllMethods(svrName, prefix, cfg, r);
 }

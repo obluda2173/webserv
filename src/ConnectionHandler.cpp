@@ -3,6 +3,7 @@
 #include "BodyParser.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
+#include "Router.h"
 #include "handlerUtils.h"
 #include "logging.h"
 #include "utils.h"
@@ -85,6 +86,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
     IHandler* hdlr;
     IRouter* router;
     Route route;
+    bool isCGIrequest;
     bool continueProcessing = true;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
@@ -104,8 +106,17 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 conn->setState(Connection::SendResponse);
                 break;
             }
+
+            isCGIrequest = false;
+            if (route.hdlrs.find("CGI") != route.hdlrs.end())
+                isCGIrequest = checkCGIRequest(conn->_request, route.cfg);
+
+            if (isCGIrequest)
+                conn->_hdlr = conn->route.hdlrs["CGI"];
+            else
+                conn->_hdlr = conn->route.hdlrs[conn->getRequest().method];
+
             conn->route = route;
-            conn->_hdlr = conn->route.hdlrs[conn->getRequest().method];
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:

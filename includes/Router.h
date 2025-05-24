@@ -44,5 +44,6 @@ std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCf
 Router newRouter(std::vector< ServerConfig > svrCfgs, std::map< std::string, IHandler* > hdlrs);
 void addSvrToRouter(IRouter* r, ServerConfig svrCfg);
 Router newRouterTest();
+bool checkCGIRequest(HttpRequest& req, RouteConfig& cfg);
 
 #endif // ROUTER_H

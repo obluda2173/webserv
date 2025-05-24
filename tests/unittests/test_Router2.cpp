@@ -25,6 +25,7 @@ Router newRouterTest() {
         {"GET", new StubHandler("GET")},
         {"POST", new StubHandler("POST")},
         {"DELETE", new StubHandler("DELETE")},
+        {"CGI", new StubHandler("CGI")},
     };
 
     std::map< std::string, Route > urlToRoutes;
@@ -57,7 +58,7 @@ Router newRouterTest() {
            {}}}},
         {"test.com/js/", {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {}, {}, oneMB, false, {}}}},
         {"example.com/images/",
-         {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
+         {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}, {"CGI", hdlrs["CGI"]}},
           {"/data", {}, {}, oneMB, false, {}}}},
         {"example.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/data/static", {}, {}, oneMB, false, {}}}},

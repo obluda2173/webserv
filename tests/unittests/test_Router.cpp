@@ -78,6 +78,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
                     {"GET", new StubHandler("GET")},
                     {"POST", new StubHandler("POST")},
                     {"DELETE", new StubHandler("DELETE")},
+                    {"CGI", new StubHandler("CGI")},
                 };
                 IRouter* r = new Router(hdlrs);
                 addSvrToRouter(r, svrCfg);
@@ -163,7 +164,7 @@ INSTANTIATE_TEST_SUITE_P(
                          {"/data/scripts", {}, {}, 12 * oneMB, false, {}}},
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
-                         {"GET", "POST", "DELETE"},
+                         {"GET", "POST", "DELETE", "CGI"},
                          {"/data", {}, {}, oneMB, false, {{".php", "/usr/bin/php-cgi"}}}},
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "example.com"}}},
@@ -204,7 +205,7 @@ INSTANTIATE_TEST_SUITE_P(
                          {"/var/www/secure", {"index.html", "index.htm"}, {}, oneMB, false, {}}},
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "example.com"}}},
-                         {"GET", "POST", "DELETE"},
+                         {"GET", "POST", "DELETE", "CGI"},
                          {"/data", {}, {}, oneMB, false, {}}},
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "example.com"}}},

@@ -46,3 +46,32 @@ void Router::add(std::string svrName, std::string prefix, std::string method, Ro
     _svrToLocs[svrName].insert(prefix);
     _svrKnownPrefixPlusMethod[svrName].insert(prefix + method);
 }
+
+bool checkCGIRequest(HttpRequest& req, RouteConfig& cfg) {
+    std::map< std::string, std::string > cgiMap = cfg.cgi;
+    std::string path = req.uri;
+
+    // Remove query string and fragment
+    std::string::size_type queryPos = path.find('?');
+    if (queryPos != std::string::npos)
+        path = path.substr(0, queryPos);
+
+    std::string::size_type fragPos = path.find('#');
+    if (fragPos != std::string::npos)
+        path = path.substr(0, fragPos);
+
+    for (std::map< std::string, std::string >::const_iterator it = cgiMap.begin(); it != cgiMap.end(); ++it) {
+        const std::string& ext = it->first;
+        std::string dotExt = "." + ext;
+
+        std::string::size_type pos = path.find(dotExt);
+        if (pos == std::string::npos)
+            continue;
+
+        std::string::size_type next = pos + dotExt.size();
+        if (next == path.size() || path[next] == '/' || path[next] == '?' || path[next] == '#') {
+            return true;
+        }
+    }
+    return false;
+}
