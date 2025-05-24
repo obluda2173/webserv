@@ -15,7 +15,7 @@ class Router : public IRouter {
     std::set< std::string > _svrs;
     std::map< std::string, std::set< std::string > > _svrToLocs;
     std::map< std::string, std::set< std::string > > _svrKnownPrefixPlusMethod;
-    std::map< std::string, Route > _routeToRoutes;
+    std::map< std::string, Route > _urlToRoutes;
     std::string _matchLocations(HttpRequest req);
 
   public:
@@ -33,7 +33,7 @@ class Router : public IRouter {
 
     Router(std::map< std::string, IHandler* > hdlrs, std::string defaultSvr, std::set< std::string > svrs,
            std::map< std::string, std::set< std::string > > svrToLocs, std::map< std::string, Route > routeToRoutes)
-        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _svrToLocs(svrToLocs), _routeToRoutes(routeToRoutes) {};
+        : _hdlrs(hdlrs), _defaultSvr(defaultSvr), _svrs(svrs), _svrToLocs(svrToLocs), _urlToRoutes(routeToRoutes) {};
 
     void add(std::string svrName, std::string prefix, std::string method, RouteConfig cfg);
     Route match(HttpRequest req);

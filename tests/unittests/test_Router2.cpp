@@ -27,8 +27,8 @@ Router newRouterTest() {
         {"DELETE", new StubHandler("DELETE")},
     };
 
-    std::map< std::string, Route > uriToRoutes;
-    uriToRoutes = {
+    std::map< std::string, Route > urlToRoutes;
+    urlToRoutes = {
         {"www.example.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/dataSecond/static", {}, {}, oneMB, false, {}}}},
 
@@ -67,5 +67,5 @@ Router newRouterTest() {
           {"/var/www/secure", {"index.html", "index.htm"}, {}, oneMB, false, {}}}},
         {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html", {}, {}, oneMB, false, {}}}}};
 
-    return Router(hdlrs, defaultSvr, svrs, svrToLocs, uriToRoutes);
+    return Router(hdlrs, defaultSvr, svrs, svrToLocs, urlToRoutes);
 }

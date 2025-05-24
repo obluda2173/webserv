@@ -21,15 +21,15 @@ Route Router::match(HttpRequest req) {
     if (_svrs.find(req.headers["host"]) == _svrs.end())
         req.headers["host"] = _defaultSvr;
 
-    std::string route = req.headers["host"] + req.uri;
-    if (_routeToRoutes.find(route) != _routeToRoutes.end())
-        return _routeToRoutes[route];
+    std::string url = req.headers["host"] + req.uri;
+    if (_urlToRoutes.find(url) != _urlToRoutes.end())
+        return _urlToRoutes[url];
 
-    route = _matchLocations(req);
-    if (_routeToRoutes.find(route) != _routeToRoutes.end())
-        return _routeToRoutes[route];
+    url = _matchLocations(req);
+    if (_urlToRoutes.find(url) != _urlToRoutes.end())
+        return _urlToRoutes[url];
 
-    return _routeToRoutes[req.headers["host"]];
+    return _urlToRoutes[req.headers["host"]];
 }
 
 void Router::add(std::string svrName, std::string prefix, std::string method, RouteConfig cfg) {
@@ -41,8 +41,8 @@ void Router::add(std::string svrName, std::string prefix, std::string method, Ro
     if (_svrKnownPrefixPlusMethod[svrName].find(prefix + method) != _svrKnownPrefixPlusMethod[svrName].end())
         return;
 
-    _routeToRoutes[svrName + prefix].cfg = cfg;
-    _routeToRoutes[svrName + prefix].hdlrs[method] = _hdlrs[method];
+    _urlToRoutes[svrName + prefix].cfg = cfg;
+    _urlToRoutes[svrName + prefix].hdlrs[method] = _hdlrs[method];
     _svrToLocs[svrName].insert(prefix);
     _svrKnownPrefixPlusMethod[svrName].insert(prefix + method);
 }
