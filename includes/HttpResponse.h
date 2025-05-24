@@ -3,7 +3,7 @@
 
 #include <fcntl.h>
 #include <fstream>
-
+#include <map>
 #include <iostream>
 #include <string.h>
 #include <string>
@@ -73,16 +73,12 @@ typedef struct HttpResponse {
     std::string version;
     IBodyProvider* body;
     std::string statusMessage;
-    bool isClosed;
     std::string contentType;
     int contentLength;
     std::string contentLanguage;
-    bool isRange;
-    bool isChunked;
+    std::map<std::string, std::string> headers;
 
-    HttpResponse()
-        : statusCode(0), version(""), body(NULL), statusMessage(""), isClosed(false), contentType(""), contentLength(0),
-          contentLanguage(""), isRange(false), isChunked(false) {}
+    HttpResponse() : body(NULL), contentLength(0) {}
 } HttpResponse;
 
 #endif

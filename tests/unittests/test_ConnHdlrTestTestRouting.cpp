@@ -19,8 +19,9 @@ TEST_F(ConnHdlrTestTestRouting, secondTest) {
     std::string request = "GET /notPresent HTTP/1.1\r\n"
                           "Host: test.com\r\n"
                           "\r\n";
-
     std::string wantResponse = "HTTP/1.1 404 Not Found\r\n"
+                               "Content-Type: text/plain\r\n"
+                               "Content-Language: en-US\r\n"
                                "Content-Length: 9\r\n"
                                "\r\n"
                                "Not Found";

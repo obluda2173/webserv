@@ -3,6 +3,7 @@
 
 #include "webserv.h"
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -48,7 +49,7 @@ typedef struct LocationConfig {
 } LocationConfig;
 
 typedef struct ServerConfig {
-    std::map<std::string, int> listen;
+    std::set<std::pair<std::string, int> > listen;
     std::vector<std::string> serverNames;
     CommonConfig common;
     std::vector<LocationConfig> locations;

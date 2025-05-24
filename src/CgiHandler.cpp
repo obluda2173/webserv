@@ -7,7 +7,7 @@ CgiHandler::~CgiHandler() {}
 void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
 
-    if (!_validateAndPrepareContext(request, config, resp)) {
+    if (!_validateAndPrepareContext(request, config, conn)) {
         conn->setState(Connection::SendResponse);
         return;
     }
@@ -32,11 +32,9 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     }
 
     if (pid == 0) {
-        ExecParams params;
-        _setupChildProcess(pipeStdin, pipeStdout);
-        _prepareExecParams(request, params);
-        execve(params.argv[0], const_cast< char* const* >(params.argv.data()),
-               const_cast< char* const* >(params.env.data()));
+        _setupChildProcess(pipeStdin, pipeStdout, conn, request, config);
+        execve(_execParams.argv[0], const_cast< char* const* >(_execParams.argv.data()),
+               const_cast< char* const* >(_execParams.env.data()));
         exit(EXIT_FAILURE);
     } else {
         _setupParentProcess(conn, pipeStdin, pipeStdout, pid, config);
@@ -83,7 +81,7 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
     }
 
     case CgiContext::Exited:
-        _handleProcessExit(conn, ctx, status);
-        break;
+            _handleProcessExit(conn, ctx, status);
+            break;
     }
 }

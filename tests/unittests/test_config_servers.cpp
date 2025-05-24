@@ -22,7 +22,7 @@ TEST_F(ServerConfigTest, NoServername1) {
                                                    "    root /var/www/html;\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     ASSERT_EQ(config[0].serverNames.size(), 1);
     EXPECT_EQ(config[0].serverNames[0], "");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
@@ -45,7 +45,7 @@ TEST_F(ServerConfigTest, BasicServerConfiguration) {
                                                    "    root /var/www/html;\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     ASSERT_EQ(config[0].serverNames.size(), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
@@ -63,7 +63,7 @@ TEST_F(ServerConfigTest, ServerWithLocationBlock) {
                                                    "    }\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 8080);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 8080)), 1);
     ASSERT_EQ(config[0].serverNames.size(), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
@@ -82,7 +82,7 @@ TEST_F(ServerConfigTest, HandlesClientMaxBodySize) {
                                                    "    client_max_body_size 10m;\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
     EXPECT_EQ(config[0].common.clientMaxBody, 10 * 1024 * 1024);
@@ -98,8 +98,8 @@ TEST_F(ServerConfigTest, MultipleListenDirectives) {
 
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
-    EXPECT_EQ(config[0].listen.at("127.0.0.1"), 80);
-    EXPECT_EQ(config[0].listen.at("::1"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("127.0.0.1"), 80)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("::1"), 80)), 1);
 }
 
 TEST_F(ServerConfigTest, ThrowsOnInvalidDirective) {
@@ -126,7 +126,7 @@ TEST_F(ServerConfigTest, HandlesMultipleServerNames) {
                                                    "    server_name example.com www.example.com;\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
     ASSERT_EQ(config[0].serverNames.size(), 2);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -141,7 +141,7 @@ TEST_F(ServerConfigTest, HandleIndexFiles) {
                                                    "    index index.html index.htm default.html;\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
     ASSERT_EQ(config[0].serverNames.size(), 2);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -162,7 +162,7 @@ TEST_F(ServerConfigTest, HandleIndexFilesInLocationContext) {
                                                    "    }\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
     ASSERT_EQ(config[0].serverNames.size(), 2);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -188,7 +188,7 @@ TEST_F(ServerConfigTest, HandleIndexFilesInMultipleLocationContext) {
                     "    }\n"
                     "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
     ASSERT_EQ(config[0].serverNames.size(), 2);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -249,7 +249,7 @@ TEST_F(ServerConfigTest, HandleMultipleServerContextWithLocationsInside) {
                                                    "    }\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
     ASSERT_EQ(config[0].serverNames.size(), 2);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -262,7 +262,7 @@ TEST_F(ServerConfigTest, HandleMultipleServerContextWithLocationsInside) {
     EXPECT_EQ(loc1.common.index[1], "index.htm");
     EXPECT_EQ(loc1.common.index[2], "default.html");
 
-    EXPECT_EQ(config[1].listen.at("0.0.0.0"), 81);
+    EXPECT_EQ(config[1].listen.count(std::make_pair(std::string("0.0.0.0"), 81)), 1);
     EXPECT_EQ(config[1].common.root, "/car/www");
     ASSERT_EQ(config[1].serverNames.size(), 2);
     EXPECT_EQ(config[1].serverNames[0], "nexample.com");
@@ -300,7 +300,7 @@ TEST_F(ServerConfigTest, HandleMultipleServerContextWithMultipleLocationsInside)
                                                    "    }\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
     ASSERT_EQ(config[0].serverNames.size(), 2);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -319,7 +319,7 @@ TEST_F(ServerConfigTest, HandleMultipleServerContextWithMultipleLocationsInside)
     EXPECT_EQ(loc2.common.index[1], "pindex.htm");
     EXPECT_EQ(loc2.common.index[2], "pefault.html");
 
-    EXPECT_EQ(config[1].listen.at("0.0.0.0"), 81);
+    EXPECT_EQ(config[1].listen.count(std::make_pair(std::string("0.0.0.0"), 81)), 1);
     EXPECT_EQ(config[1].common.root, "/car/www");
     ASSERT_EQ(config[1].serverNames.size(), 2);
     EXPECT_EQ(config[1].serverNames[0], "nexample.com");
@@ -349,8 +349,8 @@ TEST_F(ServerConfigTest, SimpleCheckOfAutoindex) {
 
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
-    EXPECT_EQ(config[0].listen.at("127.0.0.1"), 80);
-    EXPECT_EQ(config[0].listen.at("::1"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("127.0.0.1"), 80)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("::1"), 80)), 1);
     EXPECT_EQ(config[0].common.autoindex, false);
 }
 
@@ -584,7 +584,7 @@ TEST_F(ServerConfigTest, DefaultClientMaxBodySize) {
                                                    "    server_name example.com;\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
     EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
@@ -610,9 +610,57 @@ TEST_F(ServerConfigTest, SimpleRedirectCheck) {
                                                    "    }\n"
                                                    "}\n");
 
-    EXPECT_EQ(config[0].listen.at("0.0.0.0"), 80);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
     EXPECT_EQ(config[0].locations[0].redirect, "http://mysite.com/new");
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, CrazyPorts1) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen 192.168.1.1:443;\n"
+                                                   "    listen 192.168.1.1:442;\n"
+                                                   "    listen 192.168.1.2:442;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "    server_name example.com;\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 443)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 442)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.2"), 442)), 1);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, CrazyPorts2IPv6) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen [::ffff:192.0.2.1];\n"
+                                                   "    listen [::ffff:192.0.2.1]:81;\n"
+                                                   "    listen [2001:db8::1]:80;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "    server_name example.com;\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("::ffff:192.0.2.1"), 80)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("::ffff:192.0.2.1"), 81)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("2001:db8::1"), 80)), 1);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, CrazyPorts3) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen 192.168.1.1:443 192.168.1.1:442;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "    server_name example.com;\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 443)), 1);
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 442)), 1);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
     EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
 }

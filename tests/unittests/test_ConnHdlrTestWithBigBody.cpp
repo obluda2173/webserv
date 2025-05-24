@@ -27,12 +27,10 @@ TEST_F(ConnHdlrTestWithBigResponseBody, firstTest) {
     }
 
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
-                               "Content-Length: " +
-                               std::to_string(_body.length()) +
-                               "\r\n"
+                               "Content-Length: " + std::to_string(_body.length()) + "\r\n"
                                "\r\n" +
                                _body;
 
-    ASSERT_EQ(wantResponse.length(), gotResponse.length());
     ASSERT_EQ(wantResponse, gotResponse);
+    ASSERT_EQ(wantResponse.length(), gotResponse.length());
 }

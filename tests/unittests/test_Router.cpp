@@ -67,7 +67,8 @@ TEST_P(RouterTest, testWithConfigParsing) {
     std::map< std::string, IRouter* > routers;
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig svrCfg = svrCfgs[i];
-        for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
+        for (std::set< std::pair< std::string, int > >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end();
+             it++) {
             std::string ip = it->first;
             std::string port = to_string(it->second);
             if (routers.find(ip + ":" + to_string(it->second)) != routers.end()) {

@@ -28,8 +28,11 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
 
     req.method = "GET";
     req.uri = buildUri(params.scriptName, params.queryParams);
-
-    Connection* conn = new Connection({}, -1, "", NULL, NULL);
+    std::string ip = "127.0.0.1";
+    std::string port = "127.0.0.1:8080";
+    sockaddr_storage addr = createIPv4Address(ip.c_str(), 8080);
+    // printAddress(addr);
+    Connection* conn = new Connection(addr, -1, port, NULL, NULL);
     conn->setState(Connection::Handling);
     cgiHdlr.handle(conn, req, cfg);
 

@@ -1,130 +1,67 @@
 #include "CgiHandler.h"
 #include "handlerUtils.h"
 
-std::string CgiHandler::_extractQuery(const std::string& uri) {
-    const size_t pos = uri.find('?');
-    return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
-}
-
-std::string CgiHandler::_findInterpreter(std::map< std::string, std::string > cgiMap) {
-    size_t dot = _path.rfind('.');
-    if (dot == std::string::npos)
-        return "";
-    size_t end = _path.find_first_of("/?#", dot);
-    std::string ext = _path.substr(dot + 1, end - dot - 1);
-    std::map< std::string, std::string >::const_iterator it = cgiMap.find(ext);
-    return it != cgiMap.end() ? it->second : "";
-}
-
-std::string CgiHandler::_getPathInfo(const std::string& uri) {
-    size_t dot = uri.rfind('.');
-    if (dot == std::string::npos)
-        return "";
-    size_t start = uri.find_first_of("/", dot);
-    size_t end = uri.find_first_of("#?", start);
-    if (start != std::string::npos) {
-        return uri.substr(start, end - start);
-    }
-    return "";
-}
-
-std::string CgiHandler::_getScriptName(const std::string& uri) {
-    size_t dot = uri.rfind('.');
-    if (dot == std::string::npos)
-        return "";
-    size_t end = uri.find_first_of("/?#", dot);
-    return uri.substr(0, end);
-}
-
-bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp) {
-    _query = _extractQuery(request.uri);
-    _scriptName = _getScriptName(request.uri);
-    _pathInfo = _getPathInfo(request.uri);
-    _pathTranslated = _pathInfo.empty() ? "" : (config.root + _pathInfo); 
-    _path = normalizePath(config.root, _scriptName);
-    _interpreter = _findInterpreter(config.cgi);
+bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
+    _path = normalizePath(config.root, request.uri);
+    _interpreter = findInterpreter(config.cgi, request.uri);
     if (_interpreter.empty()) {
-        setErrorResponse(resp, 403, "Forbidden", config);
+        setErrorResponse(conn->_response, 403, "Forbidden", config);
         return false;
     }
-    return validateRequest(resp, request, config, _path, _pathStat);
+    return validateRequest(conn->_response, request, config, _path, _pathStat);
 }
 
-std::string CgiHandler::_toUpper(const std::string& str) {
-    std::string result = str;
-    for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
-        *ptr = static_cast< char >(toupper(*ptr));
-    }
-    return result;
-}
+void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
+    std::string scriptName = getScriptName(config.cgi, request.uri);
+    std::string pathInfo = getPathInfo(config.cgi, scriptName);
+    std::string query = extractQuery(request.uri);
 
-std::string CgiHandler::_toLower(const std::string& str) {
-    std::string result = str;
-    for (char* ptr = &result[0]; ptr < &result[0] + result.size(); ++ptr) {
-        *ptr = static_cast< char >(tolower(*ptr));
-    }
-    return result;
-}
-
-void CgiHandler::_replace(std::string& str, char what, char with) {
-    for (size_t i = 0; i < str.size(); i++) {
-        if (str[i] == what) {
-            str[i] = with;
-        }
-    }
-}
-
-// check whether I need the Authorization header
-void CgiHandler::_setCgiEnvironment(const HttpRequest& request) {
-    _envStorage.push_back("REQUEST_METHOD=" + request.method);
-    _envStorage.push_back("SCRIPT_NAME=" + _scriptName);
-    _envStorage.push_back("PATH_INFO=" + _pathInfo);
-    _envStorage.push_back("PATH_TRANSLATED=" + _pathTranslated);
-    if (!_query.empty()) {
-        _envStorage.push_back("QUERY_STRING=" + _query);
-    }
-    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
-    // _envStorage.push_back("SERVER_PORT=" + std::to_string(serverConfig.listen.begin()->second));
-    _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    _envStorage.push_back("REQUEST_URI=" + request.uri);
-    // REMOTE_ADDR
-    // REMOTE_HOST
+    _envStorage.push_back("PATH_INFO=" + pathInfo);
+    _envStorage.push_back("QUERY_STRING=" + query);
+    _envStorage.push_back("SCRIPT_NAME=" + scriptName);
+    _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
+    _envStorage.push_back("REMOTE_ADDR=" + getRemoteAddr(conn));
+    _envStorage.push_back("REQUEST_METHOD=" + request.method);
+    _envStorage.push_back("PATH_TRANSLATED=" + (pathInfo.empty() ? "" : config.root + pathInfo));
+    _envStorage.push_back("SERVER_PROTOCOL=" + ((request.version.empty()) ? "HTTP/1.1" : request.version));
+    _envStorage.push_back("SERVER_NAME=" + (request.headers.count("host") ? request.headers.at("host") : "localhost"));
     if (request.headers.count("content-length")) {
         _envStorage.push_back("CONTENT_LENGTH=" + request.headers.at("content-length"));
     }
     if (request.headers.count("content-type")) {
         _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
+
     for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
         if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") {
             continue;
         }
-        std::string varName = "HTTP_" + _toUpper(it->first);
-        _replace(varName, '-', '_');
+        std::string varName = "HTTP_" + toUpper(it->first);
+        replace(varName, '-', '_');
         _envStorage.push_back(varName + "=" + it->second);
     }
 }
 
-void CgiHandler::_prepareExecParams(const HttpRequest& request, ExecParams& params) {
-    params.argv.push_back(_interpreter.c_str());
-    params.argv.push_back(_path.c_str());
-    params.argv.push_back(NULL);
-
-    _setCgiEnvironment(request);
-    for (size_t i = 0; i < _envStorage.size(); i++) {
-        params.env.push_back(_envStorage[i].c_str());
-    }
-    params.env.push_back(NULL);
-}
-
-void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2]) {
+void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     close(pipeStdin[1]);
     close(pipeStdout[0]);
     dup2(pipeStdin[0], STDIN_FILENO);
     dup2(pipeStdout[1], STDOUT_FILENO);
     close(pipeStdin[0]);
     close(pipeStdout[1]);
+
+    // std::ofstream outfile ("test.txt");
+    _execParams.argv.push_back(_interpreter.c_str());
+    _execParams.argv.push_back(_path.c_str());
+    _execParams.argv.push_back(NULL);
+    _setCgiEnvironment(request, config, conn);
+    for (size_t i = 0; i < _envStorage.size(); i++) {
+        _execParams.env.push_back(_envStorage[i].c_str());
+        // outfile << _envStorage[i] << std::endl;
+    }
+    // outfile.close();
+    _execParams.env.push_back(NULL);
 }
 
 void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config) {
@@ -137,14 +74,6 @@ void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pip
     conn->cgiCtx.state = CgiContext::WritingStdin;
     fcntl(conn->cgiCtx.cgiPipeStdin, F_SETFL, O_NONBLOCK);
     fcntl(conn->cgiCtx.cgiPipeStdout, F_SETFL, O_NONBLOCK);
-}
-
-std::string CgiHandler::_trimWhiteSpace(const std::string& str) {
-    size_t first = str.find_first_not_of(" \t");
-    if (std::string::npos == first)
-        return "";
-    size_t last = str.find_last_not_of(" \t");
-    return str.substr(first, (last - first + 1));
 }
 
 void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp) {
@@ -185,8 +114,8 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         if (colon == std::string::npos)
             continue;
 
-        std::string headerKey = _toLower(_trimWhiteSpace(line.substr(0, colon)));
-        std::string headerValue = _trimWhiteSpace(line.substr(colon + 1));
+        std::string headerKey = toLower(trimWhiteSpace(line.substr(0, colon)));
+        std::string headerValue = trimWhiteSpace(line.substr(colon + 1));
 
         if (headerKey == "status") {
             size_t spacePos = headerValue.find(' ');
@@ -202,8 +131,8 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
             resp.contentLength = std::strtoul(headerValue.c_str(), NULL, 10);
         } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
-        // } else {
-        //     resp.headers[headerKey] = headerValue; // wait for Kay's work
+        } else {
+            resp.headers[headerKey] = headerValue; 
         }
     }
     resp.body = new StringBodyProvider(body);

@@ -187,8 +187,9 @@ void mustGetAddrInfo(std::string addr, std::string port, struct addrinfo** svrAd
 void mustTranslateToRealIps(std::vector< ServerConfig >& svrCfgs) {
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig& svrCfg = svrCfgs[i];
-        std::map< std::string, int > newListenMap;
-        for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
+        std::set< std::pair< std::string, int > > newListen;
+        for (std::set< std::pair< std::string, int > >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end();
+             it++) {
             std::string ip = it->first;
             std::string port = to_string(it->second);
 
@@ -200,10 +201,10 @@ void mustTranslateToRealIps(std::vector< ServerConfig >& svrCfgs) {
             else
                 ip = getIpv6String((sockaddr_in6*)svrAddrInfo->ai_addr);
 
-            newListenMap[ip] = it->second;
+            newListen.insert(std::pair< std::string, int >(ip, it->second));
             freeaddrinfo(svrAddrInfo);
         }
-        svrCfg.listen = newListenMap;
+        svrCfg.listen = newListen;
     }
 }
 
@@ -211,7 +212,8 @@ std::set< std::pair< std::string, std::string > > fillAddrAndPorts(std::vector< 
     std::set< std::pair< std::string, std::string > > addrAndPorts;
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig svrCfg = svrCfgs[i];
-        for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
+        for (std::set< std::pair< std::string, int > >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end();
+             it++) {
             std::string ip = it->first;
             std::string port = to_string(it->second);
             addrAndPorts.insert(std::pair< std::string, std::string >(ip, port));

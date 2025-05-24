@@ -55,5 +55,7 @@ std::string buildUri(std::string script,
 
 std::string getOutput(Connection* conn);
 void expectNotif(t_notif notif, int fd, e_notif eNotif);
+sockaddr_storage createIPv4Address(const char* ip, uint16_t port);
+void printAddress(const sockaddr_storage& addr);
 
 #endif // TEST_MAIN_H_

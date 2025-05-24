@@ -6,8 +6,20 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include "Connection.h"
+#include "utils.h"
+#include "logging.h"
 #include "IHandler.h"
+#include "Connection.h"
+
+std::string toUpper(const std::string& str);
+void replace(std::string& str, char what, char with);
+std::string trimWhiteSpace(const std::string& str);
+std::string extractQuery(const std::string& uri);
+std::string findInterpreter(std::map< std::string, std::string > cgiMap, const std::string& uri);
+std::string getScriptName(const std::map<std::string, std::string>& cgiMap, const std::string& uri);
+std::string getPathInfo(std::map< std::string, std::string > cgiMap, const std::string& uri);
+std::string getServerPort(Connection* conn);
+std::string getRemoteAddr(Connection* conn);
 
 struct ExecParams {
     std::vector< const char* > argv;
@@ -17,26 +29,14 @@ struct ExecParams {
 class CgiHandler : public IHandler {
   private:
     std::string _path;
-    std::string _query;
     std::string _interpreter;
-    std::string _scriptName;
-    std::string _pathInfo;
-    std::string _pathTranslated;
+    ExecParams _execParams;
     struct stat _pathStat;
     std::vector< std::string > _envStorage;
-    std::string _extractQuery(const std::string& uri);
-    std::string _findInterpreter(std::map< std::string, std::string > cgiMap);
-    std::string _getScriptName(const std::string& uri);
-    std::string _getPathInfo(const std::string& uri);
-    bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, HttpResponse& resp);
-    std::string _toUpper(const std::string& str);
-    std::string _toLower(const std::string& str);
-    void _replace(std::string& str, char what, char with);
-    void _setCgiEnvironment(const HttpRequest& request);
-    void _prepareExecParams(const HttpRequest& request, ExecParams& params);
-    void _setupChildProcess(int pipeStdin[2], int pipeStdout[2]);
+    bool _validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, Connection* conn);
+    void _setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn);
+    void _setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config);
     void _setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config);
-    std::string _trimWhiteSpace(const std::string& str);
     void _cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp);
     bool _writeToStdin(Connection* conn, CgiContext& ctx);
     bool _readPipeData(CgiContext& cgiCtx, bool drain);

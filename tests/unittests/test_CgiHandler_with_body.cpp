@@ -1,5 +1,5 @@
-#include "CgiHandler.h"
 #include "BodyParser.h"
+#include "CgiHandler.h"
 #include "Connection.h"
 #include "HttpRequest.h"
 #include "test_main.h"
@@ -16,43 +16,44 @@ struct CgiTestParams2 {
     std::string wantOutput;
 };
 
-class CgiPostHandlerTest : public testing::TestWithParam<CgiTestParams2> {
-    protected:
-        void simulateBodyParsing(Connection* conn, const std::string& body) {
-            BodyParser bodyParser;
-            conn->_request.headers["content-length"] = std::to_string(body.size());
-            conn->_readBuf.assign(body);
-            conn->_bodyFinished = false;
-            
-            while (!conn->_bodyFinished) {
-                bodyParser.parse(conn);
-            }
+class CgiPostHandlerTest : public testing::TestWithParam< CgiTestParams2 > {
+  protected:
+    void simulateBodyParsing(Connection* conn, const std::string& body) {
+        BodyParser bodyParser;
+        conn->_request.headers["content-length"] = std::to_string(body.size());
+        conn->_readBuf.assign(body);
+        conn->_bodyFinished = false;
+
+        while (!conn->_bodyFinished) {
+            bodyParser.parse(conn);
         }
+    }
 };
 
 TEST_P(CgiPostHandlerTest, HandlesPostRequests) {
     const CgiTestParams2& params = GetParam();
-    RouteConfig cfg = {
-        "tests/unittests/test_cgi/scripts",
-        {}, 
-        {},
-        1000000,
-        false,
-        {{"php", "/usr/bin/php-cgi"}, {"py", "/usr/bin/python3"}}
-    };
+    RouteConfig cfg = {"tests/unittests/test_cgi/scripts",
+                       {},
+                       {},
+                       1000000,
+                       false,
+                       {{"php", "/usr/bin/php-cgi"}, {"py", "/usr/bin/python3"}}};
 
     HttpRequest req = HttpRequest();
     req.method = "POST";
     req.uri = "/" + params.scriptName;
     req.headers["content-type"] = params.contentType;
-    
+
     CgiHandler cgiHandler;
-    Connection* conn = new Connection({}, -1, "", NULL, NULL);
+    std::string ip = "127.0.0.1";
+    std::string port = "127.0.0.1:8080";
+    sockaddr_storage addr = createIPv4Address(ip.c_str(), 8080);
+    // printAddress(addr);
+    Connection* conn = new Connection(addr, -1, port, NULL, NULL);
     conn->setState(Connection::Handling);
 
-    
     simulateBodyParsing(conn, params.postBody);
-    
+
     ASSERT_TRUE(conn->_bodyFinished);
     ASSERT_EQ(conn->_tempBody, params.postBody);
 
@@ -63,7 +64,7 @@ TEST_P(CgiPostHandlerTest, HandlesPostRequests) {
         if (std::chrono::steady_clock::now() - start > std::chrono::seconds(5)) {
             FAIL() << "CGI processing timed out";
         }
-        
+
         if (conn->getState() == Connection::Handling || conn->getState() == Connection::HandlingCgi) {
             cgiHandler.handleCgiProcess(conn);
         }
@@ -77,76 +78,48 @@ TEST_P(CgiPostHandlerTest, HandlesPostRequests) {
     delete conn;
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    CgiPostTests,
-    CgiPostHandlerTest,
-    testing::Values(
-        CgiTestParams2{
-            CgiTestParams2{
-                "FormData",
-                "form_processor.py",
-                "name=kay&hobby=coding",
-                "application/x-www-form-urlencoded",
-                200,
-                "name kay\nhobby coding\n" 
-            },
-        },
-        CgiTestParams2{
-            CgiTestParams2{
-                "MoreReasonableTest1",
-                "hello_process.py",
-                "name=Erik&happy=yes",
-                "application/x-www-form-urlencoded",
-                200,
-                "\n<html><body style='text-align:center;'>\n" 
-                "<h1 style='color: green;'>GeeksforGeeks</h1>\n" 
-                "<h2>Hello, Erik!</h2>\n" 
-                "<p>Thank you for using our script.</p>\n" 
-                "<p>Yayy! We're happy too! \?\?\?\?</p>\n" 
-                "</body></html>\n"
-            },
-        },
-        CgiTestParams2{
-            CgiTestParams2{
-                "MoreReasonableTest2",
-                "hello_process.py",
-                "name=Erik&happy=no&sad=yes",
-                "application/x-www-form-urlencoded",
-                200,
-                "\n<html><body style='text-align:center;'>\n" 
-                "<h1 style='color: green;'>GeeksforGeeks</h1>\n" 
-                "<h2>Hello, Erik!</h2>\n" 
-                "<p>Thank you for using our script.</p>\n" 
-                "<p>Oh no! Why are you sad? \?\?\?\?</p>\n" 
-                "</body></html>\n"
-            },
-        },
-        CgiTestParams2{
-            CgiTestParams2{
-                "MissingNameParameter",
-                "hello_process.py",
-                "happy=yes",
-                "application/x-www-form-urlencoded",
-                200,
-                "\n<html><body style='text-align:center;'>\n" 
-                "<h1 style='color: green;'>GeeksforGeeks</h1>\n" 
-                "<p>Yayy! We're happy too! \?\?\?\?</p>\n" 
-                "</body></html>\n"
-            }
-        }
-        // currently not working, asd I don't understand how boyd actually works
-        // CgiTestParams2{
-        //     CgiTestParams2{
-        //         "OversizedBody",
-        //         "form_processor.py",
-        //         std::string(10'000'000, 'a'),  // 10MB body (adjust to your server limit)
-        //         "application/x-www-form-urlencoded",
-        //         413,  // Payload Too Large
-        //         ""
-        //     }
-        // }
-    ),
-    [](const testing::TestParamInfo<CgiTestParams2>& info) {
-        return info.param.testName;
-    }
-);
+INSTANTIATE_TEST_SUITE_P(CgiPostTests, CgiPostHandlerTest,
+                         testing::Values(
+                             CgiTestParams2{
+                                 CgiTestParams2{"FormData", "form_processor.py", "name=kay&hobby=coding",
+                                                "application/x-www-form-urlencoded", 200, "name kay\nhobby coding\n"},
+                             },
+                             CgiTestParams2{
+                                 CgiTestParams2{"MoreReasonableTest1", "hello_process.py", "name=Erik&happy=yes",
+                                                "application/x-www-form-urlencoded", 200,
+                                                "\n<html><body style='text-align:center;'>\n"
+                                                "<h1 style='color: green;'>GeeksforGeeks</h1>\n"
+                                                "<h2>Hello, Erik!</h2>\n"
+                                                "<p>Thank you for using our script.</p>\n"
+                                                "<p>Yayy! We're happy too! \?\?\?\?</p>\n"
+                                                "</body></html>\n"},
+                             },
+                             CgiTestParams2{
+                                 CgiTestParams2{"MoreReasonableTest2", "hello_process.py", "name=Erik&happy=no&sad=yes",
+                                                "application/x-www-form-urlencoded", 200,
+                                                "\n<html><body style='text-align:center;'>\n"
+                                                "<h1 style='color: green;'>GeeksforGeeks</h1>\n"
+                                                "<h2>Hello, Erik!</h2>\n"
+                                                "<p>Thank you for using our script.</p>\n"
+                                                "<p>Oh no! Why are you sad? \?\?\?\?</p>\n"
+                                                "</body></html>\n"},
+                             },
+                             CgiTestParams2{CgiTestParams2{"MissingNameParameter", "hello_process.py", "happy=yes",
+                                                           "application/x-www-form-urlencoded", 200,
+                                                           "\n<html><body style='text-align:center;'>\n"
+                                                           "<h1 style='color: green;'>GeeksforGeeks</h1>\n"
+                                                           "<p>Yayy! We're happy too! \?\?\?\?</p>\n"
+                                                           "</body></html>\n"}}
+                             // currently not working, asd I don't understand how boyd actually works
+                             // CgiTestParams2{
+                             //     CgiTestParams2{
+                             //         "OversizedBody",
+                             //         "form_processor.py",
+                             //         std::string(10'000'000, 'a'),  // 10MB body (adjust to your server limit)
+                             //         "application/x-www-form-urlencoded",
+                             //         413,  // Payload Too Large
+                             //         ""
+                             //     }
+                             // }
+                             ),
+                         [](const testing::TestParamInfo< CgiTestParams2 >& info) { return info.param.testName; });

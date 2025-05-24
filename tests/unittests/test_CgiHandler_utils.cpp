@@ -31,3 +31,24 @@ std::string getOutput(Connection* conn) {
     }
     return gotOutput;
 }
+
+sockaddr_storage createIPv4Address(const char* ip, uint16_t port) {
+    sockaddr_storage storage{};
+    sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(&storage);
+    
+    addr->sin_family = AF_INET;
+    addr->sin_port = htons(port);
+    inet_pton(AF_INET, ip, &addr->sin_addr);
+    
+    return storage;
+}
+
+void printAddress(const sockaddr_storage& addr) {
+    char ipstr[INET_ADDRSTRLEN];
+    
+    if (addr.ss_family == AF_INET) {
+        const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(&addr);
+        inet_ntop(AF_INET, &a->sin_addr, ipstr, sizeof(ipstr));
+        std::cout << "IPv4: " << ipstr << ":" << ntohs(a->sin_port) << "\n";
+    }
+}
