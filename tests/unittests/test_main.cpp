@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestChunkedSend*";
     // testing::GTEST_FLAG(filter) = "*BodyParserTest.bodyWithoutOverlap*";
-    testing::GTEST_FLAG(filter) = "*BodyParserTest*";
+    // testing::GTEST_FLAG(filter) = "*BodyParserTest*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.transferEncodingOneChunk*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.transferEncodingOneChunk*";
     // testing::GTEST_FLAG(filter) = "*TransferEncoding*";

@@ -17,6 +17,7 @@ TEST(BodyParserTest, NoContentLengthNorTransferEncoding) {
 
     bodyPrsr->parse(conn);
     EXPECT_TRUE(conn->_bodyFinished);
+    EXPECT_EQ(conn->getState(), Connection::Handling);
 
     delete conn;
     delete bodyPrsr;
@@ -60,7 +61,7 @@ class BodyParserTestContentLength : public ::testing::TestWithParam< int > {
     void TearDown() override { delete bodyPrsr; }
 };
 
-TEST_P(BodyParserTestContentLength, BodyWithOverlap) {
+TEST_P(BodyParserTestContentLength, MultipleConnections) {
     const int connectionCount = GetParam();
     std::vector< Connection* > connections;
     std::vector< std::string > bodies;

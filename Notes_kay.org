@@ -47,6 +47,7 @@ index       index.html index.htm
   - [X] build with multiple routers
   - [X] use the real port instead of the string in the config
   - [ ] maybe need to seperate address from port
+
 - [ ] test the tester
   - [ ] need to find out about Put requests and how to do the .bla extension stuff
 

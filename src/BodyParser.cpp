@@ -32,17 +32,13 @@ size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
 }
 
 bool BodyParser::_checkContentLength(Connection* conn, BodyContext& bodyCtx) {
-    if (conn->_request.headers.find("content-length") == conn->_request.headers.end()) {
-        conn->_bodyFinished = true;
+    if (conn->_request.headers.find("content-length") == conn->_request.headers.end())
         return false;
-    }
 
     std::stringstream ss(conn->_request.headers["content-length"]);
     ss >> bodyCtx.contentLength;
-    if (bodyCtx.contentLength == 0) {
-        conn->_bodyFinished = true;
+    if (bodyCtx.contentLength == 0)
         return false;
-    }
 
     if (bodyCtx.contentLength > conn->route.cfg.clientMaxBody) {
         setErrorResponse(conn->_response, 413, "Content Too Large", conn->route.cfg);
@@ -175,6 +171,7 @@ bool BodyParser::_checkType(Connection* conn) {
         bodyCtx.type = BodyContext::ContentLength;
         return true;
     }
+    conn->_bodyFinished = true;
     return false;
 }
 
