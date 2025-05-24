@@ -60,9 +60,13 @@ TEST_P(RouterTest, testWithConfigParsing) {
     std::vector< ServerConfig > svrCfgs = cfgPrsr->getServersConfig();
     for (size_t i = 0; i < svrCfgs.size(); i++) {
         ServerConfig svrCfg = svrCfgs[i];
-        for (std::map< std::string, int >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); it++) {
-            if (routers.find(it->first + ":" + to_string(it->second)) != routers.end()) {
-                addSvrToRouter(routers[it->first + ":" + to_string(it->second)], svrCfg);
+        for (std::set< std::pair<std::string, int> >::iterator it = svrCfg.listen.begin(); it != svrCfg.listen.end(); ++it) {
+            std::string ip = it->first;
+            int port = it->second;
+            std::string key = ip + ":" + to_string(port);
+
+            if (routers.find(key) != routers.end()) {
+                addSvrToRouter(routers[key], svrCfg);
             } else {
                 std::map< std::string, IHandler* > hdlrs = {
                     {"GET", new StubHandler("GET")},
@@ -71,7 +75,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
                 };
                 IRouter* r = new Router(hdlrs);
                 addSvrToRouter(r, svrCfg);
-                routers[it->first + ":" + to_string(it->second)] = r;
+                routers[key] = r;
             }
         }
     }

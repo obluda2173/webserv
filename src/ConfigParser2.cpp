@@ -1,6 +1,7 @@
 #include <ConfigParser.h>
 #include <cstdlib>
 #include <stdexcept>
+#include <arpa/inet.h>
 
 void ConfigParser::_validateFilename() {
     if (_filename.size() <= 5 || _filename.find(".conf") == std::string::npos) {
@@ -33,27 +34,59 @@ void ConfigParser::_parseListen(const Directive& directive, ServerConfig& config
     if (directive.args.empty()) {
         throw std::runtime_error("Missing argument for listen directive");
     }
-    for (size_t i = 0; i < directive.args.size(); ++i) {
-        std::string addr = "0.0.0.0";
+    for (std::vector<std::string>::const_iterator it = directive.args.begin(); 
+         it != directive.args.end(); ++it) {
+        const std::string& arg = *it;
+        std::string addr;
         std::string port_str = "80";
-        size_t colon_pos = directive.args[i].find_last_of(':');
-        if (colon_pos != std::string::npos) {
-            addr = directive.args[i].substr(0, colon_pos);
-            port_str = directive.args[i].substr(colon_pos + 1);
-            if (addr.size() >= 2 && addr[0] == '[' && addr[addr.size() - 1] == ']') {
-                // implies IPv6 notation
-                // do not support yet
-                addr = addr.substr(1, addr.size() - 2);
+        bool is_ipv6 = false;
+
+        if (!arg.empty() && arg[0] == '[') { // IPv6
+            is_ipv6 = true;
+            size_t closing_bracket = arg.find(']', 1);
+            
+            if (closing_bracket == std::string::npos) {
+                throw std::runtime_error("Invalid IPv6 format: missing closing ']'");
             }
-        } else {
-            port_str = directive.args[i];
+            
+            addr = arg.substr(1, closing_bracket - 1);
+            
+            if (arg.size() > closing_bracket + 1) {
+                if (arg[closing_bracket + 1] != ':') {
+                    throw std::runtime_error("Invalid character after IPv6 address");
+                }
+                port_str = arg.substr(closing_bracket + 2);
+            }
+        } else { // IPv4
+            size_t colon_pos = arg.find_last_of(':');
+            if (colon_pos != std::string::npos) {
+                addr = arg.substr(0, colon_pos);
+                port_str = arg.substr(colon_pos + 1);
+            } else {
+                if (arg.find_first_of(".:") != std::string::npos) {
+                    addr = arg; 
+                } else {
+                    port_str = arg;
+                }
+            }
+        }
+
+        if (addr.empty()) {
+            addr = is_ipv6 ? "::" : "0.0.0.0";
+        }
+
+        char buffer[sizeof(struct in6_addr)];
+        int result = is_ipv6 ? inet_pton(AF_INET6, addr.c_str(), buffer) : inet_pton(AF_INET, addr.c_str(), buffer);
+        
+        if (result != 1) {
+            throw std::runtime_error("Invalid IP address: " + addr);
         }
         char* end;
         long port = std::strtol(port_str.c_str(), &end, 10);
         if (*end != '\0' || port < 1 || port > 65535) {
-            throw std::runtime_error("Invalid port in listen directive: " + port_str);
+            throw std::runtime_error("Invalid port: " + port_str);
         }
-        config.listen[addr] = static_cast< int >(port);
+        config.listen.insert(std::make_pair(addr, static_cast<int>(port)));
     }
 }
 
