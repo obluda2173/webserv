@@ -207,3 +207,54 @@ TEST_F(TransferEncodingTest, transferEncoding) {
     delete conn;
     delete bodyPrsr;
 }
+
+TEST_F(TransferEncodingTest, multipleTransferEncodingConnections) {
+    const int numConnections = 5; // Number of concurrent connections to test
+
+    BodyParser* bodyPrsr = new BodyParser();
+    std::vector< Connection* > connections(numConnections);
+    std::vector< std::string > bodies(numConnections);
+    std::vector< std::string > chunkedBodies(numConnections);
+    std::vector< size_t > positions(numConnections, 0);
+    std::vector< std::string > bodiesReceived(numConnections);
+
+    // Setup all connections and their data
+    for (int i = 0; i < numConnections; i++) {
+        connections[i] = setupConnectionTransferEncoding();
+
+        int contentLength = getRandomNumber(1000, 15000);
+        bodies[i] = getRandomString(contentLength);
+        chunkedBodies[i] = createChunkedBody(bodies[i]);
+    }
+
+    // Process data in rounds for all connections
+    bool allFinished;
+    do {
+        allFinished = true;
+
+        for (int i = 0; i < numConnections; i++) {
+            if (!connections[i]->_bodyFinished) {
+                allFinished = false;
+
+                int batchSize = getRandomNumber(0, 50);
+                std::string bodyBatch = chunkedBodies[i].substr(positions[i], batchSize);
+                positions[i] += batchSize;
+
+                connections[i]->_readBuf.assign(bodyBatch);
+                bodyPrsr->parse(connections[i]);
+
+                bodiesReceived[i] += connections[i]->_tempBody;
+                EXPECT_EQ(connections[i]->_readBuf.size(), 0);
+            }
+        }
+    } while (!allFinished);
+
+    // Verify all connections processed data correctly
+    for (int i = 0; i < numConnections; i++) {
+        EXPECT_EQ(connections[i]->bodyCtx.type, BodyContext::Undetermined);
+        EXPECT_EQ(bodiesReceived[i], bodies[i]);
+
+        delete connections[i];
+        delete bodyPrsr;
+    }
+}

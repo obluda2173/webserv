@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestMultipleRouter*";
 
     // only run the following test
+    testing::GTEST_FLAG(filter) = "*TransferEncodingTest.multipleTransferEncodingConnections*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestChunkedSend*";
     // testing::GTEST_FLAG(filter) = "*BodyParserTest.bodyWithoutOverlap*";
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*pingTestInBatches*";
     // testing::GTEST_FLAG(filter) = "*multipleRequestsOneConnectionInBatches*";
     // testing::GTEST_FLAG(filter) = "*RouterTest.testWithConfigParsing*";
-    testing::GTEST_FLAG(filter) = "*RouterTest*";
+    // testing::GTEST_FLAG(filter) = "*RouterTest*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTest.send2MsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithParamInt.multipleRequestsOneConnectionInBatches*";
