@@ -5,11 +5,7 @@
 
 class BodyParser {
   private:
-    BodyContext::TE_STAGE _transferEncodingState;
     // long long _chunkBytesRead;
-    size_t _chunkRestSize;
-    size_t _currentChunkSize;
-    std::string _bodyBuf;
     bool _checkContentLength(Connection* conn, BodyContext& bodyCtx);
     void _parseContentLength(Connection* conn);
     bool _checkType(Connection* conn);

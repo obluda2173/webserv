@@ -20,11 +20,17 @@ typedef struct BodyContext {
 
     // Transfer-Encoding related
     enum TE_STAGE { ReadingChunkSize, ReadingChunk, VerifyCarriageReturn };
-    BodyContext::TE_STAGE te_stage;
+    BodyContext::TE_STAGE _transferEncodingState;
+    size_t _chunkRestSize;
+    size_t _currentChunkSize;
+    std::string _bodyBuf;
+
     // ContentLength related
     size_t bytesReceived;
     size_t contentLength;
-    BodyContext() : type(Undetermined), bytesReceived(0), contentLength(0) {}
+    BodyContext()
+        : type(Undetermined), _transferEncodingState(ReadingChunkSize), _chunkRestSize(0), _currentChunkSize(0),
+          _bodyBuf(""), bytesReceived(0), contentLength(0) {}
 } BodyContext;
 
 typedef struct UploadContext {

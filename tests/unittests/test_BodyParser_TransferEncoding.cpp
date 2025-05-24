@@ -253,8 +253,7 @@ TEST_F(TransferEncodingTest, multipleTransferEncodingConnections) {
     for (int i = 0; i < numConnections; i++) {
         EXPECT_EQ(connections[i]->bodyCtx.type, BodyContext::Undetermined);
         EXPECT_EQ(bodiesReceived[i], bodies[i]);
-
         delete connections[i];
-        delete bodyPrsr;
     }
+    delete bodyPrsr;
 }

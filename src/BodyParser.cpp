@@ -10,7 +10,7 @@
 #include <stdexcept> // for exceptions
 #include <string>
 
-BodyParser::BodyParser() : _transferEncodingState(BodyContext::ReadingChunkSize), _chunkRestSize(1) {}
+BodyParser::BodyParser() {}
 
 size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
     char* end;
@@ -86,22 +86,24 @@ bool BodyParser::_validateHex(size_t& chunkSize, std::string readBufStr, Connect
 }
 
 void BodyParser::_parseChunk(Connection* conn) {
-    std::string newTmp = _bodyBuf.substr(0, _chunkRestSize);
+    BodyContext& ctx = conn->bodyCtx;
+    std::string newTmp = ctx._bodyBuf.substr(0, ctx._chunkRestSize);
     conn->_tempBody += newTmp;
-    _chunkRestSize -= newTmp.size();
+    ctx._chunkRestSize -= newTmp.size();
 
-    _bodyBuf = _bodyBuf.substr(newTmp.size());
-    if (_chunkRestSize != 0)
+    ctx._bodyBuf = ctx._bodyBuf.substr(newTmp.size());
+    if (ctx._chunkRestSize != 0)
         return;
 
-    _transferEncodingState = BodyContext::VerifyCarriageReturn;
+    ctx._transferEncodingState = BodyContext::VerifyCarriageReturn;
 }
 
 void BodyParser::_verifyCarriageReturn(Connection* conn) {
-    if (_bodyBuf.length() < 2)
+    BodyContext& ctx = conn->bodyCtx;
+    if (ctx._bodyBuf.length() < 2)
         return;
 
-    if (_bodyBuf.substr(0, 2) != "\r\n") {
+    if (ctx._bodyBuf.substr(0, 2) != "\r\n") {
         conn->_bodyFinished = true;
         conn->setState(Connection::SendResponse);
         setErrorResponse(conn->_response, 400, "Bad Request", conn->route.cfg);
@@ -109,50 +111,52 @@ void BodyParser::_verifyCarriageReturn(Connection* conn) {
         return;
     }
 
-    if (_currentChunkSize == 0) {
+    if (ctx._currentChunkSize == 0) {
         conn->_bodyFinished = true;
-        conn->_readBuf.assign(_bodyBuf.substr(2));
+        conn->_readBuf.assign(ctx._bodyBuf.substr(2));
         conn->bodyCtx.type = BodyContext::Undetermined;
         return;
     }
 
-    _bodyBuf = _bodyBuf.substr(2);
-    _transferEncodingState = BodyContext::ReadingChunkSize;
+    ctx._bodyBuf = ctx._bodyBuf.substr(2);
+    ctx._transferEncodingState = BodyContext::ReadingChunkSize;
 }
 
 void BodyParser::_parseChunkSize(Connection* conn) {
+    BodyContext& ctx = conn->bodyCtx;
     size_t pos = 0;
-    if ((pos = _bodyBuf.find("\r\n")) == std::string::npos) // test if end of chunk-size
+    if ((pos = ctx._bodyBuf.find("\r\n")) == std::string::npos) // test if end of chunk-size
         return;
 
-    if (!_validateHex(_currentChunkSize, _bodyBuf, conn))
+    if (!_validateHex(ctx._currentChunkSize, ctx._bodyBuf, conn))
         return;
-    _chunkRestSize = _currentChunkSize;
+    ctx._chunkRestSize = ctx._currentChunkSize;
 
-    _bodyBuf = _bodyBuf.substr(pos + 2);
-    _transferEncodingState = BodyContext::ReadingChunk;
+    ctx._bodyBuf = ctx._bodyBuf.substr(pos + 2);
+    ctx._transferEncodingState = BodyContext::ReadingChunk;
 }
 
 void BodyParser::_parseTransferEncoding(Connection* conn) {
-    _bodyBuf += std::string(conn->_readBuf.data(), conn->_readBuf.size());
+    conn->bodyCtx._bodyBuf += std::string(conn->_readBuf.data(), conn->_readBuf.size());
     conn->_readBuf.clear();
 
+    BodyContext& ctx = conn->bodyCtx;
     bool continueProcessing = true;
     BodyContext::TE_STAGE current_stage;
     while (continueProcessing) {
-        current_stage = _transferEncodingState;
-        switch (_transferEncodingState) {
+        current_stage = ctx._transferEncodingState;
+        switch (ctx._transferEncodingState) {
         case BodyContext::ReadingChunkSize:
             _parseChunkSize(conn);
-            continueProcessing = (_transferEncodingState != current_stage);
+            continueProcessing = (ctx._transferEncodingState != current_stage);
             break;
         case BodyContext::ReadingChunk:
             _parseChunk(conn);
-            continueProcessing = (_transferEncodingState != current_stage);
+            continueProcessing = (ctx._transferEncodingState != current_stage);
             break;
         case BodyContext::VerifyCarriageReturn:
             _verifyCarriageReturn(conn);
-            continueProcessing = (_transferEncodingState != current_stage);
+            continueProcessing = (ctx._transferEncodingState != current_stage);
             break;
         }
     }
