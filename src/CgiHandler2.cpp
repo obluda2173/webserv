@@ -131,8 +131,8 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
             resp.contentLength = std::strtoul(headerValue.c_str(), NULL, 10);
         } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
-        // } else {
-        //     resp.headers[headerKey] = headerValue; 
+        } else {
+            resp.headers[headerKey] = headerValue; 
         }
     }
     resp.body = new StringBodyProvider(body);
