@@ -114,7 +114,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             if (isCGIrequest)
                 conn->_hdlr = conn->route.hdlrs["CGI"];
             else
-                conn->_hdlr = conn->route.hdlrs[conn->getRequest().method];
+                conn->_hdlr = route.hdlrs[conn->getRequest().method];
 
             conn->route = route;
             conn->setState(Connection::Handling);
