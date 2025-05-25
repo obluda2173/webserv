@@ -30,6 +30,10 @@ SRC_FILES := 	$(SRC_DIR)/Buffer.cpp \
 				$(SRC_DIR)/EpollIONotifier.cpp \
 				$(SRC_DIR)/GetHandler.cpp \
 				$(SRC_DIR)/UploadHandler.cpp \
+				$(SRC_DIR)/DeleteHandler.cpp \
+				$(SRC_DIR)/CgiHandler.cpp \
+				$(SRC_DIR)/CgiHandler2.cpp \
+				$(SRC_DIR)/CgiHandler3.cpp \
 				$(SRC_DIR)/HttpParser.cpp \
 				$(SRC_DIR)/Listener.cpp \
 				$(SRC_DIR)/Logger.cpp \

@@ -34,7 +34,8 @@ std::string findInterpreter(std::map< std::string, std::string > cgiMap, const s
     for (std::map< std::string, std::string >::const_iterator it = cgiMap.begin(); it != cgiMap.end(); ++it) {
         const std::string& ext = it->first;
         const std::string& interpreter = it->second;
-        std::string dotExt = "." + ext;
+        // std::string dotExt = "." + ext;
+        std::string dotExt =  ext;
 
         std::string::size_type pos = uri.find(dotExt);
         if (pos == std::string::npos)

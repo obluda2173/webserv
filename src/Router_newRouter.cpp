@@ -2,6 +2,7 @@
 #include "ConfigStructure.h"
 #include "GetHandler.h"
 #include "UploadHandler.h"
+#include "CgiHandler.h"
 #include "utils.h"
 
 void addAllMethods(std::string svrName, std::string prefix, RouteConfig cfg, IRouter* r) {
@@ -60,6 +61,8 @@ std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCf
                 std::map< std::string, IHandler* > hdlrs;
                 hdlrs["GET"] = new GetHandler();
                 hdlrs["POST"] = new UploadHandler();
+                hdlrs["CGI"] = new CgiHandler();
+
                 IRouter* r = new Router(hdlrs);
                 addSvrToRouter(r, svrCfg);
                 routers[ip + ":" + port] = r;

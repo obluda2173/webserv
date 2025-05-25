@@ -3,6 +3,7 @@
 
 #include <fcntl.h>
 #include <sstream>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
