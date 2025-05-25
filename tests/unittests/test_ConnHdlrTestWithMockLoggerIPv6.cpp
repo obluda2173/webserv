@@ -1,6 +1,8 @@
 #include "test_ConnectionHandlerFixture.h"
 
 TEST_F(ConnHdlrTestWithMockLoggerIPv6, acceptANewConnection) {
+    using ::testing::_;
+    EXPECT_CALL(*_logger, log(_, _)).Times(testing::AnyNumber());
     std::string clientIp = "00:00:00:00:00:00:00:01";
     std::string clientPort = "10001";
     int clientfd = newSocket(clientIp, clientPort, AF_INET6);

@@ -97,7 +97,7 @@ class ConnHdlrTestTestRouting : public BaseConnHdlrTest< StubLogger > {
     }
 };
 
-class ConnHdlrTestWithMockLoggerIPv6 : public BaseConnHdlrTest< MockLogger > {
+class ConnHdlrTestWithMockLoggerIPv6 : public BaseConnHdlrTest< testing::NiceMock< MockLogger > > {
     void setupServer() override {
         getAddrInfoHelper(NULL, "8080", AF_INET6, &_svrAddrInfo);
         _serverfd = newListeningSocket(_svrAddrInfo, 5);
@@ -127,6 +127,8 @@ class ConnHdlrTestWithOneConnection : public BaseConnHdlrTest< StubLogger, Param
 
 class ConnHdlrTestWithOneConnectionMockLogger : public BaseConnHdlrTest< testing::NiceMock< MockLogger > > {
     virtual void setupClientConnections() override {
+        using ::testing::_;
+        EXPECT_CALL(*_logger, log(_, _)).Times(testing::AnyNumber());
         int clientfd;
         int connfd;
         int port = 23456;

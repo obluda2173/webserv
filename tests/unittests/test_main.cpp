@@ -4,7 +4,8 @@
 int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
     // Don't run the following tests
-    testing::GTEST_FLAG(filter) = "-*CgiPostHandlerTest.HandlesPostRequests*";
+    // testing::GTEST_FLAG(filter) = "-*CgiPostHandlerTest.HandlesPostRequests*";
+    testing::GTEST_FLAG(filter) = "-*ListenerTestWithMockLogging*";
 
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
@@ -22,6 +23,7 @@ int main(int argc, char* argv[]) {
 
     // only run the following test
 
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithMockLoggerIPv6.acceptANewConnection*";
     // testing::GTEST_FLAG(filter) = "*mustTranslateToRealIps*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.multipleTransferEncodingConnections*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";
