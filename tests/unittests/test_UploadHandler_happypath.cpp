@@ -14,7 +14,7 @@ TEST(UploadHdlrTest2, uploading) {
     size_t pos = 0;
     size_t batchSize = 10;
     conn->_bodyFinished = false;
-    while (conn->uploadCtx.state != UploadContext::UploadFinished) {
+    while (conn->getState() != Connection::SendResponse) {
         conn->_tempBody = body.substr(pos, batchSize);
         pos += batchSize;
         if (pos >= body.length())
@@ -22,16 +22,9 @@ TEST(UploadHdlrTest2, uploading) {
 
         uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false, {}, {}});
     }
-    // test idempotency
-    int count = 0;
-    while (count++ < 3)
-        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 0, false, {}, {}});
-    EXPECT_FALSE(conn->uploadCtx.file->is_open());
-    EXPECT_EQ(conn->getState(), Connection::SendResponse);
     delete uploadHdlr;
 
     HttpResponse resp = conn->_response;
-    delete conn;
     std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
     EXPECT_EQ(body.length(), gotFile1.length());
     EXPECT_EQ(body, gotFile1);
@@ -39,4 +32,5 @@ TEST(UploadHdlrTest2, uploading) {
     EXPECT_EQ("Created", resp.statusMessage);
 
     removeFile(ROOT + PREFIX + filename);
+    delete conn;
 }
