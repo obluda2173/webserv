@@ -23,10 +23,10 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     Connection* conn2 = setupConnWithContentLength(filename, body.length());
 
     conn1->_tempBody = std::string(body.substr(0, 500));
-    uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}});
+    uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}, {}});
 
     conn2->_tempBody = std::string(body.substr(0, 500));
-    uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
+    uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}, {}});
 
     EXPECT_EQ(409, conn2->_response.statusCode);
     EXPECT_EQ("Conflict", conn2->_response.statusMessage);
@@ -35,7 +35,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
 
     conn1->_tempBody = std::string(body.substr(500));
     conn1->_bodyFinished = true;
-    uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}});
+    uploadHdlr->handle(conn1, conn1->_request, {ROOT, {}, {}, 10000, false, {}, {}});
 
     EXPECT_EQ(201, conn1->_response.statusCode);
     EXPECT_EQ("Created", conn1->_response.statusMessage);
@@ -43,7 +43,7 @@ TEST(UploadHdlrErrorTest, NoUploadOnSameFile) {
     conn2 = setupConnWithContentLength(filename, body.length());
     conn2->_tempBody = body;
     conn2->_bodyFinished = true;
-    uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}});
+    uploadHdlr->handle(conn2, conn2->_request, {ROOT, {}, {}, 10000, false, {}, {}});
     EXPECT_EQ(200, conn2->_response.statusCode);
     EXPECT_EQ("OK", conn2->_response.statusMessage);
 
@@ -106,7 +106,7 @@ TEST_P(UploadHdlrFileErrorsTest, filePathNotExist) {
     conn->_bodyFinished = true;
 
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}, {}});
 
     HttpResponse resp = conn->_response;
     delete conn; // need to delete conn to close the file and write to disk

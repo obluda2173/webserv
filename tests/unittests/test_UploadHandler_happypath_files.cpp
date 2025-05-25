@@ -19,7 +19,7 @@ TEST(UploadHdlrTest, changeFileExisting) {
     conn->_bodyFinished = true;
 
     IHandler* uploadHdlr = new UploadHandler();
-    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+    uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}, {}});
     EXPECT_FALSE(conn->uploadCtx.file->is_open());
 
     HttpResponse resp = conn->_response;
@@ -50,7 +50,7 @@ TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
         if (pos >= body.length())
             conn->_bodyFinished = true;
 
-        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}, {}});
         struct stat statStruct;
         bool fileExists = !stat((ROOT + PREFIX + filename).c_str(), &statStruct);
         bool tempExists = !stat((ROOT + PREFIX + filename + ".temp").c_str(), &statStruct);
@@ -95,7 +95,7 @@ TEST(UploadHdlrTest, testTempFileExistFileExist) {
         pos += batchSize;
         if (pos >= body.length())
             conn->_bodyFinished = true;
-        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
+        uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}, {}});
         struct stat statStruct;
         bool fileExists = !stat((ROOT + PREFIX + filename).c_str(), &statStruct);
         bool tempExists = !stat((ROOT + PREFIX + filename + ".temp").c_str(), &statStruct);

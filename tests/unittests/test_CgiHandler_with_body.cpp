@@ -37,7 +37,8 @@ TEST_P(CgiPostHandlerTest, HandlesPostRequests) {
                        {},
                        1000000,
                        false,
-                       {{"php", "/usr/bin/php-cgi"}, {"py", "/usr/bin/python3"}}};
+                       {{"php", "/usr/bin/php-cgi"}, {"py", "/usr/bin/python3"}},
+                       {}};
 
     HttpRequest req = HttpRequest();
     req.method = "POST";

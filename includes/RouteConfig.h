@@ -12,6 +12,7 @@ struct RouteConfig {
     size_t clientMaxBody;
     bool autoindex;
     std::map< std::string, std::string > cgi;
+    std::pair< int, std::string > redirect;
 };
 
 #endif // ROUTECONFIG_H

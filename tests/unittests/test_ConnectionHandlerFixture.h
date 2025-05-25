@@ -258,7 +258,7 @@ class ConnHdlrTestStubUploadHdlr : public BaseConnHdlrTest< StubLogger, int > {
         _uploadHdlr = new StubUploadHdlr();
         std::map< std::string, IHandler* > hdlrs = {{"POST", _uploadHdlr}};
         IRouter* router = new Router(hdlrs);
-        router->add("test.com", "", "POST", {"", {}, {}, 10000, false, {}});
+        router->add("test.com", "", "POST", {"", {}, {}, 10000, false, {}, {}});
 
         std::map< std::string, IRouter* > routers;
         routers["0.0.0.0:8080"] = router;
