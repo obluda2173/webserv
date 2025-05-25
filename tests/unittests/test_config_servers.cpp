@@ -7,7 +7,7 @@ class ServerConfigTest : public ::testing::Test {
   protected:
     void TearDown() override { std::remove("configTest.conf"); }
 
-    std::vector<ServerConfig> parseConfig(const std::string& content) {
+    std::vector< ServerConfig > parseConfig(const std::string& content) {
         std::ofstream file("configTest.conf");
         file << content;
         file.close();
@@ -17,10 +17,10 @@ class ServerConfigTest : public ::testing::Test {
 };
 
 TEST_F(ServerConfigTest, NoServername1) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     ASSERT_EQ(config[0].serverNames.size(), 1);
@@ -31,19 +31,19 @@ TEST_F(ServerConfigTest, NoServername1) {
 
 TEST_F(ServerConfigTest, NoServername2) {
     EXPECT_THROW(parseConfig("server {\n"
-                 "    listen 80;\n"
-                 "    server_name ;\n"
-                 "    root /var/www/html;\n"
-                 "}\n"),
-                std::runtime_error);
+                             "    listen 80;\n"
+                             "    server_name ;\n"
+                             "    root /var/www/html;\n"
+                             "}\n"),
+                 std::runtime_error);
 }
 
 TEST_F(ServerConfigTest, BasicServerConfiguration) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     ASSERT_EQ(config[0].serverNames.size(), 1);
@@ -53,15 +53,15 @@ TEST_F(ServerConfigTest, BasicServerConfiguration) {
 }
 
 TEST_F(ServerConfigTest, ServerWithLocationBlock) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 8080;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    location /images/ {\n"
-                                                   "        root /var/www/images;\n"
-                                                   "        allow_methods GET;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 8080;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    location /images/ {\n"
+                                                     "        root /var/www/images;\n"
+                                                     "        allow_methods GET;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 8080)), 1);
     ASSERT_EQ(config[0].serverNames.size(), 1);
@@ -75,12 +75,12 @@ TEST_F(ServerConfigTest, ServerWithLocationBlock) {
 }
 
 TEST_F(ServerConfigTest, HandlesClientMaxBodySize) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    client_max_body_size 10m;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    client_max_body_size 10m;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -89,12 +89,12 @@ TEST_F(ServerConfigTest, HandlesClientMaxBodySize) {
 }
 
 TEST_F(ServerConfigTest, MultipleListenDirectives) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    listen 127.0.0.1:80;\n"
-                                                   "    listen [::1]:80;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    listen 127.0.0.1:80;\n"
+                                                     "    listen [::1]:80;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
@@ -120,11 +120,11 @@ TEST_F(ServerConfigTest, ThrowsOnMissingRequiredDirective) {
 TEST_F(ServerConfigTest, HandlesEmptyServerBlock) { EXPECT_THROW(parseConfig("server {}\n"), std::runtime_error); }
 
 TEST_F(ServerConfigTest, HandlesMultipleServerNames) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www;\n"
-                                                   "    server_name example.com www.example.com;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www;\n"
+                                                     "    server_name example.com www.example.com;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
@@ -134,12 +134,12 @@ TEST_F(ServerConfigTest, HandlesMultipleServerNames) {
 }
 
 TEST_F(ServerConfigTest, HandleIndexFiles) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www;\n"
-                                                   "    server_name example.com www.example.com;\n"
-                                                   "    index index.html index.htm default.html;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www;\n"
+                                                     "    server_name example.com www.example.com;\n"
+                                                     "    index index.html index.htm default.html;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
@@ -153,14 +153,14 @@ TEST_F(ServerConfigTest, HandleIndexFiles) {
 }
 
 TEST_F(ServerConfigTest, HandleIndexFilesInLocationContext) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www;\n"
-                                                   "    server_name example.com www.example.com;\n"
-                                                   "    location /images/ {\n"
-                                                   "        index index.html index.htm default.html;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www;\n"
+                                                     "    server_name example.com www.example.com;\n"
+                                                     "    location /images/ {\n"
+                                                     "        index index.html index.htm default.html;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
@@ -175,7 +175,7 @@ TEST_F(ServerConfigTest, HandleIndexFilesInLocationContext) {
 }
 
 TEST_F(ServerConfigTest, HandleIndexFilesInMultipleLocationContext) {
-    std::vector<ServerConfig> config =
+    std::vector< ServerConfig > config =
         parseConfig("server {\n"
                     "    listen 80;\n"
                     "    root /var/www;\n"
@@ -232,22 +232,22 @@ TEST_F(ServerConfigTest, ThrowsOnInvalidHttpMethodInServer) {
 }
 
 TEST_F(ServerConfigTest, HandleMultipleServerContextWithLocationsInside) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www;\n"
-                                                   "    server_name example.com www.example.com;\n"
-                                                   "    location /images/ {\n"
-                                                   "        index index.html index.htm default.html;\n"
-                                                   "    }\n"
-                                                   "}\n"
-                                                   "server {\n"
-                                                   "    listen 81;\n"
-                                                   "    root /car/www;\n"
-                                                   "    server_name nexample.com www.nexample.com;\n"
-                                                   "    location /nimages/ {\n"
-                                                   "        index pindex.html pindex.htm pefault.html;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www;\n"
+                                                     "    server_name example.com www.example.com;\n"
+                                                     "    location /images/ {\n"
+                                                     "        index index.html index.htm default.html;\n"
+                                                     "    }\n"
+                                                     "}\n"
+                                                     "server {\n"
+                                                     "    listen 81;\n"
+                                                     "    root /car/www;\n"
+                                                     "    server_name nexample.com www.nexample.com;\n"
+                                                     "    location /nimages/ {\n"
+                                                     "        index pindex.html pindex.htm pefault.html;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
@@ -277,28 +277,28 @@ TEST_F(ServerConfigTest, HandleMultipleServerContextWithLocationsInside) {
 }
 
 TEST_F(ServerConfigTest, HandleMultipleServerContextWithMultipleLocationsInside) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www;\n"
-                                                   "    server_name example.com www.example.com;\n"
-                                                   "    location /images/ {\n"
-                                                   "        index index.html index.htm default.html;\n"
-                                                   "    }\n"
-                                                   "    location /nimages/ {\n"
-                                                   "        index pindex.html pindex.htm pefault.html;\n"
-                                                   "    }\n"
-                                                   "}\n"
-                                                   "server {\n"
-                                                   "    listen 81;\n"
-                                                   "    root /car/www;\n"
-                                                   "    server_name nexample.com www.nexample.com;\n"
-                                                   "    location /nimages/ {\n"
-                                                   "        index pindex.html pindex.htm pefault.html;\n"
-                                                   "    }\n"
-                                                   "    location /images/ {\n"
-                                                   "        index index.html index.htm default.html;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www;\n"
+                                                     "    server_name example.com www.example.com;\n"
+                                                     "    location /images/ {\n"
+                                                     "        index index.html index.htm default.html;\n"
+                                                     "    }\n"
+                                                     "    location /nimages/ {\n"
+                                                     "        index pindex.html pindex.htm pefault.html;\n"
+                                                     "    }\n"
+                                                     "}\n"
+                                                     "server {\n"
+                                                     "    listen 81;\n"
+                                                     "    root /car/www;\n"
+                                                     "    server_name nexample.com www.nexample.com;\n"
+                                                     "    location /nimages/ {\n"
+                                                     "        index pindex.html pindex.htm pefault.html;\n"
+                                                     "    }\n"
+                                                     "    location /images/ {\n"
+                                                     "        index index.html index.htm default.html;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].common.root, "/var/www");
@@ -340,12 +340,12 @@ TEST_F(ServerConfigTest, HandleMultipleServerContextWithMultipleLocationsInside)
 }
 
 TEST_F(ServerConfigTest, SimpleCheckOfAutoindex) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    listen 127.0.0.1:80;\n"
-                                                   "    listen [::1]:80;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    listen 127.0.0.1:80;\n"
+                                                     "    listen [::1]:80;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
@@ -365,12 +365,12 @@ TEST_F(ServerConfigTest, ErrorPageInsufficientArguments) {
 }
 
 TEST_F(ServerConfigTest, ValidErrorPageDirective) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www;\n"
-                                                   "    error_page 404 500 /errors/50x.html;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www;\n"
+                                                     "    error_page 404 500 /errors/50x.html;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].common.errorPage[404], "/errors/50x.html");
     EXPECT_EQ(config[0].common.errorPage[500], "/errors/50x.html");
@@ -397,23 +397,23 @@ TEST_F(ServerConfigTest, ErrorPageNonNumericCode) {
 }
 
 TEST_F(ServerConfigTest, ValidAutoindexOn) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www;\n"
-                                                   "    autoindex on;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www;\n"
+                                                     "    autoindex on;\n"
+                                                     "}\n");
 
     EXPECT_TRUE(config[0].common.autoindex);
 }
 
 TEST_F(ServerConfigTest, ValidAutoindexOff) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www;\n"
-                                                   "    autoindex off;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www;\n"
+                                                     "    autoindex off;\n"
+                                                     "}\n");
 
     EXPECT_FALSE(config[0].common.autoindex);
 }
@@ -429,25 +429,25 @@ TEST_F(ServerConfigTest, InvalidAutoindexValue) {
 }
 
 TEST_F(ServerConfigTest, DefaultAutoindexValue) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www;\n"
+                                                     "}\n");
 
     EXPECT_FALSE(config[0].common.autoindex);
 }
 
 TEST_F(ServerConfigTest, ValidPairedCGI) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www;\n"
-                                                   "    location cg_path {\n"
-                                                   "        cgi_ext .php /usr/bin/php-cgi;\n"
-                                                   "        cgi_ext .py /usr/bin/python;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www;\n"
+                                                     "    location cg_path {\n"
+                                                     "        cgi_ext .php /usr/bin/php-cgi;\n"
+                                                     "        cgi_ext .py /usr/bin/python;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].locations[0].cgi.size(), 2);
     EXPECT_EQ(config[0].locations[0].cgi[".php"], "/usr/bin/php-cgi");
@@ -528,15 +528,15 @@ TEST_F(ServerConfigTest, DuplicateExtensions) {
 }
 
 TEST_F(ServerConfigTest, CaseSensitiveExtensions) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    root /var/www;\n"
-                                                   "    location cg_path {\n"
-                                                   "        cgi_ext .PHP /usr/bin/php-cgi;\n"
-                                                   "        cgi_ext .py /usr/bin/python;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www;\n"
+                                                     "    location cg_path {\n"
+                                                     "        cgi_ext .PHP /usr/bin/php-cgi;\n"
+                                                     "        cgi_ext .py /usr/bin/python;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].locations[0].cgi[".PHP"], "/usr/bin/php-cgi");
     EXPECT_EQ(config[0].locations[0].cgi[".py"], "/usr/bin/python");
@@ -578,11 +578,11 @@ TEST_F(ServerConfigTest, KaysAccidentTest) {
 }
 
 TEST_F(ServerConfigTest, DefaultClientMaxBodySize) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -601,14 +601,14 @@ TEST_F(ServerConfigTest, ValidateInvalidCgi) {
 }
 
 TEST_F(ServerConfigTest, SimpleRedirectCheck) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 80;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "    location /old {\n"
-                                                   "           return http://mysite.com/new;\n"
-                                                   "    }\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 80;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    location /old {\n"
+                                                     "           return http://mysite.com/new;\n"
+                                                     "    }\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
@@ -618,13 +618,13 @@ TEST_F(ServerConfigTest, SimpleRedirectCheck) {
 }
 
 TEST_F(ServerConfigTest, CrazyPorts1) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 192.168.1.1:443;\n"
-                                                   "    listen 192.168.1.1:442;\n"
-                                                   "    listen 192.168.1.2:442;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 192.168.1.1:443;\n"
+                                                     "    listen 192.168.1.1:442;\n"
+                                                     "    listen 192.168.1.2:442;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 443)), 1);
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 442)), 1);
@@ -635,13 +635,13 @@ TEST_F(ServerConfigTest, CrazyPorts1) {
 }
 
 TEST_F(ServerConfigTest, CrazyPorts2IPv6) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen [::ffff:192.0.2.1];\n"
-                                                   "    listen [::ffff:192.0.2.1]:81;\n"
-                                                   "    listen [2001:db8::1]:80;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen [::ffff:192.0.2.1];\n"
+                                                     "    listen [::ffff:192.0.2.1]:81;\n"
+                                                     "    listen [2001:db8::1]:80;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("::ffff:192.0.2.1"), 80)), 1);
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("::ffff:192.0.2.1"), 81)), 1);
@@ -652,15 +652,29 @@ TEST_F(ServerConfigTest, CrazyPorts2IPv6) {
 }
 
 TEST_F(ServerConfigTest, CrazyPorts3) {
-    std::vector<ServerConfig> config = parseConfig("server {\n"
-                                                   "    listen 192.168.1.1:443 192.168.1.1:442;\n"
-                                                   "    root /var/www/html;\n"
-                                                   "    server_name example.com;\n"
-                                                   "}\n");
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen 192.168.1.1:443 192.168.1.1:442;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "    server_name example.com;\n"
+                                                     "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 443)), 1);
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 442)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
     EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, LocalhostIp) {
+    std::vector< ServerConfig > config = parseConfig("server {\n"
+                                                     "    listen localhost:80;\n"
+                                                     "    server_name example.com;\n"
+                                                     "    root /var/www/html;\n"
+                                                     "}\n");
+
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("localhost"), 80)), 1);
+    ASSERT_EQ(config[0].serverNames.size(), 1);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_TRUE(config[0].locations.empty());
 }

@@ -48,10 +48,6 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         break;
     default:
         break;
-        // TODO: Maybe handle CGI handling like this:
-        // case Connection::HandlingCgi:
-        //     _ioNotifier.modify(conn->cgiCtx.cgiPipeFd, READY_TO_READ);
-        //     break;
     }
 }
 
@@ -140,6 +136,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketRead(Connection* conn) {
+    _logger.log("INFO", "Reading");
     conn->readIntoBuf();
     if (conn->_readBuf.size() == 0) // EOF
         return _removeConnection(conn->getFileDes());
@@ -183,12 +180,15 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:
+        _logger.log("INFO", "Client hung up");
         _removeConnection(fd);
         break;
     case BROKEN_CONNECTION:
+        _logger.log("INFO", "Broken Connection");
         _removeConnection(fd);
         break;
     case TIMEOUT:
+        _logger.log("INFO", "Timeout");
         _removeConnection(fd);
         break;
     }

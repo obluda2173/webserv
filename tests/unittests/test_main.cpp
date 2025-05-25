@@ -21,6 +21,8 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestMultipleRouter*";
 
     // only run the following test
+
+    // testing::GTEST_FLAG(filter) = "*mustTranslateToRealIps*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.multipleTransferEncodingConnections*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestChunkedSend*";
@@ -81,6 +83,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ServerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParser*";
     // testing::GTEST_FLAG(filter) = "*HandlerTest*";
-    // testing::GTEST_FLAG(filter) = "*ServerConfig*";
+    testing::GTEST_FLAG(filter) = "*ServerConfig*";
     return RUN_ALL_TESTS();
 }
