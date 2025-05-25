@@ -21,6 +21,8 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestMultipleRouter*";
 
     // only run the following test
+
+    // testing::GTEST_FLAG(filter) = "*mustTranslateToRealIps*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.multipleTransferEncodingConnections*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";
     // testing::GTEST_FLAG(filter) = "*ConnectionTestChunkedSend*";

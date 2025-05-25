@@ -61,7 +61,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 unittest: prepare_unittests
 	cmake -S . -B build && \
-	cmake --build build -j$(nproc) && \
+	cmake --build build -j$(($(nproc) / 2)) && \
 	./build/run_unittests
 
 prepare_unittests:
