@@ -606,14 +606,14 @@ TEST_F(ServerConfigTest, SimpleRedirectCheck) {
                                                    "    root /var/www/html;\n"
                                                    "    server_name example.com;\n"
                                                    "    location /old {\n"
-                                                   "           return http://mysite.com/new;\n"
+                                                   "           return 301 http://mysite.com/new;\n"
                                                    "    }\n"
                                                    "}\n");
 
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
-    EXPECT_EQ(config[0].locations[0].redirect, "http://mysite.com/new");
+    EXPECT_EQ(config[0].locations[0].redirect, std::make_pair(301, std::string("http://mysite.com/new")));
     EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
 }
 
@@ -662,5 +662,78 @@ TEST_F(ServerConfigTest, CrazyPorts3) {
     EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("192.168.1.1"), 442)), 1);
     EXPECT_EQ(config[0].serverNames[0], "example.com");
     EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, SimpleRedirectCheck6) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen 80;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "    server_name example.com;\n"
+                                                   "    location /old {\n"
+                                                   "           return 302 http://mysite.com/new;\n"
+                                                   "    }\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].locations[0].redirect, std::make_pair(302, std::string("http://mysite.com/new")));
+    EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
+}
+
+TEST_F(ServerConfigTest, MissingStatusCode) {
+    EXPECT_THROW(parseConfig("server {\n"
+                             "    listen 80;\n"
+                             "    server_name example.com;\n"
+                             "    root /var/www;\n"
+                             "    allow_methods HEAD;"
+                             "    location /old {\n"
+                             "           return http://mysite.com/new;\n"
+                             "    }\n"
+                             "}\n"),
+                 std::runtime_error);
+}
+
+TEST_F(ServerConfigTest, InvalidStatusCode) {
+    EXPECT_THROW(parseConfig("server {\n"
+                             "    listen 80;\n"
+                             "    server_name example.com;\n"
+                             "    root /var/www;\n"
+                             "    allow_methods HEAD;"
+                             "    location /old {\n"
+                             "           return 400 http://mysite.com/new;\n"
+                             "    }\n"
+                             "}\n"),
+                 std::runtime_error);
+}
+
+TEST_F(ServerConfigTest, Regexp) {
+    EXPECT_THROW(parseConfig("server {\n"
+                             "    listen 80;\n"
+                             "    server_name example.com;\n"
+                             "    root /var/www;\n"
+                             "    allow_methods HEAD;"
+                             "    location ~* ^/images/(.*)\\.(jpg|png)$ {"
+                             "        return 302 https://cdn.example.com/images/$1.$2;"
+                             "    }"
+                             "}\n"),
+                 std::runtime_error);
+}
+
+TEST_F(ServerConfigTest, ValidRedirect) {
+    std::vector<ServerConfig> config = parseConfig("server {\n"
+                                                   "    listen 80;\n"
+                                                   "    root /var/www/html;\n"
+                                                   "    server_name example.com;\n"
+                                                   "    location /old {\n"
+                                                   "           return 302 $scheme://www.example.com$request_uri;\n"
+                                                   "    }\n"
+                                                   "}\n");
+
+    EXPECT_EQ(config[0].listen.count(std::make_pair(std::string("0.0.0.0"), 80)), 1);
+    EXPECT_EQ(config[0].serverNames[0], "example.com");
+    EXPECT_EQ(config[0].common.root, "/var/www/html");
+    EXPECT_EQ(config[0].locations[0].redirect, std::make_pair(302, std::string("$scheme://www.example.com$request_uri")));
     EXPECT_EQ(config[0].common.clientMaxBody, 1024 * 1024);
 }

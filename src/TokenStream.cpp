@@ -29,12 +29,12 @@ void TokenStream::_tokenize() {
             while (_pos < _text.size() && _text[_pos] != '\n')
                 _advance();
         } else if (isalnum(c) || c == '_' || c == '/' || c == '.' || c == ':' || c == '[' || c == ']' ||
-                   c == '-') { // identifier
+                   c == '-' || c == '$') { // identifier
             int startCol = _col;
             std::string val;
             while (_pos < _text.size() &&
                    (isalnum(_text[_pos]) || _text[_pos] == '_' || _text[_pos] == '/' || _text[_pos] == '.' ||
-                    _text[_pos] == ':' || _text[_pos] == '[' || _text[_pos] == ']' || _text[_pos] == '-')) {
+                    _text[_pos] == ':' || _text[_pos] == '[' || _text[_pos] == ']' || _text[_pos] == '-' || _text[_pos] == '$')) {
                 val += _text[_pos];
                 _advance();
             }
