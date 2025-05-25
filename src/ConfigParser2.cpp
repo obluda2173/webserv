@@ -120,13 +120,13 @@ void ConfigParser::_parseRedirection(const Directive& directive, LocationConfig&
     unsigned long code;
     const std::vector< std::string >& args = directive.args;
     code = strtoul(args[0].c_str(), &end, 10);
-    if (*end != '\0' || args[0].empty() || code < 300 || code > 399) {
+    if (*end != '\0' || args[0].empty() || code < 301 || code > 308) {
         throw std::runtime_error("Invalid return status code value: " + args[0]);
     }
     if (args[1].find_first_of("^~") != std::string::npos) {
        throw std::runtime_error("Regexp is not supported: " + args[1]);
     }
-    config.redirect = std::make_pair(code, args[1]);
+    config.redirect = std::make_pair(static_cast<int>(code), args[1]);
 }
 
 void ConfigParser::_parseRoot(const Directive& directive, CommonConfig& config) {

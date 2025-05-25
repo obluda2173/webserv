@@ -8,6 +8,7 @@
 #include "IIONotifier.h"
 #include "PingHandler.h"
 #include "Router.h"
+#include "GetHandler.h"
 #include "test_main.h"
 #include "test_mocks.h"
 #include "test_stubs.h"
@@ -262,6 +263,30 @@ class ConnHdlrTestStubUploadHdlr : public BaseConnHdlrTest< StubLogger, int > {
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "POST", {"", {}, {}, 10000, false, {}, {}});
 
+        std::map< std::string, IRouter* > routers;
+        routers["0.0.0.0:8080"] = router;
+        _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
+    }
+
+    virtual void setupClientConnections() override {
+        int clientfd;
+        int connfd;
+        int port = 23456;
+        clientfd = newSocket("127.0.0.2", std::to_string(port), AF_INET);
+        ASSERT_NE(connect(clientfd, _svrAddrInfo->ai_addr, _svrAddrInfo->ai_addrlen), -1)
+            << "connect: " << std::strerror(errno) << std::endl;
+        connfd = _connHdlr->handleConnection(_serverfd, READY_TO_READ);
+        fcntl(clientfd, F_SETFL, O_NONBLOCK);
+        _clientFdsAndConnFds.push_back(std::pair< int, int >{clientfd, connfd});
+    }
+};
+
+class ConnHdlrTestRedirections : public BaseConnHdlrTest< StubLogger, int > {
+  public:
+    virtual void setupConnectionHandler() override {
+        std::map< std::string, IHandler* > hdlrs = {{"GET", new GetHandler()}};
+        IRouter* router = new Router(hdlrs);
+        router->add("test.com", "/google", "GET", {"", {}, {}, 0, false, {}, {301, "https://www.google.com"}});
         std::map< std::string, IRouter* > routers;
         routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);

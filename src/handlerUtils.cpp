@@ -1,5 +1,6 @@
 #include "handlerUtils.h"
 #include <sstream>
+#include "utils.h"
 
 std::map< std::string, std::string > mimeTypes;
 struct MimeInitializer {
@@ -84,6 +85,10 @@ std::string normalizePath(const std::string& root, const std::string& uri) {
         result += "/";
     }
     return (result.find(root) == 0) ? result : "";
+}
+
+void setHeader(HttpResponse& resp, std::string key, std::string value) {
+    resp.headers[toLower(key)] = value;
 }
 
 void setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType,
