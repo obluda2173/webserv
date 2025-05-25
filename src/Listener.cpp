@@ -35,6 +35,6 @@ void Listener::stop() {
 }
 
 void Listener::add(int socketfd) {
-    _ioNotifier->add(socketfd);
+    _ioNotifier->addNoTimeout(socketfd);
     _socketfds.push_back(socketfd);
 }
