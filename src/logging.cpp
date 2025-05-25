@@ -27,9 +27,13 @@ void logDisconnect(ILogger& logger, sockaddr_storage addr) {
     if (addr.ss_family == AF_INET) {
         std::stringstream info;
         sockaddr_in* addr_in = (sockaddr_in*)&addr;
-        unsigned char* ip = reinterpret_cast< unsigned char* >(&addr_in->sin_addr.s_addr);
-        info << "Disconnect IP: " << static_cast< int >(ip[0]) << '.' << static_cast< int >(ip[1]) << '.'
-             << static_cast< int >(ip[2]) << '.' << static_cast< int >(ip[3]) << ", Port: " << ntohs(addr_in->sin_port);
+        info << "Disconnect IP: " << getIpv4String(addr_in) << ", Port: " << ntohs(addr_in->sin_port);
+        logger.log("INFO", info.str());
+    }
+    if (addr.ss_family == AF_INET6) {
+        std::stringstream info;
+        sockaddr_in6* addr_in6 = (sockaddr_in6*)&addr;
+        info << "Disconnect IP: " << getIpv6String(addr_in6) << ", Port: " << ntohs(addr_in6->sin6_port);
         logger.log("INFO", info.str());
     }
 }
