@@ -78,8 +78,9 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
-    // _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
-    // std::cout << std::string(conn->_readBuf.data(), conn->_readBuf.size()) << std::endl;
+    _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
+    std::cout << "in handle State" << std::endl;
+
     HttpResponse resp;
     IHandler* hdlr;
     IRouter* router;
@@ -92,25 +93,24 @@ void ConnectionHandler::_handleState(Connection* conn) {
         case Connection::ReadingHeaders:
             conn->parseBuf();
             continueProcessing = (conn->getState() != currentState);
+            std::cout << (conn->getState()) << std::endl;
             break;
         case Connection::Routing:
             router = _routers[conn->getAddrPort()];
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
-            // redirection should probably be here (checking route.cfg.redirect)
-            // possible state change: SetRedirectResponse and SendResponse
+
             if (!route.cfg.redirect.second.empty()) {
-                int code = route.cfg.redirect.first;
-                setHeader(conn->_response, "Location", route.cfg.redirect.second);
-                setResponse(conn->_response, code, "", 0, NULL);
-                conn->setState(Connection::SendResponse);
+                conn->setState(Connection::Handling);
                 break;
             }
+
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
                 setErrorResponse(conn->_response, 404, RouteConfig());
                 conn->setState(Connection::SendResponse);
                 break;
             }
+
             isCGIrequest = false;
             if (route.hdlrs.find("CGI") != route.hdlrs.end())
                 isCGIrequest = checkCGIRequest(conn->_request, route.cfg);
@@ -124,7 +124,23 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
+            std::cout << "handling body" << std::endl;
+            std::cout << conn->_bodyFinished << std::endl;
             _bodyPrsr->parse(conn);
+
+            std::cout << conn->_tempBody.size() << std::endl;
+            std::cout << conn->_bodyFinished << std::endl;
+            if (!route.cfg.redirect.second.empty()) {
+                if (conn->_bodyFinished) {
+                    int code = route.cfg.redirect.first;
+                    setHeader(conn->_response, "Location", route.cfg.redirect.second);
+                    setResponse(conn->_response, code, "", 0, NULL);
+                    conn->setState(Connection::SendResponse);
+                    break;
+                }
+                break;
+            }
+
             conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
@@ -159,7 +175,7 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
     if (conn->getState() == Connection::SendResponse) {
         conn->sendResponse();
 
-        if (conn->_response.statusCode == 400) {
+        if (conn->_response.statusCode >= 400) {
             _removeConnection(conn->getFileDes());
             return;
         }

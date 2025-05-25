@@ -9,6 +9,7 @@ Connection::Connection(sockaddr_storage addr, int fd, std::string addrPort, IHtt
     _readBuf = Buffer();
     _sendBuf = Buffer();
     _hdlr = NULL;
+    _bodyFinished = false;
 }
 
 Connection::~Connection() {
@@ -48,9 +49,12 @@ void Connection::readIntoBuf() { _readBuf.recv(_fd); }
 
 void Connection::parseBuf() {
     size_t count = 0;
+    std::cout << "in parseBuf" << std::endl;
+    std::cout << std::string(_readBuf.data(), _readBuf.size()) << std::endl;
     while (count < _readBuf.size()) {
         _prsr->feed(_readBuf.data() + count, 1);
         if (_prsr->error() || _prsr->ready()) {
+            std::cout << "error or ready" << std::endl;
             _readBuf.advance(count + 1);
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();
