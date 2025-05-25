@@ -33,6 +33,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.transferEncodingOneChunk*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.transferEncodingOneChunk*";
     // testing::GTEST_FLAG(filter) = "*TransferEncoding*";
+    // testing::GTEST_FLAG(filter) = "*UploadHdlr*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlrErrorTest*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlrTest.chunked*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";

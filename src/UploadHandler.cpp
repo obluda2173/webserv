@@ -118,8 +118,6 @@ bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
         setErrorResponse(conn->_response, 500, "Internal Server Error", cfg);
         return false;
     }
-    std::stringstream ss(conn->_request.headers["content-length"]);
-    ss >> ctx.contentLength;
     return true;
 }
 

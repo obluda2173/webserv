@@ -35,13 +35,10 @@ typedef struct BodyContext {
 
 typedef struct UploadContext {
     enum STATE { Validation, Initialising, Uploading, UploadFinished };
-    size_t bytesUploaded;
-    size_t contentLength;
     std::ofstream* file;
     bool fileExisted;
     UploadContext::STATE state;
-    UploadContext()
-        : bytesUploaded(0), contentLength(0), file(NULL), fileExisted(false), state(UploadContext::Validation) {}
+    UploadContext() : file(NULL), fileExisted(false), state(UploadContext::Validation) {}
 } UploadContext;
 
 struct CgiContext {
