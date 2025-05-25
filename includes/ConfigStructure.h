@@ -44,7 +44,7 @@ typedef struct CommonConfig {
 typedef struct LocationConfig {
     std::string prefix;
     std::map<std::string, std::string> cgi;
-    std::string redirect;
+    std::pair<int, std::string> redirect;
     CommonConfig common;
 } LocationConfig;
 

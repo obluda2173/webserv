@@ -112,10 +112,21 @@ void ConfigParser::_parseCgiExt(const Directive& directive, LocationConfig& conf
 }
 
 void ConfigParser::_parseRedirection(const Directive& directive, LocationConfig& config) {
-    if (directive.args.size() != 1) {
-        throw std::runtime_error("return requires exactly one argument");
+    if (directive.args.size() != 2) {
+        throw std::runtime_error("return requires exactly two arguments");
     }
-    config.redirect = directive.args[0];
+    
+    char* end;
+    unsigned long code;
+    const std::vector< std::string >& args = directive.args;
+    code = strtoul(args[0].c_str(), &end, 10);
+    if (*end != '\0' || args[0].empty() || code < 300 || code > 399) {
+        throw std::runtime_error("Invalid return status code value: " + args[0]);
+    }
+    if (args[1].find_first_of("^~") != std::string::npos) {
+       throw std::runtime_error("Regexp is not supported: " + args[1]);
+    }
+    config.redirect = std::make_pair(code, args[1]);
 }
 
 void ConfigParser::_parseRoot(const Directive& directive, CommonConfig& config) {
@@ -129,8 +140,8 @@ void ConfigParser::_parseClientMaxBodySize(const Directive& directive, CommonCon
     if (directive.args.size() != 1) {
         throw std::runtime_error("client_max_body_size requires exactly one argument");
     }
-    const std::string& arg = directive.args[0];
     char* end;
+    const std::string& arg = directive.args[0];
     unsigned long value = std::strtoul(arg.c_str(), &end, 10);
     if (end == arg.c_str()) {
         throw std::runtime_error("Invalid client_max_body_size value: " + arg);

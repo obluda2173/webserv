@@ -83,6 +83,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ServerTest*";
     // testing::GTEST_FLAG(filter) = "*HttpParser*";
     // testing::GTEST_FLAG(filter) = "*HandlerTest*";
-    testing::GTEST_FLAG(filter) = "*ServerConfig*";
+    // testing::GTEST_FLAG(filter) = "*ServerConfig*";
     return RUN_ALL_TESTS();
 }
