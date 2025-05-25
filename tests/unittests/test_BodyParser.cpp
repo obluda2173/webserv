@@ -116,6 +116,7 @@ TEST_P(BodyParserTestContentLength, MultipleConnections) {
 
     // Cleanup
     for (auto conn : connections) {
+        EXPECT_EQ(conn->bodyCtx.bytesReceived, 0);
         delete conn;
     }
 }

@@ -59,9 +59,9 @@ void BodyParser::_parseContentLength(Connection* conn) {
     } else {
         int countRest = bodyCtx.contentLength - bodyCtx.bytesReceived;
         conn->_tempBody = std::string(readBuf.data(), bodyCtx.contentLength - bodyCtx.bytesReceived);
-        bodyCtx.bytesReceived = bodyCtx.contentLength;
         conn->_bodyFinished = true;
         conn->bodyCtx.type = BodyContext::Undetermined;
+        bodyCtx.bytesReceived = 0;
         readBuf.advance(countRest);
     }
 }
