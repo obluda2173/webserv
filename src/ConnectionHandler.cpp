@@ -78,6 +78,8 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
+    // _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
+    // std::cout << std::string(conn->_readBuf.data(), conn->_readBuf.size()) << std::endl;
     HttpResponse resp;
     IHandler* hdlr;
     IRouter* router;
@@ -102,7 +104,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 conn->setState(Connection::SendResponse);
                 break;
             }
-
             isCGIrequest = false;
             if (route.hdlrs.find("CGI") != route.hdlrs.end())
                 isCGIrequest = checkCGIRequest(conn->_request, route.cfg);

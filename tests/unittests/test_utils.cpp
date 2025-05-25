@@ -125,6 +125,7 @@ std::string getFileContents(const std::string& filename) {
         throw std::ios_base::failure("Error opening file");
 
     std::string contents((std::istreambuf_iterator< char >(file)), std::istreambuf_iterator< char >());
+    file.close();
 
     return contents;
 }

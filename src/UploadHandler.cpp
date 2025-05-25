@@ -58,6 +58,7 @@ bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const
         }
         return true;
     }
+
     setErrorResponse(conn->_response, 404, "Not Found", cfg);
     return false;
 }
@@ -98,9 +99,6 @@ bool UploadHandler::_validateNotActive(Connection* conn, const HttpRequest& req,
 }
 
 bool UploadHandler::_validation(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
-    // if (!_validateContentLength(conn, cfg))
-    //     return false;
-
     if (!_validateNotActive(conn, req, cfg))
         return false;
 
@@ -156,6 +154,9 @@ void UploadHandler::handle(Connection* conn, const HttpRequest& req, const Route
         case UploadContext::UploadFinished:
             _activeUploadPaths.erase(cfg.root + req.uri);
             _renameOrRemoveFile(conn, req, cfg);
+            delete uploadCtx.file;
+            uploadCtx.file = NULL;
+            uploadCtx.state = UploadContext::Validation;
             conn->setState(Connection::SendResponse);
             return;
         }

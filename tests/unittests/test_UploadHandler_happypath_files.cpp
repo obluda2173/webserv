@@ -20,21 +20,21 @@ TEST(UploadHdlrTest, changeFileExisting) {
 
     IHandler* uploadHdlr = new UploadHandler();
     uploadHdlr->handle(conn, conn->_request, {ROOT, {}, {}, 10000, false, {}});
-    EXPECT_FALSE(conn->uploadCtx.file->is_open());
+    EXPECT_EQ(conn->getState(), Connection::SendResponse);
 
     HttpResponse resp = conn->_response;
-    delete conn; // need to delete conn to close the file and write to disk
     std::string gotFile1 = getFileContents(ROOT + PREFIX + filename);
     EXPECT_EQ(body.length(), gotFile1.length());
     EXPECT_EQ(body, gotFile1);
     EXPECT_EQ(200, resp.statusCode);
     EXPECT_EQ("OK", resp.statusMessage);
 
+    delete conn; // need to delete conn to close the file and write to disk
     removeFile(ROOT + PREFIX + filename);
     delete uploadHdlr;
 }
 
-TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
+TEST(UploadHdlrTest, testTempFileExistWhileUploadingFileDoesNotExistWhileUploading) {
     std::string filename = "notExisting.txt";
     size_t pos = 0;
     size_t batchSize = 10;
@@ -44,7 +44,9 @@ TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
     Connection* conn = setupConnWithContentLength(filename, contentLength);
 
     IHandler* uploadHdlr = new UploadHandler();
-    while (conn->uploadCtx.state != UploadContext::UploadFinished) {
+
+    while (conn->getState() != Connection::SendResponse) {
+        // while (conn->uploadCtx.state != UploadContext::UploadFinished) {
         conn->_tempBody = std::string(body.substr(pos, batchSize));
         pos += batchSize;
         if (pos >= body.length())
@@ -54,7 +56,7 @@ TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
         struct stat statStruct;
         bool fileExists = !stat((ROOT + PREFIX + filename).c_str(), &statStruct);
         bool tempExists = !stat((ROOT + PREFIX + filename + ".temp").c_str(), &statStruct);
-        if (conn->uploadCtx.state != UploadContext::UploadFinished) {
+        if (conn->getState() != Connection::SendResponse) {
             EXPECT_EQ(fileExists, false);
             EXPECT_EQ(tempExists, true);
         } else {
@@ -75,7 +77,7 @@ TEST(UploadHdlrTest, testTempFileExistFileNotExist) {
     removeFile(ROOT + PREFIX + filename);
 }
 
-TEST(UploadHdlrTest, testTempFileExistFileExist) {
+TEST(UploadHdlrTest, testTempFileExistWhileUploadingFileExistWhileUploadingAndStaysTheSame) {
     std::string filename = "existing.txt";
     std::ofstream file(ROOT + PREFIX + filename);
     ASSERT_TRUE(file.is_open());
@@ -90,7 +92,7 @@ TEST(UploadHdlrTest, testTempFileExistFileExist) {
     Connection* conn = setupConnWithContentLength(filename, contentLength);
 
     IHandler* uploadHdlr = new UploadHandler();
-    while (conn->uploadCtx.state != UploadContext::UploadFinished) {
+    while (conn->getState() != Connection::SendResponse) {
         conn->_tempBody = std::string(body.substr(pos, batchSize));
         pos += batchSize;
         if (pos >= body.length())
@@ -99,7 +101,7 @@ TEST(UploadHdlrTest, testTempFileExistFileExist) {
         struct stat statStruct;
         bool fileExists = !stat((ROOT + PREFIX + filename).c_str(), &statStruct);
         bool tempExists = !stat((ROOT + PREFIX + filename + ".temp").c_str(), &statStruct);
-        if (conn->uploadCtx.state != UploadContext::UploadFinished) {
+        if (conn->getState() != Connection::SendResponse) {
             std::string gotFile2 = getFileContents(ROOT + PREFIX + filename);
             EXPECT_EQ("some content", gotFile2);
             EXPECT_EQ(fileExists, true);
