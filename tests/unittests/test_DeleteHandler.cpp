@@ -86,7 +86,7 @@ INSTANTIATE_TEST_SUITE_P(
                                     .withStatusCode(404)
                                     .withStatusMessage("Not Found")
                                     .withContentType("text/plain")
-                                    .withContentLength(9)
+                                    .withContentLength(0)
                                     .build(),
                                 false},
         TestDeleteHandlerParams{"", TestDeleteHandlerParams::NONE,
@@ -115,7 +115,7 @@ INSTANTIATE_TEST_SUITE_P(
                 .withStatusCode(500)
                 .withStatusMessage("Internal Server Error")
                 .withContentType("text/plain")
-                .withContentLength(21)
+                .withContentLength(0)
                 .build(),
             false},
         TestDeleteHandlerParams{"./tests/unittests/test_root/non_empty_dir", TestDeleteHandlerParams::NON_EMPTY_DIR,
@@ -125,7 +125,7 @@ INSTANTIATE_TEST_SUITE_P(
                                     .withStatusCode(500)
                                     .withStatusMessage("Internal Server Error")
                                     .withContentType("text/plain")
-                                    .withContentLength(21)
+                                    .withContentLength(0)
                                     .build(),
                                 true},
         TestDeleteHandlerParams{"./tests/unittests/test_root/readonly.txt", TestDeleteHandlerParams::READONLY_FILE,
@@ -133,9 +133,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 RouteConfigBuilder().withRoot("./tests/unittests/test_root").build(),
                                 ResponseBuilder()
                                     .withStatusCode(403)
-                                    .withStatusMessage("Forbidden: Access denied")
+                                    .withStatusMessage("Forbidden")
                                     .withContentType("text/plain")
-                                    .withContentLength(24)
+                                    .withContentLength(0)
                                     .build(),
                                 true},
         TestDeleteHandlerParams{"./tests/unittests/test_root/valid_file.txt", TestDeleteHandlerParams::FILE_SETUP,
@@ -145,7 +145,7 @@ INSTANTIATE_TEST_SUITE_P(
                                     .withStatusCode(404)
                                     .withStatusMessage("Not Found")
                                     .withContentType("text/plain")
-                                    .withContentLength(9)
+                                    .withContentLength(0)
                                     .build(),
                                 true},
         TestDeleteHandlerParams{"./tests/unittests/test_root/secure_file.txt", TestDeleteHandlerParams::READONLY_FILE,
@@ -156,7 +156,7 @@ INSTANTIATE_TEST_SUITE_P(
                                     .build(),
                                 ResponseBuilder()
                                     .withStatusCode(403)
-                                    .withStatusMessage("Forbidden: Access denied")
+                                    .withStatusMessage("Forbidden")
                                     .withContentType("text/html")
                                     .withContentLength(412)
                                     .build(),

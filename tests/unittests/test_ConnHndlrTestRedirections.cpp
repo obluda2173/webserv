@@ -7,8 +7,7 @@ TEST_F(ConnHdlrTestRedirections, firstTest) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
-    // Correct the path to include the trailing slash
-    std::string request = "GET /google/ HTTP/1.1\r\n"
+    std::string request = "GET /google HTTP/1.1\r\n"
                           "Host: test.com\r\n"
                           "\r\n";
 

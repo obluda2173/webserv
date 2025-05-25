@@ -45,7 +45,7 @@ TEST_F(TransferEncodingErrorTest, ChunkLongerThenChunkSize) {
 }
 
 TEST_F(TransferEncodingErrorTest, ContentTooLarge) {
-    testChunkedBodyError("F000000000000000", getRandomString(10), 413, "Content Too Large");
+    testChunkedBodyError("F000000000000000", getRandomString(10), 413, "Payload Too Large");
 }
 
 TEST_F(TransferEncodingErrorTest, InvalidHexValue) {

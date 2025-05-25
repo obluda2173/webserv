@@ -32,9 +32,9 @@ void DeleteHandler::handle(Connection* conn, const HttpRequest& request, const R
     }
 
     if (_deleteResource()) {
-        setResponse(resp, 204, "No Content", "", 0, NULL);
+        setResponse(resp, 204, "", 0, NULL);
     } else {
-        setErrorResponse(resp, 500, "Internal Server Error", config);
+        setErrorResponse(resp, 500, config);
     }
     conn->setState(Connection::SendResponse);
 }

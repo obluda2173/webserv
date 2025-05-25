@@ -5,7 +5,7 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
     _path = normalizePath(config.root, request.uri);
     _interpreter = findInterpreter(config.cgi, request.uri);
     if (_interpreter.empty()) {
-        setErrorResponse(conn->_response, 403, "Forbidden", config);
+        setErrorResponse(conn->_response, 403, config);
         return false;
     }
     return validateRequest(conn->_response, request, config, _path, _pathStat);
@@ -168,9 +168,9 @@ void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int statu
         _readPipeData(ctx, true);
     }
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        setErrorResponse(conn->_response, 502, "Bad Gateway", ctx.cgiRouteConfig);
+        setErrorResponse(conn->_response, 502, ctx.cgiRouteConfig);
     } else if (ctx.cgiOutput.empty()) {
-        setErrorResponse(conn->_response, 500, "Internal Error", ctx.cgiRouteConfig);
+        setErrorResponse(conn->_response, 500, ctx.cgiRouteConfig);
     } else {
         _cgiResponseSetup(ctx.cgiOutput, conn->_response);
     }

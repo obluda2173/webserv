@@ -14,15 +14,16 @@
 #define MAX_URI_LENGTH 4096
 
 extern std::map< std::string, std::string > mimeTypes;
+extern std::map< int, std::string > statusPhrases;
 
 std::string getMimeType(const std::string& path);
 int hexToInt(char c);
 std::string decodePercent(const std::string& str);
 std::string normalizePath(const std::string& root, const std::string& uri);
 void setHeader(HttpResponse& resp, std::string key, std::string value);
-void setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType,
+void setResponse(HttpResponse& resp, int statusCode, const std::string& contentType,
                  size_t contentLength, IBodyProvider* bodyProvider);
-void setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config);
+void setErrorResponse(HttpResponse& resp, int code, const RouteConfig& config);
 bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, std::string& path,
                      struct stat& pathStat);
 

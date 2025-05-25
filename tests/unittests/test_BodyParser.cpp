@@ -149,7 +149,7 @@ TEST(BodyParserTest, respectsClientMaxBodySize) {
     // This should be accepted
     EXPECT_EQ(conn->getState(), Connection::SendResponse);
     EXPECT_EQ(conn->_response.statusCode, 413);
-    EXPECT_EQ(conn->_response.statusMessage, "Content Too Large");
+    EXPECT_EQ(conn->_response.statusMessage, "Payload Too Large");
 
     delete conn;
     delete bodyPrsr;

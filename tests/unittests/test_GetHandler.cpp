@@ -29,7 +29,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .build(),
                              ResponseBuilder()
                                  .withStatusCode(400)
-                                 .withStatusMessage("Bad Request: Invalid body content")
+                                 .withStatusMessage("Bad Request")
                                  .withContentType("text/html")
                                  .withContentLength(414)
                                  .build()},
@@ -40,7 +40,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .build(),
                              ResponseBuilder()
                                  .withStatusCode(400)
-                                 .withStatusMessage("Bad Request: Invalid body content")
+                                 .withStatusMessage("Bad Request")
                                  .withContentType("text/html")
                                  .withContentLength(414)
                                  .build()},
@@ -93,7 +93,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .build(),
                              ResponseBuilder()
                                  .withStatusCode(400)
-                                 .withStatusMessage("Bad Request: Invalid body content")
+                                 .withStatusMessage("Bad Request")
                                  .withContentType("text/html")
                                  .withContentLength(414)
                                  .build()},
@@ -104,16 +104,16 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusCode(403)
                                  .withStatusMessage("Forbidden")
                                  .withContentType("text/plain")
-                                 .withContentLength(9)
+                                 .withContentLength(0)
                                  .build()},
         TestGetHandlerParams{// 8 with index but without autoindex
                              RequestBuilder().withMethod("GET").withUri("").build(),
                              RouteConfigBuilder().withIndex({"index.html"}).build(),
                              ResponseBuilder()
                                  .withStatusCode(400)
-                                 .withStatusMessage("Bad Request: Invalid URI")
+                                 .withStatusMessage("Bad Request")
                                  .withContentType("text/plain")
-                                 .withContentLength(24)
+                                 .withContentLength(0)
                                  .build()},
         TestGetHandlerParams{// 9 tries to escape root
                              RequestBuilder().withMethod("GET").withUri("/../../../src/GetHandler.cpp").build(),
@@ -122,7 +122,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusCode(404)
                                  .withStatusMessage("Not Found")
                                  .withContentType("text/plain")
-                                 .withContentLength(9)
+                                 .withContentLength(0)
                                  .build()},
         TestGetHandlerParams{// 10 image serving
                              RequestBuilder().withMethod("GET").withUri("/image.jpg").build(),
@@ -190,7 +190,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusCode(404)
                                  .withStatusMessage("Not Found")
                                  .withContentType("text/plain")
-                                 .withContentLength(9)
+                                 .withContentLength(0)
                                  .build()},
         TestGetHandlerParams{// 16 default error page (no custom config)
                              RequestBuilder().withMethod("GET").withUri("/ghost_file.txt").build(),
@@ -199,7 +199,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusCode(404)
                                  .withStatusMessage("Not Found")
                                  .withContentType("text/plain")
-                                 .withContentLength(9)
+                                 .withContentLength(0)
                                  .build()},
         TestGetHandlerParams{// 17 unknown MIME type
                              RequestBuilder().withMethod("GET").withUri("/unknown.xyz").build(),
@@ -217,7 +217,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusCode(404)
                                  .withStatusMessage("Not Found")
                                  .withContentType("text/plain")
-                                 .withContentLength(9)
+                                 .withContentLength(0)
                                  .build()},
         TestGetHandlerParams{// 19 valid UTF-8 filename
                              RequestBuilder()

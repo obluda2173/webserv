@@ -19,6 +19,45 @@ struct MimeInitializer {
 };
 static MimeInitializer mimeInit;
 
+std::map< int, std::string > statusPhrases;
+struct PhraseInitializer {
+    PhraseInitializer() {
+        // 2xx Success
+        statusPhrases[200] = "OK";
+        statusPhrases[201] = "Created";
+        statusPhrases[202] = "Accepted";
+        statusPhrases[204] = "No Content";
+
+        // 3xx Redirection
+        statusPhrases[301] = "Moved Permanently";
+        statusPhrases[302] = "Found";
+        statusPhrases[303] = "See Other";
+        statusPhrases[304] = "Not Modified";
+        statusPhrases[307] = "Temporary Redirect";
+        statusPhrases[308] = "Permanent Redirect";
+
+        // 4xx Client Error
+        statusPhrases[400] = "Bad Request";
+        statusPhrases[401] = "Unauthorized";
+        statusPhrases[403] = "Forbidden";
+        statusPhrases[404] = "Not Found";
+        statusPhrases[405] = "Method Not Allowed";
+        statusPhrases[408] = "Request Timeout";
+        statusPhrases[409] = "Conflict";
+        statusPhrases[413] = "Payload Too Large";
+        statusPhrases[414] = "URI Too Long";
+        statusPhrases[429] = "Too Many Requests";
+
+        // 5xx Server Error
+        statusPhrases[500] = "Internal Server Error";
+        statusPhrases[501] = "Not Implemented";
+        statusPhrases[502] = "Bad Gateway";
+        statusPhrases[503] = "Service Unavailable";
+        statusPhrases[504] = "Gateway Timeout";
+    }
+};
+static PhraseInitializer phrasesInit;
+
 std::string getMimeType(const std::string& path) {
     std::string ext = "";
     std::string::size_type pos = path.rfind('.');
@@ -91,55 +130,55 @@ void setHeader(HttpResponse& resp, std::string key, std::string value) {
     resp.headers[toLower(key)] = value;
 }
 
-void setResponse(HttpResponse& resp, int statusCode, const std::string& statusMessage, const std::string& contentType,
+void setResponse(HttpResponse& resp, int statusCode, const std::string& contentType,
                  size_t contentLength, IBodyProvider* bodyProvider) {
     resp.version = DEFAULT_HTTP_VERSION;
     resp.statusCode = statusCode;
-    resp.statusMessage = statusMessage;
+    resp.statusMessage = statusPhrases.at(statusCode);
     resp.contentType = contentType;
     resp.contentLanguage = DEFAULT_CONTENT_LANGUAGE;
     resp.contentLength = contentLength;
     resp.body = bodyProvider;
 }
 
-void setErrorResponse(HttpResponse& resp, int code, const std::string& message, const RouteConfig& config) {
+void setErrorResponse(HttpResponse& resp, int code, const RouteConfig& config) {
     std::map< int, std::string >::const_iterator it = config.errorPage.find(code);
     if (it != config.errorPage.end()) {
         std::string errorPagePath = config.root + it->second;
         struct stat fileStat;
         if (stat(errorPagePath.c_str(), &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
-            setResponse(resp, code, message, getMimeType(errorPagePath), fileStat.st_size,
+            setResponse(resp, code, getMimeType(errorPagePath), fileStat.st_size,
                         new FileBodyProvider(errorPagePath.c_str()));
             return;
         }
     }
-    setResponse(resp, code, message, mimeTypes[".txt"], message.size(), new StringBodyProvider(message));
+    setResponse(resp, code, mimeTypes[".txt"], 0, NULL);
 }
 
 bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, std::string& path,
                      struct stat& pathStat) {
     // 2. URI Validation
     if (req.uri.empty() || req.uri.length() > MAX_URI_LENGTH) {
-        setErrorResponse(resp, 400, "Bad Request: Invalid URI", config);
+        setErrorResponse(resp, 400, config);
         return false;
     }
 
     // 3. Path Normalization & Security
     if (path.empty() || path.find(config.root) != 0) {
-        setErrorResponse(resp, 403, "Forbidden: Invalid path", config);
+        setErrorResponse(resp, 403, config);
         return false;
     }
 
     // 4. Body Content Validation
     if ((req.headers.count("content-length") || req.headers.count("transfer-encoding")) &&
         (req.method == "GET" || req.method == "DELETE")) {
-        setErrorResponse(resp, 400, "Bad Request: Invalid body content", config);
+        setErrorResponse(resp, 400, config);
         return false;
     }
 
     // 5. Resource Existence Check
     if (stat(path.c_str(), &pathStat) != 0) {
-        setErrorResponse(resp, 404, "Not Found", config);
+        setErrorResponse(resp, 404, config);
         return false;
     }
 
@@ -147,7 +186,7 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
     if ((req.method == "DELETE" && !S_ISREG(pathStat.st_mode) && !S_ISDIR(pathStat.st_mode)) ||
         (req.method == "GET" && !S_ISREG(pathStat.st_mode) && !S_ISDIR(pathStat.st_mode)) ||
         (req.method == "POST" && S_ISDIR(pathStat.st_mode))) {
-        setErrorResponse(resp, 400, "Bad Request: Invalid resource type", config);
+        setErrorResponse(resp, 400, config);
         return false;
     }
 
@@ -160,7 +199,7 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
     else if (req.method == "DELETE")
         accessMode |= W_OK;
     if (access(path.c_str(), accessMode) != 0) {
-        setErrorResponse(resp, 403, "Forbidden: Access denied", config);
+        setErrorResponse(resp, 403, config);
         return false;
     }
 

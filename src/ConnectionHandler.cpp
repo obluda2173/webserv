@@ -102,12 +102,12 @@ void ConnectionHandler::_handleState(Connection* conn) {
             if (!route.cfg.redirect.second.empty()) {
                 int code = route.cfg.redirect.first;
                 setHeader(conn->_response, "Location", route.cfg.redirect.second);
-                setResponse(conn->_response, code, (code == 302 ? "Found" : "Moved Permanently"), "", 0, NULL);
+                setResponse(conn->_response, code, "", 0, NULL);
                 conn->setState(Connection::SendResponse);
                 break;
             }
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
-                setErrorResponse(conn->_response, 404, "Not Found", RouteConfig());
+                setErrorResponse(conn->_response, 404, RouteConfig());
                 conn->setState(Connection::SendResponse);
                 break;
             }

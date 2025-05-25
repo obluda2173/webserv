@@ -15,7 +15,7 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
     int pipeStdin[2];
     int pipeStdout[2];
     if (pipe(pipeStdin) == -1 || pipe(pipeStdout) == -1) {
-        setErrorResponse(resp, 500, "Internal Server Error", config);
+        setErrorResponse(resp, 500, config);
         conn->setState(Connection::SendResponse);
         return;
     }
@@ -26,7 +26,7 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         close(pipeStdin[1]);
         close(pipeStdout[0]);
         close(pipeStdout[1]);
-        setErrorResponse(resp, 500, "Internal Server Error", config);
+        setErrorResponse(resp, 500, config);
         conn->setState(Connection::SendResponse);
         return;
     }
@@ -51,7 +51,7 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
         ssize_t bytesWritten = write(ctx.cgiPipeStdin,
             conn->_tempBody.data(), conn->_tempBody.size());
         if (bytesWritten == -1 && (errno != EAGAIN && errno != EWOULDBLOCK)) {
-            setErrorResponse(conn->_response, 500, "Process Error", ctx.cgiRouteConfig);
+            setErrorResponse(conn->_response, 500, ctx.cgiRouteConfig);
             conn->setState(Connection::SendResponse);
             break;
         }
@@ -69,12 +69,12 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
             ctx.state = CgiContext::Exited;
             break;
         } else if (result == -1) {
-            setErrorResponse(conn->_response, 500, "Process Error", ctx.cgiRouteConfig);
+            setErrorResponse(conn->_response, 500, ctx.cgiRouteConfig);
             conn->setState(Connection::SendResponse);
             break;
         }
         if (!_readPipeData(ctx, false)) {
-            setErrorResponse(conn->_response, 500, "Pipe Error", ctx.cgiRouteConfig);
+            setErrorResponse(conn->_response, 500, ctx.cgiRouteConfig);
             conn->setState(Connection::SendResponse);
         }
         break;

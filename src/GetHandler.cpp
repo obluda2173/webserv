@@ -36,7 +36,7 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
 }
 
 void GetHandler::_serveRegFile(Connection& conn, HttpResponse& resp) {
-    setResponse(resp, 200, "OK", getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
+    setResponse(resp, 200, getMimeType(_path), _pathStat.st_size, new FileBodyProvider(_path.c_str()));
     conn.setState(Connection::SendResponse);
 }
 
@@ -44,8 +44,7 @@ void GetHandler::_serveIndexFile(Connection& conn, const RouteConfig& config, Ht
     for (size_t i = 0; i < config.index.size(); ++i) {
         std::string indexPath = _path + config.index[i];
         if (stat(indexPath.c_str(), &_pathStat) == 0 && S_ISREG(_pathStat.st_mode)) {
-            setResponse(resp, 200, "OK", getMimeType(indexPath), _pathStat.st_size,
-                        new FileBodyProvider(indexPath.c_str()));
+            setResponse(resp, 200, getMimeType(indexPath), _pathStat.st_size, new FileBodyProvider(indexPath.c_str()));
             conn.setState(Connection::SendResponse);
         }
     }
@@ -54,7 +53,7 @@ void GetHandler::_serveIndexFile(Connection& conn, const RouteConfig& config, Ht
 void GetHandler::_serveDirectoryListing(Connection& conn, const HttpRequest& request, HttpResponse& resp) {
     std::string listing;
     if (_getDirectoryListing(_path, request.uri, listing)) {
-        setResponse(resp, 200, "OK", "text/html", listing.size(), new StringBodyProvider(listing));
+        setResponse(resp, 200, "text/html", listing.size(), new StringBodyProvider(listing));
         conn.setState(Connection::SendResponse);
     }
 }
@@ -79,7 +78,7 @@ void GetHandler::handle(Connection* conn, const HttpRequest& request, const Rout
         }
     }
     if (conn->getState() != Connection::SendResponse) {
-        setErrorResponse(resp, 403, "Forbidden", config);
+        setErrorResponse(resp, 403, config);
         conn->setState(Connection::SendResponse);
     }
 }

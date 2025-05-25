@@ -20,7 +20,7 @@ void UploadHandler::uploadNewContent(Connection* conn) {
 bool UploadHandler::_validateContentLength(Connection* conn, const RouteConfig& cfg) {
     size_t contentLength;
     if (conn->_request.headers.find("content-length") == conn->_request.headers.end()) {
-        setErrorResponse(conn->_response, 400, "Bad Request", cfg);
+        setErrorResponse(conn->_response, 400, cfg);
         return false;
     }
 
@@ -28,12 +28,12 @@ bool UploadHandler::_validateContentLength(Connection* conn, const RouteConfig& 
     ss >> contentLength;
 
     if (contentLength == 0) {
-        setErrorResponse(conn->_response, 400, "Bad Request", cfg);
+        setErrorResponse(conn->_response, 400, cfg);
         return false;
     }
 
     if (contentLength > cfg.clientMaxBody) {
-        setErrorResponse(conn->_response, 413, "Content Too Large", cfg);
+        setErrorResponse(conn->_response, 413, cfg);
         return false;
     }
 
@@ -48,18 +48,18 @@ bool UploadHandler::_validateDir(Connection* conn, const HttpRequest& req, const
     bool exists = !stat(dirPath.c_str(), &statStruct);
     if (exists) {
         if (!S_ISDIR(statStruct.st_mode)) {
-            setErrorResponse(conn->_response, 409, "Conflict", cfg);
+            setErrorResponse(conn->_response, 409, cfg);
             return false;
         }
         conn->uploadCtx.fileExisted = false; // everything is fine
         if (access(dirPath.c_str(), W_OK) == -1) {
-            setErrorResponse(conn->_response, 403, "Forbidden", cfg);
+            setErrorResponse(conn->_response, 403, cfg);
             return false;
         }
         return true;
     }
 
-    setErrorResponse(conn->_response, 404, "Not Found", cfg);
+    setErrorResponse(conn->_response, 404, cfg);
     return false;
 }
 
@@ -70,12 +70,12 @@ bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, cons
     bool exists = !stat(path.c_str(), &statStruct);
     if (exists) {
         if (!S_ISREG(statStruct.st_mode)) {
-            setErrorResponse(conn->_response, 409, "Conflict", cfg); // i.e. if the file is a directory
+            setErrorResponse(conn->_response, 409, cfg); // i.e. if the file is a directory
             return false;
         }
 
         if (access(path.c_str(), W_OK) == -1) {
-            setErrorResponse(conn->_response, 403, "Forbidden", cfg);
+            setErrorResponse(conn->_response, 403, cfg);
             return false;
         }
 
@@ -91,7 +91,7 @@ bool UploadHandler::_validateFile(Connection* conn, const HttpRequest& req, cons
 bool UploadHandler::_validateNotActive(Connection* conn, const HttpRequest& req, const RouteConfig& cfg) {
     std::string path = (cfg.root + req.uri);
     if (_activeUploadPaths.find(path) != _activeUploadPaths.end()) {
-        setErrorResponse(conn->_response, 409, "Conflict", cfg);
+        setErrorResponse(conn->_response, 409, cfg);
         return false;
     }
     _activeUploadPaths.insert(path);
@@ -113,7 +113,7 @@ bool UploadHandler::_initUploadCxt(Connection* conn, const HttpRequest& req, con
     ctx.file = new std::ofstream((cfg.root + req.uri + ".temp").c_str(), std::ios::binary | std::ios::app);
     if (!ctx.file->is_open()) {
         std::cerr << "Failed to open file" << std::endl;
-        setErrorResponse(conn->_response, 500, "Internal Server Error", cfg);
+        setErrorResponse(conn->_response, 500, cfg);
         return false;
     }
     return true;
@@ -124,10 +124,10 @@ void UploadHandler::_renameOrRemoveFile(Connection* conn, const HttpRequest& req
     if (conn->uploadCtx.fileExisted) {
         std::remove((cfg.root + req.uri).c_str());
         rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
-        setResponse(conn->_response, 200, "OK", "", 0, NULL);
+        setResponse(conn->_response, 200, "", 0, NULL);
     } else {
         rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
-        setResponse(conn->_response, 201, "Created", "", 0, NULL);
+        setResponse(conn->_response, 201, "", 0, NULL);
     }
 }
 
