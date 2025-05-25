@@ -136,7 +136,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketRead(Connection* conn) {
-    _logger.log("INFO", "Reading");
     conn->readIntoBuf();
     if (conn->_readBuf.size() == 0) // EOF
         return _removeConnection(conn->getFileDes());
@@ -145,8 +144,6 @@ void ConnectionHandler::_onSocketRead(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketWrite(Connection* conn) {
-    _logger.log("INFO", "Sending");
-
     if (conn->getState() == Connection::HandlingCgi) {
         conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
     }
@@ -168,15 +165,19 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
 }
 
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
-    if (_connections.find(fd) == _connections.end())
+    _logger.log("INFO", "Handling fd: " + to_string(fd));
+    if (_connections.find(fd) == _connections.end()) {
         return _acceptNewConnection(fd);
+    }
 
     Connection* conn = _connections[fd];
     switch (notif) {
     case READY_TO_READ:
+        _logger.log("INFO", "Ready to read");
         _onSocketRead(conn);
         break;
     case READY_TO_WRITE:
+        _logger.log("INFO", "Ready to write");
         _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:

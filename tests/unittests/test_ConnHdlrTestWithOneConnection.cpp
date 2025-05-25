@@ -5,8 +5,6 @@
 #include <thread>
 
 TEST_F(ConnHdlrTestWithOneConnectionMockLogger, TestShutdownClosesConnection) {
-    using ::testing::_;
-    EXPECT_CALL(*_logger, log(_, _)).Times(testing::AnyNumber());
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
