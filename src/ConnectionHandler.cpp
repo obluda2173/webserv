@@ -47,6 +47,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     case Connection::Reset:
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
+    case Connection::HandlingCgi:
+        _ioNotifier.modify(connfd, READY_TO_WRITE);
+        break;
     default:
         break;
     }
