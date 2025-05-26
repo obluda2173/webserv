@@ -67,7 +67,7 @@ TEST_P(CgiPostHandlerTest, HandlesPostRequests) {
         }
 
         if (conn->getState() == Connection::Handling || conn->getState() == Connection::HandlingCgi) {
-            cgiHandler.handleCgiProcess(conn);
+            cgiHandler.handle(conn, req, cfg);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

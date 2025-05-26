@@ -146,6 +146,7 @@ TEST_F(ConnHdlrTestUploadHdlr, changeExistingFile) {
     buffer[r] = '\0';
     std::string gotResponse = buffer;
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
+                               "Content-Language: en-US\r\n"
                                "Content-Length: 0\r\n"
                                "\r\n";
 
@@ -180,6 +181,7 @@ TEST_F(ConnHdlrTestUploadHdlr, changeExistingFile) {
     buffer[r] = '\0';
     gotResponse = buffer;
     wantResponse = "HTTP/1.1 200 OK\r\n"
+                   "Content-Language: en-US\r\n"
                    "Content-Length: 0\r\n"
                    "\r\n";
 

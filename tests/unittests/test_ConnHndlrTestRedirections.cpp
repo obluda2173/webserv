@@ -35,6 +35,7 @@ TEST_F(ConnHdlrTestRedirections, twoSmallSeperatedConsecutiveRequests) {
         }
 
         std::string wantResponse = "HTTP/1.1 301 Moved Permanently\r\n"
+                                   "Content-Language: en-US\r\n"
                                    "location: https://www.google.com\r\n"
                                    "Content-Length: 0\r\n"
                                    "\r\n";
@@ -76,6 +77,7 @@ TEST_F(ConnHdlrTestRedirections, twoBigConsecutiveRequests) {
         // notifs = _ioNotifier->wait();
 
         std::string wantResponse = "HTTP/1.1 301 Moved Permanently\r\n"
+                                   "Content-Language: en-US\r\n"
                                    "location: https://www.google.com\r\n"
                                    "Content-Length: 0\r\n"
                                    "\r\n";

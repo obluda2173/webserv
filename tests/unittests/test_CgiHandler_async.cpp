@@ -42,7 +42,7 @@ TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
             cgiCompleted = true;
             break;
         }
-        cgiHandler.handleCgiProcess(cgiConn);
+        cgiHandler.handle(cgiConn, cgiRequest, cgiConfig);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

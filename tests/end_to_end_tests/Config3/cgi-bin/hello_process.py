@@ -1,34 +1,25 @@
-# Importing the 'cgi' module
 import cgi
 
 form = cgi.FieldStorage()
-# Send an HTTP header indicating the content type as HTML
-print("Content-type: text/html\n\n")
 
-# Start an HTML document with center-aligned content
+# Output headers with correct CRLF and a blank line after headers
+print("Content-type: text/html\r")
+print("Content-Length: 196\r")
+print("\r")  # End of headers
+
+# Now body starts
 print("<html><body style='text-align:center;'>")
-
-# Display a green heading with text "GeeksforGeeks"
 print("<h1 style='color: green;'>GeeksforGeeks</h1>")
 
-# Parse form data submitted via the CGI script
-
-# Check if the "name" field is present in the form data
 if form.getvalue("name"):
-    # If present, retrieve the value and display a personalized greeting
     name = form.getvalue("name")
     print("<h2>Hello, " + name + "!</h2>")
     print("<p>Thank you for using our script.</p>")
 
-# Check if the "happy" checkbox is selected
-if form.getvalue("happy") == "yes":
-    # If selected, display a message with a happy emoji
-    print("<p>Yayy! We're happy too! ????</p>")
+if form.getvalue("happy") == "on":
+    print("<p>Yayy! We're happy too! 😊</p>")
 
-# Check if the "sad" checkbox is selected
-if form.getvalue("sad") == "yes":
-    # If selected, display a message with a sad emoji
-    print("<p>Oh no! Why are you sad? ????</p>")
+if form.getvalue("sad") == "on":
+    print("<p>Oh no! Why are you sad? 😢</p>")
 
-# Close the HTML document
 print("</body></html>")
