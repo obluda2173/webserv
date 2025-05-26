@@ -48,13 +48,10 @@ void Connection::sendResponse() {
 void Connection::readIntoBuf() { _readBuf.recv(_fd); }
 
 void Connection::parseBuf() {
-    std::cout << "Size of readBuf before parsing: " << _readBuf.size() << std::endl;
-    std::cout << std::string(_readBuf.data(), _readBuf.size()) << _readBuf.size() << std::endl;
     size_t count = 0;
     while (count < _readBuf.size()) {
         _prsr->feed(_readBuf.data() + count, 1);
         if (_prsr->error() || _prsr->ready()) {
-            // std::cout << "Parser is error or ready" << std::endl;
             _readBuf.advance(count + 1);
             if (_prsr->ready()) {
                 _request = _prsr->getRequest();

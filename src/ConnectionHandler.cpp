@@ -41,7 +41,6 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
         _ioNotifier.modify(connfd, READY_TO_WRITE);
         break;
     case Connection::SendResponse:
-        std::cout << "set to ready_to_write" << std::endl;
         _ioNotifier.modify(connfd, READY_TO_WRITE);
         break;
     case Connection::Reset:
@@ -80,7 +79,6 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 
 void ConnectionHandler::_handleState(Connection* conn) {
     _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
-    // std::cout << "in handle State" << std::endl;
 
     HttpResponse resp;
     IHandler* hdlr;
@@ -99,7 +97,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
             router = _routers[conn->getAddrPort()];
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
-
             conn->route = route;
             if (!route.cfg.redirect.second.empty()) {
                 conn->setState(Connection::Handling);
@@ -125,16 +122,9 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
-            // std::cout << "handling body" << std::endl;
-            // std::cout << "body finished: " << conn->_bodyFinished << std::endl;
-            // std::cout << "readBuf size: " << conn->_readBuf.size() << std::endl;
             _bodyPrsr->parse(conn);
-            // std::cout << "tempBody size: " << conn->_tempBody.size() << std::endl;
-            // std::cout << "body finished: " << conn->_bodyFinished << std::endl;
             if (!conn->route.cfg.redirect.second.empty()) {
                 if (conn->_bodyFinished) {
-                    std::cout << "body has finished" << std::endl;
-                    // std::cout << "undesired location 1" << std::endl;
                     int code = conn->route.cfg.redirect.first;
                     setHeader(conn->_response, "Location", conn->route.cfg.redirect.second);
                     setResponse(conn->_response, code, "", 0, NULL);
@@ -142,10 +132,8 @@ void ConnectionHandler::_handleState(Connection* conn) {
                     break;
                 }
                 continueProcessing = false;
-                // std::cout << "change continueProcessing" << std::endl;
                 break;
             }
-            // std::cout << "undesired location 2" << std::endl;
 
             conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
             continueProcessing = (conn->getState() != currentState);
@@ -162,7 +150,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
         }
     }
     _updateNotifier(conn);
-    // std::cout << "leaving" << std::endl;
 }
 
 void ConnectionHandler::_onSocketRead(Connection* conn) {
@@ -174,7 +161,6 @@ void ConnectionHandler::_onSocketRead(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketWrite(Connection* conn) {
-    std::cout << "Writing" << std::endl;
     if (conn->getState() == Connection::HandlingCgi) {
         conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
     }
@@ -187,7 +173,6 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
             return;
         }
         if (conn->getState() == Connection::Reset) {
-            std::cout << "resetting" << std::endl;
             conn->resetResponse();
             conn->_bodyFinished = false;
             conn->setState(Connection::ReadingHeaders);
