@@ -1,6 +1,7 @@
 #include "ConnectionHandler.h"
 #include "BadRequestHandler.h"
 #include "BodyParser.h"
+#include "CgiHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "Router.h"
@@ -13,7 +14,6 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "CgiHandler.h"
 
 ConnectionHandler::ConnectionHandler(std::map< std::string, IRouter* > routers, ILogger& l, IIONotifier& io)
     : _routers(routers), _logger(l), _ioNotifier(io) {
@@ -102,14 +102,15 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
             conn->route = route;
-            if (!route.cfg.redirect.second.empty()) {
-                conn->setState(Connection::Handling);
-                break;
-            }
 
             if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
                 setErrorResponse(conn->_response, 404, RouteConfig());
                 conn->setState(Connection::SendResponse);
+                break;
+            }
+
+            if (!route.cfg.redirect.second.empty()) {
+                conn->setState(Connection::Handling);
                 break;
             }
 
@@ -122,11 +123,12 @@ void ConnectionHandler::_handleState(Connection* conn) {
             else
                 conn->_hdlr = route.hdlrs[conn->getRequest().method];
 
-            conn->route = route;
             conn->setState(Connection::Handling);
             break;
         case Connection::Handling:
             _bodyPrsr->parse(conn);
+            if (conn->getState() == Connection::SendResponse)
+                break;
             if (!conn->route.cfg.redirect.second.empty()) {
                 if (conn->_bodyFinished) {
                     int code = conn->route.cfg.redirect.first;

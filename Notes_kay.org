@@ -54,8 +54,8 @@ index       index.html index.htm
 - [X] router needs to handle cgi
   - [X] check on how to differentiate between cgi and other handlers
 
-- [ ] implement HTTP redirect
-  - [ ] make sure of consecutive big http redirects
+- [X] implement HTTP redirect
+  - [X] make sure of consecutive big http redirects
 
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
@@ -63,8 +63,8 @@ index       index.html index.htm
   - [ ] add tests for normal UploadHandler to close the files after successful upload
   - [ ] test for overlapping uploadBody and headers of following request
 
-- [ ] Rework sending the Response
-  - [ ] there is still == 400 in the onSocketWrite
+- [X] Rework sending the Response
+  - [X] there is still == 400 in the onSocketWrite
 
 - [ ] better error handling in the ConfigParser
   - [ ] right now the Core Dumps (maybe just exit with the appropriate error message)
