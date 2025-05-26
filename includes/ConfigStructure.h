@@ -36,9 +36,9 @@ typedef struct CommonConfig {
     std::vector<std::string> index;
     size_t clientMaxBody;
     std::map<int, std::string> errorPage;
-    bool autoindex;
+    std::string autoindex;
 
-    CommonConfig() : root(), allowMethods(), index(), clientMaxBody(oneMB), errorPage(), autoindex(false) {}
+    CommonConfig() : root(), allowMethods(), index(), clientMaxBody(oneMB), errorPage(), autoindex("") {}
 } CommonConfig;
 
 typedef struct LocationConfig {

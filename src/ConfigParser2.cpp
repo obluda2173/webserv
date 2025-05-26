@@ -220,8 +220,10 @@ void ConfigParser::_parseAutoindex(const Directive& directive, CommonConfig& con
         throw std::runtime_error("autoindex requires exactly one argument");
     }
     if (directive.args[0] == "on") {
-        config.autoindex = true;
-    } else if (directive.args[0] != "off") {
+        config.autoindex = "on";
+    } else if (directive.args[0] == "off") {
+        config.autoindex = "off";
+    } else {
         throw std::runtime_error("Invalid autoindex argument: " + directive.args[0]);
     }
 }
