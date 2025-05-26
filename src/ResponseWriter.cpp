@@ -7,7 +7,11 @@ const std::string ResponseWriter::CRLF = "\r\n";
 const std::string ResponseWriter::WS = " ";
 
 void ResponseWriter::_writeStatusLine() {
-    _headers += _resp.version + WS;
+    if (_resp.version.empty()) {
+        _headers += "HTTP/1.1" + WS;
+    } else {
+        _headers += _resp.version + WS;
+    }
     _headers += to_string(_resp.statusCode) + WS;
     _headers += _resp.statusMessage;
     _headers += CRLF;
@@ -21,7 +25,7 @@ void ResponseWriter::_formatHeaders() {
     if (!_resp.contentType.empty()) {
         _headers += "Content-Type: " + _resp.contentType + CRLF;
     }
-    if (!_resp.contentType.empty()) {
+    if (!_resp.contentLanguage.empty()) {
         _headers += "Content-Language: " + _resp.contentLanguage + CRLF;
     }
     for (std::map<std::string, std::string>::iterator it = _resp.headers.begin(); it != _resp.headers.end(); it++) {

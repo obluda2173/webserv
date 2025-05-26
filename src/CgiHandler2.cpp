@@ -140,22 +140,24 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
 
 bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
     if (cgiCtx.cgiPipeStdout == -1) {
-        return false;
+        return true;
     }
 
     do {
         char buffer[4096];
         const ssize_t count = read(cgiCtx.cgiPipeStdout, buffer, sizeof(buffer));
+        
         if (count > 0) {
             cgiCtx.cgiOutput.append(buffer, count);
+            return true;
         } else {
             if (count == 0 || (count == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
                 close(cgiCtx.cgiPipeStdout);
                 cgiCtx.cgiPipeStdout = -1;
-
                 if (count == -1) {
                     return false;
                 }
+                return true;
             }
             break;
         }

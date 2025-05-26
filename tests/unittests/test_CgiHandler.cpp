@@ -45,7 +45,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
             break;
         }
         if (conn->getState() == Connection::Handling || conn->getState() == Connection::HandlingCgi) {
-            cgiHdlr.handleCgiProcess(conn);
+            cgiHdlr.handle(conn, req, cfg);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 

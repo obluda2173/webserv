@@ -42,14 +42,14 @@ typedef struct UploadContext {
 } UploadContext;
 
 struct CgiContext {
-    enum STATE { WritingStdin, ReadingStdout, Exited };
+    enum STATE { Forking, WritingStdin, ReadingStdout, Exited };
     CgiContext::STATE state;
     int cgiPipeStdin;
     int cgiPipeStdout;
     pid_t cgiPid;               // Store CGI process ID
     std::string cgiOutput;      // Accumulate CGI output
     RouteConfig cgiRouteConfig; // Store RouteConfig for response
-    CgiContext() : state(CgiContext::WritingStdin), cgiPipeStdin(-1), cgiPipeStdout(-1), cgiPid(-1) {}
+    CgiContext() : state(CgiContext::Forking), cgiPipeStdin(-1), cgiPipeStdout(-1), cgiPid(-1) {}
 };
 
 class Connection {
