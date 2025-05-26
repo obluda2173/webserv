@@ -135,6 +135,11 @@ INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
 
+        RouterTestParams{"0.0.0.0:8080",
+                         HttpRequest{"POST", "/post_body", "HTTP/1.1", {{"host", "example.com"}}},
+                         {"POST"},
+                         {"/var/www/html", {}, {}, oneMB, false, {}, {}}},
+
         RouterTestParams{
             "127.0.0.1:81",
             HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example2.com"}}},
@@ -173,10 +178,10 @@ INSTANTIATE_TEST_SUITE_P(
                          HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET", "POST", "DELETE"},
                          {"/data/scripts", {}, {}, 12 * oneMB, false, {}, {}}},
-        // RouterTestParams{"0.0.0.0:8080",
-        //                  HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
-        //                  {"GET", "POST", "DELETE", "CGI"},
-        //                  {"/data", {}, {}, oneMB, false, {{".php", "/usr/bin/php-cgi"}}, {}}},
+        RouterTestParams{"0.0.0.0:8080",
+                         HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
+                         {"GET", "POST", "DELETE", "CGI"},
+                         {"/data", {}, {}, oneMB, false, {{".php", "/usr/bin/php-cgi"}}, {}}},
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET"},
