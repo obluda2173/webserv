@@ -23,7 +23,8 @@ void addMethods(std::vector< std::string > methods, std::string svrName, std::st
         addAllMethods(svrName, prefix, cfg, r);
 }
 
-void addLocations(std::vector< LocationConfig > locations, std::string svrName, IRouter* r) {
+void addLocations(ServerConfig svrCfg, std::string svrName, IRouter* r) {
+    std::vector< LocationConfig > locations = svrCfg.locations;
     std::set< std::string > presentLocs;
     for (std::vector< LocationConfig >::iterator itLoc = locations.begin(); itLoc != locations.end(); ++itLoc) {
         if (presentLocs.find(itLoc->prefix) != presentLocs.end())
@@ -55,7 +56,7 @@ void addSvrToRouter(IRouter* r, ServerConfig svrCfg) {
         cfg.redirect = std::pair< int, std::string >();
 
         addMethods(svrCfg.common.allowMethods, *itSvrName, "", cfg, r);
-        addLocations(svrCfg.locations, *itSvrName, r);
+        addLocations(svrCfg, *itSvrName, r);
     }
 }
 
@@ -78,6 +79,7 @@ std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCf
                 IRouter* r = new Router(hdlrs);
                 addSvrToRouter(r, svrCfg);
                 routers[ip + ":" + port] = r;
+                r->printUrls();
             }
         }
     }

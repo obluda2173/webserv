@@ -54,6 +54,11 @@ index       index.html index.htm
 - [ ] how to stop the server with sigint (make sure that all memory is released and no file descriptors open)
   
   
+- [ ] fix UploadHandler with /post_body
+  - [ ] do locations without root inherit from server?
+
+- [ ] handle SigInt signal
+
 - [X] router needs to handle cgi
   - [X] check on how to differentiate between cgi and other handlers
 

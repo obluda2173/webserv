@@ -37,7 +37,7 @@ class Router : public IRouter {
 
     void add(std::string svrName, std::string prefix, std::string method, RouteConfig cfg);
     Route match(HttpRequest req);
-    void printSvrMap();
+    void printUrls();
 };
 
 std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCfgs);
