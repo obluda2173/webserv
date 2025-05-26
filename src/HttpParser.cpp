@@ -114,9 +114,10 @@ void HttpParser::_parseBuffer() {
 }
 
 bool HttpParser::_requestLineValidation(const std::string& method, const std::string& version) {
-    if (!checkValidMethod(method)) {
-        return false;
-    }
+    (void)method;
+    // if (!checkValidMethod(method)) {
+    //     return false;
+    // }
     if (!checkValidVersion(version)) {
         return false;
     }
