@@ -33,7 +33,7 @@ void addLocations(ServerConfig svrCfg, std::string svrName, IRouter* r) {
         RouteConfig cfg;
         cfg.root = itLoc->common.root.empty() ? svrCfg.common.root : itLoc->common.root;
         cfg.index = itLoc->common.index.empty() ? svrCfg.common.index : itLoc->common.index;
-        cfg.errorPage = itLoc->common.errorPage;
+        cfg.errorPage = itLoc->common.errorPage.empty() ? svrCfg.common.errorPage : itLoc->common.errorPage;
         cfg.clientMaxBody = itLoc->common.clientMaxBody;
         cfg.autoindex = (itLoc->common.autoindex == "on") ? true : false;
         cfg.cgi = itLoc->cgi;

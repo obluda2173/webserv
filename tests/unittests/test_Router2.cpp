@@ -34,7 +34,8 @@ Router newRouterTest() {
     std::map< std::string, Route > urlToRoutes;
     urlToRoutes = {
         {"example2.com/",
-         {{{"GET", hdlrs["GET"]}}, {"/example2/www/html", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
+         {{{"GET", hdlrs["GET"]}},
+          {"/example2/www/html", {"index.html", "index.htm"}, {{404, "/custom_404.html"}}, oneMB, false, {}, {}}}},
         {"www.example.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/dataSecond/static", {}, {}, oneMB, false, {}, {}}}},
 

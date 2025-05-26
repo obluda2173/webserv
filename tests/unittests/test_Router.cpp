@@ -135,10 +135,11 @@ INSTANTIATE_TEST_SUITE_P(
     pathTests, RouterTest,
     ::testing::Values(
 
-        RouterTestParams{"127.0.0.1:81",
-                         HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example2.com"}}},
-                         {"GET"},
-                         {"/example2/www/html", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}},
+        RouterTestParams{
+            "127.0.0.1:81",
+            HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example2.com"}}},
+            {"GET"},
+            {"/example2/www/html", {"index.html", "index.htm"}, {{404, "/custom_404.html"}}, oneMB, false, {}, {}}},
         RouterTestParams{"00:00:00:00:00:00:00:00:8080",
                          HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "ipv6_server"}}},
                          {"GET"},
