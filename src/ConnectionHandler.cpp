@@ -13,6 +13,7 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "CgiHandler.h"
 
 ConnectionHandler::ConnectionHandler(std::map< std::string, IRouter* > routers, ILogger& l, IIONotifier& io)
     : _routers(routers), _logger(l), _ioNotifier(io) {
@@ -114,7 +115,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 isCGIrequest = checkCGIRequest(conn->_request, route.cfg);
 
             if (isCGIrequest)
-                conn->_hdlr = conn->route.hdlrs["CGI"];
+                conn->_hdlr = route.hdlrs["CGI"];
             else
                 conn->_hdlr = route.hdlrs[conn->getRequest().method];
 

@@ -2,6 +2,7 @@
 #include "HttpRequest.h"
 #include <algorithm>
 #include <map>
+#include <iostream>
 
 std::string Router::_matchLocations(HttpRequest req) {
     std::string route = "";
@@ -62,8 +63,9 @@ bool checkCGIRequest(HttpRequest& req, RouteConfig& cfg) {
 
     for (std::map< std::string, std::string >::const_iterator it = cgiMap.begin(); it != cgiMap.end(); ++it) {
         const std::string& ext = it->first;
-        std::string dotExt = "." + ext;
-
+        // std::string dotExt = "." + ext;
+        std::string dotExt = ext;
+        
         std::string::size_type pos = path.find(dotExt);
         if (pos == std::string::npos)
             continue;

@@ -45,6 +45,9 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
 void CgiHandler::handleCgiProcess(Connection* conn) {
     CgiContext& ctx = conn->cgiCtx;
     int status = 0;
+    // std::ofstream outfile ("test.txt");
+    // outfile << "my text here!" << std::endl;
+    // outfile.close();
 
     switch (ctx.state) {
     case CgiContext::WritingStdin: {
@@ -56,6 +59,8 @@ void CgiHandler::handleCgiProcess(Connection* conn) {
             break;
         }
         if (conn->_bodyFinished) {
+            // outfile << "setting to HandlingCgi" << std::endl;
+            // outfile.close();
             close(ctx.cgiPipeStdin);
             ctx.state = CgiContext::ReadingStdout;
             conn->setState(Connection::HandlingCgi);
