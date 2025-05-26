@@ -103,8 +103,14 @@ void ConnectionHandler::_handleState(Connection* conn) {
             route = router->match(conn->getRequest());
             conn->route = route;
 
-            if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
+            if (route.hdlrs.empty()) {
                 setErrorResponse(conn->_response, 404, RouteConfig());
+                conn->setState(Connection::SendResponse);
+                break;
+            }
+
+            if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
+                setErrorResponse(conn->_response, 405, RouteConfig());
                 conn->setState(Connection::SendResponse);
                 break;
             }
