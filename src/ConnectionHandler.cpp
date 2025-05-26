@@ -1,6 +1,7 @@
 #include "ConnectionHandler.h"
 #include "BadRequestHandler.h"
 #include "BodyParser.h"
+#include "CgiHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
 #include "Router.h"
@@ -13,7 +14,6 @@
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "CgiHandler.h"
 
 ConnectionHandler::ConnectionHandler(std::map< std::string, IRouter* > routers, ILogger& l, IIONotifier& io)
     : _routers(routers), _logger(l), _ioNotifier(io) {
@@ -82,13 +82,13 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
-    // _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
-    // std::cout << std::string(conn->_readBuf.data(), conn->_readBuf.size()) << std::endl;
+    _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
+
     HttpResponse resp;
     IHandler* hdlr;
     IRouter* router;
     Route route;
-    bool isCGIrequest;
+    // bool isCGIrequest;
     bool continueProcessing = true;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
@@ -101,34 +101,26 @@ void ConnectionHandler::_handleState(Connection* conn) {
             router = _routers[conn->getAddrPort()];
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
-            // redirection should probably be here (checking route.cfg.redirect)
-            // possible state change: SetRedirectResponse and SendResponse
-            if (!route.cfg.redirect.second.empty()) {
-                int code = route.cfg.redirect.first;
-                setHeader(conn->_response, "Location", route.cfg.redirect.second);
-                setResponse(conn->_response, code, "", 0, NULL);
-                conn->setState(Connection::SendResponse);
-                break;
-            }
-            if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
-                setErrorResponse(conn->_response, 404, RouteConfig());
-                conn->setState(Connection::SendResponse);
-                break;
-            }
-            isCGIrequest = false;
-            if (route.hdlrs.find("CGI") != route.hdlrs.end())
-                isCGIrequest = checkCGIRequest(conn->_request, route.cfg);
-
-            if (isCGIrequest)
-                conn->_hdlr = route.hdlrs["CGI"];
-            else
-                conn->_hdlr = route.hdlrs[conn->getRequest().method];
-
             conn->route = route;
-            conn->setState(Connection::Handling);
+            conn->checkRoute();
             break;
         case Connection::Handling:
             _bodyPrsr->parse(conn);
+            if (conn->getState() == Connection::SendResponse)
+                break;
+
+            if (!conn->route.cfg.redirect.second.empty()) {
+                if (conn->_bodyFinished) {
+                    int code = conn->route.cfg.redirect.first;
+                    setHeader(conn->_response, "Location", conn->route.cfg.redirect.second);
+                    setResponse(conn->_response, code, "", 0, NULL);
+                    conn->setState(Connection::SendResponse);
+                    break;
+                }
+                continueProcessing = false;
+                break;
+            }
+
             conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;
@@ -143,7 +135,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
             break;
         }
     }
-
     _updateNotifier(conn);
 }
 
@@ -163,12 +154,13 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
     if (conn->getState() == Connection::SendResponse) {
         conn->sendResponse();
 
-        if (conn->_response.statusCode == 400) {
+        if (conn->_response.statusCode >= 400) {
             _removeConnection(conn->getFileDes());
             return;
         }
         if (conn->getState() == Connection::Reset) {
             conn->resetResponse();
+            conn->_bodyFinished = false;
             conn->setState(Connection::ReadingHeaders);
             _handleState(conn); // possibly data inside Connection
             return;

@@ -86,6 +86,7 @@ class Connection {
     void parseBuf();
     void sendResponse();
     void resetResponse();
+    void checkRoute();
 
     // getter and setter
     int getFileDes() const;

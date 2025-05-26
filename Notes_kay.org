@@ -37,7 +37,7 @@ index       index.html index.htm
 2. [X] don't remove file (test for broken connection basically)
 3. [X] only reply with a response once!
 ** TODO ResponseWriter
-- [ ] responseWrite needs to fill out necessary headers
+- [X] responseWrite needs to fill out necessary headers
 - [ ] it's the reason why some clients don't close the connection
 ** TODO connection Handling (architecture)
 - [-] implement different router for different ports
@@ -51,10 +51,11 @@ index       index.html index.htm
 - [ ] test the tester
   - [ ] need to find out about Put requests and how to do the .bla extension stuff
 
-- [ ] router needs to handle cgi
-  - [ ] check on how to differentiate between cgi and other handlers
+- [X] router needs to handle cgi
+  - [X] check on how to differentiate between cgi and other handlers
 
-- [ ] implement HTTP redirect
+- [X] implement HTTP redirect
+  - [X] make sure of consecutive big http redirects
 
 - [ ] add a test that really uploads a file
   - [ ] make sure that all the file descriptors are closed
@@ -62,8 +63,8 @@ index       index.html index.htm
   - [ ] add tests for normal UploadHandler to close the files after successful upload
   - [ ] test for overlapping uploadBody and headers of following request
 
-- [ ] Rework sending the Response
-  - [ ] there is still == 400 in the onSocketWrite
+- [X] Rework sending the Response
+  - [X] there is still == 400 in the onSocketWrite
 
 - [ ] better error handling in the ConfigParser
   - [ ] right now the Core Dumps (maybe just exit with the appropriate error message)

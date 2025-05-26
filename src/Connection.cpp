@@ -1,5 +1,7 @@
 #include "Connection.h"
 #include "HttpResponse.h"
+#include "Router.h"
+#include "handlerUtils.h"
 #include <climits>
 #include <cstring>
 #include <string.h>
@@ -9,6 +11,7 @@ Connection::Connection(sockaddr_storage addr, int fd, std::string addrPort, IHtt
     _readBuf = Buffer();
     _sendBuf = Buffer();
     _hdlr = NULL;
+    _bodyFinished = false;
 }
 
 Connection::~Connection() {
@@ -22,6 +25,37 @@ Connection::~Connection() {
 }
 
 HttpRequest Connection::getRequest() { return _request; }
+
+void Connection::checkRoute() {
+    if (route.hdlrs.empty()) {
+        setErrorResponse(_response, 404, RouteConfig());
+        setState(Connection::SendResponse);
+        return;
+    }
+
+    if (route.hdlrs.find(_request.method) == route.hdlrs.end()) {
+        setErrorResponse(_response, 405, RouteConfig());
+        _state = Connection::SendResponse;
+        return;
+    }
+
+    if (!route.cfg.redirect.second.empty()) {
+        _state = Connection::Handling;
+        return;
+    }
+
+    bool isCGIrequest = false;
+    if (route.hdlrs.find("CGI") != route.hdlrs.end())
+        isCGIrequest = checkCGIRequest(_request, route.cfg);
+
+    if (isCGIrequest)
+        _hdlr = route.hdlrs["CGI"];
+    else
+        _hdlr = route.hdlrs[getRequest().method];
+
+    _state = Connection::Handling;
+    return;
+}
 
 void Connection::resetResponse() {
     delete _response.body;

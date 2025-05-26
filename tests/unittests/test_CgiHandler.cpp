@@ -34,6 +34,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
     sockaddr_storage addr = createIPv4Address(ip.c_str(), 8080);
     // printAddress(addr);
     Connection* conn = new Connection(addr, -1, port, NULL, NULL);
+    conn->_bodyFinished = true;
     conn->setState(Connection::Handling);
     cgiHdlr.handle(conn, req, cfg);
 

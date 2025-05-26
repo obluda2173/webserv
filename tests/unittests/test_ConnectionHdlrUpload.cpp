@@ -4,6 +4,38 @@
 #include "gtest/gtest.h"
 #include <gtest/gtest.h>
 
+TEST_F(ConnHdlrTestStubUploadHdlr, testErrorInBody) {
+    int clientfd = _clientFdsAndConnFds[0].first;
+    int connfd = _clientFdsAndConnFds[0].second;
+
+    // set a body that is bigger than clientMaxBody
+    std::string body = getRandomString(20000);
+    std::string request = "POST /upload HTTP/1.1\r\n"
+                          "Host: test.com\r\n"
+                          "Content-Length: " +
+                          std::to_string(body.length()) +
+                          "\r\n"
+                          "\r\n" +
+                          body;
+
+    send(clientfd, request.c_str(), request.length(), 0);
+    _connHdlr->handleConnection(connfd, READY_TO_READ);
+    ASSERT_TRUE(checkNotification(_ioNotifier, {connfd, READY_TO_WRITE}));
+
+    _connHdlr->handleConnection(connfd, READY_TO_WRITE);
+
+    char buffer[1025];
+    size_t r = recv(clientfd, &buffer[0], 1024, 0);
+    buffer[r] = '\0';
+    std::string gotResponse = buffer;
+    std::string wantResponse = "HTTP/1.1 413 Payload Too Large\r\n"
+                               "Content-Type: text/plain\r\n"
+                               "Content-Language: en-US\r\n"
+                               "Content-Length: 0\r\n\r\n";
+
+    ASSERT_EQ(wantResponse, gotResponse);
+}
+
 TEST_F(ConnHdlrTestStubUploadHdlr, testUpload) {
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;

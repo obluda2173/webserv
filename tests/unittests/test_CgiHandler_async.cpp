@@ -24,6 +24,7 @@ TEST(CgiHandlerTestAsync, NonBlockingCgiExecution) {
     CgiHandler cgiHandler;
     int dummyFd = socket(AF_INET, SOCK_STREAM, 0);
     Connection* cgiConn = new Connection({}, dummyFd, "", NULL);
+    cgiConn->_bodyFinished = true;
     HttpRequest cgiRequest = createRequest("GET", "/test_slow_script.sh");
     RouteConfig cgiConfig = createConfig(true);
 

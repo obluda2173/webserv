@@ -23,6 +23,10 @@ int main(int argc, char* argv[]) {
 
     // only run the following test
 
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestTestRouting*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestStubUploadHdlr.testErrorInBody*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestRedirections.twoBigConsecutiveRequests*";
+    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestRedirections.twoSmallSeperatedConsecutiveRequests*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithMockLoggerIPv6.acceptANewConnection*";
     // testing::GTEST_FLAG(filter) = "*mustTranslateToRealIps*";
     // testing::GTEST_FLAG(filter) = "*TransferEncodingTest.multipleTransferEncodingConnections*";
