@@ -1,6 +1,7 @@
 #include "Router.h"
 #include "HttpRequest.h"
 #include <algorithm>
+#include <iostream>
 #include <map>
 
 std::string Router::_matchLocations(HttpRequest req) {
@@ -45,6 +46,12 @@ void Router::add(std::string svrName, std::string prefix, std::string method, Ro
     _urlToRoutes[svrName + prefix].hdlrs[method] = _hdlrs[method];
     _svrToLocs[svrName].insert(prefix);
     _svrKnownPrefixPlusMethod[svrName].insert(prefix + method);
+}
+
+void Router::printUrls() {
+    for (std::map< std::string, Route >::iterator it = _urlToRoutes.begin(); it != _urlToRoutes.end(); it++) {
+        std::cout << it->first << std::endl;
+    }
 }
 
 bool checkCGIRequest(HttpRequest& req, RouteConfig& cfg) {

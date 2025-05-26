@@ -9,10 +9,12 @@ Router newRouterTest() {
 
     defaultSvr = "example.com";
 
-    svrs = {"example.com", "www.example.com", "test.com", "www.test.com", "test2.com", "test3.com", "test5.com"};
+    svrs = {"example.com", "www.example.com", "test.com",  "www.test.com",
+            "test2.com",   "test3.com",       "test5.com", "example2.com"};
 
     svrToLocs = {
         {"www.example.com", {"/css/"}},
+        {"example2.com", {"/"}},
         {"example.com", {"/images/", "/css/scripts/", "/css/", "/css/styles/"}},
         {"test.com", {"/css/", "/js/", "/images/"}},
         {"www.test.com", {"/css/", "/js/", "/images/"}},
@@ -31,6 +33,8 @@ Router newRouterTest() {
 
     std::map< std::string, Route > urlToRoutes;
     urlToRoutes = {
+        {"example2.com/",
+         {{{"GET", hdlrs["GET"]}}, {"/example2/www/html", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
         {"www.example.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/dataSecond/static", {}, {}, oneMB, false, {}, {}}}},
 
@@ -38,7 +42,7 @@ Router newRouterTest() {
 
         {"www.test.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
-          {"/data/static", {}, {}, oneMB, false, {}, {}}}},
+          {"/data/static", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
 
         {"example.com/css/scripts/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
@@ -48,7 +52,7 @@ Router newRouterTest() {
         {"test.com/images/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
           {"/data2",
-           {},
+           {"index.html", "index.htm"},
            {{404, "/custom_404.html"},
             {500, "/custom_50x.html"},
             {502, "/custom_50x.html"},
@@ -56,8 +60,10 @@ Router newRouterTest() {
             {504, "/custom_50x.html"}},
            oneMB,
            false,
-           {}, {}}}},
-        {"test.com/js/", {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {}, {}, oneMB, false, {}, {}}}},
+           {},
+           {}}}},
+        {"test.com/js/",
+         {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
         {"example.com/images/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}, {"CGI", hdlrs["CGI"]}},
           {"/data", {}, {}, oneMB, false, {}, {}}}},
@@ -68,7 +74,8 @@ Router newRouterTest() {
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
           {"/var/www/secure", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
         {"test2.com", {{{"GET", hdlrs["GET"]}}, {"/usr/share/nginx/html", {}, {}, oneMB, false, {}, {}}}},
-        {"test5.com", {{{"GET", hdlrs["GET"]}}, {"/test5/www/html", {}, {}, oneMB, false, {}, {301, "https://www.google.com"}}}}};
+        {"test5.com",
+         {{{"GET", hdlrs["GET"]}}, {"/test5/www/html", {}, {}, oneMB, false, {}, {301, "https://www.google.com"}}}}};
 
     return Router(hdlrs, defaultSvr, svrs, svrToLocs, urlToRoutes);
 }
