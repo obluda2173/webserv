@@ -33,7 +33,8 @@ Router newRouterTest() {
 
     std::map< std::string, Route > urlToRoutes;
     urlToRoutes = {
-        {"example2.com/", {{{"GET", hdlrs["GET"]}}, {"/example2/www/html", {}, {}, oneMB, false, {}, {}}}},
+        {"example2.com/",
+         {{{"GET", hdlrs["GET"]}}, {"/example2/www/html", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
         {"www.example.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}}, {"/dataSecond/static", {}, {}, oneMB, false, {}, {}}}},
 
@@ -41,7 +42,7 @@ Router newRouterTest() {
 
         {"www.test.com/css/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
-          {"/data/static", {}, {}, oneMB, false, {}, {}}}},
+          {"/data/static", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
 
         {"example.com/css/scripts/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
@@ -51,7 +52,7 @@ Router newRouterTest() {
         {"test.com/images/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}},
           {"/data2",
-           {},
+           {"index.html", "index.htm"},
            {{404, "/custom_404.html"},
             {500, "/custom_50x.html"},
             {502, "/custom_50x.html"},
@@ -61,7 +62,8 @@ Router newRouterTest() {
            false,
            {},
            {}}}},
-        {"test.com/js/", {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {}, {}, oneMB, false, {}, {}}}},
+        {"test.com/js/",
+         {{{"GET", hdlrs["GET"]}}, {"/data/scripts", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}}},
         {"example.com/images/",
          {{{"GET", hdlrs["GET"]}, {"POST", hdlrs["POST"]}, {"DELETE", hdlrs["DELETE"]}, {"CGI", hdlrs["CGI"]}},
           {"/data", {}, {}, oneMB, false, {}, {}}}},

@@ -138,7 +138,7 @@ INSTANTIATE_TEST_SUITE_P(
         RouterTestParams{"127.0.0.1:81",
                          HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "example2.com"}}},
                          {"GET"},
-                         {"/example2/www/html", {}, {}, oneMB, false, {}, {}}},
+                         {"/example2/www/html", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}},
         RouterTestParams{"00:00:00:00:00:00:00:00:8080",
                          HttpRequest{"GET", "/", "HTTP/1.1", {{"host", "ipv6_server"}}},
                          {"GET"},
@@ -162,11 +162,11 @@ INSTANTIATE_TEST_SUITE_P(
         RouterTestParams{"0.0.0.0:8081",
                          HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "www.test.com"}}},
                          {"GET", "POST", "DELETE"},
-                         {"/data/static", {}, {}, oneMB, false, {}, {}}},
+                         {"/data/static", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}},
         RouterTestParams{"0.0.0.0:8081",
                          HttpRequest{"GET", "/css/", "HTTP/1.1", {{"host", "www.test.com"}}},
                          {"GET", "POST", "DELETE"},
-                         {"/data/static", {}, {}, oneMB, false, {}, {}}},
+                         {"/data/static", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}},
 
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
@@ -196,7 +196,7 @@ INSTANTIATE_TEST_SUITE_P(
                          HttpRequest{"GET", "/images/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET", "POST", "DELETE"},
                          {"/data2",
-                          {},
+                          {"index.html", "index.htm"},
                           {{404, "/custom_404.html"},
                            {500, "/custom_50x.html"},
                            {502, "/custom_50x.html"},
@@ -209,7 +209,7 @@ INSTANTIATE_TEST_SUITE_P(
         RouterTestParams{"0.0.0.0:8081",
                          HttpRequest{"GET", "/js/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET"},
-                         {"/data/scripts", {}, {}, oneMB, false, {}, {}}},
+                         {"/data/scripts", {"index.html", "index.htm"}, {}, oneMB, false, {}, {}}},
         RouterTestParams{"0.0.0.0:8081",
                          HttpRequest{"GET", "/keys/", "HTTP/1.1", {{"host", "test.com"}}},
                          {"GET", "POST", "DELETE"},
@@ -241,4 +241,19 @@ INSTANTIATE_TEST_SUITE_P(
         RouterTestParams{"0.0.0.0:8085",
                          HttpRequest{"GET", "/google/", "HTTP/1.1", {{"host", "test5.com"}}},
                          {"GET"},
-                         {"/test5/www/html", {}, {}, oneMB, false, {}, {301, "https://www.google.com"}}}));
+                         {"/test5/www/html", {}, {}, oneMB, false, {}, {301, "https://www.google.com"}}}),
+
+    [](const testing::TestParamInfo< RouterTestParams >& info) {
+        std::string name =
+            "Host_" + info.param.req.headers.at("host") + "_Path_" +
+            (info.param.req.uri.empty()
+                 ? "Root"
+                 : info.param.req.uri.substr(1, info.param.req.uri.size() > 10 ? 10 : info.param.req.uri.size()));
+
+        // Replace characters not allowed in test names
+        std::replace(name.begin(), name.end(), '.', '_');
+        std::replace(name.begin(), name.end(), '/', '_');
+        std::replace(name.begin(), name.end(), ':', '_');
+
+        return name;
+    });
