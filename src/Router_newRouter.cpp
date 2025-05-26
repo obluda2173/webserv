@@ -1,8 +1,8 @@
 #include "Router.h"
+#include "CgiHandler.h"
 #include "ConfigStructure.h"
 #include "GetHandler.h"
 #include "UploadHandler.h"
-#include "CgiHandler.h"
 #include "utils.h"
 
 void addAllMethods(std::string svrName, std::string prefix, RouteConfig cfg, IRouter* r) {
@@ -29,8 +29,15 @@ void addLocations(std::vector< LocationConfig > locations, std::string svrName, 
         if (presentLocs.find(itLoc->prefix) != presentLocs.end())
             continue;
         presentLocs.insert(itLoc->prefix);
-        RouteConfig cfg = {itLoc->common.root,          itLoc->common.index,     itLoc->common.errorPage,
-                           itLoc->common.clientMaxBody, itLoc->common.autoindex, itLoc->cgi, itLoc->redirect};
+        RouteConfig cfg;
+        cfg.root = itLoc->common.root;
+        cfg.index = itLoc->common.index;
+        cfg.errorPage = itLoc->common.errorPage;
+        cfg.clientMaxBody = itLoc->common.clientMaxBody;
+        cfg.autoindex = (itLoc->common.autoindex == "on") ? true : false;
+        cfg.cgi = itLoc->cgi;
+        cfg.redirect = itLoc->redirect;
+
         addMethods(itLoc->common.allowMethods, svrName, itLoc->prefix, cfg, r);
     }
 }
@@ -38,9 +45,14 @@ void addLocations(std::vector< LocationConfig > locations, std::string svrName, 
 void addSvrToRouter(IRouter* r, ServerConfig svrCfg) {
     std::vector< std::string > srvNames = svrCfg.serverNames;
     for (std::vector< std::string >::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
-        RouteConfig cfg = {svrCfg.common.root,      svrCfg.common.index,
-                           svrCfg.common.errorPage, svrCfg.common.clientMaxBody,
-                           svrCfg.common.autoindex, std::map< std::string, std::string >(), std::pair< int, std::string >()};
+        RouteConfig cfg;
+        cfg.root = svrCfg.common.root;
+        cfg.index = svrCfg.common.index;
+        cfg.errorPage = svrCfg.common.errorPage;
+        cfg.clientMaxBody = svrCfg.common.clientMaxBody;
+        cfg.autoindex = (svrCfg.common.autoindex == "on") ? true : false;
+        cfg.cgi = std::map< std::string, std::string >();
+        cfg.redirect = std::pair< int, std::string >();
 
         addMethods(svrCfg.common.allowMethods, *itSvrName, "", cfg, r);
         addLocations(svrCfg.locations, *itSvrName, r);

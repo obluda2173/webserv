@@ -51,17 +51,15 @@ index       index.html index.htm
 - [ ] test the tester
   - [ ] need to find out about Put requests and how to do the .bla extension stuff
 
+- [ ] how to stop the server with sigint (make sure that all memory is released and no file descriptors open)
+  
+  
 - [X] router needs to handle cgi
   - [X] check on how to differentiate between cgi and other handlers
 
 - [X] implement HTTP redirect
   - [X] make sure of consecutive big http redirects
 
-- [ ] add a test that really uploads a file
-  - [ ] make sure that all the file descriptors are closed
-    - [ ] also a test for a broken connection and then the file should be closed
-  - [ ] add tests for normal UploadHandler to close the files after successful upload
-  - [ ] test for overlapping uploadBody and headers of following request
 
 - [X] Rework sending the Response
   - [X] there is still == 400 in the onSocketWrite
@@ -75,13 +73,19 @@ index       index.html index.htm
   - [ ] write a test that makes sure, that a response is being send, even though the connection is closed
   - [ ] check out this comment that you wrote [[file:tests/unittests/test_ConnHdlrTestWithIntegerAsParameter.cpp::// TODO: if we were to detach the thread just after launching it, the clientfd might be closed (Teardown) before we]]
 
-- [-] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
-  - [X] built the mechanism inside notifier
-  - [ ] log the timeout correctly
-  - [ ] change interface of handleConnection (only take a t_notif)
-  - [ ] test that the connection is removed from ioNotifier when the connectionHandler is called with a timeout
 - [X] probably change IHandler handle interface (add ConnectionInfo to it)
 - [X] normalization of uri needs to be done before routing
 - [X] test a config with no serverNames
   - [X] one time without the directive
   - [X] one time with directive but empty
+- [-] implement TimeoutMechanism (stale connections, connections that are kept open after receiving a response)
+  - [X] built the mechanism inside notifier
+  - [ ] log the timeout correctly
+  - [ ] change interface of handleConnection (only take a t_notif)
+  - [ ] test that the connection is removed from ioNotifier when the connectionHandler is called with a timeout
+
+- [ ] add a test that really uploads a file
+  - [ ] make sure that all the file descriptors are closed
+    - [ ] also a test for a broken connection and then the file should be closed
+  - [ ] add tests for normal UploadHandler to close the files after successful upload
+  - [ ] test for overlapping uploadBody and headers of following request

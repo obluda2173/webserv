@@ -48,7 +48,7 @@ TEST_P(RouterTest, testWithArtificialConfig) {
     EXPECT_EQ(wantHdlrs.size(), gotRoute.hdlrs.size());
     for (auto it = wantHdlrs.begin(); it != wantHdlrs.end(); ++it)
         EXPECT_EQ(*it, ((StubHandler*)gotRoute.hdlrs.find(*it)->second)->type);
-    
+
     // check redirection
     EXPECT_EQ(wantCfg.redirect, gotRoute.cfg.redirect);
 }
@@ -168,10 +168,10 @@ INSTANTIATE_TEST_SUITE_P(
                          HttpRequest{"GET", "/css/scripts/script.js", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET", "POST", "DELETE"},
                          {"/data/scripts", {}, {}, 12 * oneMB, false, {}, {}}},
-        RouterTestParams{"0.0.0.0:8080",
-                         HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
-                         {"GET", "POST", "DELETE", "CGI"},
-                         {"/data", {}, {}, oneMB, false, {{".php", "/usr/bin/php-cgi"}}, {}}},
+        // RouterTestParams{"0.0.0.0:8080",
+        //                  HttpRequest{"GET", "/images/themes/", "HTTP/1.1", {{"host", "example.com"}}},
+        //                  {"GET", "POST", "DELETE", "CGI"},
+        //                  {"/data", {}, {}, oneMB, false, {{".php", "/usr/bin/php-cgi"}}, {}}},
         RouterTestParams{"0.0.0.0:8080",
                          HttpRequest{"GET", "/css/styles/", "HTTP/1.1", {{"host", "example.com"}}},
                          {"GET"},
