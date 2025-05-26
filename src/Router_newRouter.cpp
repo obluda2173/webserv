@@ -31,7 +31,7 @@ void addLocations(ServerConfig svrCfg, std::string svrName, IRouter* r) {
             continue;
         presentLocs.insert(itLoc->prefix);
         RouteConfig cfg;
-        cfg.root = itLoc->common.root;
+        cfg.root = itLoc->common.root.empty() ? svrCfg.common.root : itLoc->common.root;
         cfg.index = itLoc->common.index;
         cfg.errorPage = itLoc->common.errorPage;
         cfg.clientMaxBody = itLoc->common.clientMaxBody;
