@@ -194,9 +194,9 @@ void ConfigParser::_parseErrorPage(const Directive& directive, CommonConfig& con
     }
 
     const std::string& uri = args.back();
-    if (uri.empty() || (uri[0] != '/' && uri.find("://") == std::string::npos)) {
-        throw std::runtime_error("Invalid error_page URI: " + uri);
-    }
+    // if (uri.empty() || (uri[0] != '/' && uri.find("://") == std::string::npos)) {
+    //     throw std::runtime_error("Invalid error_page URI: " + uri);
+    // }
 
     for (size_t i = 0; i < argCount - 1; ++i) {
         const std::string& code_str = args[i];
