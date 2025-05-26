@@ -2,6 +2,7 @@
 #include "HttpResponse.h"
 #include "Router.h"
 #include "handlerUtils.h"
+#include "httpParsing.h"
 #include <climits>
 #include <cstring>
 #include <string.h>
@@ -27,6 +28,12 @@ Connection::~Connection() {
 HttpRequest Connection::getRequest() { return _request; }
 
 void Connection::checkRoute() {
+    if (!checkValidMethod(_request.method)) {
+        setErrorResponse(_response, 501, RouteConfig());
+        setState(Connection::SendResponse);
+        return;
+    }
+
     if (route.hdlrs.empty()) {
         setErrorResponse(_response, 404, RouteConfig());
         setState(Connection::SendResponse);

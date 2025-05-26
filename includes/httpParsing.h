@@ -16,6 +16,5 @@ bool isValidHost(std::string str);
 bool checkQValue(std::string str);
 bool checkCharsetBoundary(const std::string& str);
 bool checkValidVersion(const std::string& version);
-bool checkValidMethod(const std::string& method);
 
 #endif // HTTPPARSING_H
