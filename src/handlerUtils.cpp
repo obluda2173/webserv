@@ -157,6 +157,12 @@ void setErrorResponse(HttpResponse& resp, int code, const RouteConfig& config) {
 
 bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, std::string& path,
                      struct stat& pathStat) {
+
+    if (req.method != "GET" && req.method != "POST" && req.method != "DELETE") {
+        setErrorResponse(resp, 501, config);
+        return false;
+    }
+
     // 2. URI Validation
     if (req.uri.empty() || req.uri.length() > MAX_URI_LENGTH) {
         setErrorResponse(resp, 400, config);
