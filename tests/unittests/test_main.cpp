@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionPerRequest.sendMsgsAsync*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestTestRouting*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestUploadHdlr.changeExistingFile*";
-    // testing::GTEST_FLAG(filter) = "*Cgi*";
+    testing::GTEST_FLAG(filter) = "*Cgi*";
     // testing::GTEST_FLAG(filter) = "*HttpParserTest*";
     // testing::GTEST_FLAG(filter) = "*DeleteHandler*";
     // testing::GTEST_FLAG(filter) = "*UploadHdlrTest.changeFileExisting*";
