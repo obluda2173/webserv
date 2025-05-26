@@ -88,7 +88,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
     IHandler* hdlr;
     IRouter* router;
     Route route;
-    bool isCGIrequest;
+    // bool isCGIrequest;
     bool continueProcessing = true;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
@@ -102,39 +102,13 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
             conn->route = route;
-
-            if (route.hdlrs.empty()) {
-                setErrorResponse(conn->_response, 404, RouteConfig());
-                conn->setState(Connection::SendResponse);
-                break;
-            }
-
-            if (route.hdlrs.find(conn->_request.method) == route.hdlrs.end()) {
-                setErrorResponse(conn->_response, 405, RouteConfig());
-                conn->setState(Connection::SendResponse);
-                break;
-            }
-
-            if (!route.cfg.redirect.second.empty()) {
-                conn->setState(Connection::Handling);
-                break;
-            }
-
-            isCGIrequest = false;
-            if (route.hdlrs.find("CGI") != route.hdlrs.end())
-                isCGIrequest = checkCGIRequest(conn->_request, route.cfg);
-
-            if (isCGIrequest)
-                conn->_hdlr = route.hdlrs["CGI"];
-            else
-                conn->_hdlr = route.hdlrs[conn->getRequest().method];
-
-            conn->setState(Connection::Handling);
+            conn->checkRoute();
             break;
         case Connection::Handling:
             _bodyPrsr->parse(conn);
             if (conn->getState() == Connection::SendResponse)
                 break;
+
             if (!conn->route.cfg.redirect.second.empty()) {
                 if (conn->_bodyFinished) {
                     int code = conn->route.cfg.redirect.first;

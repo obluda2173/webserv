@@ -59,7 +59,7 @@ TEST_F(ConnHdlrTestRedirections, twoBigConsecutiveRequests) {
                           getRandomString(contentLength);
 
     request = request + request;
-    std::cout << "send: " << send(clientfd, request.c_str(), request.length(), 0) << std::endl;
+    send(clientfd, request.c_str(), request.length(), 0);
 
     int count = 0;
     while (count++ < 2) {
