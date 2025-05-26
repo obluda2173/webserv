@@ -4,11 +4,11 @@
 #include "Connection.h"
 #include "ConnectionHandler.h"
 #include "EpollIONotifier.h"
+#include "GetHandler.h"
 #include "HttpResponse.h"
 #include "IIONotifier.h"
 #include "PingHandler.h"
 #include "Router.h"
-#include "GetHandler.h"
 #include "UploadHandler.h"
 #include "test_main.h"
 #include "test_mocks.h"
@@ -287,7 +287,7 @@ class ConnHdlrTestRedirections : public BaseConnHdlrTest< StubLogger, int > {
     virtual void setupConnectionHandler() override {
         std::map< std::string, IHandler* > hdlrs = {{"GET", new GetHandler()}};
         IRouter* router = new Router(hdlrs);
-        router->add("test.com", "/google", "GET", {"", {}, {}, 0, false, {}, {301, "https://www.google.com"}});
+        router->add("test.com", "/google", "GET", {"", {}, {}, 10000, false, {}, {301, "https://www.google.com"}});
         std::map< std::string, IRouter* > routers;
         routers["0.0.0.0:8080"] = router;
         _connHdlr = new ConnectionHandler(routers, *_logger, *_ioNotifier);
