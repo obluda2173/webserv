@@ -54,7 +54,7 @@ struct CgiContext {
 
 class Connection {
   public:
-    enum STATE { ReadingHeaders, Routing, Handling, HandleBadRequest, SendResponse, Reset, HandlingCgi };
+    enum STATE { ReadingHeaders, Routing, Redirecting, Handling, HandleBadRequest, SendResponse, Reset, HandlingCgi };
 
   private:
     STATE _state;

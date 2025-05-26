@@ -35,6 +35,9 @@ void ConnectionHandler::_updateNotifier(Connection* conn) {
     case Connection::ReadingHeaders:
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
+    case Connection::Redirecting:
+        _ioNotifier.modify(connfd, READY_TO_READ);
+        break;
     case Connection::Handling:
         _ioNotifier.modify(connfd, READY_TO_READ);
         break;
@@ -104,23 +107,24 @@ void ConnectionHandler::_handleState(Connection* conn) {
             conn->route = route;
             conn->checkRoute();
             break;
-        case Connection::Handling:
+        case Connection::Redirecting:
             _bodyPrsr->parse(conn);
             if (conn->getState() == Connection::SendResponse)
                 break;
 
-            if (!conn->route.cfg.redirect.second.empty()) {
-                if (conn->_bodyFinished) {
-                    int code = conn->route.cfg.redirect.first;
-                    setHeader(conn->_response, "Location", conn->route.cfg.redirect.second);
-                    setResponse(conn->_response, code, "", 0, NULL);
-                    conn->setState(Connection::SendResponse);
-                    break;
-                }
-                continueProcessing = false;
+            if (conn->_bodyFinished) {
+                int code = conn->route.cfg.redirect.first;
+                setHeader(conn->_response, "Location", conn->route.cfg.redirect.second);
+                setResponse(conn->_response, code, "", 0, NULL);
+                conn->setState(Connection::SendResponse);
                 break;
             }
-
+            continueProcessing = false;
+            break;
+        case Connection::Handling:
+            _bodyPrsr->parse(conn);
+            if (conn->getState() == Connection::SendResponse)
+                break;
             conn->_hdlr->handle(conn, conn->_request, conn->route.cfg);
             continueProcessing = (conn->getState() != currentState);
             break;

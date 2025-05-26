@@ -40,7 +40,7 @@ void Connection::checkRoute() {
     }
 
     if (!route.cfg.redirect.second.empty()) {
-        _state = Connection::Handling;
+        _state = Connection::Redirecting;
         return;
     }
 

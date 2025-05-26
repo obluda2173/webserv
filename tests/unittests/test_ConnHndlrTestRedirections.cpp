@@ -68,7 +68,6 @@ TEST_F(ConnHdlrTestRedirections, twoBigConsecutiveRequests) {
         std::string gotResponse = "";
         std::vector< t_notif > notifs = _ioNotifier->wait();
 
-        std::cout << std::endl << "calling ready to write" << std::endl;
         _connHdlr->handleConnection(connfd, READY_TO_WRITE);
         char buffer[1025];
         ssize_t r = recv(clientfd, &buffer[0], 1024, 0);
