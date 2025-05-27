@@ -19,5 +19,6 @@ bool checkValidVersionSyntax(const std::string& version);
 /* used in later stages, not in httpParser anymore */
 bool checkMethodImplemented(const std::string& method);
 bool checkValidVersion(const std::string& version);
+std::string parseOutProtocolAndHost(std::string uri);
 
 #endif // HTTPPARSING_H

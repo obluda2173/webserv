@@ -106,7 +106,9 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 break;
             }
 
-            if (conn->_request.uri[0] != '/') {
+            conn->_request.uri = parseOutProtocolAndHost(conn->_request.uri);
+
+            if (conn->_request.uri.empty()) {
                 setErrorResponse(conn->_response, 400, RouteConfig());
                 conn->setState(Connection::SendResponse);
                 break;

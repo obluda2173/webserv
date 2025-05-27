@@ -13,6 +13,23 @@ bool checkMethodImplemented(const std::string& method) {
     return method == "GET" || method == "POST" || method == "DELETE";
 }
 
+std::string parseOutProtocolAndHost(std::string uri) {
+    if (uri.empty())
+        return "";
+
+    if (uri[0] == '/')
+        return uri;
+
+    if (uri.substr(0, 7) != "http://")
+        return "";
+
+    size_t pos = 7;
+    pos = uri.find("/", pos);
+    if (pos != std::string::npos)
+        return uri.substr(pos); // Return everything after the host
+    return "/";                 // No path found, return root path
+}
+
 bool checkValidVersion(const std::string& version) {
     double ver = 0;
     std::string verStr = version.substr(5);

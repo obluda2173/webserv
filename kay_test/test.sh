@@ -188,47 +188,47 @@ echo -e "${YELLOW}**********************************************\n${NC}"
 
 echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "Missing Host Header" \
-#   "GET / HTTP/1.1\r\n\r\n" \
-#   "400"
+run_nc_test "Missing Host Header" \
+  "GET / HTTP/1.1\r\n\r\n" \
+  "400"
 
-# run_nc_test "Illegal HTTP Method" \
-#   "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-#   "501"
+run_nc_test "Illegal HTTP Method" \
+  "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "501"
 
-# run_nc_test "Bad HTTP Version" \
-#   "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
-#   "505"
+run_nc_test "Bad HTTP Version" \
+  "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
+  "505"
 
-# run_nc_test "Bad HTTP Version" \
-#   "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
-#   "505"
+run_nc_test "Bad HTTP Version" \
+  "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
+  "505"
 
-# run_nc_test "Missing CRLF" \
-#   "GET / HTTP/1.1Host: localhost\r\n\r\n" \
-#   "400"
+run_nc_test "Missing CRLF" \
+  "GET / HTTP/1.1Host: localhost\r\n\r\n" \
+  "400"
 
-# run_nc_test "Garbage Request" \
-#   "😈😈😈😈😈😈\r\n\r\n" \
-#   "400"
+run_nc_test "Garbage Request" \
+  "😈😈😈😈😈😈\r\n\r\n" \
+  "400"
 
 # echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "bad request uri ." \
-#   "GET . HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-#   "400"
+run_nc_test "bad request uri ." \
+  "GET . HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "400"
 
 run_nc_test "bad request uri not start with /" \
   "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r\n" \
   "400"
 
-# run_nc_test "bad HTTP first line" \
-# "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "400"
+run_nc_test "bad HTTP first line" \
+  "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "400"
 
-# run_nc_test "HTTP full url without port" \
-# "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "200"
+run_nc_test "HTTP full url without port" \
+  "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "200"
 
 # run_nc_test "HTTP full url with port" \
 # "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n" \
