@@ -32,8 +32,13 @@ size_t custom_stol(const std::string& str, size_t* idx = 0, int base = 10) {
 }
 
 bool BodyParser::_checkContentLength(Connection* conn, BodyContext& bodyCtx) {
-    if (conn->_request.headers.find("content-length") == conn->_request.headers.end())
+    if (conn->_request.headers.find("content-length") == conn->_request.headers.end()) {
+        if (conn->_request.method == "POST") {
+            setErrorResponse(conn->_response, 411, conn->route.cfg);
+            conn->setState(Connection::SendResponse);
+        }
         return false;
+    }
 
     std::stringstream ss(conn->_request.headers["content-length"]);
     ss >> bodyCtx.contentLength;
