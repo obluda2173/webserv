@@ -79,10 +79,15 @@ std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCf
                 IRouter* r = new Router(hdlrs);
                 addSvrToRouter(r, svrCfg);
                 routers[ip + ":" + port] = r;
-                r->printUrls();
             }
         }
     }
+
+    for (std::map< std::string, IRouter* >::iterator it = routers.begin(); it != routers.end(); it++) {
+        std::cout << it->first << std::endl;
+        it->second->printUrls();
+    }
+
     return routers;
 }
 
