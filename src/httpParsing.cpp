@@ -15,6 +15,16 @@ bool checkMethodImplemented(const std::string& method) {
 
 bool checkValidVersion(const std::string& version) {
     double ver = 0;
+    std::string verStr = version.substr(5);
+    std::istringstream iss(verStr);
+    iss >> ver;
+    if (ver < 1 || ver >= 2) { // I CHANGED THIS FROM 0 TO 1, BECAUSE HTTP/0.9 IS NOT SUPPORTED
+        return false;
+    }
+    return true;
+}
+
+bool checkValidVersionSyntax(const std::string& version) {
     if (version.empty()) {
         return false;
     }
@@ -26,11 +36,6 @@ bool checkValidVersion(const std::string& version) {
         return false;
     }
     if (!isdigit(verStr[0]) || verStr[1] != '.' || !isdigit(verStr[2])) { // TODO: why check 2 times for a "."?
-        return false;
-    }
-    std::istringstream iss(verStr);
-    iss >> ver;
-    if (ver < 1 || ver > 2) { // I CHANGED THIS FROM 0 TO 1, BECAUSE HTTP/0.9 IS NOT SUPPORTED
         return false;
     }
     return true;
@@ -364,7 +369,6 @@ bool specificHeaderValidation(
                                // Accept: */*
                                // Accept-Encoding: identity
                                // Connection: Keep-Alive
-
         if (value != "keep-alive" && value != "close") {
             logger.log("ERROR", "specificHeaderValidation: Invalid Connection header");
             return false;

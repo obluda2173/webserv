@@ -118,7 +118,7 @@ bool HttpParser::_requestLineValidation(const std::string& method, const std::st
     // if (!checkValidMethod(method)) {
     //     return false;
     // }
-    if (!checkValidVersion(version)) {
+    if (!checkValidVersionSyntax(version)) {
         return false;
     }
     return true;

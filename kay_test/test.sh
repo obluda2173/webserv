@@ -43,7 +43,7 @@ run_test() {
     return 1
   fi
 
-  actual_code=$(echo "HTTP/1.1 201 Created" | awk '{print $2}')
+  actual_code=$(echo $response | awk '{print $2}')
   # echo "curl -s -o /dev/null -w "%{http_code}" "${curl_args[@]}""
   # actual_code=$(curl -s -o /dev/null -w "%{http_code}" "${curl_args[@]}")
 
@@ -154,16 +154,16 @@ echo -e "${YELLOW}**********************************************\n${NC}"
 # Content-Disposition: form-data; name="file"; filename="fileToUpload.txt"
 # Content-Type: text/plain
 
-# Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first
-run_test "POST chunked upload (.txt file)" \
-  -s -i \
-  -X POST \
-  -H 'Content-Type: text/plain' \
-  -H 'Transfer-Encoding: chunked' \
-  --data-binary '@/home/kfreyer/workspace/webserv/kay_test/fileToUpload.txt' \
-  "http://$HOST:$PORT/upload" \
-  "201" \
-  "File uploaded and saved successfully"
+# # Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first
+# run_test "POST chunked upload (.txt file)" \
+#   -s -i \
+#   -X POST \
+#   -H 'Content-Type: text/plain' \
+#   -H 'Transfer-Encoding: chunked' \
+#   --data-binary '@/home/kfreyer/workspace/webserv/kay_test/fileToUpload.txt' \
+#   "http://$HOST:$PORT/upload" \
+#   "201" \
+#   "Created /upload"
 
 # run_test "Same ip and port, different servername: webserv.com" \
 #   -s -i \
@@ -183,40 +183,44 @@ run_test "POST chunked upload (.txt file)" \
 # # 🔥 nc illegal test
 # # ========================
 
-# echo -e "${YELLOW}\n************** nc check **********************${NC}"
-# echo -e "${YELLOW}**********************************************\n${NC}"
+echo -e "${YELLOW}\n************** nc check **********************${NC}"
+echo -e "${YELLOW}**********************************************\n${NC}"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
+echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
 
 # run_nc_test "Missing Host Header" \
-# "GET / HTTP/1.1\r\n\r\n" \
-# "400"
+#   "GET / HTTP/1.1\r\n\r\n" \
+#   "400"
 
 # run_nc_test "Illegal HTTP Method" \
-# "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "501"
+#   "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+#   "501"
 
 # run_nc_test "Bad HTTP Version" \
-# "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
-# "505"
+#   "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
+#   "505"
+
+# run_nc_test "Bad HTTP Version" \
+#   "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
+#   "505"
 
 # run_nc_test "Missing CRLF" \
-# "GET / HTTP/1.1Host: localhost\r\n\r\n" \
-# "400"
+#   "GET / HTTP/1.1Host: localhost\r\n\r\n" \
+#   "400"
 
 # run_nc_test "Garbage Request" \
-# "😈😈😈😈😈😈\r\n\r\n" \
-# "400"
+#   "😈😈😈😈😈😈\r\n\r\n" \
+#   "400"
 
 # echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
 
 # run_nc_test "bad request uri ." \
-# "GET . HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "400"
+#   "GET . HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+#   "400"
 
 # run_nc_test "bad request uri not start with /" \
-# "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "400"
+#   "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+#   "400"
 
 # run_nc_test "bad HTTP first line" \
 # "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
