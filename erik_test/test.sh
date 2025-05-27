@@ -356,30 +356,30 @@ run_nc_test() {
 # "GET /redirexample HTTP/1.1\r\nHost: localhost\r\n\r" \
 # "307"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> ERR TEST <<<<<<<<<<<\n${NC}"
+echo -e "${YELLOW}\n>>>>>>>>>>>> ERR TEST <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "GET /a>{}, invalid uri character, return 400" \
-# "GET /a>{} HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "400"
+run_nc_test "GET /a>{}, invalid uri character, return 400" \
+"GET /a>{} HTTP/1.1\r\nHost: localhost\r\n\r" \
+"400"
 
-# run_nc_test "GET with .. in uri, return 403" \
-# "GET /.. HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "403"
+run_nc_test "GET with .. in uri, return 403" \
+"GET /.. HTTP/1.1\r\nHost: localhost\r\n\r" \
+"400"
 
-# run_nc_test "POST, repeat content length., return 400" \
-# "POST /upload HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# Content-Length: 1\r
-# \r\n\r" \
-# "400"
+run_nc_test "POST, repeat content length., return 400" \
+"POST /upload HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+Content-Length: 1\r
+\r\n\r" \
+"400"
 
-# run_nc_test "POST, repeat content type., return 400" \
-# "POST /upload HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# Content-Type: text/html\r
-# Content-Type: text/html\r
-# \r\n\r" \
-# "400"
+run_nc_test "POST, repeat content type., return 400" \
+"POST /upload HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+Content-Type: text/html\r
+Content-Type: text/html\r
+\r\n\r" \
+"400"
 
 echo -e "${YELLOW}\n>>>>>>>>>>>> CGI ERR TEST <<<<<<<<<<<\n${NC}"
 

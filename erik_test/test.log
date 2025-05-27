@@ -1,0 +1,135 @@
+Webserv Test Report - Di 27. Mai 13:35:36 CEST 2025
+
+===== Test: GET /a>{}, invalid uri character, return 400 =====
+Raw request sent:
+GET /a>{} HTTP/1.1
+Host: localhost
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: GET with .. in uri, return 403 =====
+Raw request sent:
+GET /.. HTTP/1.1
+Host: localhost
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: POST, repeat content length., return 400 =====
+Raw request sent:
+POST /upload HTTP/1.1
+Host: localhost
+Content-Length: 0
+Content-Length: 1
+
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Length: 0
+
+
+===== Test: POST, repeat content type., return 400 =====
+Raw request sent:
+POST /upload HTTP/1.1
+Host: localhost
+Content-Length: 0
+Content-Type: text/html
+Content-Type: text/html
+
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Length: 0
+
+
+===== Test: POST script not exist, return 404 =====
+Raw request sent:
+POST /cgi/python/notexist.py HTTP/1.1
+Host: localhost
+Content-Length: 0
+
+
+Response received:
+HTTP/1.1 404 Not Found
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: POST script contain error in stderr =====
+Raw request sent:
+POST /cgi/python/error.py HTTP/1.1
+Host: localhost
+Content-Length: 0
+
+Response received:
+HTTP/1.1 502 Bad Gateway
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: POST script contain segmentation fault =====
+Raw request sent:
+POST /cgi/python/crash.py HTTP/1.1
+Host: localhost
+Content-Length: 0
+
+
+Response received:
+HTTP/1.1 502 Bad Gateway
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: POST script return nothing =====
+Raw request sent:
+POST /cgi/python/empty.py HTTP/1.1
+Host: localhost
+Content-Length: 0
+
+
+Response received:
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: POST script doesn't have content type =====
+Raw request sent:
+POST /cgi/php/wrongCgiNoContentType.php HTTP/1.1
+Host: localhost
+Content-Length: 0
+
+
+Response received:
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: POST script have invalid head =====
+Raw request sent:
+POST /cgi/php/wrongCgiInvalidHead.php HTTP/1.1
+Host: localhost
+Content-Length: 0
+
+
+Response received:
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+

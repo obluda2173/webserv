@@ -164,6 +164,7 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
 
     // 2. URI Validation
     if (req.uri.empty() || req.uri.length() > MAX_URI_LENGTH) {
+        std::cerr << "URI Validation\n";
         setErrorResponse(resp, 400, config);
         return false;
     }
@@ -177,6 +178,13 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
     // 4. Body Content Validation
     if ((req.headers.count("content-length") || req.headers.count("transfer-encoding")) &&
         (req.method == "GET" || req.method == "DELETE")) {
+        std::cerr << "Body Content Validation\n";
+        setErrorResponse(resp, 400, config);
+        return false;
+    }
+
+    // URI validation on prohibited characters
+    if (path.find_first_of("\"<>{}\\^`|") != std::string::npos) {
         setErrorResponse(resp, 400, config);
         return false;
     }
