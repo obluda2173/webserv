@@ -230,9 +230,13 @@ run_nc_test "HTTP full url without port" \
   "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
   "200"
 
-# run_nc_test "HTTP full url with port" \
-# "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n" \
-# "200"
+run_nc_test "HTTP full url without port" \
+  "GET http://localhost(*(*))/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "400"
+
+run_nc_test "HTTP full url with port" \
+  "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n" \
+  "200"
 
 # run_nc_test "HTTP full url not patch" \
 # "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \

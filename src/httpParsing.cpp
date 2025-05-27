@@ -13,6 +13,27 @@ bool checkMethodImplemented(const std::string& method) {
     return method == "GET" || method == "POST" || method == "DELETE";
 }
 
+bool isValidHostString(const std::string& host) {
+    // Characters that should not be present in a host
+    const char* invalidChars = "/?#[]@!$&'()*+,;=";
+
+    // Check if any invalid character is present
+    for (size_t i = 0; invalidChars[i] != '\0'; ++i) {
+        if (host.find(invalidChars[i]) != std::string::npos) {
+            return false;
+        }
+    }
+
+    // Special check for space and control characters
+    for (size_t i = 0; i < host.length(); ++i) {
+        if (host[i] <= 32 || host[i] >= 127) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 std::string parseOutProtocolAndHost(std::string uri) {
     if (uri.empty())
         return "";
@@ -23,11 +44,25 @@ std::string parseOutProtocolAndHost(std::string uri) {
     if (uri.substr(0, 7) != "http://")
         return "";
 
+    if (uri.length() == 7)
+        return "";
+
+    uri = uri.substr(7);
     size_t pos = 7;
     pos = uri.find("/", pos);
-    if (pos != std::string::npos)
-        return uri.substr(pos); // Return everything after the host
-    return "/";                 // No path found, return root path
+    if (pos != std::string::npos) {
+        std::cout << uri.substr(0, pos) << std::endl;
+        if (!isValidHostString(uri.substr(0, pos))) {
+            std::cout << "Return empty" << std::endl;
+            return "";
+        }
+        std::cout << "Return everything after the host" << std::endl;
+        return uri.substr(pos);
+    }
+
+    if (!isValidHostString(uri.substr(0, pos)))
+        return "";
+    return "/"; // Return everything after the host
 }
 
 bool checkValidVersion(const std::string& version) {

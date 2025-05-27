@@ -1,4 +1,4 @@
-Webserv Test Report - Di 27. Mai 15:32:42 CEST 2025
+Webserv Test Report - Di 27. Mai 16:10:29 CEST 2025
 
 ===== Test: Missing Host Header =====
 Raw request sent:
@@ -604,5 +604,18 @@ Content-Length: 22044
     </body>
 </html>
 HTTP/1.1 400 Bad Request
+Content-Length: 0
+
+
+===== Test: HTTP full url without port =====
+Raw request sent:
+GET http://localhost(*(*))/ HTTP/1.1
+Host: localhost
+
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain
+Content-Language: en-US
 Content-Length: 0
 
