@@ -66,7 +66,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"content-length", "13"}},
                              },
                              "POST /upload HTTP/1.1\r\n"
@@ -82,7 +82,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"content-length", "13"}},
                              },
                              "POST /upload HTTP/1.1\n"
@@ -110,7 +110,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"content-length", "13"}},
                              },
                              "POST   \t  /upload   \t\t     HTTP/1.1 \t\t \r\n"
@@ -126,7 +126,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"content-length", "13"}},
                              },
                              "POST /upload HTTP/1.1\r\n  \r\n"
@@ -162,7 +162,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", ""}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -186,7 +186,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "aHost"}, {"custom-header", "value_with_special_chars!@#$%"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -204,7 +204,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/first",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}},
                              },
                              "GET /first HTTP/1.1\r\n"
@@ -221,7 +221,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/search?q=test&lang=en",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}},
                              },
                              "GET /search?q=test&lang=en HTTP/1.1\r\n"
@@ -235,7 +235,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -249,7 +249,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "OPTIONS",
                                  "*",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}},
                              },
                              "OPTIONS * HTTP/1.1\r\n"
@@ -284,7 +284,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/path%20with%20spaces",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}},
                              },
                              "GET /path%20with%20spaces HTTP/1.1\r\n"
@@ -298,7 +298,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "aHost"}, {"x-very-long-header-name-that-goes-on-and-on", "value"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -313,7 +313,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost:8080"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -336,7 +336,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"content-length", "5"}},
                              },
                              "POST /upload HTTP/1.1\r\n"
@@ -350,7 +350,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"transfer-encoding", "chunked"}},
                              },
                              "POST /upload HTTP/1.1\r\n"
@@ -364,7 +364,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"connection", "keep-alive"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -378,7 +378,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"connection", "close"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -392,7 +392,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "POST",
                                  "/upload",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"content-type", "application/json"}},
                              },
                              "POST /upload HTTP/1.1\r\n"
@@ -406,7 +406,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept", "application/json"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -420,7 +420,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept", "application/json, text/html"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -434,7 +434,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept-encoding", "gzip, deflate"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -448,7 +448,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept-encoding", "gzip, deflate, br"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -462,7 +462,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept-encoding", "gzip;q=0.8, deflate;q=0.5"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -476,7 +476,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept-language", "en-US, en;q=0.5"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -490,7 +490,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept-language", "en-US, fr;q=0.8"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -504,7 +504,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"accept-language", "en-US;q=0.8, fr;q=0.5"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -518,7 +518,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"cookie", "sessionId=123; userId=456"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -532,7 +532,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"cookie", "sessionId=123; userId=456; theme=dark"}},
                              },
                              "GET / HTTP/1.1\r\n"
@@ -546,7 +546,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/file.txt",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"range", "bytes=0-499"}},
                              },
                              "GET /file.txt HTTP/1.1\r\n"
@@ -560,7 +560,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/file.txt",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"range", "bytes=0-499, 500-999"}},
                              },
                              "GET /file.txt HTTP/1.1\r\n"
@@ -574,7 +574,7 @@ INSTANTIATE_TEST_SUITE_P(
                              {
                                  "GET",
                                  "/file.txt",
-                                 "HTTP/1.1",
+                                 "", "HTTP/1.1", 
                                  {{"host", "localhost"}, {"range", "bytes=0-499;q=0.8, 500-999;q=0.5"}},
                              },
                              "GET /file.txt HTTP/1.1\r\n"
@@ -1265,7 +1265,7 @@ INSTANTIATE_TEST_SUITE_P(
             114,
             1,
             0,
-            {"GET", "/index.html", "HTTP/1.1", {{"host", "localhost"}, {"accept-language", "en-US;q= 0.5"}}},
+            {"GET", "/index.html", "", "HTTP/1.1",  {{"host", "localhost"}, {"accept-language", "en-US;q= 0.5"}}},
             "GET /index.html HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Accept-Language: en-US;q= 0.5\r\n"
@@ -1275,7 +1275,7 @@ INSTANTIATE_TEST_SUITE_P(
             115,
             1,
             0,
-            {"GET", "/index.html", "HTTP/1.1", {{"host", "localhost"}, {"accept-language", "en-US;q =0.5"}}},
+            {"GET", "/index.html", "", "HTTP/1.1",  {{"host", "localhost"}, {"accept-language", "en-US;q =0.5"}}},
             "GET /index.html HTTP/1.1\r\n"
             "Host: localhost\r\n"
             "Accept-Language: en-US;q =0.5\r\n"
@@ -1289,7 +1289,7 @@ INSTANTIATE_TEST_SUITE_P(
             {
                 "GET",
                 "/",
-                "HTTP/1.1",
+                "", "HTTP/1.1", 
                 {{"host", "localhost:8080"},
                  {"connection", "keep-alive"},
                  {"cookie", "supabase-auth-token=%5B%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."

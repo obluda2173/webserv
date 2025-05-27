@@ -25,11 +25,6 @@ std::string trimWhiteSpace(const std::string& str) {
     return str.substr(first, (last - first + 1));
 }
 
-std::string extractQuery(const std::string& uri) {
-    const size_t pos = uri.find('?');
-    return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
-}
-
 std::string findInterpreter(std::map< std::string, std::string > cgiMap, const std::string& uri) {
     for (std::map< std::string, std::string >::const_iterator it = cgiMap.begin(); it != cgiMap.end(); ++it) {
         const std::string& ext = it->first;

@@ -15,7 +15,6 @@
 std::string toUpper(const std::string& str);
 void replace(std::string& str, char what, char with);
 std::string trimWhiteSpace(const std::string& str);
-std::string extractQuery(const std::string& uri);
 std::string findInterpreter(std::map< std::string, std::string > cgiMap, const std::string& uri);
 std::string getScriptName(const std::map<std::string, std::string>& cgiMap, const std::string& uri);
 std::string getPathInfo(std::map< std::string, std::string > cgiMap, const std::string& uri);

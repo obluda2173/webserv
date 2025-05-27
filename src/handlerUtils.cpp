@@ -127,6 +127,11 @@ std::string normalizePath(const std::string& root, const std::string& uri) {
     return (result.find(root) == 0) ? result : "";
 }
 
+std::string extractQuery(const std::string& uri) {
+    const size_t pos = uri.find('?');
+    return (pos != std::string::npos) ? uri.substr(pos + 1) : "";
+}
+
 void setHeader(HttpResponse& resp, std::string key, std::string value) { resp.headers[toLower(key)] = value; }
 
 void setResponse(HttpResponse& resp, int statusCode, const std::string& contentType, size_t contentLength,

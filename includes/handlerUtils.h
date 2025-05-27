@@ -20,6 +20,7 @@ std::string getMimeType(const std::string& path);
 int hexToInt(char c);
 std::string decodePercent(const std::string& str);
 std::string normalizePath(const std::string& root, const std::string& uri);
+std::string extractQuery(const std::string& uri);
 void setHeader(HttpResponse& resp, std::string key, std::string value);
 void setResponse(HttpResponse& resp, int statusCode, const std::string& contentType,
                  size_t contentLength, IBodyProvider* bodyProvider);

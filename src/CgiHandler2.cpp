@@ -14,15 +14,10 @@ bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const Ro
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
     std::string scriptName = getScriptName(config.cgi, request.uri);
     std::string pathInfo = getPathInfo(config.cgi, request.uri);
-    std::string query = extractQuery(request.uri);
-
-    // std::cerr << "scriptName: " << scriptName << "\n";
-    // std::cerr << "pathInfo: " << pathInfo << "\n";
-    // std::cerr << "query: " << query << "\n";
 
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("PATH_INFO=" + pathInfo);
-    _envStorage.push_back("QUERY_STRING=" + query);
+    _envStorage.push_back("QUERY_STRING=" + request.query);
     _envStorage.push_back("SCRIPT_NAME=" + scriptName);
     _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
     _envStorage.push_back("REMOTE_ADDR=" + getRemoteAddr(conn));

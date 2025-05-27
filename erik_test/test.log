@@ -1,4 +1,4 @@
-Webserv Test Report - Di 27. Mai 15:49:08 CEST 2025
+Webserv Test Report - Di 27. Mai 17:21:06 CEST 2025
 
 ===== Test: GET /cgi/python/showenv.py, with pathinfo and querystring return autoindex =====
 Raw request sent:
@@ -15,7 +15,7 @@ HTTP_HOST=localhost
 LC_CTYPE=C.UTF-8
 PATH_INFO=/data/comment
 PATH_TRANSLATED=/home/erian/Desktop/submit/webserv/erik_test/site/web1/data/comment
-QUERY_STRING=
+QUERY_STRING=userinfo=hello
 REMOTE_ADDR=127.0.0.1
 REQUEST_METHOD=GET
 SCRIPT_NAME=/cgi/python/showenv.py

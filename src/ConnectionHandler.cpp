@@ -114,6 +114,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 break;
             }
 
+            conn->_request.query = extractQuery(conn->_request.uri);
             conn->_request.uri = normalizePath("", conn->_request.uri);
 
             router = _routers[conn->getAddrPort()];

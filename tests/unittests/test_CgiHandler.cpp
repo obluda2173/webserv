@@ -8,7 +8,7 @@
 
 struct CgiTestParams {
     std::string scriptName;
-    std::vector< std::pair< std::string, std::vector< std::string > > > queryParams;
+    std::string queryParams;
     std::string wantOutput;
 };
 
@@ -28,7 +28,8 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
     CgiHandler cgiHdlr;
     
     req.method = "GET";
-    req.uri = buildUri(params.scriptName, params.queryParams);
+    req.uri = params.scriptName;
+    req.query = params.queryParams;
     std::string ip = "127.0.0.1";
     std::string port = "127.0.0.1:8080";
     sockaddr_storage addr = createIPv4Address(ip.c_str(), 8080);
@@ -58,12 +59,12 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
 }
 
 INSTANTIATE_TEST_SUITE_P(firstTest, CgiHandlerTestP,
-                         testing::Values(CgiTestParams{"MqueryParams.py",
-                                                       {{"name", {"kay"}}, {"hobby", {"coding", "running"}}},
+                         testing::Values(CgiTestParams{"/MqueryParams.py",
+                                                       "name=kay&hobby=coding&hobby=running",
                                                        {"name kay\nhobby coding, running\n"}},
-                                         CgiTestParams{"MqueryParams.py",
-                                                       {{"name", {"kay"}}, {"hobby", {"coding"}}},
+                                         CgiTestParams{"/MqueryParams.py",
+                                                       "name=kay&hobby=coding",
                                                        {"name kay\nhobby coding\n"}},
-                                         CgiTestParams{"MqueryParams.py", {{"name", {"kay"}}}, {"name kay\n"}}
+                                         CgiTestParams{"/MqueryParams.py", "name=kay", {"name kay\n"}}
                                          // CgiTestParams{"helloWorld.php", {}, {"Hello, World!"}}
                                          ));
