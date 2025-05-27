@@ -115,30 +115,30 @@ run_nc_test() {
 # 🚀 curl test
 # ========================
 
-# echo -e "${YELLOW}\n************** curl check ********************${NC}"
-# echo -e "${YELLOW}**********************************************\n${NC}"
+echo -e "${YELLOW}\n************** curl check ********************${NC}"
+echo -e "${YELLOW}**********************************************\n${NC}"
 
-# # test 1: simple GET method return index
-# run_test "GET method" \
-#   -s -i \
-#   "http://$HOST:$PORT/" \
-#   "200" \
-#   "$(cat site/web1/index.html)"
+# test 1: simple GET method return index
+run_test "GET method" \
+  -s -i \
+  "http://$HOST:$PORT/" \
+  "200" \
+  "$(cat site/web1/index.html)"
 
-# # test 2: simple GET method without index, autoindex
-# run_test "GET method fail" \
-#   -s -i \
-#   "http://$HOST:$PORT/assets" \
-#   "403" \
-#   "Not requested"
+# test 2: simple GET method without index, autoindex
+run_test "GET method fail" \
+  -s -i \
+  "http://$HOST:$PORT/assets" \
+  "403" \
+  "Not requested"
 
-# # test 3: Not implemented method
-# run_test "PUT method" \
-#   -s -i \
-#   -X PUT \
-#   "http://$HOST:$PORT/putfile" \
-#   "501" \
-#   "Not requested"
+# test 3: Not implemented method
+run_test "PUT method" \
+  -s -i \
+  -X PUT \
+  "http://$HOST:$PORT/putfile" \
+  "501" \
+  "Not requested"
 
 # # The next test (15 line below) translates to the following request
 # # curl -s -i -X POST -F file=@fileToUpload.txt;type=text/plain -H Transfer-Encoding: chunked http://localhost:8080/upload
@@ -155,96 +155,96 @@ run_nc_test() {
 # # Content-Type: text/plain
 
 # # # Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first
-# run_test "POST chunked upload (.txt file)" \
-#   -s -i \
-#   -X POST \
-#   -H 'Content-Type: text/plain' \
-#   -H 'Transfer-Encoding: chunked' \
-#   --data-binary '@/home/kfreyer/workspace/webserv/kay_test/fileToUpload.txt' \
-#   "http://$HOST:$PORT/upload" \
-#   "201" \
-#   "Created /upload"
-# rm /home/kfreyer/workspace/webserv/kay_test/site/web1/data/upload
+run_test "POST chunked upload (.txt file)" \
+  -s -i \
+  -X POST \
+  -H 'Content-Type: text/plain' \
+  -H 'Transfer-Encoding: chunked' \
+  --data-binary '@/home/kfreyer/workspace/webserv/kay_test/fileToUpload.txt' \
+  "http://$HOST:$PORT/upload" \
+  "201" \
+  "Created /upload"
+rm /home/kfreyer/workspace/webserv/kay_test/site/web1/data/upload
 
-# run_test "Same ip and port, different servername: webserv.com" \
-#   -s -i \
-#   "http://$HOST:$PORT/" \
-#   -H "Host: webserv.com" \
-#   "200" \
-#   "$(cat site/web1/index.html)"
+run_test "Same ip and port, different servername: webserv.com" \
+  -s -i \
+  "http://$HOST:$PORT/" \
+  -H "Host: webserv.com" \
+  "200" \
+  "$(cat site/web1/index.html)"
 
-# run_test "Same ip and port, different servername: portfolio.com" \
-#   -s -i \
-#   "http://$HOST:$PORT/" \
-#   -H "Host: portfolio.com" \
-#   "200" \
-#   "$(cat site/web2/index.html)"
+run_test "Same ip and port, different servername: portfolio.com" \
+  -s -i \
+  "http://$HOST:$PORT/" \
+  -H "Host: portfolio.com" \
+  "200" \
+  "$(cat site/web2/index.html)"
 
-# run_test "Same ip and port, different servername: portfolio.com:8080" \
-#   -s -i \
-#   "http://$HOST:$PORT/" \
-#   -H "Host: portfolio.com:8080" \
-#   "200" \
-#   "$(cat site/web2/index.html)"
+run_test "Same ip and port, different servername: portfolio.com:8080" \
+  -s -i \
+  "http://$HOST:$PORT/" \
+  -H "Host: portfolio.com:8080" \
+  "200" \
+  "$(cat site/web2/index.html)"
 
 # # # ========================
 # # # 🔥 nc illegal test
 # # # ========================
 
-# echo -e "${YELLOW}\n************** nc check **********************${NC}"
-# echo -e "${YELLOW}**********************************************\n${NC}"
+echo -e "${YELLOW}\n************** nc check **********************${NC}"
+echo -e "${YELLOW}**********************************************\n${NC}"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
+echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "Missing Host Header" \
-#   "GET / HTTP/1.1\r\n\r\n" \
-#   "400"
+run_nc_test "Missing Host Header" \
+  "GET / HTTP/1.1\r\n\r\n" \
+  "400"
 
-# run_nc_test "Illegal HTTP Method" \
-#   "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-#   "501"
+run_nc_test "Illegal HTTP Method" \
+  "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "501"
 
-# run_nc_test "Bad HTTP Version" \
-#   "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
-#   "505"
+run_nc_test "Bad HTTP Version" \
+  "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
+  "505"
 
-# run_nc_test "Bad HTTP Version" \
-#   "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
-#   "505"
+run_nc_test "Bad HTTP Version" \
+  "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
+  "505"
 
-# run_nc_test "Missing CRLF" \
-#   "GET / HTTP/1.1Host: localhost\r\n\r\n" \
-#   "400"
+run_nc_test "Missing CRLF" \
+  "GET / HTTP/1.1Host: localhost\r\n\r\n" \
+  "400"
 
-# run_nc_test "Garbage Request" \
-#   "😈😈😈😈😈😈\r\n\r\n" \
-#   "400"
+run_nc_test "Garbage Request" \
+  "😈😈😈😈😈😈\r\n\r\n" \
+  "400"
 
-# # echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
+# echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "bad request uri ." \
-#   "GET . HTTP/1.1\r\nHost: localhost\r\n\r" \
-#   "400"
+run_nc_test "bad request uri ." \
+  "GET . HTTP/1.1\r\nHost: localhost\r\n\r" \
+  "400"
 
-# run_nc_test "bad request uri not start with /" \
-#   "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r" \
-#   "400"
+run_nc_test "bad request uri not start with /" \
+  "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r" \
+  "400"
 
-# run_nc_test "bad HTTP first line" \
-#   "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r" \
-#   "400"
+run_nc_test "bad HTTP first line" \
+  "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r" \
+  "400"
 
-# run_nc_test "HTTP full url without port" \
-#   "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r" \
-#   "200"
+run_nc_test "HTTP full url without port" \
+  "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r" \
+  "200"
 
-# run_nc_test "HTTP full url without port" \
-#   "GET http://localhost(*(*))/ HTTP/1.1\r\nHost: localhost\r\n\r" \
-#   "400"
+run_nc_test "HTTP full url without port" \
+  "GET http://localhost(*(*))/ HTTP/1.1\r\nHost: localhost\r\n\r" \
+  "400"
 
-# run_nc_test "HTTP full url with port" \
-#   "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r" \
-#   "200"
+run_nc_test "HTTP full url with port" \
+  "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r" \
+  "200"
 
 run_nc_test "HTTP full url not patch" \
   "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
@@ -270,32 +270,36 @@ run_nc_test "POST with both content-length and chunked" \
 Content-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\nshuai" \
   "400"
 
+# TODO: exact contentLength
 # run_nc_test "POST with exact content-length" \
-# "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 5\r\n\r\nshuai" \
-# "200"
+#   "200"
 
+# TODO: exact contentLength and /check is a directory created on /upload
 # ########################################
 # run_nc_test "POST without /upload" \
-# "POST /check HTTP/1.1\r\nHost: localhost\r
+#   "POST /check HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 5\r\n\r\nshuai" \
-# "403"
+#   "403"
 # ########################################
 
+# TODO:
 # run_nc_test "POST with content-length too short" \
-# "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 2\r\n\r\nshuai" \
-# "200"
+#   "200"
 
-# run_nc_test "POST with content-length larger than max size" \
-# "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 2000000\r\n\r\nshuai" \
-# "413"
+run_nc_test "POST with content-length larger than max size" \
+  "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
+Content-Length: 2000000\r\n\r\nshuai" \
+  "413"
 
-# run_nc_test "POST with content-length larger than max size, overflow" \
-# "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 2147483648\r\n\r\nshuai" \
-# "400"
+# TODO contentLength larger than maxsize overflow
+run_nc_test "POST with content-length larger than max size, overflow" \
+  "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
+Content-Length: 2147483648\r\n\r\nshuai" \
+  "400"
 
 # run_nc_test "POST with content-length 0" \
 # "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
