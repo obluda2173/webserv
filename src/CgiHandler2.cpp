@@ -2,19 +2,23 @@
 #include "handlerUtils.h"
 
 bool CgiHandler::_validateAndPrepareContext(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
-    _path = normalizePath(config.root, request.uri);
     _interpreter = findInterpreter(config.cgi, request.uri);
     if (_interpreter.empty()) {
         setErrorResponse(conn->_response, 403, config);
         return false;
     }
+    _path = config.root + getScriptName(config.cgi, request.uri);
     return validateRequest(conn->_response, request, config, _path, _pathStat);
 }
 
 void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn) {
     std::string scriptName = getScriptName(config.cgi, request.uri);
-    std::string pathInfo = getPathInfo(config.cgi, scriptName);
+    std::string pathInfo = getPathInfo(config.cgi, request.uri);
     std::string query = extractQuery(request.uri);
+
+    // std::cerr << "scriptName: " << scriptName << "\n";
+    // std::cerr << "pathInfo: " << pathInfo << "\n";
+    // std::cerr << "query: " << query << "\n";
 
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("PATH_INFO=" + pathInfo);
@@ -138,7 +142,6 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
         } else {
-            // std::cerr << "Key: " << headerKey << " Value: " << headerValue << std::endl;
             resp.headers[headerKey] = headerValue; 
         }
     }

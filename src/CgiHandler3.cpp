@@ -69,7 +69,7 @@ std::string getScriptName(const std::map< std::string, std::string >& cgiMap, co
 
     for (std::map< std::string, std::string >::const_iterator it = cgiMap.begin(); it != cgiMap.end(); ++it) {
         const std::string& ext = it->first;
-        std::string dotExt = "." + ext;
+        std::string dotExt = ext;
         std::string::size_type pos = uri.find(dotExt);
         if (pos == std::string::npos)
             continue;

@@ -294,47 +294,47 @@ run_nc_test() {
 # c\r\nMozilla\r\n; ;\r\n9\r\nDeveloper\r\n7\r\nNetwork\r\n0\r\n\r\n" \
 # "200"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> SITE TEST <<<<<<<<<<<\n${NC}"
+echo -e "${YELLOW}\n>>>>>>>>>>>> SITE TEST <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "GET /cgi/python/showenv.py, with pathinfo and querystring return autoindex" \
-# "GET /cgi/python/showenv.py/data/comment?userinfo=hello HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "200"
+run_nc_test "GET /cgi/python/showenv.py, with pathinfo and querystring return autoindex" \
+"GET /cgi/python/showenv.py/data/comment?userinfo=hello HTTP/1.1\r\nHost: localhost\r\n\r" \
+"200"
 
-# run_nc_test "GET /" \
-# "GET / HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "200"
+run_nc_test "GET /" \
+"GET / HTTP/1.1\r\nHost: localhost\r\n\r" \
+"200"
 
-# run_nc_test "GET /data return autoindex" \
-# "GET /data HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "200"
+run_nc_test "GET /data return autoindex" \
+"GET /data HTTP/1.1\r\nHost: localhost\r\n\r" \
+"200"
 
-# run_nc_test "GET /assets autoindex not allowed, return 403" \
-# "GET /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "403"
+run_nc_test "GET /assets autoindex not allowed, return 403" \
+"GET /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
+"403"
 
-# run_nc_test "GET /notexist, return 404" \
-# "GET /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "404"
+run_nc_test "GET /notexist, return 404" \
+"GET /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
+"404"
 
-# run_nc_test "GET /assets/notexist, return default 404" \
-# "GET /assets/notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "404"
+run_nc_test "GET /assets/notexist, return default 404" \
+"GET /assets/notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
+"404"
 
-# run_nc_test "GET /getnotallowed, return default 405" \
-# "GET /getnotallowed HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "405"
+run_nc_test "GET /getnotallowed, return default 405" \
+"GET /getnotallowed HTTP/1.1\r\nHost: localhost\r\n\r" \
+"405"
 
 # run_nc_test "DELETE /notexist, return default 404" \
 # "DELETE /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
 # "404"
 
-# run_nc_test "DELETE /assets, where DELETE not allowed, return default 405" \
-# "DELETE /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "405"
+run_nc_test "DELETE /assets, where DELETE not allowed, return default 405" \
+"DELETE /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
+"405"
 
-# run_nc_test "DELETE /assets/1.png, where DELETE not allowed, return default 405" \
-# "DELETE /assets/1.png HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "405"
+run_nc_test "DELETE /assets/1.png, where DELETE not allowed, return default 405" \
+"DELETE /assets/1.png HTTP/1.1\r\nHost: localhost\r\n\r" \
+"405"
 
 # mkdir -p ./site/web1/
 # touch ./site/web1/hello.test
@@ -348,13 +348,13 @@ run_nc_test() {
 # "DELETE /test/ HTTP/1.1\r\nHost: localhost\r\n\r" \
 # "204"
 
-# run_nc_test "GET /redir, redirect to /data, return 308" \
-# "GET /redir HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "308"
+run_nc_test "GET /redir, redirect to /data, return 308" \
+"GET /redir HTTP/1.1\r\nHost: localhost\r\n\r" \
+"308"
 
-# run_nc_test "GET /redirexample, redirect to example.com, return 307" \
-# "GET /redirexample HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "307"
+run_nc_test "GET /redirexample, redirect to example.com, return 307" \
+"GET /redirexample HTTP/1.1\r\nHost: localhost\r\n\r" \
+"307"
 
 echo -e "${YELLOW}\n>>>>>>>>>>>> ERR TEST <<<<<<<<<<<\n${NC}"
 

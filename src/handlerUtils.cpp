@@ -191,7 +191,6 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
 
     // 5. Resource Existence Check
     if (stat(path.c_str(), &pathStat) != 0) {
-        std::cout << path << std::endl;
         setErrorResponse(resp, 404, config);
         return false;
     }
