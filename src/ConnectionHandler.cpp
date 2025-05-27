@@ -106,8 +106,15 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 break;
             }
 
-            router = _routers[conn->getAddrPort()];
+            if (conn->_request.uri[0] != '/') {
+                setErrorResponse(conn->_response, 400, RouteConfig());
+                conn->setState(Connection::SendResponse);
+                break;
+            }
+
             conn->_request.uri = normalizePath("", conn->_request.uri);
+
+            router = _routers[conn->getAddrPort()];
             route = router->match(conn->getRequest());
             conn->route = route;
             conn->checkRoute();

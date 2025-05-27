@@ -218,9 +218,9 @@ echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
 #   "GET . HTTP/1.1\r\nHost: localhost\r\n\r\n" \
 #   "400"
 
-# run_nc_test "bad request uri not start with /" \
-#   "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-#   "400"
+run_nc_test "bad request uri not start with /" \
+  "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "400"
 
 # run_nc_test "bad HTTP first line" \
 # "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
