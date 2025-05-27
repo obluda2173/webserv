@@ -1,4 +1,4 @@
-Webserv Test Report - Di 27. Mai 17:21:06 CEST 2025
+Webserv Test Report - Di 27. Mai 17:51:43 CEST 2025
 
 ===== Test: GET /cgi/python/showenv.py, with pathinfo and querystring return autoindex =====
 Raw request sent:
@@ -586,6 +586,18 @@ Content-Language: en-US
 Content-Length: 0
 
 
+===== Test: DELETE /notexist, return default 404 =====
+Raw request sent:
+DELETE /notexist HTTP/1.1
+Host: localhost
+
+Response received:
+HTTP/1.1 404 Not Found
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
 ===== Test: DELETE /assets, where DELETE not allowed, return default 405 =====
 Raw request sent:
 DELETE /assets HTTP/1.1
@@ -606,6 +618,17 @@ Host: localhost
 Response received:
 HTTP/1.1 405 Method Not Allowed
 Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: DELETE /hello.test, return 204 =====
+Raw request sent:
+DELETE /hello.test HTTP/1.1
+Host: localhost
+
+Response received:
+HTTP/1.1 204 No Content
 Content-Language: en-US
 Content-Length: 0
 

@@ -324,9 +324,9 @@ run_nc_test "GET /getnotallowed, return default 405" \
 "GET /getnotallowed HTTP/1.1\r\nHost: localhost\r\n\r" \
 "405"
 
-# run_nc_test "DELETE /notexist, return default 404" \
-# "DELETE /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "404"
+run_nc_test "DELETE /notexist, return default 404" \
+"DELETE /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
+"404"
 
 run_nc_test "DELETE /assets, where DELETE not allowed, return default 405" \
 "DELETE /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
@@ -336,11 +336,11 @@ run_nc_test "DELETE /assets/1.png, where DELETE not allowed, return default 405"
 "DELETE /assets/1.png HTTP/1.1\r\nHost: localhost\r\n\r" \
 "405"
 
-# mkdir -p ./site/web1/
-# touch ./site/web1/hello.test
-# run_nc_test "DELETE /hello.test, return 204" \
-# "DELETE /hello.test HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "204"
+mkdir -p ./site/web1/
+touch ./site/web1/hello.test
+run_nc_test "DELETE /hello.test, return 204" \
+"DELETE /hello.test HTTP/1.1\r\nHost: localhost\r\n\r" \
+"204"
 
 # mkdir -p ./site/web1/test/
 # touch ./site/web1/test/hello2.test
