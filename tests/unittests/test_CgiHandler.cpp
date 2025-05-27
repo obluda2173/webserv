@@ -26,7 +26,7 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
                        {}};
     // IHandler* cgiHdlr = new CgiHandler();
     CgiHandler cgiHdlr;
-
+    
     req.method = "GET";
     req.uri = buildUri(params.scriptName, params.queryParams);
     std::string ip = "127.0.0.1";
@@ -38,13 +38,8 @@ TEST_P(CgiHandlerTestP, WithQueryParams) {
     conn->setState(Connection::Handling);
     cgiHdlr.handle(conn, req, cfg);
 
-    bool cgiCompleted = false;
     auto startTime = std::chrono::steady_clock::now();
-    while (!cgiCompleted) {
-        if (conn->getState() == Connection::SendResponse) {
-            cgiCompleted = true;
-            break;
-        }
+    while (conn->getState() != Connection::SendResponse) {
         if (conn->getState() == Connection::Handling || conn->getState() == Connection::HandlingCgi) {
             cgiHdlr.handle(conn, req, cfg);
         }

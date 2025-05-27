@@ -25,9 +25,11 @@ std::string getOutput(Connection* conn) {
     std::string gotOutput = "";
     std::vector< char > buffer(1024);
     size_t r = 0;
-    while (!conn->_response.body->isDone()) {
-        r = conn->_response.body->read(buffer.data(), 1024);
-        gotOutput += std::string(buffer.data(), r);
+    if (conn->_response.body) {
+        while (!conn->_response.body->isDone()) {
+            r = conn->_response.body->read(buffer.data(), 1024);
+            gotOutput += std::string(buffer.data(), r);
+        }
     }
     return gotOutput;
 }
