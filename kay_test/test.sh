@@ -187,9 +187,9 @@ run_nc_test() {
 #   "200" \
 #   "$(cat site/web2/index.html)"
 
-# # ========================
-# # 🔥 nc illegal test
-# # ========================
+# # # ========================
+# # # 🔥 nc illegal test
+# # # ========================
 
 # echo -e "${YELLOW}\n************** nc check **********************${NC}"
 # echo -e "${YELLOW}**********************************************\n${NC}"
@@ -246,29 +246,29 @@ run_nc_test() {
 #   "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r" \
 #   "200"
 
-# run_nc_test "HTTP full url not patch" \
-# "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "400"
+run_nc_test "HTTP full url not patch" \
+  "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "200"
 
-# run_nc_test "GET HTTP Method with body" \
-# "GET / HTTP/1.1\r\nHost: localhost\r\n\r\nshuai" \
-# "200"
+run_nc_test "GET HTTP Method with body" \
+  "GET / HTTP/1.1\r\nHost: localhost\r\n\r\nshuai" \
+  "200"
 
-# run_nc_test "GET HTTP Method with invalid uri" \
-# "GET /Hello World HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-# "400"
+run_nc_test "GET HTTP Method with invalid uri" \
+  "GET /Hello World HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+  "400"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> POST <<<<<<<<<<<\n${NC}"
+echo -e "${YELLOW}\n>>>>>>>>>>>> POST <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "POST without content-length or chunked" \
-# "POST /cgi/php/showbody.php HTTP/1.1\r
-# Host: localhost\r\n\r\nshuai" \
-# "411"
+run_nc_test "POST without content-length or chunked" \
+  "POST /cgi/php/showbody.php HTTP/1.1\r
+Host: localhost\r\n\r\nshuai" \
+  "411"
 
-# run_nc_test "POST with both content-length and chunked" \
-# "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\nshuai" \
-# "400"
+run_nc_test "POST with both content-length and chunked" \
+  "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
+Content-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\nshuai" \
+  "400"
 
 # run_nc_test "POST with exact content-length" \
 # "POST /cgi/php/showbody.php HTTP/1.1\r\nHost: localhost\r
@@ -329,127 +329,126 @@ run_nc_test() {
 # echo -e "${YELLOW}\n>>>>>>>>>>>> SITE TEST <<<<<<<<<<<\n${NC}"
 
 # run_nc_test "GET /cgi/python/showenv.py, with pathinfo and querystring return autoindex" \
-# "GET /cgi/python/showenv.py/data/comment?userinfo=hello HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "200"
+#   "GET /cgi/python/showenv.py/data/comment?userinfo=hello HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "200"
 
 # run_nc_test "GET /" \
-# "GET / HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "200"
+#   "GET / HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "200"
 
 # run_nc_test "GET /data return autoindex" \
-# "GET /data HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "200"
+#   "GET /data HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "200"
 
 # run_nc_test "GET /assets autoindex not allowed, return 403" \
-# "GET /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "403"
+#   "GET /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "403"
 
 # run_nc_test "GET /notexist, return 404" \
-# "GET /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "404"
+#   "GET /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "404"
 
 # run_nc_test "GET /assets/notexist, return default 404" \
-# "GET /assets/notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "404"
+#   "GET /assets/notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "404"
 
 # run_nc_test "GET /getnotallowed, return default 405" \
-# "GET /getnotallowed HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "405"
+#   "GET /getnotallowed HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "405"
 
-# run_nc_test "DELETE /notexist, return default 404" \
-# "DELETE /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "404"
+# # run_nc_test "DELETE /notexist, return default 404" \
+# # "DELETE /notexist HTTP/1.1\r\nHost: localhost\r\n\r" \
+# # "404"
 
 # run_nc_test "DELETE /assets, where DELETE not allowed, return default 405" \
-# "DELETE /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "405"
+#   "DELETE /assets HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "405"
 
 # run_nc_test "DELETE /assets/1.png, where DELETE not allowed, return default 405" \
-# "DELETE /assets/1.png HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "405"
+#   "DELETE /assets/1.png HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "405"
 
-# mkdir -p ./site/web1/
-# touch ./site/web1/hello.test
-# run_nc_test "DELETE /hello.test, return 204" \
-# "DELETE /hello.test HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "204"
+# # mkdir -p ./site/web1/
+# # touch ./site/web1/hello.test
+# # run_nc_test "DELETE /hello.test, return 204" \
+# # "DELETE /hello.test HTTP/1.1\r\nHost: localhost\r\n\r" \
+# # "204"
 
-# mkdir -p ./site/web1/test/
-# touch ./site/web1/test/hello2.test
-# run_nc_test "DELETE /test/, return 204" \
-# "DELETE /test/ HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "204"
+# # mkdir -p ./site/web1/test/
+# # touch ./site/web1/test/hello2.test
+# # run_nc_test "DELETE /test/, return 204" \
+# # "DELETE /test/ HTTP/1.1\r\nHost: localhost\r\n\r" \
+# # "204"
 
 # run_nc_test "GET /redir, redirect to /data, return 308" \
-# "GET /redir HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "308"
+#   "GET /redir HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "308"
 
 # run_nc_test "GET /redirexample, redirect to example.com, return 307" \
-# "GET /redirexample HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "307"
+#   "GET /redirexample HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "307"
 
 # echo -e "${YELLOW}\n>>>>>>>>>>>> ERR TEST <<<<<<<<<<<\n${NC}"
 
 # run_nc_test "GET /a>{}, invalid uri character, return 400" \
-# "GET /a>{} HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "400"
+#   "GET /a>{} HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "400"
 
 # run_nc_test "GET with .. in uri, return 403" \
-# "GET /.. HTTP/1.1\r\nHost: localhost\r\n\r" \
-# "403"
+#   "GET /.. HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "400"
 
 # run_nc_test "POST, repeat content length., return 400" \
-# "POST /upload HTTP/1.1\r\nHost: localhost\r
+#   "POST /upload HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # Content-Length: 1\r
 # \r\n\r" \
-# "400"
+#   "400"
 
 # run_nc_test "POST, repeat content type., return 400" \
-# "POST /upload HTTP/1.1\r\nHost: localhost\r
+#   "POST /upload HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # Content-Type: text/html\r
 # Content-Type: text/html\r
 # \r\n\r" \
-# "400"
+#   "400"
 
 # echo -e "${YELLOW}\n>>>>>>>>>>>> CGI ERR TEST <<<<<<<<<<<\n${NC}"
 
 # run_nc_test "POST script not exist, return 404" \
-# "POST /cgi/python/notexist.py HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/python/notexist.py HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # \r\n\r" \
-# "404"
+#   "404"
 
 # run_nc_test "POST script contain error in stderr" \
-# "POST /cgi/python/error.py HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "502"
+#   "POST /cgi/python/error.py HTTP/1.1\r\nHost: localhost\r
+# Content-Length: 0\r\n\r" \
+#   "502"
 
 # run_nc_test "POST script contain segmentation fault" \
-# "POST /cgi/python/crash.py HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/python/crash.py HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # \r\n\r" \
-# "502"
+#   "502"
 
 # run_nc_test "POST script return nothing" \
-# "POST /cgi/python/empty.py HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/python/empty.py HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # \r\n\r" \
-# "502"
+#   "500"
 
 # run_nc_test "POST script doesn't have content type" \
-# "POST /cgi/php/wrongCgiNoContentType.php HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/php/wrongCgiNoContentType.php HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # \r\n\r" \
-# "502"
+#   "500"
 
 # run_nc_test "POST script have invalid head" \
-# "POST /cgi/php/wrongCgiInvalidHead.php HTTP/1.1\r\nHost: localhost\r
+#   "POST /cgi/php/wrongCgiInvalidHead.php HTTP/1.1\r\nHost: localhost\r
 # Content-Length: 0\r
 # \r\n\r" \
-# "502"
+#   "500"
 
 # ========================
 # ✅ test log and statistic

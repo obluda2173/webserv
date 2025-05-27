@@ -184,8 +184,13 @@ void BodyParser::parse(Connection* conn) {
     while (true) {
         switch (conn->bodyCtx.type) {
         case BodyContext::Undetermined:
-            if (!_checkType(conn))
+            if (!_checkType(conn)) {
+                if (conn->_request.method == "POST") {
+                    setErrorResponse(conn->_response, 411, conn->route.cfg);
+                    conn->setState(Connection::SendResponse);
+                }
                 return;
+            }
             break;
         case BodyContext::ContentLength:
             return _parseContentLength(conn);

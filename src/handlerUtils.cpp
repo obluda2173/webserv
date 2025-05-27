@@ -44,6 +44,7 @@ struct PhraseInitializer {
         statusPhrases[405] = "Method Not Allowed";
         statusPhrases[408] = "Request Timeout";
         statusPhrases[409] = "Conflict";
+        statusPhrases[411] = "Length Required";
         statusPhrases[413] = "Payload Too Large";
         statusPhrases[414] = "URI Too Long";
         statusPhrases[429] = "Too Many Requests";
