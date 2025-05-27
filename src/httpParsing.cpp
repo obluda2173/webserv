@@ -353,7 +353,14 @@ bool specificHeaderValidation(
             return false;
         }
     }
-    if (key == "connection") {
+    if (key == "connection") { // TODO: should not check only for lower-case
+                               // GET / HTTP/1.1
+                               // Host: portfolio.com
+                               // User-Agent: Wget/1.25.0
+                               // Accept: */*
+                               // Accept-Encoding: identity
+                               // Connection: Keep-Alive
+
         if (value != "keep-alive" && value != "close") {
             logger.log("ERROR", "specificHeaderValidation: Invalid Connection header");
             return false;

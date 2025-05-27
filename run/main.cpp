@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
     Server* svr = ServerBuilder().setLogger(logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();
 
     std::set< std::pair< std::string, std::string > > addrAndPorts = fillAddrAndPorts(svrCfgs);
+
     svr->start(addrAndPorts);
+
     return 0;
 }

@@ -15,6 +15,7 @@ class Buffer {
   public:
     Buffer();
 
+    void print();
     void write(IResponseWriter* wrtr);
     void recv(int fd);
     void send(ISender* sender, int fd);

@@ -30,3 +30,5 @@ char* Buffer::data() { return _content.data(); }
 void Buffer::clear() { _size = 0; }
 
 size_t Buffer::size() const { return _size; }
+
+void Buffer::print() { std::cout << std::string(_content.data(), _size) << std::endl; }
