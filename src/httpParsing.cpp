@@ -9,6 +9,10 @@ bool checkValidMethod(const std::string& method) {
            method == "OPTIONS" || method == "PATCH";
 }
 
+bool checkMethodImplemented(const std::string& method) {
+    return method == "GET" || method == "POST" || method == "DELETE";
+}
+
 bool checkValidVersion(const std::string& version) {
     double ver = 0;
     if (version.empty()) {

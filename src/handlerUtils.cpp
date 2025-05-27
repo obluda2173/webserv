@@ -1,6 +1,6 @@
 #include "handlerUtils.h"
-#include <sstream>
 #include "utils.h"
+#include <sstream>
 
 std::map< std::string, std::string > mimeTypes;
 struct MimeInitializer {
@@ -126,12 +126,10 @@ std::string normalizePath(const std::string& root, const std::string& uri) {
     return (result.find(root) == 0) ? result : "";
 }
 
-void setHeader(HttpResponse& resp, std::string key, std::string value) {
-    resp.headers[toLower(key)] = value;
-}
+void setHeader(HttpResponse& resp, std::string key, std::string value) { resp.headers[toLower(key)] = value; }
 
-void setResponse(HttpResponse& resp, int statusCode, const std::string& contentType,
-                 size_t contentLength, IBodyProvider* bodyProvider) {
+void setResponse(HttpResponse& resp, int statusCode, const std::string& contentType, size_t contentLength,
+                 IBodyProvider* bodyProvider) {
     resp.version = DEFAULT_HTTP_VERSION;
     resp.statusCode = statusCode;
     resp.statusMessage = statusPhrases.at(statusCode);
@@ -184,6 +182,7 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
 
     // 5. Resource Existence Check
     if (stat(path.c_str(), &pathStat) != 0) {
+        std::cout << path << std::endl;
         setErrorResponse(resp, 404, config);
         return false;
     }
