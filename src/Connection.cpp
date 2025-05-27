@@ -34,6 +34,12 @@ void Connection::checkRoute() {
         return;
     }
 
+    if (!checkMethodImplemented(_request.method)) {
+        setErrorResponse(_response, 501, RouteConfig());
+        setState(Connection::SendResponse);
+        return;
+    }
+
     if (route.hdlrs.empty()) {
         setErrorResponse(_response, 404, RouteConfig());
         setState(Connection::SendResponse);
