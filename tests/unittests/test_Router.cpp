@@ -75,7 +75,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
             std::string ip = it->first;
             std::string port = to_string(it->second);
             if (routers.find(ip + ":" + to_string(it->second)) != routers.end()) {
-                addSvrToRouter(routers[ip + ":" + to_string(it->second)], svrCfg);
+                addSvrToRouter(routers[ip + ":" + to_string(it->second)], svrCfg, port);
             } else {
                 std::map< std::string, IHandler* > hdlrs = {
                     {"GET", new StubHandler("GET")},
@@ -84,7 +84,7 @@ TEST_P(RouterTest, testWithConfigParsing) {
                     {"CGI", new StubHandler("CGI")},
                 };
                 IRouter* r = new Router(hdlrs);
-                addSvrToRouter(r, svrCfg);
+                addSvrToRouter(r, svrCfg, port);
                 routers[ip + ":" + to_string(it->second)] = r;
             }
         }

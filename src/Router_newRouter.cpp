@@ -43,7 +43,7 @@ void addLocations(ServerConfig svrCfg, std::string svrName, IRouter* r) {
     }
 }
 
-void addSvrToRouter(IRouter* r, ServerConfig svrCfg) {
+void addSvrToRouter(IRouter* r, ServerConfig svrCfg, std::string& port) {
     std::vector< std::string > srvNames = svrCfg.serverNames;
     for (std::vector< std::string >::iterator itSvrName = srvNames.begin(); itSvrName != srvNames.end(); itSvrName++) {
         RouteConfig cfg;
@@ -56,7 +56,10 @@ void addSvrToRouter(IRouter* r, ServerConfig svrCfg) {
         cfg.redirect = std::pair< int, std::string >();
 
         addMethods(svrCfg.common.allowMethods, *itSvrName, "", cfg, r);
+        addMethods(svrCfg.common.allowMethods, *itSvrName + ":" + port, "", cfg, r);
+
         addLocations(svrCfg, *itSvrName, r);
+        addLocations(svrCfg, *itSvrName + ":" + port, r);
     }
 }
 
@@ -69,7 +72,7 @@ std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCf
             std::string ip = it->first;
             std::string port = to_string(it->second);
             if (routers.find(ip + ":" + port) != routers.end()) {
-                addSvrToRouter(routers[ip + ":" + port], svrCfg);
+                addSvrToRouter(routers[ip + ":" + port], svrCfg, port);
             } else {
                 std::map< std::string, IHandler* > hdlrs;
                 hdlrs["GET"] = new GetHandler();
@@ -77,7 +80,7 @@ std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCf
                 hdlrs["CGI"] = new CgiHandler();
 
                 IRouter* r = new Router(hdlrs);
-                addSvrToRouter(r, svrCfg);
+                addSvrToRouter(r, svrCfg, port);
                 routers[ip + ":" + port] = r;
             }
         }
@@ -95,7 +98,8 @@ Router newRouter(std::vector< ServerConfig > svrCfgs, std::map< std::string, IHa
     Router r(hdlrs);
     for (std::vector< ServerConfig >::iterator it = svrCfgs.begin(); it != svrCfgs.end(); ++it) {
         ServerConfig svrCfg = *it;
-        addSvrToRouter(&r, svrCfg);
+        std::string port = "";
+        addSvrToRouter(&r, svrCfg, port);
     }
     return r;
 }

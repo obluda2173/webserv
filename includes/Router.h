@@ -42,7 +42,7 @@ class Router : public IRouter {
 
 std::map< std::string, IRouter* > buildRouters(std::vector< ServerConfig > svrCfgs);
 Router newRouter(std::vector< ServerConfig > svrCfgs, std::map< std::string, IHandler* > hdlrs);
-void addSvrToRouter(IRouter* r, ServerConfig svrCfg);
+void addSvrToRouter(IRouter* r, ServerConfig svrCfg, std::string& port);
 Router newRouterTest();
 bool checkCGIRequest(HttpRequest& req, RouteConfig& cfg);
 

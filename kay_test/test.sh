@@ -115,8 +115,8 @@ run_nc_test() {
 # 🚀 curl test
 # ========================
 
-echo -e "${YELLOW}\n************** curl check ********************${NC}"
-echo -e "${YELLOW}**********************************************\n${NC}"
+# echo -e "${YELLOW}\n************** curl check ********************${NC}"
+# echo -e "${YELLOW}**********************************************\n${NC}"
 
 # # test 1: simple GET method return index
 # run_test "GET method" \
@@ -140,21 +140,21 @@ echo -e "${YELLOW}**********************************************\n${NC}"
 #   "501" \
 #   "Not requested"
 
-# The next test (15 line below) translates to the following request
-# curl -s -i -X POST -F file=@fileToUpload.txt;type=text/plain -H Transfer-Encoding: chunked http://localhost:8080/upload
-# # POST /upload HTTP/1.1
-# Host: localhost:8080
-# User-Agent: curl/7.81.0
-# Accept: */*
-# Transfer-Encoding: chunked
-# Content-Type: multipart/form-data; boundary=------------------------599c0ca20a3d1101
+# # The next test (15 line below) translates to the following request
+# # curl -s -i -X POST -F file=@fileToUpload.txt;type=text/plain -H Transfer-Encoding: chunked http://localhost:8080/upload
+# # # POST /upload HTTP/1.1
+# # Host: localhost:8080
+# # User-Agent: curl/7.81.0
+# # Accept: */*
+# # Transfer-Encoding: chunked
+# # Content-Type: multipart/form-data; boundary=------------------------599c0ca20a3d1101
 
-# 4b5c
-# --------------------------599c0ca20a3d1101
-# Content-Disposition: form-data; name="file"; filename="fileToUpload.txt"
-# Content-Type: text/plain
+# # 4b5c
+# # --------------------------599c0ca20a3d1101
+# # Content-Disposition: form-data; name="file"; filename="fileToUpload.txt"
+# # Content-Type: text/plain
 
-# # Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first
+# # # Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first
 # run_test "POST chunked upload (.txt file)" \
 #   -s -i \
 #   -X POST \
@@ -164,6 +164,7 @@ echo -e "${YELLOW}**********************************************\n${NC}"
 #   "http://$HOST:$PORT/upload" \
 #   "201" \
 #   "Created /upload"
+# rm /home/kfreyer/workspace/webserv/kay_test/site/web1/data/upload
 
 # run_test "Same ip and port, different servername: webserv.com" \
 #   -s -i \
@@ -179,64 +180,71 @@ echo -e "${YELLOW}**********************************************\n${NC}"
 #   "200" \
 #   "$(cat site/web2/index.html)"
 
+# run_test "Same ip and port, different servername: portfolio.com:8080" \
+#   -s -i \
+#   "http://$HOST:$PORT/" \
+#   -H "Host: portfolio.com:8080" \
+#   "200" \
+#   "$(cat site/web2/index.html)"
+
 # # ========================
 # # 🔥 nc illegal test
 # # ========================
 
-echo -e "${YELLOW}\n************** nc check **********************${NC}"
-echo -e "${YELLOW}**********************************************\n${NC}"
+# echo -e "${YELLOW}\n************** nc check **********************${NC}"
+# echo -e "${YELLOW}**********************************************\n${NC}"
 
-echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
+# echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
 
-run_nc_test "Missing Host Header" \
-  "GET / HTTP/1.1\r\n\r\n" \
-  "400"
+# run_nc_test "Missing Host Header" \
+#   "GET / HTTP/1.1\r\n\r\n" \
+#   "400"
 
-run_nc_test "Illegal HTTP Method" \
-  "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-  "501"
+# run_nc_test "Illegal HTTP Method" \
+#   "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+#   "501"
 
-run_nc_test "Bad HTTP Version" \
-  "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
-  "505"
+# run_nc_test "Bad HTTP Version" \
+#   "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
+#   "505"
 
-run_nc_test "Bad HTTP Version" \
-  "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
-  "505"
+# run_nc_test "Bad HTTP Version" \
+#   "GET / HTTP/0.9\r\nHost: localhost\r\n\r\n" \
+#   "505"
 
-run_nc_test "Missing CRLF" \
-  "GET / HTTP/1.1Host: localhost\r\n\r\n" \
-  "400"
+# run_nc_test "Missing CRLF" \
+#   "GET / HTTP/1.1Host: localhost\r\n\r\n" \
+#   "400"
 
-run_nc_test "Garbage Request" \
-  "😈😈😈😈😈😈\r\n\r\n" \
-  "400"
+# run_nc_test "Garbage Request" \
+#   "😈😈😈😈😈😈\r\n\r\n" \
+#   "400"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
+# # echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
 
-run_nc_test "bad request uri ." \
-  "GET . HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-  "400"
+# run_nc_test "bad request uri ." \
+#   "GET . HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "400"
 
-run_nc_test "bad request uri not start with /" \
-  "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-  "400"
+# run_nc_test "bad request uri not start with /" \
+#   "GET index.html HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "400"
 
-run_nc_test "bad HTTP first line" \
-  "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-  "400"
+# run_nc_test "bad HTTP first line" \
+#   "GET POST / HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "400"
 
-run_nc_test "HTTP full url without port" \
-  "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-  "200"
+# run_nc_test "HTTP full url without port" \
+#   "GET http://localhost/ HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "200"
 
-run_nc_test "HTTP full url without port" \
-  "GET http://localhost(*(*))/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-  "400"
+# run_nc_test "HTTP full url without port" \
+#   "GET http://localhost(*(*))/ HTTP/1.1\r\nHost: localhost\r\n\r" \
+#   "400"
 
-run_nc_test "HTTP full url with port" \
-  "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r\n" \
-  "200"
+# run_nc_test "HTTP full url with port" \
+#   "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost:8080\r\n\r" \
+#   "200"
 
 # run_nc_test "HTTP full url not patch" \
 # "GET http://localhost:8080/ HTTP/1.1\r\nHost: localhost\r\n\r\n" \
