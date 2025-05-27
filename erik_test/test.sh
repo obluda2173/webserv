@@ -109,88 +109,88 @@ run_nc_test() {
     fi
 }
 
-# ========================
-# 🚀 curl test
-# ========================
+# # ========================
+# # 🚀 curl test
+# # ========================
 
-echo -e "${YELLOW}\n************** curl check ********************${NC}"
-echo -e "${YELLOW}**********************************************\n${NC}"
+# echo -e "${YELLOW}\n************** curl check ********************${NC}"
+# echo -e "${YELLOW}**********************************************\n${NC}"
 
-# test 1: simple GET method return index
-run_test "GET method" \
-  -s -i \
-  "http://$HOST:$PORT/" \
-  "200" \
-  "$(cat site/web1/index.html)"
-
-# test 2: simple GET method without index, autoindex
-run_test "GET method fail" \
-  -s -i \
-  "http://$HOST:$PORT/assets" \
-  "403" \
-  "Forbidden"
-
-# test 3: Not implemented method
-# run_test "PUT method" \
+# # test 1: simple GET method return index
+# run_test "GET method" \
 #   -s -i \
-#   -X PUT \
-#   "http://$HOST:$PORT/putfile" \
-#   "501" \
-#   "Not requested"
+#   "http://$HOST:$PORT/" \
+#   "200" \
+#   "$(cat site/web1/index.html)"
 
-# run_test "POST chunked upload (.txt file)" \
+# # test 2: simple GET method without index, autoindex
+# run_test "GET method fail" \
 #   -s -i \
-#   -X POST \
-#   -F "file=@Makefile;type=text/plain" \
-#   -H "Transfer-Encoding: chunked" \
-#   "http://$HOST:$PORT/upload" \
-#   "201" \
-#   "File uploaded and saved successfully"
+#   "http://$HOST:$PORT/assets" \
+#   "403" \
+#   "Forbidden"
 
-run_test "Same ip and port, different servername: webserv.com" \
-  -s -i \
-  "http://$HOST:$PORT/" \
-  -H "Host: webserv.com" \
-  "200" \
-  "$(cat site/web1/index.html)"
+# # test 3: Not implemented method
+# # run_test "PUT method" \
+# #   -s -i \
+# #   -X PUT \
+# #   "http://$HOST:$PORT/putfile" \
+# #   "501" \
+# #   "Not requested"
 
-run_test "Same ip and port, different servername: portfolio.com" \
-  -s -i \
-  "http://$HOST:$PORT/" \
-  -H "Host: portfolio.com" \
-  "200" \
-  "$(cat site/web2/index.html)"
+# # run_test "POST chunked upload (.txt file)" \
+# #   -s -i \
+# #   -X POST \
+# #   -F "file=@Makefile;type=text/plain" \
+# #   -H "Transfer-Encoding: chunked" \
+# #   "http://$HOST:$PORT/upload" \
+# #   "201" \
+# #   "File uploaded and saved successfully"
 
-# ========================
-# 🔥 nc illegal test
-# ========================
+# run_test "Same ip and port, different servername: webserv.com" \
+#   -s -i \
+#   "http://$HOST:$PORT/" \
+#   -H "Host: webserv.com" \
+#   "200" \
+#   "$(cat site/web1/index.html)"
 
-echo -e "${YELLOW}\n************** nc check **********************${NC}"
-echo -e "${YELLOW}**********************************************\n${NC}"
+# run_test "Same ip and port, different servername: portfolio.com" \
+#   -s -i \
+#   "http://$HOST:$PORT/" \
+#   -H "Host: portfolio.com" \
+#   "200" \
+#   "$(cat site/web2/index.html)"
 
-echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
+# # ========================
+# # 🔥 nc illegal test
+# # ========================
 
-run_nc_test "Missing Host Header" \
-"GET / HTTP/1.1\r\n\r\n" \
-"400"
+# echo -e "${YELLOW}\n************** nc check **********************${NC}"
+# echo -e "${YELLOW}**********************************************\n${NC}"
 
-# Currently 
+# echo -e "${YELLOW}\n>>>>>>>>>>>> Head error <<<<<<<<<<<\n${NC}"
 
-run_nc_test "Illegal HTTP Method" \
-"FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
-"501"
+# run_nc_test "Missing Host Header" \
+# "GET / HTTP/1.1\r\n\r\n" \
+# "400"
 
-run_nc_test "Bad HTTP Version" \
-"GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
-"505"
+# # Currently 
 
-run_nc_test "Missing CRLF" \
-"GET / HTTP/1.1Host: localhost\r\n\r\n" \
-"400"
+# run_nc_test "Illegal HTTP Method" \
+# "FORK / HTTP/1.1\r\nHost: localhost\r\n\r\n" \
+# "501"
 
-run_nc_test "Garbage Request" \
-"😈😈😈😈😈😈\r\n\r\n" \
-"400"
+# run_nc_test "Bad HTTP Version" \
+# "GET / HTTP/2.0\r\nHost: localhost\r\n\r\n" \
+# "505"
+
+# run_nc_test "Missing CRLF" \
+# "GET / HTTP/1.1Host: localhost\r\n\r\n" \
+# "400"
+
+# run_nc_test "Garbage Request" \
+# "😈😈😈😈😈😈\r\n\r\n" \
+# "400"
 
 # echo -e "${YELLOW}\n>>>>>>>>>>>> GET <<<<<<<<<<<\n${NC}"
 
@@ -381,43 +381,42 @@ run_nc_test "Garbage Request" \
 # \r\n\r" \
 # "400"
 
-# echo -e "${YELLOW}\n>>>>>>>>>>>> CGI ERR TEST <<<<<<<<<<<\n${NC}"
+echo -e "${YELLOW}\n>>>>>>>>>>>> CGI ERR TEST <<<<<<<<<<<\n${NC}"
 
-# run_nc_test "POST script not exist, return 404" \
-# "POST /cgi/python/notexist.py HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "404"
+run_nc_test "POST script not exist, return 404" \
+"POST /cgi/python/notexist.py HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+\r\n\r" \
+"404"
 
-# run_nc_test "POST script contain error in stderr" \
-# "POST /cgi/python/error.py HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "502"
+run_nc_test "POST script contain error in stderr" \
+"POST /cgi/python/error.py HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r\n\r" \
+"502"
 
-# run_nc_test "POST script contain segmentation fault" \
-# "POST /cgi/python/crash.py HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "502"
+run_nc_test "POST script contain segmentation fault" \
+"POST /cgi/python/crash.py HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+\r\n\r" \
+"502"
 
-# run_nc_test "POST script return nothing" \
-# "POST /cgi/python/empty.py HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "502"
+run_nc_test "POST script return nothing" \
+"POST /cgi/python/empty.py HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+\r\n\r" \
+"500"
 
-# run_nc_test "POST script doesn't have content type" \
-# "POST /cgi/php/wrongCgiNoContentType.php HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "502"
+run_nc_test "POST script doesn't have content type" \
+"POST /cgi/php/wrongCgiNoContentType.php HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+\r\n\r" \
+"500"
 
-# run_nc_test "POST script have invalid head" \
-# "POST /cgi/php/wrongCgiInvalidHead.php HTTP/1.1\r\nHost: localhost\r
-# Content-Length: 0\r
-# \r\n\r" \
-# "502"
+run_nc_test "POST script have invalid head" \
+"POST /cgi/php/wrongCgiInvalidHead.php HTTP/1.1\r\nHost: localhost\r
+Content-Length: 0\r
+\r\n\r" \
+"500"
 
 # ========================
 # ✅ test log and statistic

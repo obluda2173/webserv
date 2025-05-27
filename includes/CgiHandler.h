@@ -38,7 +38,7 @@ class CgiHandler : public IHandler {
     void _setCgiEnvironment(const HttpRequest& request, const RouteConfig& config, Connection* conn);
     void _setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config);
     void _setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config);
-    void _cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp);
+    void _cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp, RouteConfig& config);
     bool _writeToStdin(Connection* conn, CgiContext& ctx);
     bool _readPipeData(CgiContext& cgiCtx, bool drain);
     void _handleProcessExit(Connection* conn, CgiContext& ctx, int status);

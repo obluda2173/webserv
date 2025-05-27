@@ -5,10 +5,10 @@ CgiHandler::CgiHandler() {}
 CgiHandler::~CgiHandler() {}
 
 void CgiHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
+    int status = 0;
     while (true) {
         HttpResponse& resp = conn->_response;
         CgiContext& ctx = conn->cgiCtx;
-        int status = 0;
 
         switch (ctx.state) {
         case CgiContext::Forking: {

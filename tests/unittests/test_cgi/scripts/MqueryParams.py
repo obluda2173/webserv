@@ -10,6 +10,8 @@ import urllib.parse
 query_string = os.environ.get("QUERY_STRING", "")
 params = urllib.parse.parse_qs(query_string)
 
+print("Content-type:text/html\r\n")
+
 for param_name, param_values in params.items():
     values_str = ", ".join(param_values)
     print(f"{param_name} {values_str}")
