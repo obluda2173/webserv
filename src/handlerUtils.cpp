@@ -54,6 +54,7 @@ struct PhraseInitializer {
         statusPhrases[502] = "Bad Gateway";
         statusPhrases[503] = "Service Unavailable";
         statusPhrases[504] = "Gateway Timeout";
+        statusPhrases[505] = "HTTP Version Not Supported";
     }
 };
 static PhraseInitializer phrasesInit;
