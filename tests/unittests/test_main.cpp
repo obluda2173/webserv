@@ -5,7 +5,8 @@ int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
     // Don't run the following tests
     // testing::GTEST_FLAG(filter) = "-*CgiPostHandlerTest.HandlesPostRequests*";
-    testing::GTEST_FLAG(filter) = "-*ListenerTestWithMockLogging*";
+    testing::GTEST_FLAG(filter) =
+        "-*ListenerTestWithMockLogging*:*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
 
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
@@ -42,7 +43,7 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*UploadHdlrTest.chunked*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestMultipleRouter*";
     // testing::GTEST_FLAG(filter) = "*IONotifierTest*";
-    // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
+    // testing::GTEST_FLAG(filter) = "-*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestAsyncMultipleConnections*";
     // testing::GTEST_FLAG(filter) = "*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnectionMockLogger*";

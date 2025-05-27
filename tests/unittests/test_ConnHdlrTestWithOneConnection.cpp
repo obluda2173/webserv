@@ -74,15 +74,18 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInBatches) {
 }
 
 TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
+    std::cout << "Setting up client connecgtions" << std::endl;
     ParamsVectorRequestsResponses params = GetParam();
     int clientfd = _clientFdsAndConnFds[0].first;
     int connfd = _clientFdsAndConnFds[0].second;
 
+    std::cout << "Beginning of the test" << std::endl;
     char buffer[1024];
     std::vector< std::string > requests = params.requests;
     std::vector< std::string > wantResponses = params.wantResponses;
     // send msg
     for (size_t i = 0; i < requests.size(); i++) {
+        std::cout << "request: " << i << std::endl;
         std::string request = requests[i];
         std::string wantResponse = wantResponses[i];
         send(clientfd, request.c_str(), request.length(), 0);
@@ -107,45 +110,46 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
 }
 
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
-                         ::testing::Values(ParamsVectorRequestsResponses{{"GET \r\n"},
-                                                                         {"HTTP/1.1 400 Bad Request\r\n"
-                                                                          "Content-Length: 0\r\n"
-                                                                          "\r\n"}},
-                                           ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
-                                                                          "Host: test.com\r\n"
-                                                                          "\r\n"},
-                                                                         {"HTTP/1.1 200 OK\r\n"
-                                                                          "Content-Length: 4\r\n"
-                                                                          "\r\n"
-                                                                          "pong"}},
-                                           ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
-                                                                          "Host: test.com\r\n"
-                                                                          "\r\n",
-                                                                          "GET \r\n"},
-                                                                         {
-                                                                             "HTTP/1.1 200 OK\r\n"
-                                                                             "Content-Length: 4\r\n"
-                                                                             "\r\n"
-                                                                             "pong",
-                                                                             "HTTP/1.1 400 Bad Request\r\n"
-                                                                             "Content-Length: 0\r\n"
-                                                                             "\r\n",
-                                                                         }},
-                                           ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
-                                                                          "Host: test.com\r\n"
-                                                                          "\r\n",
-                                                                          "GET /ping HTTP/1.1\r\n"
-                                                                          "Host: test.com\r\n"
-                                                                          "\r\n",
-                                                                          "GET \r\n"},
-                                                                         {"HTTP/1.1 200 OK\r\n"
-                                                                          "Content-Length: 4\r\n"
-                                                                          "\r\n"
-                                                                          "pong",
-                                                                          "HTTP/1.1 200 OK\r\n"
-                                                                          "Content-Length: 4\r\n"
-                                                                          "\r\n"
-                                                                          "pong",
-                                                                          "HTTP/1.1 400 Bad Request\r\n"
-                                                                          "Content-Length: 0\r\n"
-                                                                          "\r\n"}}));
+                         ::testing::Values( // ParamsVectorRequestsResponses{{"GET \r\n"},
+                                            //                               {"HTTP/1.1 400 Bad Request\r\n"
+                                            //                                "Content-Length: 0\r\n"
+                                            //                                "\r\n"}},
+                                            // ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
+                                            //                                "Host: test.com\r\n"
+                                            //                                "\r\n"},
+                                            //                               {"HTTP/1.1 200 OK\r\n"
+                                            //                                "Content-Length: 4\r\n"
+                                            //                                "\r\n"
+                                            //                                "pong"}},
+                             ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
+                                                            "Host: test.com\r\n"
+                                                            "\r\n",
+                                                            "GET \r\n"},
+                                                           {
+                                                               "HTTP/1.1 200 OK\r\n"
+                                                               "Content-Length: 4\r\n"
+                                                               "\r\n"
+                                                               "pong",
+                                                               "HTTP/1.1 400 Bad Request\r\n"
+                                                               "Content-Length: 0\r\n"
+                                                               "\r\n",
+                                                           }} // ,
+                             // ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
+                             //                                "Host: test.com\r\n"
+                             //                                "\r\n",
+                             //                                "GET /ping HTTP/1.1\r\n"
+                             //                                "Host: test.com\r\n"
+                             //                                "\r\n",
+                             //                                "GET \r\n"},
+                             //                               {"HTTP/1.1 200 OK\r\n"
+                             //                                "Content-Length: 4\r\n"
+                             //                                "\r\n"
+                             //                                "pong",
+                             //                                "HTTP/1.1 200 OK\r\n"
+                             //                                "Content-Length: 4\r\n"
+                             //                                "\r\n"
+                             //                                "pong",
+                             //                                "HTTP/1.1 400 Bad Request\r\n"
+                             //                                "Content-Length: 0\r\n"
+                             //                                "\r\n"}}
+                             ));

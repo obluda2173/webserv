@@ -1,4 +1,4 @@
-Webserv Test Report - Di 27. Mai 19:21:23 CEST 2025
+Webserv Test Report - Di 27. Mai 19:53:58 CEST 2025
 
 ===== Test: GET method =====
 CURL Command: curl -s -i http://localhost:8080/

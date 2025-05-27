@@ -2,6 +2,8 @@
 #include "IIONotifier.h"
 #include <ctime>
 #include <errno.h>
+#include <fcntl.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
@@ -28,6 +30,8 @@ void EpollIONotifier::add(int fd, long timeout_ms) {
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
     _fdInfos[fd].lastActivity = _clock->now();
     _fdInfos[fd].timeout_ms = timeout_ms;
@@ -37,6 +41,9 @@ void EpollIONotifier::addNoTimeout(int fd) {
     struct epoll_event event;
     event.events = EPOLLIN | EPOLLRDHUP;
     event.data.fd = fd;
+
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
     epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event);
 }
 
