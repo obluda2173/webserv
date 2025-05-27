@@ -76,10 +76,10 @@ void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pip
     fcntl(conn->cgiCtx.cgiPipeStdout, F_SETFL, O_NONBLOCK);
 }
 
-void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp) {
+void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& resp, RouteConfig& config) {
     resp.statusCode = 200;
     resp.statusMessage = "OK";
-    resp.contentType = mimeTypes[".html"];
+    resp.contentType = "";
     resp.contentLength = 0;
 
     size_t separatorSize = 4;
@@ -88,7 +88,7 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         headerEnd = cgiOutput.find("\n\n");
         separatorSize = 2;
         if (headerEnd == std::string::npos) {
-            resp.body = new StringBodyProvider(cgiOutput);
+            setErrorResponse(resp, 500, config);
             return;
         }
     }
@@ -119,12 +119,18 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
 
         if (headerKey == "status") {
             size_t spacePos = headerValue.find(' ');
+            std::string code = headerValue.substr(0, spacePos);
+            std::string phrase = headerValue.substr(spacePos + 1);
             if (spacePos != std::string::npos) {
-                resp.statusCode = std::strtoul(headerValue.substr(0, spacePos).c_str(), NULL, 10);
-                resp.statusMessage = headerValue.substr(spacePos + 1);
+                if (code.length() == 3 && std::isdigit(code[0]) && std::isdigit(code[1]) && std::isdigit(code[2])) {
+                    resp.statusCode = std::strtoul(code.c_str(), NULL, 10);
+                    resp.statusMessage = phrase;
+                }
+                setErrorResponse(resp, 500, config);
+                return;
             } else {
-                resp.statusCode = std::strtoul(headerValue.c_str(), NULL, 10);
-                resp.statusMessage = "Unknown";
+                setErrorResponse(resp, 500, config);
+                return;
             }
         }
         else if (headerKey == "content-length") {
@@ -132,8 +138,13 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
         } else {
+            // std::cerr << "Key: " << headerKey << " Value: " << headerValue << std::endl;
             resp.headers[headerKey] = headerValue; 
         }
+    }
+    if (resp.contentType == "") {
+        setErrorResponse(resp, 500, config);
+        return;
     }
     resp.body = new StringBodyProvider(body);
 }
@@ -169,12 +180,12 @@ void CgiHandler::_handleProcessExit(Connection* conn, CgiContext& ctx, int statu
     if (ctx.cgiPipeStdout != -1) {
         _readPipeData(ctx, true);
     }
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0 || WIFSIGNALED(status)) {
         setErrorResponse(conn->_response, 502, ctx.cgiRouteConfig);
     } else if (ctx.cgiOutput.empty()) {
         setErrorResponse(conn->_response, 500, ctx.cgiRouteConfig);
     } else {
-        _cgiResponseSetup(ctx.cgiOutput, conn->_response);
+        _cgiResponseSetup(ctx.cgiOutput, conn->_response, ctx.cgiRouteConfig);
     }
     conn->setState(Connection::SendResponse);
 }
