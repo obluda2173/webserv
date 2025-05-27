@@ -591,14 +591,14 @@ INSTANTIATE_TEST_SUITE_P(
         //                      "Range: bytes=0-499;q=0.8, 500-999;q=0.5\r\n"
         //                      "\r\n"},
         // 40 Wrong version
-        TestHttpParserParams{5,
-                             0,
-                             1,
-                             {},
-                             "GET /file.txt HTTP/3.0\r\n"
-                             "Host: localhost\r\n"
-                             "Range: bytes=0-499;q=0.8, 500-999;q=0.5\r\n"
-                             "\r\n"},
+        // TestHttpParserParams{5,
+        //                      0,
+        //                      1,
+        //                      {},
+        //                      "GET /file.txt HTTP/3.0\r\n"
+        //                      "Host: localhost\r\n"
+        //                      "Range: bytes=0-499;q=0.8, 500-999;q=0.5\r\n"
+        //                      "\r\n"},
         // THIS IS THE NEW TEST CASES
         // 41 Invalid version: missing "HTTP/"
         TestHttpParserParams{5,
@@ -640,14 +640,14 @@ INSTANTIATE_TEST_SUITE_P(
                              "GET /index.html HTTP/1.11\r\n"
                              "Host: localhost\r\n"
                              "\r\n"},
-        // 46 Invalid version: unsupported HTTP version (e.g., HTTP/0.9)
-        TestHttpParserParams{46,
-                             0,
-                             1,
-                             {},
-                             "GET /index.html HTTP/0.9\r\n"
-                             "Host: localhost\r\n"
-                             "\r\n"},
+        // // 46 Invalid version: unsupported HTTP version (e.g., HTTP/0.9)
+        // TestHttpParserParams{46,
+        //                      0,
+        //                      1,
+        //                      {},
+        //                      "GET /index.html HTTP/0.9\r\n"
+        //                      "Host: localhost\r\n"
+        //                      "\r\n"},
         // 47 Invalid version: completely missing version
         TestHttpParserParams{47,
                              0,

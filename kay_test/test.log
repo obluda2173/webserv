@@ -1,0 +1,70 @@
+Webserv Test Report - Di 27. Mai 14:57:52 CEST 2025
+
+===== Test: Missing Host Header =====
+Raw request sent:
+GET / HTTP/1.1
+
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Length: 0
+
+
+===== Test: Illegal HTTP Method =====
+Raw request sent:
+FORK / HTTP/1.1
+Host: localhost
+
+
+Response received:
+HTTP/1.1 501 Not Implemented
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: Bad HTTP Version =====
+Raw request sent:
+GET / HTTP/2.0
+Host: localhost
+
+
+Response received:
+HTTP/1.1 505 HTTP Version Not Supported
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: Bad HTTP Version =====
+Raw request sent:
+GET / HTTP/0.9
+Host: localhost
+
+
+Response received:
+HTTP/1.1 505 HTTP Version Not Supported
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: Missing CRLF =====
+Raw request sent:
+GET / HTTP/1.1Host: localhost
+
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Length: 0
+
+
+===== Test: Garbage Request =====
+Raw request sent:
+😈😈😈😈😈😈
+
+
+Response received:
+HTTP/1.1 400 Bad Request
+Content-Length: 0
+

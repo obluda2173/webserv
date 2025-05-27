@@ -1,11 +1,10 @@
 #include "ConnectionHandler.h"
 #include "BadRequestHandler.h"
 #include "BodyParser.h"
-#include "CgiHandler.h"
 #include "HttpParser.h"
 #include "IIONotifier.h"
-#include "Router.h"
 #include "handlerUtils.h"
+#include "httpParsing.h"
 #include "logging.h"
 #include "utils.h"
 #include <errno.h>
@@ -101,6 +100,12 @@ void ConnectionHandler::_handleState(Connection* conn) {
             continueProcessing = (conn->getState() != currentState);
             break;
         case Connection::Routing:
+            if (!checkValidVersion(conn->_request.version)) {
+                setErrorResponse(conn->_response, 505, RouteConfig());
+                conn->setState(Connection::SendResponse);
+                break;
+            }
+
             router = _routers[conn->getAddrPort()];
             conn->_request.uri = normalizePath("", conn->_request.uri);
             route = router->match(conn->getRequest());
