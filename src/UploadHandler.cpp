@@ -1,6 +1,7 @@
 #include "UploadHandler.h"
 #include "Connection.h"
 #include "HttpRequest.h"
+#include "HttpResponse.h"
 #include "RouteConfig.h"
 #include "handlerUtils.h"
 #include <fstream>
@@ -127,7 +128,8 @@ void UploadHandler::_renameOrRemoveFile(Connection* conn, const HttpRequest& req
         setResponse(conn->_response, 200, "", 0, NULL);
     } else {
         rename((cfg.root + req.uri + ".temp").c_str(), (cfg.root + req.uri).c_str());
-        setResponse(conn->_response, 201, "", 0, NULL);
+        std::string content = "Created " + req.uri;
+        setResponse(conn->_response, 201, "text/plain", content.length(), new StringBodyProvider(content));
     }
 }
 

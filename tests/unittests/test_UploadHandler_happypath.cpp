@@ -30,6 +30,10 @@ TEST(UploadHdlrTest2, uploading) {
     EXPECT_EQ(body, gotFile1);
     EXPECT_EQ(201, resp.statusCode);
     EXPECT_EQ("Created", resp.statusMessage);
+    char buffer[1024];
+    size_t r = resp.body->read(buffer, 1024);
+    buffer[r] = '\0';
+    EXPECT_EQ("Created " + conn->_request.uri, buffer);
 
     removeFile(ROOT + PREFIX + filename);
     delete conn;
