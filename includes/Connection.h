@@ -72,6 +72,7 @@ class Connection {
     Buffer _readBuf;
     Buffer _sendBuf;
     BodyContext bodyCtx;
+    std::map< std::string, std::string > cookies;
     bool _bodyFinished;
     std::string _tempBody;
     IHandler* _hdlr;

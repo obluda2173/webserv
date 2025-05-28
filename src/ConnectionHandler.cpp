@@ -8,12 +8,34 @@
 #include "logging.h"
 #include "utils.h"
 #include <errno.h>
-#include <iostream>
 #include <netinet/in.h>
 #include <string.h>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
+
+std::map< std::string, std::string > parseCookies(const std::string& cookieHeader) {
+    std::map< std::string, std::string > cookies;
+    std::stringstream ss(cookieHeader);
+    std::string item;
+
+    while (std::getline(ss, item, ';')) {
+        std::string::size_type pos = item.find('=');
+        if (pos != std::string::npos) {
+            std::string key = item.substr(0, pos);
+            std::string value = item.substr(pos + 1);
+
+            // Trim leading spaces from the key
+            key.erase(0, key.find_first_not_of(" \t"));
+            // Optionally, trim spaces from the value too
+            value.erase(0, value.find_first_not_of(" \t"));
+
+            cookies[key] = value;
+        }
+    }
+
+    return cookies;
+}
 
 ConnectionHandler::ConnectionHandler(std::map< std::string, IRouter* > routers, ILogger& l, IIONotifier& io)
     : _routers(routers), _logger(l), _ioNotifier(io) {
@@ -123,6 +145,9 @@ void ConnectionHandler::_handleState(Connection* conn) {
 
             if (conn->_request.uri.empty())
                 conn->_request.uri = "/";
+
+            if (conn->_request.headers.find("cookie") != conn->_request.headers.end())
+                conn->cookies = parseCookies(conn->_request.headers["cookie"]);
 
             router = _routers[conn->getAddrPort()];
             route = router->match(conn->getRequest());

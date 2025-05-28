@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Set the title of the web page -->
+    <title>Cookie Form</title>
+    <style>
+        /* Add some basic CSS for styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            color: green; /* Change the heading color to green */
+        }
+        form {
+            padding: 20px;
+            margin: 0 auto;
+            width: 300px;
+        }
+        p {
+            margin: 10px 0;
+        }
+        input[type='text'], input[type='checkbox'], input[type='submit'] {
+            display: block;
+            margin: 5px auto;
+        }
+        .checkbox-label {
+            display: inline-block; /* Display checkboxes inline */
+            margin-right: 10px; /* Add spacing between checkboxes and labels */
+        }
+    </style>
+</head>
+<body>
+    <!-- Green heading with text "GeeksforGeeks" -->
+    <h1>NotGeeksForGeeks</h1>
+    <!-- Form with method 'post' and action 'cookie_process.py' -->
+    <form method='post' action='cookie_process.py'>
+        <!-- Name input field -->
+        <p><label for="name">Name:</label> <input type='text' name='name' id="name" /></p>
+        <p><label for="password">Password:</label> <input type='text' name='password' id="password" /></p>
+        <!-- Submit button -->
+        <input type='submit' value='Submit' />
+    </form>
+</body>
+</html>
