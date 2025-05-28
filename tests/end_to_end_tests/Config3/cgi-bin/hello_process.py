@@ -1,15 +1,16 @@
 import cgi
+# import time
 
 form = cgi.FieldStorage()
 
 # Output headers with correct CRLF and a blank line after headers
 print("Content-type: text/html\r")
-print("Content-Length: 196\r")
 print("\r")  # End of headers
 
 # Now body starts
 print("<html><body style='text-align:center;'>")
 print("<h1 style='color: green;'>GeeksforGeeks</h1>")
+
 
 if form.getvalue("name"):
     name = form.getvalue("name")
@@ -21,5 +22,7 @@ if form.getvalue("happy") == "on":
 
 if form.getvalue("sad") == "on":
     print("<p>Oh no! Why are you sad? 😢</p>")
+
+# time.sleep(5)
 
 print("</body></html>")
