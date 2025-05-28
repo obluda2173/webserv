@@ -17,6 +17,7 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfi
 
     _envStorage.push_back("GATEWAY_INTERFACE=CGI/1.1");
     _envStorage.push_back("PATH_INFO=" + pathInfo);
+    _envStorage.push_back("UPLOAD_PATH=" + config.root);
     _envStorage.push_back("QUERY_STRING=" + request.query);
     _envStorage.push_back("SCRIPT_NAME=" + scriptName);
     _envStorage.push_back("SERVER_PORT=" + getServerPort(conn));
@@ -32,7 +33,8 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfi
         _envStorage.push_back("CONTENT_TYPE=" + request.headers.at("content-type"));
     }
 
-    for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
+    for (std::map< std::string, std::string >::const_iterator it = request.headers.begin(); it != request.headers.end();
+         ++it) {
         if (it->first == "content-length" || it->first == "content-type" || it->first == "authorization") {
             continue;
         }
@@ -42,7 +44,8 @@ void CgiHandler::_setCgiEnvironment(const HttpRequest& request, const RouteConfi
     }
 }
 
-void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request, const RouteConfig& config) {
+void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connection* conn, const HttpRequest& request,
+                                    const RouteConfig& config) {
     close(pipeStdin[1]);
     close(pipeStdout[0]);
     dup2(pipeStdin[0], STDIN_FILENO);
@@ -63,7 +66,8 @@ void CgiHandler::_setupChildProcess(int pipeStdin[2], int pipeStdout[2], Connect
     _execParams.env.push_back(NULL);
 }
 
-void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid, const RouteConfig& config) {
+void CgiHandler::_setupParentProcess(Connection* conn, int pipeStdin[2], int pipeStdout[2], pid_t pid,
+                                     const RouteConfig& config) {
     (void)config;
     close(pipeStdin[0]);
     close(pipeStdout[1]);
@@ -132,8 +136,7 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
                 setErrorResponse(resp, 500, config);
                 return;
             }
-        }
-        else if (headerKey == "content-length") {
+        } else if (headerKey == "content-length") {
             resp.contentLength = std::strtoul(headerValue.c_str(), NULL, 10);
             if (resp.contentLength != body.size()) {
                 setErrorResponse(resp, 500, config);
@@ -142,7 +145,7 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
         } else {
-            resp.headers[headerKey] = headerValue; 
+            resp.headers[headerKey] = headerValue;
         }
     }
     if (resp.contentType == "") {
@@ -163,7 +166,7 @@ bool CgiHandler::_readPipeData(CgiContext& cgiCtx, bool drain) {
     do {
         char buffer[4096];
         const ssize_t count = read(cgiCtx.cgiPipeStdout, buffer, sizeof(buffer));
-        
+
         if (count > 0) {
             cgiCtx.cgiOutput.append(buffer, count);
             return true;
