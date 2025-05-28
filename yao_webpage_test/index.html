@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Story Continuation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Welcome to the Story Continuation</h1>
+
+  <label for="username">Your name:</label><br>
+  <input type="text" id="username" name="username" placeholder="Anonymous"><br><br>
+
+  <form id="story-form" method="post">
+    <label for="story">Your continuation:</label><br>
+    <textarea id="story" name="story" required maxlength="5000"></textarea><br>
+    <button class="primary-btn" type="submit">Submit</button>
+    <button class="cancel-btn" type="reset">Cancel</button>
+    <button id="clear-btn" class="cancel-btn" type="button">Clear All Stories</button>
+    <button id="delete-btn" class="cancel-btn" type="button">Delete User file</button>
+  </form>
+
+  <!-- <form method="post" action="/cgi-bin/hello_process.py"> -->
+  <form id="cgi-form">
+    <p><label for="name">Name:</label>
+    <input type="text" name="name" id="name" /></p>
+
+    <input type="checkbox" name="happy" value="yes" id="happy" />
+    <label for="happy">&#128512; Happy</label>
+
+    <input type="checkbox" name="sad" value="yes" id="sad" />
+    <label for="sad">&#128546; Sad</label>
+
+    <input type="submit" value="Submit" />
+  </form>
+
+
+  <p id="status-message"></p>
+  
+  <h2>Previous Continuations:</h2>
+  <ul id="story-list"></ul>
+  
+  <script src="script.js"></script>
+
+
+</body>
+</html>
