@@ -124,9 +124,10 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
                 if (code.length() == 3 && std::isdigit(code[0]) && std::isdigit(code[1]) && std::isdigit(code[2])) {
                     resp.statusCode = std::strtoul(code.c_str(), NULL, 10);
                     resp.statusMessage = phrase;
+                } else {
+                    setErrorResponse(resp, 500, config);
+                    return;
                 }
-                setErrorResponse(resp, 500, config);
-                return;
             } else {
                 setErrorResponse(resp, 500, config);
                 return;
