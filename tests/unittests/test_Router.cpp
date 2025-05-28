@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "gtest/gtest.h"
 #include <Router.h>
+#include <algorithm>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>

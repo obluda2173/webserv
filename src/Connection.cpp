@@ -94,7 +94,7 @@ void Connection::sendResponse() {
 void Connection::readIntoBuf() { _readBuf.recv(_fd); }
 
 void Connection::parseBuf() {
-    // _readBuf.print();
+    _readBuf.print();
     size_t count = 0;
     while (count < _readBuf.size()) {
         _prsr->feed(_readBuf.data() + count, 1);

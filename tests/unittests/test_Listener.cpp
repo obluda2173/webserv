@@ -35,7 +35,7 @@ class ListenerTest : public ::testing::Test {
         // Create and start listener
         listener = new Listener(*logger, connHdlr, ioNotifier);
         listener->add(portfd);
-        listenerThread = std::thread(&Listener::listen, listener);
+        listenerThread = std::thread(&Listener::listen, listener, nullptr);
 
         // Allow time for listener to start
         std::this_thread::sleep_for(std::chrono::milliseconds(20));

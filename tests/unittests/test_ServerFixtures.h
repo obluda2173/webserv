@@ -52,7 +52,7 @@ class BaseServerTest : public ::testing::TestWithParam< std::set< std::pair< std
     }
 
     virtual void setupServer() {
-        _svrThread = std::thread(&Server::start, _svr, _addrPorts);
+        _svrThread = std::thread(&Server::start, _svr, _addrPorts, nullptr);
         waitForServerStartup();
     }
 
@@ -82,7 +82,7 @@ class ServerWithMockLoggerParametrizedPortTest : public BaseServerTest< testing:
         EXPECT_CALL(*_logger, log("INFO", "Server is starting...")).Times(1);
         EXPECT_CALL(*_logger, log("INFO", "Server started")).Times(1);
 
-        _svrThread = std::thread(&Server::start, _svr, _addrPorts);
+        _svrThread = std::thread(&Server::start, _svr, _addrPorts, nullptr);
         waitForServerStartup();
     }
     void teardownServer() override {

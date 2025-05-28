@@ -50,7 +50,7 @@ class BaseListenerTest : public ::testing::TestWithParam< std::vector< int > > {
             _listener->add(portfd);
         }
 
-        _listenerThread = std::thread(&Listener::listen, _listener);
+        _listenerThread = std::thread(&Listener::listen, _listener, nullptr);
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
