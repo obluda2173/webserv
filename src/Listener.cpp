@@ -1,6 +1,7 @@
 #include "Listener.h"
 #include "IConnectionHandler.h"
 #include "IIONotifier.h"
+#include <csignal>
 #include <cstring>
 #include <netinet/in.h>
 #include <sys/epoll.h>
@@ -13,9 +14,15 @@ Listener::~Listener() {
     delete _ioNotifier;
 }
 
-void Listener::listen() {
+void Listener::listen(volatile sig_atomic_t* running) {
     _isListening = true;
     while (_isListening) {
+        // Check external signal flag if provided
+        if (running && !*running) {
+            _isListening = false;
+            break;
+        }
+
         std::vector< t_notif > notifs;
         notifs = _ioNotifier->wait();
         if (notifs.size() == 0)
