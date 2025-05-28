@@ -94,3 +94,5 @@ index       index.html index.htm
     - [ ] also a test for a broken connection and then the file should be closed
   - [ ] add tests for normal UploadHandler to close the files after successful upload
   - [ ] test for overlapping uploadBody and headers of following request
+
+- [ ] Make sure that there are no leaks (handle with signal)

@@ -5,9 +5,29 @@
 #include "Router.h"
 #include "ServerBuilder.h"
 #include "utils.h"
+#include <csignal>
 #include <iostream>
 
+// Global flag for signal handling
+volatile sig_atomic_t g_running = 1;
+
+// Signal handler function
+void signalHandler(int signum) {
+    if (signum == SIGINT || signum == SIGTERM) {
+        g_running = 0;
+    }
+}
+
 int main(int argc, char** argv) {
+    // Set up signal handling
+    struct sigaction sa;
+    sa.sa_handler = signalHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    sigaction(SIGINT, &sa, NULL);  // Handle Ctrl+C
+    sigaction(SIGTERM, &sa, NULL); // Handle termination signal
+
     if (argc != 2) {
         std::cerr << "We expect exactly one Configuration File!" << std::endl;
         exit(1);
@@ -28,7 +48,9 @@ int main(int argc, char** argv) {
 
     std::set< std::pair< std::string, std::string > > addrAndPorts = fillAddrAndPorts(svrCfgs);
 
-    svr->start(addrAndPorts);
+    svr->start(addrAndPorts, &g_running);
 
+    svr->stop();
+    delete svr;
     return 0;
 }

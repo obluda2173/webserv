@@ -2,6 +2,7 @@
 #include "IIONotifier.h"
 #include "IListener.h"
 #include "ILogger.h"
+#include <csignal>
 #include <cstring>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -24,6 +25,6 @@ class Server {
     explicit Server(ILogger* logger, IConnectionHandler* connHdlr, IIONotifier* _ioNotifier);
     ~Server();
     bool isRunning() const;
-    void start(std::set< std::pair< std::string, std::string > > addrPorts);
+    void start(std::set< std::pair< std::string, std::string > > addrPorts, volatile sig_atomic_t* running = NULL);
     void stop();
 };

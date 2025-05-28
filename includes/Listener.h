@@ -6,6 +6,7 @@
 #include "IListener.h"
 #include "ILogger.h"
 #include <arpa/inet.h>
+#include <csignal>
 #include <cstring>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -23,13 +24,13 @@ class Listener : public IListener {
     ILogger& _logger;
     IConnectionHandler* _connHdlr;
     IIONotifier* _ioNotifier;
-    std::vector<int> _socketfds;
+    std::vector< int > _socketfds;
     bool _isListening;
 
   public:
     Listener(ILogger&, IConnectionHandler*, IIONotifier*);
     ~Listener();
-    void listen();
+    void listen(volatile sig_atomic_t* running = NULL);
     void processEvents();
     void stop();
     void add(int socketfd);

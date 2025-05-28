@@ -16,7 +16,7 @@ Server::~Server() {
 
 bool Server::isRunning() const { return _isRunning; }
 
-void Server::start(std::set< std::pair< std::string, std::string > > addrPorts) {
+void Server::start(std::set< std::pair< std::string, std::string > > addrPorts, volatile sig_atomic_t* running) {
     _logger->log("INFO", "Server is starting...");
 
     for (std::set< std::pair< std::string, std::string > >::iterator it = addrPorts.begin(); it != addrPorts.end();
@@ -39,7 +39,7 @@ void Server::start(std::set< std::pair< std::string, std::string > > addrPorts) 
 
     _isRunning = true;
     _logger->log("INFO", "Server started");
-    _listener->listen();
+    _listener->listen(running);
 }
 
 void Server::stop() {
