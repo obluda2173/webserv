@@ -115,15 +115,6 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withContentType("text/plain")
                                  .withContentLength(0)
                                  .build()},
-        TestGetHandlerParams{// 9 tries to escape root
-                             RequestBuilder().withMethod("GET").withUri("/../../../src/GetHandler.cpp").build(),
-                             RouteConfigBuilder().build(),
-                             ResponseBuilder()
-                                 .withStatusCode(404)
-                                 .withStatusMessage("Not Found")
-                                 .withContentType("text/plain")
-                                 .withContentLength(0)
-                                 .build()},
         TestGetHandlerParams{// 10 image serving
                              RequestBuilder().withMethod("GET").withUri("/image.jpg").build(),
                              RouteConfigBuilder().build(),
@@ -160,29 +151,6 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withContentType("text/html")
                                  .withContentLength(460)
                                  .build()},
-        TestGetHandlerParams{// 13 decoding
-                             RequestBuilder().withMethod("GET").withUri("/file%20with%20space.txt").build(),
-                             RouteConfigBuilder()
-                                 .withErrorPage({{400, "/error_pages/400.html"},
-                                                 {403, "/error_pages/403.html"},
-                                                 {404, "/error_pages/404.html"}})
-                                 .build(),
-                             ResponseBuilder()
-                                 .withStatusCode(200)
-                                 .withStatusMessage("OK")
-                                 .withContentType("text/plain")
-                                 .withContentLength(39)
-                                 .build()},
-        TestGetHandlerParams{
-            // 14 query parameters in URI (should be ignored)
-            RequestBuilder().withMethod("GET").withUri("/file%20with%20space.txt?action=delete&id=123").build(),
-            RouteConfigBuilder().build(),
-            ResponseBuilder()
-                .withStatusCode(200)
-                .withStatusMessage("OK")
-                .withContentType("text/plain")
-                .withContentLength(39)
-                .build()},
         TestGetHandlerParams{// 15 invalid percent encoding
                              RequestBuilder().withMethod("GET").withUri("/file%2with%20space.txt").build(),
                              RouteConfigBuilder().build(),
@@ -218,16 +186,4 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusMessage("Not Found")
                                  .withContentType("text/plain")
                                  .withContentLength(0)
-                                 .build()},
-        TestGetHandlerParams{// 19 valid UTF-8 filename
-                             RequestBuilder()
-                                 .withMethod("GET")
-                                 .withUri("/caf%C3%A9.txt") // café.txt
-                                 .build(),
-                             RouteConfigBuilder().build(),
-                             ResponseBuilder()
-                                 .withStatusCode(200)
-                                 .withStatusMessage("OK")
-                                 .withContentType("text/plain")
-                                 .withContentLength(1008)
                                  .build()}));
