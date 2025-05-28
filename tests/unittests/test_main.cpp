@@ -96,5 +96,6 @@ int main(int argc, char* argv[]) {
     // testing::GTEST_FLAG(filter) = "*HandlerTest*";
     // testing::GTEST_FLAG(filter) = "*ServerConfig*";
     // testing::GTEST_FLAG(filter) = "*Redirections*";
+    // testing::GTEST_FLAG(filter) = "*GetHandler*";
     return RUN_ALL_TESTS();
 }
