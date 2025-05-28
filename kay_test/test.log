@@ -1,4 +1,4 @@
-Webserv Test Report - Mi 28. Mai 12:25:26 CEST 2025
+Webserv Test Report - Mi 28. Mai 18:29:50 CEST 2025
 
 ===== Test: GET method =====
 CURL Command: curl -s -i http://localhost:8080/
@@ -3366,7 +3366,7 @@ Host: localhost
 Response received:
 HTTP/1.1 200 OK
 Content-Type: text/plain; charset=UTF-8
-Content-Length: 335
+Content-Length: 398
 
 GATEWAY_INTERFACE=CGI/1.1
 HTTP_HOST=localhost
@@ -3380,6 +3380,7 @@ SCRIPT_NAME=/cgi/python/showenv.py
 SERVER_NAME=localhost
 SERVER_PORT=8080
 SERVER_PROTOCOL=HTTP/1.1
+UPLOAD_PATH=/home/kfreyer/workspace/webserv/kay_test/site/web1
 
 ===== Test: GET / =====
 Raw request sent:

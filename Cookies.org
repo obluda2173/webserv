@@ -1,0 +1,18 @@
+#+title: Cookies
+
+1. Parse cookie header first
+* No Cookie set
+1. Create sessionId
+2. Save sessionId in some data structure that is persistent in the server (as long as the server runs)
+   - count the requests with the same sessionID
+3. Log the session information (countVisits, method, uri, timestamp, maybe max-age)
+4. Set the cookie (response / ResponseWriter)
+
+* Cookie was set
+1. retrieve sessionID
+   - if sessionID is unknown
+     - create a new session id
+     - go forward with "No Cookie set"
+2. increment count
+3. Log the session information
+4. have a happy day
