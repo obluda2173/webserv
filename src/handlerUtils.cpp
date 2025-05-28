@@ -102,18 +102,26 @@ std::string normalizePath(const std::string& root, const std::string& uri) {
     std::istringstream iss(uri.substr(0, uri.find('?')));
     std::vector< std::string > segments;
     std::string encoded_segment;
+    int segmentSize = 0;
 
     while (std::getline(iss, encoded_segment, '/')) {
+        std::cout << "hello" << std::endl;
         std::string segment = decodePercent(encoded_segment);
+        std::cout << segment << std::endl;
         if (segment.empty() || segment == ".")
             continue;
         if (segment == "..") {
+            segmentSize--;
             if (!segments.empty())
                 segments.pop_back();
         } else {
             segments.push_back(segment);
+            segmentSize++;
         }
     }
+
+    if (segmentSize < 0)
+        return ".."; // forbidden path
 
     std::ostringstream oss;
     oss << root;

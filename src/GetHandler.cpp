@@ -61,6 +61,7 @@ void GetHandler::_serveDirectoryListing(Connection& conn, const HttpRequest& req
 void GetHandler::handle(Connection* conn, const HttpRequest& request, const RouteConfig& config) {
     HttpResponse& resp = conn->_response;
     _path = normalizePath(config.root, request.uri);
+    std::cout << _path << std::endl;
     if (!validateRequest(resp, request, config, _path, _pathStat)) {
         conn->setState(Connection::SendResponse);
         return;

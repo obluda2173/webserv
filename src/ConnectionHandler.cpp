@@ -8,6 +8,7 @@
 #include "logging.h"
 #include "utils.h"
 #include <errno.h>
+#include <iostream>
 #include <netinet/in.h>
 #include <string.h>
 #include <string>
@@ -105,17 +106,23 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 conn->setState(Connection::SendResponse);
                 break;
             }
-
             conn->_request.uri = parseOutProtocolAndHost(conn->_request.uri);
-
             if (conn->_request.uri.empty()) {
                 setErrorResponse(conn->_response, 400, RouteConfig());
                 conn->setState(Connection::SendResponse);
                 break;
             }
-
             conn->_request.query = extractQuery(conn->_request.uri);
             conn->_request.uri = normalizePath("", conn->_request.uri);
+
+            if (conn->_request.uri == "..") {
+                setErrorResponse(conn->_response, 403, RouteConfig());
+                conn->setState(Connection::SendResponse);
+                break;
+            }
+
+            if (conn->_request.uri.empty())
+                conn->_request.uri = "/";
 
             router = _routers[conn->getAddrPort()];
             route = router->match(conn->getRequest());

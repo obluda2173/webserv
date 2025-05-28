@@ -1,4 +1,4 @@
-Webserv Test Report - Di 27. Mai 19:53:58 CEST 2025
+Webserv Test Report - Mi 28. Mai 12:25:26 CEST 2025
 
 ===== Test: GET method =====
 CURL Command: curl -s -i http://localhost:8080/
@@ -3214,25 +3214,11 @@ Content-Length: 5
 
 shuai
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
-Content-Length: 0
-
-
-===== Test: POST without /upload =====
-Raw request sent:
-POST /check HTTP/1.1
-Host: localhost
+HTTP/1.1 200 OK
+Content-Type: text/html
 Content-Length: 5
 
-shuai
-Response received:
-HTTP/1.1 200 OK
-Content-Language: en-US
-Content-Length: 0
-
-HTTP/1.1 400 Bad Request
+shuaiHTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
@@ -3244,9 +3230,11 @@ Content-Length: 2
 
 shuai
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 2
+
+shHTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
@@ -3272,7 +3260,7 @@ Content-Length: 2147483648
 
 shuai
 Response received:
-HTTP/1.1 413 Payload Too Large
+HTTP/1.1 400 Bad Request
 Content-Type: text/plain
 Content-Language: en-US
 Content-Length: 0
@@ -3286,9 +3274,11 @@ Content-Length: 0
 
 shuai
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 0
+
+HTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
@@ -3304,17 +3294,15 @@ HTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
-===== Test: POST with content-length begin with 0 =====
+===== Test: POST with content-length begin with characters =====
 Raw request sent:
 POST /cgi/php/showbody.php HTTP/1.1
 Host: localhost
-Content-Length: 005
+Content-Length: ab5
 
 shuai
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
+HTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
@@ -3335,9 +3323,11 @@ Network
 
 
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 23
+
+MozillaDeveloperNetworkHTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
@@ -3359,9 +3349,12 @@ Network
 
 
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 28
+
+Mozilla
+; ;DeveloperNetworkHTTP/1.1 400 Bad Request
 Content-Length: 0
 
 
@@ -3373,7 +3366,7 @@ Host: localhost
 Response received:
 HTTP/1.1 200 OK
 Content-Type: text/plain; charset=UTF-8
-Content-Length: 0
+Content-Length: 335
 
 GATEWAY_INTERFACE=CGI/1.1
 HTTP_HOST=localhost
@@ -4040,7 +4033,7 @@ GET /.. HTTP/1.1
 Host: localhost
 
 Response received:
-HTTP/1.1 400 Bad Request
+HTTP/1.1 403 Forbidden
 Content-Type: text/plain
 Content-Language: en-US
 Content-Length: 0
@@ -4150,8 +4143,11 @@ Content-Length: 0
 
 
 Response received:
-HTTP/1.1 500 Internal Server Error
-Content-Type: text/plain
-Content-Language: en-US
+HTTP/1.1 200 NOT
+Content-Type: text/html
+set-cookie: user=abc; Path=/; Max-Age=12312312
+Content-Length: 167
+
+<html><h1 style="text-align: center; font-family: Arial, sans-serif; font-size: 25px; color: black;">Php cgi hello world.<br><br><a href="/">Return to Home</h1></html>HTTP/1.1 400 Bad Request
 Content-Length: 0
 

@@ -1,6 +1,7 @@
 #include "BodyParser.h"
 #include "Connection.h"
 #include "handlerUtils.h"
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -37,6 +38,17 @@ bool BodyParser::_checkContentLength(Connection* conn, BodyContext& bodyCtx) {
             setErrorResponse(conn->_response, 411, conn->route.cfg);
             conn->setState(Connection::SendResponse);
         }
+        return false;
+    }
+
+    std::string& str = conn->_request.headers["content-length"];
+    std::stringstream maxValStr;
+    maxValStr << std::numeric_limits< int >::max();
+    std::cout << maxValStr.str() << std::endl;
+    if (str.length() > maxValStr.str().length() ||
+        (str.length() == maxValStr.str().length() && str > maxValStr.str())) {
+        setErrorResponse(conn->_response, 400, conn->route.cfg);
+        conn->setState(Connection::SendResponse);
         return false;
     }
 
