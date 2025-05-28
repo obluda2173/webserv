@@ -1,4 +1,4 @@
-Webserv Test Report - Di 27. Mai 17:51:43 CEST 2025
+Webserv Test Report - Mi 28. Mai 07:30:55 CEST 2025
 
 ===== Test: GET /cgi/python/showenv.py, with pathinfo and querystring return autoindex =====
 Raw request sent:
@@ -625,6 +625,29 @@ Content-Length: 0
 ===== Test: DELETE /hello.test, return 204 =====
 Raw request sent:
 DELETE /hello.test HTTP/1.1
+Host: localhost
+
+Response received:
+HTTP/1.1 204 No Content
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: DELETE non empty directory /test/, return 500 =====
+Raw request sent:
+DELETE /test/ HTTP/1.1
+Host: localhost
+
+Response received:
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/plain
+Content-Language: en-US
+Content-Length: 0
+
+
+===== Test: DELETE /test/hello2.test, return 204 =====
+Raw request sent:
+DELETE /test/hello2.test HTTP/1.1
 Host: localhost
 
 Response received:
