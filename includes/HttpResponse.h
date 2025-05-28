@@ -74,7 +74,7 @@ typedef struct HttpResponse {
     IBodyProvider* body;
     std::string statusMessage;
     std::string contentType;
-    int contentLength;
+    size_t contentLength;
     std::string contentLanguage;
     std::map<std::string, std::string> headers;
 

@@ -135,6 +135,10 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
         }
         else if (headerKey == "content-length") {
             resp.contentLength = std::strtoul(headerValue.c_str(), NULL, 10);
+            if (resp.contentLength != body.size()) {
+                setErrorResponse(resp, 500, config);
+                return;
+            }
         } else if (headerKey == "content-type") {
             resp.contentType = headerValue;
         } else {
@@ -144,6 +148,9 @@ void CgiHandler::_cgiResponseSetup(const std::string& cgiOutput, HttpResponse& r
     if (resp.contentType == "") {
         setErrorResponse(resp, 500, config);
         return;
+    }
+    if (resp.contentLength == 0) {
+        resp.contentLength = body.size();
     }
     resp.body = new StringBodyProvider(body);
 }
