@@ -51,5 +51,6 @@ int main(int argc, char** argv) {
     svr->start(addrAndPorts, &g_running);
 
     svr->stop();
+    delete svr;
     return 0;
 }
