@@ -146,8 +146,19 @@ void ConnectionHandler::_handleState(Connection* conn) {
             if (conn->_request.uri.empty())
                 conn->_request.uri = "/";
 
-            if (conn->_request.headers.find("cookie") != conn->_request.headers.end())
+            if (conn->_request.headers.find("cookie") != conn->_request.headers.end()) {
                 conn->cookies = parseCookies(conn->_request.headers["cookie"]);
+            }
+            
+            if (conn->cookies.find("sessionid") != conn->cookies.end()) {
+                std::cerr << "if\n";
+                std::cerr << conn->cookies.at("sessionid") << "\n";
+            } else {
+                std::cerr << "else\n";
+                std::string sessionID = getSessionID();
+                conn->_sessionIdsDataBase[sessionID] = 1;
+                // setHeader(conn->_response, "Set-Cookie", "sessionid=" + sessionID);
+            }
 
             router = _routers[conn->getAddrPort()];
             route = router->match(conn->getRequest());
@@ -220,7 +231,7 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
 }
 
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
-    _logger.log("INFO", "Handling fd: " + to_string(fd));
+    // _logger.log("INFO", "Handling fd: " + to_string(fd));
     if (_connections.find(fd) == _connections.end()) {
         return _acceptNewConnection(fd);
     }
@@ -228,23 +239,23 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     Connection* conn = _connections[fd];
     switch (notif) {
     case READY_TO_READ:
-        _logger.log("INFO", "Ready to read");
+        // _logger.log("INFO", "Ready to read");
         _onSocketRead(conn);
         break;
     case READY_TO_WRITE:
-        _logger.log("INFO", "Ready to write");
+        // _logger.log("INFO", "Ready to write");
         _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:
-        _logger.log("INFO", "Client hung up");
+        // _logger.log("INFO", "Client hung up");
         _removeConnection(fd);
         break;
     case BROKEN_CONNECTION:
-        _logger.log("INFO", "Broken Connection");
+        // _logger.log("INFO", "Broken Connection");
         _removeConnection(fd);
         break;
     case TIMEOUT:
-        _logger.log("INFO", "Timeout");
+        // _logger.log("INFO", "Timeout");
         _removeConnection(fd);
         break;
     }

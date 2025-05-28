@@ -7,6 +7,9 @@
 #include "utils.h"
 #include <csignal>
 #include <iostream>
+#include <ctime>
+#include <string>
+#include <cstdlib>
 
 // Global flag for signal handling
 volatile sig_atomic_t g_running = 1;
@@ -19,6 +22,8 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char** argv) {
+        std::srand(static_cast< unsigned int >(std::time(0)));
+
     // Set up signal handling
     struct sigaction sa;
     sa.sa_handler = signalHandler;

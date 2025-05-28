@@ -1,6 +1,7 @@
 #include "handlerUtils.h"
 #include "utils.h"
 #include <sstream>
+#include <ctime>
 
 std::map< std::string, std::string > mimeTypes;
 struct MimeInitializer {
@@ -229,4 +230,16 @@ bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConf
     }
 
     return true;
+}
+
+std::string getSessionID() {
+    const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    std::string sessionId;
+
+
+    for (size_t i = 0; i < 16; ++i) {
+        sessionId += chars[std::rand() % chars.length()];
+    }
+
+    return sessionId;
 }
