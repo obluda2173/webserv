@@ -3,6 +3,9 @@
 
 #include <string>
 #include <sys/stat.h>
+#include <string>
+#include <cstdlib>
+#include <ctime>
 
 #include "HttpRequest.h"
 #include "HttpResponse.h"
@@ -27,5 +30,6 @@ void setResponse(HttpResponse& resp, int statusCode, const std::string& contentT
 void setErrorResponse(HttpResponse& resp, int code, const RouteConfig& config);
 bool validateRequest(HttpResponse& resp, const HttpRequest& req, const RouteConfig& config, std::string& path,
                      struct stat& pathStat);
+std::string getSessionID();
 
 #endif // HANDLERUTILS_H

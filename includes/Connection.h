@@ -64,14 +64,15 @@ class Connection {
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;
-
-  public:
+    
+    public:
     Route route;
     UploadContext uploadCtx;
     CgiContext cgiCtx;
     Buffer _readBuf;
     Buffer _sendBuf;
     BodyContext bodyCtx;
+    std::map< std::string, size_t > _sessionIdsDataBase;
     std::map< std::string, std::string > cookies;
     bool _bodyFinished;
     std::string _tempBody;
