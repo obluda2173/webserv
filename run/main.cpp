@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
         mustTranslateToRealIps(svrCfgs);
         std::map< std::string, IRouter* > routers = buildRouters(svrCfgs);
 
-        Logger* logger = new Logger();
+        Logger* logger = new Logger("log.log");
 
 #ifdef DEBUG
         logger->setLevel(Logger::DEBUGGING);
