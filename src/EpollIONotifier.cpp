@@ -60,6 +60,11 @@ void EpollIONotifier::modify(int fd, e_notif notif) {
     }
     event.data.fd = fd;
     epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event);
+
+    if (_fdInfos.find(fd) != _fdInfos.end()) {
+        _now = _clock->now();
+        _fdInfos[fd].lastActivity = _now;
+    }
 }
 
 double diffTime(timeval start, timeval end) {

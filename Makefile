@@ -13,7 +13,7 @@
 # variable's value will not change even if the variables it depends on changes later
 
 CXX := c++
-CXXFLAGS := -std=c++98 -Wall -Werror -Wextra -Wshadow
+CXXFLAGS := -std=c++98 -Wall -Werror -Wextra
 DEBUG :=
 
 SRC_DIR := src
