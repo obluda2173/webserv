@@ -113,7 +113,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
     IHandler* hdlr;
     IRouter* router;
     Route route;
-    // bool isCGIrequest;
     bool continueProcessing = true;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
@@ -149,7 +148,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
             if (conn->_request.headers.find("cookie") != conn->_request.headers.end()) {
                 conn->cookies = parseCookies(conn->_request.headers["cookie"]);
             }
-            
+
             if (conn->cookies.find("sessionid") != conn->cookies.end()) {
                 std::cerr << "if\n";
                 std::cerr << conn->cookies.at("sessionid") << "\n";

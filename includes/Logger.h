@@ -9,7 +9,7 @@
 
 class Logger : public ILogger {
   public:
-    enum LEVEL { DEBUG, INFO, WARNING, ERROR };
+    enum LEVEL { DEBUGGING, INFO, WARNING, ERROR };
 
   private:
     LEVEL _level;
