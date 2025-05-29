@@ -2,7 +2,7 @@
 #include <sys/types.h>
 
 Buffer::Buffer() {
-    _content.resize(1024);
+    _content.resize(8192);
     _size = 0;
 }
 

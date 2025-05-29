@@ -211,7 +211,7 @@ class ConnHdlrTestWithBigResponseBody : public BaseConnHdlrTest< StubLogger, int
   public:
     std::string _body;
     virtual void setupConnectionHandler() override {
-        _body = getRandomString(10000);
+        _body = getRandomString(500000);
         std::map< std::string, IHandler* > hdlrs = {{"GET", new BigRespBodyGetHandler(_body)}};
         IRouter* router = new Router(hdlrs);
         router->add("test.com", "", "GET", {});

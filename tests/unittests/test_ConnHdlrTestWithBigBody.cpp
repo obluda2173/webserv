@@ -19,15 +19,22 @@ TEST_F(ConnHdlrTestWithBigResponseBody, firstTest) {
     std::vector< t_notif > notifs = _ioNotifier->wait();
     while (notifs.size() > 0 && notifs[0].notif == READY_TO_WRITE) {
         _connHdlr->handleConnection(connfd, READY_TO_WRITE);
-        char buffer[1025];
-        ssize_t r = recv(clientfd, &buffer[0], 1024, 0);
-        buffer[r] = '\0';
-        gotResponse += buffer;
+        while (true) {
+            char buffer[1025];
+            ssize_t r = recv(clientfd, &buffer[0], 1024, 0);
+            if (r <= 0) {
+                break;
+            }
+            buffer[r] = '\0';
+            gotResponse += buffer;
+        }
         notifs = _ioNotifier->wait();
     }
 
     std::string wantResponse = "HTTP/1.1 200 OK\r\n"
-                               "Content-Length: " + std::to_string(_body.length()) + "\r\n"
+                               "Content-Length: " +
+                               std::to_string(_body.length()) +
+                               "\r\n"
                                "\r\n" +
                                _body;
 
