@@ -5,6 +5,7 @@
 #include "httpParsing.h"
 #include <climits>
 #include <cstring>
+#include <signal.h>
 #include <string.h>
 
 Connection::Connection(sockaddr_storage addr, int fd, std::string addrPort, IHttpParser* prsr, ISender* sender)
@@ -13,11 +14,23 @@ Connection::Connection(sockaddr_storage addr, int fd, std::string addrPort, IHtt
     _sendBuf = Buffer();
     _hdlr = NULL;
     _bodyFinished = false;
+    cgiCtx.cgiPipeStdin = -1;
+    cgiCtx.cgiPipeStdout = -1;
+    cgiCtx.cgiPid = -1;
 }
 
 Connection::~Connection() {
     close(_fd);
     delete _prsr;
+    if (cgiCtx.cgiPipeStdout != -1)
+        close(cgiCtx.cgiPipeStdout);
+    if (cgiCtx.cgiPipeStdin != -1)
+        close(cgiCtx.cgiPipeStdout);
+    if (cgiCtx.cgiPipeStdin != -1)
+        close(cgiCtx.cgiPipeStdout);
+    if (cgiCtx.cgiPid != -1)
+        kill(cgiCtx.cgiPid, SIGTERM);
+
     delete _wrtr;
     delete _sender;
     delete _response.body;
@@ -26,6 +39,12 @@ Connection::~Connection() {
 }
 
 HttpRequest Connection::getRequest() { return _request; }
+
+void Connection::resetCGI() {
+    cgiCtx.cgiPipeStdin = -1;
+    cgiCtx.cgiPipeStdout = -1;
+    cgiCtx.cgiPid = -1;
+}
 
 void Connection::checkRoute() {
     if (!checkValidMethod(_request.method)) {

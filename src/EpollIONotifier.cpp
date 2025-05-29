@@ -80,8 +80,6 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
             int fd = events[i].data.fd;
             t_notif notif;
             notif.fd = fd;
-            if (_fdInfos.find(fd) != _fdInfos.end())
-                _fdInfos[fd].lastActivity = _now;
 
             if (events[i].events & EPOLLHUP)
                 notif.notif = BROKEN_CONNECTION;
@@ -92,16 +90,24 @@ std::vector< t_notif > EpollIONotifier::wait(void) {
             else if (events[i].events & EPOLLOUT)
                 notif.notif = READY_TO_WRITE;
 
+            if (notif.notif != READY_TO_WRITE && _fdInfos.find(fd) != _fdInfos.end())
+                _fdInfos[fd].lastActivity = _now;
+
             results.push_back(notif);
         }
     }
 
-    for (std::map< int, FdInfo >::iterator it = _fdInfos.begin(); it != _fdInfos.end(); it++) {
-        if (it->second.timeout_ms <= diffTime(it->second.lastActivity, _now)) {
+    std::map< int, FdInfo >::iterator it = _fdInfos.begin();
+    while (it != _fdInfos.end()) {
+        std::map< int, FdInfo >::iterator current = it++; // Save current and increment
+
+        if (current->second.timeout_ms <= diffTime(current->second.lastActivity, _now)) {
             t_notif notif;
-            notif.fd = it->first;
+            notif.fd = current->first;
             notif.notif = TIMEOUT;
             results.push_back(notif);
+
+            _fdInfos.erase(current); // Erase using saved iterator
         }
     }
 

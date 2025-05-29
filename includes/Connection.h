@@ -64,8 +64,8 @@ class Connection {
     IHttpParser* _prsr;
     IResponseWriter* _wrtr;
     ISender* _sender;
-    
-    public:
+
+  public:
     Route route;
     UploadContext uploadCtx;
     CgiContext cgiCtx;
@@ -89,6 +89,7 @@ class Connection {
     void sendResponse();
     void resetResponse();
     void checkRoute();
+    void resetCGI();
 
     // getter and setter
     int getFileDes() const;

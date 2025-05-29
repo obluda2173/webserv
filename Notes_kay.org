@@ -114,4 +114,4 @@ features work properly:
 
   #+end_example
 
--
+- update lastactivity of write when you've sent a part of a response

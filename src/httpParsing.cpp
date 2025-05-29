@@ -56,7 +56,6 @@ std::string parseOutProtocolAndHost(std::string uri) {
             std::cout << "Return empty" << std::endl;
             return "";
         }
-        std::cout << "Return everything after the host" << std::endl;
         return uri.substr(pos);
     }
 
