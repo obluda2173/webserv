@@ -1,4 +1,4 @@
-Webserv Test Report - Do 29. Mai 13:16:44 CEST 2025
+Webserv Test Report - Mi 28. Mai 15:50:58 CEST 2025
 
 ===== Test: GET method =====
 CURL Command: curl -s -i http://localhost:8080/
@@ -3366,7 +3366,7 @@ Host: localhost
 Response received:
 HTTP/1.1 200 OK
 Content-Type: text/plain; charset=UTF-8
-Content-Length: 406
+Content-Length: 339
 
 GATEWAY_INTERFACE=CGI/1.1
 HTTP_HOST=localhost
