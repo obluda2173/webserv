@@ -149,7 +149,7 @@ INSTANTIATE_TEST_SUITE_P(
                                  .withStatusCode(200)
                                  .withStatusMessage("OK")
                                  .withContentType("text/html")
-                                 .withContentLength(460)
+                                 .withContentLength(474)
                                  .build()},
         TestGetHandlerParams{// 15 invalid percent encoding
                              RequestBuilder().withMethod("GET").withUri("/file%2with%20space.txt").build(),
