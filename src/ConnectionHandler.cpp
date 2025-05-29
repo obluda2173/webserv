@@ -152,7 +152,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 std::cerr << "if\n";
                 std::cerr << conn->cookies.at("sessionid") << "\n";
             } else {
-                std::cerr << "else\n";
                 std::string sessionID = getSessionID();
                 conn->_sessionIdsDataBase[sessionID] = 1;
                 // setHeader(conn->_response, "Set-Cookie", "sessionid=" + sessionID);

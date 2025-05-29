@@ -5,9 +5,10 @@ int main(int argc, char* argv[]) {
     testing::InitGoogleTest(&argc, argv);
     // Don't run the following tests
     // testing::GTEST_FLAG(filter) = "-*CgiPostHandlerTest.HandlesPostRequests*";
-    testing::GTEST_FLAG(filter) =
-        "-*ListenerTestWithMockLogging*:*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
-
+    // testing::GTEST_FLAG(filter) =
+    //     "-*ListenerTestWithMockLogging*:*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
+    // testing::GTEST_FLAG(filter) = "-*ListenerTestWithMockLogging*";
+    testing::GTEST_FLAG(filter) = "*ConnHdlrTestWithOneConnection.TestPersistenceSendInBatches*";
     // testing::GTEST_FLAG(filter) = "-*ResponseWriterTest*";
     // testing::GTEST_FLAG(filter) = "-*TestHttpParser*";
     // testing::GTEST_FLAG(filter) = "-*ListenerTest*:*ServerTest*:*TestHttpParser*";
