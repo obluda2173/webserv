@@ -7,6 +7,7 @@
 #include <cstring>
 #include <signal.h>
 #include <string.h>
+#include <sys/types.h>
 
 Connection::Connection(sockaddr_storage addr, int fd, std::string addrPort, IHttpParser* prsr, ISender* sender)
     : _state(ReadingHeaders), _addr(addr), _fd(fd), _addrPort(addrPort), _prsr(prsr), _wrtr(NULL), _sender(sender) {
@@ -96,18 +97,21 @@ void Connection::resetResponse() {
     _response = HttpResponse();
 }
 
-void Connection::sendResponse() {
+ssize_t Connection::sendResponse() {
     if (!_wrtr)
         _wrtr = new ResponseWriter(_response);
 
     _sendBuf.write(_wrtr);
 
-    _sendBuf.send(_sender, _fd);
+    ssize_t r = _sendBuf.send(_sender, _fd);
+    if (r <= 0)
+        return r;
 
     if (_response.body && !_response.body->isDone())
-        return;
+        return r;
 
     _state = Reset;
+    return r;
 }
 
 void Connection::readIntoBuf() { _readBuf.recv(_fd); }

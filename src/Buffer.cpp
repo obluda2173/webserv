@@ -1,4 +1,5 @@
 #include "Buffer.h"
+#include <sys/types.h>
 
 Buffer::Buffer() {
     _content.resize(1024);
@@ -9,14 +10,20 @@ void Buffer::write(IResponseWriter* wrtr) { _size += wrtr->write(_content.data()
 
 void Buffer::recv(int fd) {
     ssize_t r = ::recv(fd, _content.data() + _size, _content.size(), 0);
-    if (r < 0) {
+    if (r <= 0) {
         _size = 0;
         return;
     }
     _size += r;
 }
 
-void Buffer::send(ISender* sender, int fd) { advance(sender->_send(fd, _content.data(), _size)); }
+ssize_t Buffer::send(ISender* sender, int fd) {
+    ssize_t r = sender->_send(fd, _content.data(), _size);
+    if (r <= 0)
+        return r;
+    advance(r);
+    return r;
+}
 
 void Buffer::advance(size_t count) {
     memmove(_content.data(), _content.data() + count, _size - count);
