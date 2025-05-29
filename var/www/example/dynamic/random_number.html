@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            color: green;
+        }
+        form {
+            padding: 20px;
+            margin: 0 auto;
+            width: 300px;
+        }
+        p {
+            margin: 10px 0;
+        }
+        input[type='text'], input[type='checkbox'], input[type='submit'] {
+            display: block;
+            margin: 5px auto;
+        }
+        .checkbox-label {
+            display: inline-block; /* Display checkboxes inline */
+            margin-right: 10px; /* Add spacing between checkboxes and labels */
+        }
+    </style>
+</head>
+<body>
+    <h1>Webserv</h1>
+    <!-- Form with method 'post' and action 'hello_process.py' -->
+    <form method='get' action='/cgi-bin/number.sh'>
+        <input type='submit' value='Submit' />
+    </form>
+</body>
+</html>

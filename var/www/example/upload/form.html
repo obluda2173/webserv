@@ -1,5 +1,22 @@
-<h1>Upload a File</h1>
-<form method="POST" action="/upload" enctype="application/x-www-form-urlencoded">
-  <input type="file" name="file">
-  <input type="submit" value="Upload">
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload</title>
+</head>
+<body style="font-family: Arial, sans-serif; color: black;">
+
+    <h1 style="text-align: center; font-size: 30px;">Upload a File</h1>
+
+    <p style="text-align: center; font-size: 18px;">Select a file to upload:</p>
+
+    <form action="/cgi-bin/upload_cgi.py" method="post" enctype="multipart/form-data" style="text-align: center;">
+        <input type="file" name="file" style="font-size: 16px;">
+        <br><br>
+        <input type="submit" value="Upload" style="font-size: 16px; padding: 5px 10px;">
+    </form>
+
+    <p style="text-align: center; font-size: 18px;"><a href="/">Return to Home</a></p>
+
+</body>
+</html>
