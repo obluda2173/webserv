@@ -28,9 +28,11 @@ void ResponseWriter::_formatHeaders() {
     if (!_resp.contentLanguage.empty()) {
         _headers += "Content-Language: " + _resp.contentLanguage + CRLF;
     }
-    for (std::map<std::string, std::string>::iterator it = _resp.headers.begin(); it != _resp.headers.end(); it++) {
+
+    for (std::map< std::string, std::string >::iterator it = _resp.headers.begin(); it != _resp.headers.end(); it++) {
         _headers += it->first + ": " + it->second + CRLF;
     }
+
     if (_resp.contentLength > 0)
         _headers += "Content-Length: " + to_string(_resp.contentLength) + CRLF;
     else

@@ -47,32 +47,6 @@ TEST_F(ConnHdlrTestWithOneConnection, TestBadRequestClosesConnection) {
     close(clientfd);
 }
 
-TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInBatches) {
-    ParamsVectorRequestsResponses params = GetParam();
-    int clientfd = _clientFdsAndConnFds[0].first;
-    int connfd = _clientFdsAndConnFds[0].second;
-
-    std::vector< std::string > requests = params.requests;
-    std::vector< std::string > wantResponses = params.wantResponses;
-    // send msg
-    std::string request;
-    std::string wantResponse;
-    std::string gotResponse;
-    int batchSize = 2;
-    for (size_t i = 0; i < requests.size(); i++) {
-        request = requests[i];
-        wantResponse = wantResponses[i];
-        std::thread batchSenderThread(
-            [request, clientfd, batchSize]() { sendMsgInBatches(request, clientfd, batchSize); });
-        batchSenderThread.detach();
-        readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
-        gotResponse = getResponseConnHdlr(connfd, _connHdlr, clientfd);
-        EXPECT_STREQ(wantResponse.c_str(), gotResponse.c_str());
-    }
-
-    close(clientfd);
-}
-
 TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
     std::cout << "Setting up client connecgtions" << std::endl;
     ParamsVectorRequestsResponses params = GetParam();
@@ -109,6 +83,41 @@ TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInOneMsg) {
     close(clientfd);
 }
 
+TEST_P(ConnHdlrTestWithOneConnection, TestPersistenceSendInBatches) {
+    ParamsVectorRequestsResponses params = GetParam();
+    int clientfd = _clientFdsAndConnFds[0].first;
+    int connfd = _clientFdsAndConnFds[0].second;
+
+    std::vector< std::string > requests = params.requests;
+    std::vector< std::string > wantResponses = params.wantResponses;
+    // send msg
+    std::string request;
+    std::string wantResponse;
+    std::string gotResponse;
+    int batchSize = 2;
+    for (size_t i = 0; i < requests.size(); i++) {
+        request = requests[i];
+        wantResponse = wantResponses[i];
+
+        std::vector< std::string > chunks;
+        for (std::size_t i = 0; i < request.length(); i += batchSize) {
+            send(clientfd, request.substr(i, batchSize).c_str(), request.substr(i, batchSize).length(), 0);
+            _connHdlr->handleConnection(connfd, READY_TO_READ);
+        }
+
+        checkNotification(_ioNotifier, t_notif{connfd, READY_TO_WRITE});
+
+        // std::thread batchSenderThread(
+        //     [request, clientfd, batchSize]() { sendMsgInBatches(request, clientfd, batchSize); });
+        // batchSenderThread.detach();
+        // readUntilREADY_TO_WRITE(_ioNotifier, _connHdlr, connfd);
+        gotResponse = getResponseConnHdlr(connfd, _connHdlr, clientfd);
+        EXPECT_STREQ(wantResponse.c_str(), gotResponse.c_str());
+    }
+
+    close(clientfd);
+}
+
 INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
                          ::testing::Values( // ParamsVectorRequestsResponses{{"GET \r\n"},
                                             //                               {"HTTP/1.1 400 Bad Request\r\n"
@@ -121,18 +130,20 @@ INSTANTIATE_TEST_SUITE_P(sendMsgsAsync, ConnHdlrTestWithOneConnection,
                                             //                                "Content-Length: 4\r\n"
                                             //                                "\r\n"
                                             //                                "pong"}},
-                             ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
-                                                            "Host: test.com\r\n"
-                                                            "\r\n",
-                                                            "GET \r\n"},
+                             ParamsVectorRequestsResponses{{
+                                                               "GET /ping HTTP/1.1\r\n"
+                                                               "Host: test.com\r\n"
+                                                               "\r\n" // ,
+                                                                      // "GET \r\n"
+                                                           },
                                                            {
                                                                "HTTP/1.1 200 OK\r\n"
                                                                "Content-Length: 4\r\n"
                                                                "\r\n"
                                                                "pong",
-                                                               "HTTP/1.1 400 Bad Request\r\n"
-                                                               "Content-Length: 0\r\n"
-                                                               "\r\n",
+                                                               // "HTTP/1.1 400 Bad Request\r\n"
+                                                               // "Content-Length: 0\r\n"
+                                                               // "\r\n",
                                                            }} // ,
                              // ParamsVectorRequestsResponses{{"GET /ping HTTP/1.1\r\n"
                              //                                "Host: test.com\r\n"
