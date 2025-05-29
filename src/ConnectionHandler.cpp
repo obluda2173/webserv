@@ -107,8 +107,6 @@ int ConnectionHandler::_acceptNewConnection(int socketfd) {
 }
 
 void ConnectionHandler::_handleState(Connection* conn) {
-    _logger.log("INFO", "Handle state: " + to_string(conn->getFileDes()));
-
     HttpResponse resp;
     IHandler* hdlr;
     IRouter* router;
@@ -118,6 +116,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
         Connection::STATE currentState = conn->getState();
         switch (currentState) {
         case Connection::ReadingHeaders:
+            _logger.log("DEBUG", std::string(conn->_readBuf.data(), conn->_readBuf.size()));
             conn->parseBuf();
             continueProcessing = (conn->getState() != currentState);
             break;
@@ -230,7 +229,7 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
 }
 
 int ConnectionHandler::handleConnection(int fd, e_notif notif) {
-    // _logger.log("INFO", "Handling fd: " + to_string(fd));
+    _logger.log("DEBUG", "Handling fd: " + to_string(fd));
     if (_connections.find(fd) == _connections.end()) {
         return _acceptNewConnection(fd);
     }
@@ -238,23 +237,23 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
     Connection* conn = _connections[fd];
     switch (notif) {
     case READY_TO_READ:
-        // _logger.log("INFO", "Ready to read");
+        _logger.log("DEBUG", "Ready to read");
         _onSocketRead(conn);
         break;
     case READY_TO_WRITE:
-        // _logger.log("INFO", "Ready to write");
+        _logger.log("DEBUG", "Ready to write");
         _onSocketWrite(conn);
         break;
     case CLIENT_HUNG_UP:
-        // _logger.log("INFO", "Client hung up");
+        _logger.log("DEBUG", "Client hung up");
         _removeConnection(fd);
         break;
     case BROKEN_CONNECTION:
-        // _logger.log("INFO", "Broken Connection");
+        _logger.log("DEBUG", "Broken Connection");
         _removeConnection(fd);
         break;
     case TIMEOUT:
-        // _logger.log("INFO", "Timeout");
+        _logger.log("DEBUG", "Timeout");
         _removeConnection(fd);
         break;
     }
