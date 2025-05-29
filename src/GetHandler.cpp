@@ -27,7 +27,7 @@ bool GetHandler::_getDirectoryListing(const std::string& dirPath, const std::str
         if (stat(fullPath.c_str(), &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
             name += "/";
         }
-        html << "<li><a href=\"" << name << "\">" << name << "</a></li>\n";
+        html << "<li><a href=\"" << requestPath << "/" << name << "\">" << name << "</a></li>\n";
     }
     closedir(dir);
     html << "</ul></body></html>\n";

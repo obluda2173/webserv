@@ -3,7 +3,6 @@
 #include <ctime>
 #include <errno.h>
 #include <fcntl.h>
-#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
