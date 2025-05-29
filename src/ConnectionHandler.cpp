@@ -113,6 +113,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
     IRouter* router;
     Route route;
     bool continueProcessing = true;
+    std::string sessionID;
     while (continueProcessing) {
         Connection::STATE currentState = conn->getState();
         switch (currentState) {
@@ -149,14 +150,46 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 conn->cookies = parseCookies(conn->_request.headers["cookie"]);
             }
 
+            ///////////////
+            // cookies   //
+            ///////////////
+
             if (conn->cookies.find("sessionid") != conn->cookies.end()) {
+                // 1. retrieve sessionID
+                sessionID = conn->cookies.at("sessionid");
+                if (_sessionIdsDataBase.find(sessionID) == _sessionIdsDataBase.end()) {
+                    // 1. Create sessionId
+                    sessionID = getSessionID();
+                    // 2. Save sessionId in some data structure that is persistent in the server (as long as the server
+                    // runs)
+                    _sessionIdsDataBase[sessionID] = 1;
+                    // 3. Log the session information (countVisits, method, uri, timestamp, maybe max-age)
+                    _logger.log("INFO", "session created: " + sessionID);
+                    // 4. Set the cookie (response / ResponseWriter)
+                    setHeader(conn->_response, "Set-Cookie", "sessionid=" + sessionID);
+                } else {
+                    _sessionIdsDataBase[sessionID] += 1;
+                }
                 std::cerr << "if\n";
                 std::cerr << conn->cookies.at("sessionid") << "\n";
             } else {
-                std::string sessionID = getSessionID();
-                conn->_sessionIdsDataBase[sessionID] = 1;
-                // setHeader(conn->_response, "Set-Cookie", "sessionid=" + sessionID);
+                // 1. Create sessionId
+                sessionID = getSessionID();
+                // 2. Save sessionId in some data structure that is persistent in the server (as long as the server
+                // runs)
+                _sessionIdsDataBase[sessionID] = 1;
+                // 3. Log the session information (countVisits, method, uri, timestamp, maybe max-age)
+                _logger.log("INFO", "session created: " + sessionID);
+                // 4. Set the cookie (response / ResponseWriter)
+                setHeader(conn->_response, "Set-Cookie", "sessionid=" + sessionID);
             }
+            // 3. Log the session information (countVisits, method, uri, timestamp, maybe max-age)
+            _logger.log("INFO", "Number of requests from sessionID " + sessionID + " = " +
+                                    to_string(_sessionIdsDataBase[sessionID]));
+
+            ///////////////
+            // cookies   //
+            ///////////////
 
             router = _routers[conn->getAddrPort()];
             route = router->match(conn->getRequest());
