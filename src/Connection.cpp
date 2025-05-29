@@ -45,6 +45,8 @@ void Connection::resetCGI() {
     cgiCtx.cgiPipeStdin = -1;
     cgiCtx.cgiPipeStdout = -1;
     cgiCtx.cgiPid = -1;
+    cgiCtx.cgiOutput = "";
+    cgiCtx.state = CgiContext::Forking;
 }
 
 void Connection::checkRoute() {
