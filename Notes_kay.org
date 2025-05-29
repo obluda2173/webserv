@@ -96,3 +96,22 @@ index       index.html index.htm
   - [ ] test for overlapping uploadBody and headers of following request
 
 - [ ] Make sure that there are no leaks (handle with signal)
+
+* notes (evaluation)
+- checking recv/write/send/read return values
+- check why bigbodyresponse fails with content size bigger than ~1100
+- do some more basic check
+  #+begin_example
+Basic checks
+
+Using telnet, curl, prepared files, demonstrate that the following
+features work properly:
+
+    GET, POST and DELETE requests should work.
+    UNKNOWN requests should not result in a crash.
+    For every test you should receive the appropriate status code.
+    Upload some file to the server and get it back.
+
+  #+end_example
+
+-

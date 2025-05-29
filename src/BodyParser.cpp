@@ -44,7 +44,6 @@ bool BodyParser::_checkContentLength(Connection* conn, BodyContext& bodyCtx) {
     std::string& str = conn->_request.headers["content-length"];
     std::stringstream maxValStr;
     maxValStr << std::numeric_limits< int >::max();
-    std::cout << maxValStr.str() << std::endl;
     if (str.length() > maxValStr.str().length() ||
         (str.length() == maxValStr.str().length() && str > maxValStr.str())) {
         setErrorResponse(conn->_response, 400, conn->route.cfg);
