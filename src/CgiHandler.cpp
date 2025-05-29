@@ -58,7 +58,8 @@ void CgiHandler::handle(Connection* conn, const HttpRequest& request, const Rout
                 return;
             }
             if (conn->_bodyFinished) {
-                close(ctx.cgiPipeStdin);
+                if (ctx.cgiPipeStdin != -1)
+                    close(ctx.cgiPipeStdin);
                 ctx.state = CgiContext::ReadingStdout;
                 conn->setState(Connection::HandlingCgi);
                 return;

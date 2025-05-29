@@ -164,7 +164,7 @@ run_test "POST chunked upload (.txt file)" \
   "http://$HOST:$PORT/upload" \
   "201" \
   "Created /upload"
-rm /home/kfreyer/workspace/webserv/kay_test/site/web1/data/upload
+rm /home/kfreyer/workspace/intra-uuid-21a959ef-87f8-4b9c-b91e-0fc428de0342-6490085-dyao/kay_test/site/web1/data/upload
 
 run_test "Same ip and port, different servername: webserv.com" \
   -s -i \

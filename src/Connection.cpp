@@ -26,9 +26,7 @@ Connection::~Connection() {
     if (cgiCtx.cgiPipeStdout != -1)
         close(cgiCtx.cgiPipeStdout);
     if (cgiCtx.cgiPipeStdin != -1)
-        close(cgiCtx.cgiPipeStdout);
-    if (cgiCtx.cgiPipeStdin != -1)
-        close(cgiCtx.cgiPipeStdout);
+        close(cgiCtx.cgiPipeStdin);
     if (cgiCtx.cgiPid != -1)
         kill(cgiCtx.cgiPid, SIGTERM);
 

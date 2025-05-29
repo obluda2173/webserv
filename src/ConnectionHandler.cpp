@@ -170,8 +170,6 @@ void ConnectionHandler::_handleState(Connection* conn) {
                 } else {
                     _sessionIdsDataBase[sessionID] += 1;
                 }
-                std::cerr << "if\n";
-                std::cerr << conn->cookies.at("sessionid") << "\n";
             } else {
                 // 1. Create sessionId
                 sessionID = getSessionID();
