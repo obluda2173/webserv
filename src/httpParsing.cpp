@@ -51,9 +51,7 @@ std::string parseOutProtocolAndHost(std::string uri) {
     size_t pos = 7;
     pos = uri.find("/", pos);
     if (pos != std::string::npos) {
-        std::cout << uri.substr(0, pos) << std::endl;
         if (!isValidHostString(uri.substr(0, pos))) {
-            std::cout << "Return empty" << std::endl;
             return "";
         }
         return uri.substr(pos);

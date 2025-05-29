@@ -8,13 +8,12 @@ Buffer::Buffer() {
 
 void Buffer::write(IResponseWriter* wrtr) { _size += wrtr->write(_content.data() + _size, _content.size() - _size); }
 
-void Buffer::recv(int fd) {
+ssize_t Buffer::recv(int fd) {
     ssize_t r = ::recv(fd, _content.data() + _size, _content.size(), 0);
-    if (r <= 0) {
-        _size = 0;
-        return;
-    }
+    if (r <= 0)
+        return r;
     _size += r;
+    return r;
 }
 
 ssize_t Buffer::send(ISender* sender, int fd) {

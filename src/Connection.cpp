@@ -114,7 +114,7 @@ ssize_t Connection::sendResponse() {
     return r;
 }
 
-void Connection::readIntoBuf() { _readBuf.recv(_fd); }
+ssize_t Connection::readIntoBuf() { return _readBuf.recv(_fd); }
 
 void Connection::parseBuf() {
     size_t count = 0;

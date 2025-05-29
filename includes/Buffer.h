@@ -18,7 +18,7 @@ class Buffer {
 
     void print();
     void write(IResponseWriter* wrtr);
-    void recv(int fd);
+    ssize_t recv(int fd);
 
     ssize_t send(ISender* sender, int fd);
     void advance(size_t count);
