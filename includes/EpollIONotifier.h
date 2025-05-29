@@ -31,7 +31,7 @@ class EpollIONotifier : public IIONotifier {
   public:
     EpollIONotifier(ILogger& logger, IClock* clock = new SystemClock());
     ~EpollIONotifier(void);
-    void add(int fd, long timeout_ms = 30000);
+    void add(int fd, long timeout_ms = 10000);
     void addNoTimeout(int fd);
     void modify(int fd, e_notif notif);
     void del(int fd);

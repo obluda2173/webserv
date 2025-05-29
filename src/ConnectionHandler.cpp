@@ -9,6 +9,7 @@
 #include "utils.h"
 #include <errno.h>
 #include <netinet/in.h>
+#include <signal.h>
 #include <string.h>
 #include <string>
 #include <sys/socket.h>
@@ -89,9 +90,9 @@ void ConnectionHandler::_addClientConnection(int connfd, struct sockaddr_storage
 
 void ConnectionHandler::_removeConnection(int connfd) {
     logDisconnect(_logger, _connections[connfd]->getAddr());
+    _ioNotifier.del(connfd);
     delete _connections[connfd];
     _connections.erase(connfd);
-    _ioNotifier.del(connfd);
 }
 
 int ConnectionHandler::_acceptNewConnection(int socketfd) {
@@ -219,6 +220,7 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
         }
         if (conn->getState() == Connection::Reset) {
             conn->resetResponse();
+            conn->resetCGI();
             conn->_bodyFinished = false;
             conn->setState(Connection::ReadingHeaders);
             _handleState(conn); // possibly data inside Connection
@@ -252,8 +254,10 @@ int ConnectionHandler::handleConnection(int fd, e_notif notif) {
         _removeConnection(fd);
         break;
     case TIMEOUT:
-        _logger.log("DEBUG", "Timeout");
-        _removeConnection(fd);
+        _logger.log("INFO", "Timeout");
+        setErrorResponse(conn->_response, 408, conn->route.cfg);
+        conn->setState(Connection::SendResponse);
+        _updateNotifier(conn);
         break;
     }
     return fd;
