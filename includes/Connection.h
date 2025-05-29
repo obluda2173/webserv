@@ -86,7 +86,7 @@ class Connection {
     void setState(Connection::STATE state);
     void readIntoBuf();
     void parseBuf();
-    void sendResponse();
+    ssize_t sendResponse();
     void resetResponse();
     void checkRoute();
     void resetCGI();

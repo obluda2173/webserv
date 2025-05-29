@@ -212,7 +212,11 @@ void ConnectionHandler::_onSocketWrite(Connection* conn) {
     }
 
     if (conn->getState() == Connection::SendResponse) {
-        conn->sendResponse();
+        ssize_t r = conn->sendResponse();
+        if (r < 0) {
+            _removeConnection(conn->getFileDes());
+            return;
+        }
 
         if (conn->_response.statusCode >= 400) {
             _removeConnection(conn->getFileDes());

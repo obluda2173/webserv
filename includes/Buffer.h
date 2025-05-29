@@ -5,6 +5,7 @@
 #include "ResponseWriter.h"
 #include <string>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <vector>
 
 class Buffer {
@@ -18,7 +19,8 @@ class Buffer {
     void print();
     void write(IResponseWriter* wrtr);
     void recv(int fd);
-    void send(ISender* sender, int fd);
+
+    ssize_t send(ISender* sender, int fd);
     void advance(size_t count);
     void clear();
     size_t size() const;
