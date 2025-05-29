@@ -14,9 +14,9 @@ size_t random_up_to(size_t size) {
 class MockSender : public ISender {
   public:
     std::string response;
-    virtual size_t _send(int fd, char* buf, size_t size) override {
+    virtual ssize_t _send(int fd, char* buf, size_t size) override {
         (void)fd;
-        size_t randomNbr = random_up_to(size);
+        ssize_t randomNbr = random_up_to(size);
         response += std::string(buf, randomNbr);
         return randomNbr;
     }
