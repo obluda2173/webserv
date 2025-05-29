@@ -6,10 +6,10 @@
 #include "ServerBuilder.h"
 #include "utils.h"
 #include <csignal>
-#include <iostream>
-#include <ctime>
-#include <string>
 #include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <string>
 
 // Global flag for signal handling
 volatile sig_atomic_t g_running = 1;
@@ -22,7 +22,7 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char** argv) {
-        std::srand(static_cast< unsigned int >(std::time(0)));
+    std::srand(static_cast< unsigned int >(std::time(0)));
 
     // Set up signal handling
     struct sigaction sa;
@@ -48,6 +48,13 @@ int main(int argc, char** argv) {
         std::map< std::string, IRouter* > routers = buildRouters(svrCfgs);
 
         Logger* logger = new Logger();
+
+#ifdef DEBUG
+        logger->setLevel(Logger::DEBUGGING);
+#else
+        logger->setLevel(Logger::INFO);
+#endif
+
         EpollIONotifier* ioNotifier = new EpollIONotifier(*logger);
         ConnectionHandler* connHdlr = new ConnectionHandler(routers, *logger, *ioNotifier);
         Server* svr = ServerBuilder().setLogger(logger).setIONotifier(ioNotifier).setConnHdlr(connHdlr).build();

@@ -14,6 +14,7 @@
 
 CXX := c++
 CXXFLAGS := -std=c++98 -Wall -Werror -Wextra -Wshadow
+DEBUG :=
 
 SRC_DIR := src
 OBJ_DIR := obj
@@ -57,11 +58,14 @@ NAME := webserv
 all: $(NAME)
 
 $(NAME): $(OBJ_FILES) $(RUN_DIR)/main.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $(NAME) $(INCLUDES)
+	$(CXX) $(CXXFLAGS) $(DEBUG) $^ -o $(NAME) $(INCLUDES)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(DEBUG) $(INCLUDES) -c $< -o $@
+
+debug:
+	$(MAKE) $(NAME) DEBUG=-DDEBUG
 
 unittest: prepare_unittests
 	cmake -S . -B build && \
