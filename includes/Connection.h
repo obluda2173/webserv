@@ -84,7 +84,7 @@ class Connection {
                ISender* sender = new SystemSender());
     STATE getState() const;
     void setState(Connection::STATE state);
-    void readIntoBuf();
+    ssize_t readIntoBuf();
     void parseBuf();
     ssize_t sendResponse();
     void resetResponse();

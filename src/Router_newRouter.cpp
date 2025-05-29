@@ -1,9 +1,9 @@
 #include "Router.h"
 #include "CgiHandler.h"
 #include "ConfigStructure.h"
+#include "DeleteHandler.h"
 #include "GetHandler.h"
 #include "UploadHandler.h"
-#include "DeleteHandler.h"
 #include "utils.h"
 
 void addAllMethods(std::string svrName, std::string prefix, RouteConfig cfg, IRouter* r) {

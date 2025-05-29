@@ -199,8 +199,7 @@ void ConnectionHandler::_handleState(Connection* conn) {
 }
 
 void ConnectionHandler::_onSocketRead(Connection* conn) {
-    conn->readIntoBuf();
-    if (conn->_readBuf.size() == 0) // EOF
+    if (conn->readIntoBuf() <= 0) // EOF or error
         return _removeConnection(conn->getFileDes());
     _handleState(conn);
     return;
