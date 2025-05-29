@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Story Continuation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Comments</h1>
+
+  <label for="username">Your name:</label><br>
+  <input type="text" id="username" name="username" placeholder="Anonymous"><br><br>
+
+  <form id="story-form" method="post">
+    <label for="story">Your continuation:</label><br>
+    <textarea id="story" name="story" required maxlength="5000"></textarea><br>
+    <button class="primary-btn" type="submit">Submit</button>
+    <button class="cancel-btn" type="reset">Cancel</button>
+    <button id="clear-btn" class="cancel-btn" type="button">Clear All Stories</button>
+    <button id="delete-btn" class="cancel-btn" type="button">Delete User file</button>
+  </form>
+
+  <p id="status-message"></p>
+  
+  <h2>Previous Comments:</h2>
+  <ul id="story-list"></ul>
+  
+  <script src="script.js"></script>
+
+</body>
+</html>

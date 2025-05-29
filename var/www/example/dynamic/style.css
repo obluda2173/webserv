@@ -1,0 +1,98 @@
+body {
+	font-family: Arial, sans-serif;
+	max-width: 600px;
+	margin: 50px auto;
+	/* padding: 20px; */
+	background-color: #ffffff;
+}
+
+h1 {
+	text-align: center;
+}
+
+textarea {
+	width: 100%;
+	height: 150px;
+	font-size: 16px;
+	padding: 10px;
+}
+
+.primary-btn {
+  background-color: blue;
+  color: white;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: gray;
+  color: black;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+#status-message {
+  background-color: lightyellow;
+  border: 1px solid goldenrod;
+  padding: 10px;
+  margin-top: 10px;
+  display: none; /* Hidden by default */
+  font-weight: bolder;
+  border-radius: 4px;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+#status-message.hidden {
+  opacity: 0;
+}
+
+#story-list {
+  background-color: rgba(255, 1, 1, 0.358);
+  border: 1px solid goldenrod;
+  padding: 10px;
+  margin-top: 10px;
+  display: none; /* Hidden by default */
+  font-weight: bolder;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#story-list li {
+  margin: 8px 0;
+  padding: 10px 15px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  word-wrap: break-word;
+  position: relative;
+  font-weight: normal;
+  color: #333;
+  line-height: 1.4;
+  font-family: Arial, sans-serif;
+}
+
+#story-list li .timestamp {
+  position: absolute;
+  right: 12px;
+  bottom: 1px;
+  font-size: 0.75em;
+  color: #666;
+  font-style: italic;
+}
+
+.story-number {
+  font-weight: bold;
+  margin-right: 6px;
+  color: #555;
+}
+
+.story-user {
+  font-style: italic;
+  color: darkslategray;
+  margin-left: 10px;
+}
