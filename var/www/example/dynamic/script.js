@@ -11,6 +11,49 @@ function showMessage(message, duration = 1000) {
 }
 
 // Load saved stories on page load
+function fetchStoriesFromDirectory() {
+  fetch("/../upload/")
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Failed to fetch directory listing");
+    }
+    return response.text(); // ✅ Read the body of the response as plain text (HTML)
+  })
+  .then(html => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const links = doc.querySelectorAll("a");
+
+    const jsonFiles = Array.from(links)
+      .map(link => link.getAttribute("href"))
+      .filter(name => name.endsWith(".json"));
+
+    return jsonFiles;
+  })
+  .then(fileNames => {
+    fileNames.forEach(filename => {
+      fetch(filename, {
+        method: "GET",
+        version: "1.1",
+        headers: { "Content-Type": "application/json" }})
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Failed to load " + filename);
+          }
+          return response.json();
+        })
+        .then(data => {
+          addStoryToList(data.text, new Date(data.time), data.user);
+        })
+        .catch(err => console.error("Error loading story:", filename, err));
+    });
+  })
+  .catch(err => {
+    console.error("Failed to fetch or parse directory listing:", err);
+  });
+}
+
+window.addEventListener("DOMContentLoaded", fetchStoriesFromDirectory);
 
 
 function escapeHtml(text) {
