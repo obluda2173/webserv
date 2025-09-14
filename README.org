@@ -157,6 +157,9 @@ curl -X DELETE http://127.0.0.1:8080/uploads/oldfile
 * Submission & evaluation notes
 This project follows the course requirements for Webserv; the configuration-driven multi-listen behavior, expected methods, and CGI handling were implemented and tested. For full details of the subject and grading rubric consult the project subject.
 
+* Little snippet of the webserv architecture:
+[[file:./media/webserv-architecture.png][Link to the image]]
+
 * Team
 - [[https://github.com/obluda2173][Erik]]
 - [[https://github.com/Keisn1][Kay]]
