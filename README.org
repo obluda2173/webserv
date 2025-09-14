@@ -1,0 +1,159 @@
+#+title: Webserv — README
+#+author: Erik Kay Yao
+#+date: 2025-09-14
+#+OPTIONS: toc:nil
+
+* Project overview
+Webserv is a non-blocking HTTP/1.x server written in **C++98** that implements the mandatory features of the course subject and the bonus parts we completed (cookies/session support and multiple CGI types). The implementation follows the project specification provided by the course (executable invocation, non-blocking I/O, required methods, config-file-driven servers). :contentReference[oaicite:0]{index=0}
+
+* Status
+- :DONE: Mandatory requirements implemented (GET, POST, DELETE, static files, uploads, CGI, error pages).
+- :DONE: Bonus implemented:
+  - Cookie & basic session management (file-backed sessions).
+  - Multiple CGI types handled (bash and python).
+
+* Quick facts (from subject)
+- Executable usage: `./webserv [configuration file]`. :contentReference[oaicite:1]{index=1}
+- Must be non-blocking and rely on a single poll-like construct for all I/O. :contentReference[oaicite:2]{index=2}
+- Project language: **C++98** (compile flags: `-Wall -Wextra -Werror -std=c++98`). :contentReference[oaicite:3]{index=3}
+
+* Features (what we implemented)
+- Non-blocking single-poll I/O loop (epoll on Linux, kqueue fallback on macOS).
+- Serve multiple interfaces/ports defined in the configuration file.
+- Static file serving with correct Content-Type and Content-Length.
+- Directory index / default index file handling.
+- Optional autoindex (directory listing) per location.
+- Error pages (customizable per-server; defaults provided).
+- Request body size limit (configurable).
+- File uploads with configurable storage path.
+- CGI support:
+  - Execute CGI based on file extension.
+  - Proper environment variables passed to CGI.
+  - Correct handling of chunked requests (un-chunking for CGIs).
+  - Demo CGI: PHP-CGI and Python script examples included.
+- HTTP methods: GET, POST, DELETE (configured per location).
+- Redirect handling per-location.
+- Bonus: Cookies and session management:
+  - `Set-Cookie` generation on session creation.
+  - Simple file-backed session store (secure-ish IDs, TTL configurable).
+- Stress-friendly: Designed to remain operational under connection load (non-blocking).
+
+* Build
+#+BEGIN_SRC sh
+# Build (GNU/Linux)
+make
+
+# Clean
+make clean
+make fclean
+make re
+#+END_SRC
+
+* Compiler flags
+We compile with:
+#+BEGIN_SRC sh
+g++ -Wall -Wextra -Werror -std=c++98 ...
+#+END_SRC
+
+Makefile targets: `all`, `$(NAME)` (webserv), `clean`, `fclean`, `re`.
+
+* Configuration file
+We use a configuration format inspired by NGINX (simple, no regex required). The server listens on interface:port entries and defines per-location rules. See `config/webserv.conf.example` in the repo. Example snippet:
+
+#+BEGIN_SRC text
+server {
+    server_name example.com;
+    root /home/erian/Desktop/submit/webserv/configs/var/www/example;
+    listen 127.0.0.1:8080;
+
+    error_page 400 /error_pages/400.html;
+    error_page 404 /error_pages/404.html;
+    error_page 500 /error_pages/500.html;
+    error_page 505 /error_pages/505.html;
+
+    index index.html;
+    autoindex on;
+
+    location /static {
+        index page.html;
+        autoindex on;
+        allow_methods GET;
+    }
+
+    location /dynamic {
+        autoindex on;
+        allow_methods GET DELETE;
+    }
+
+    location /upload {
+        autoindex on;
+        allow_methods GET POST DELETE;
+        client_max_body_size 1m;
+    }
+
+    location /cgi-bin {
+        allow_methods GET POST;
+        cgi_ext .sh /bin/bash;
+        cgi_ext .py /usr/bin/python3;
+    }
+
+    location /old_static {
+        return 302 /static/page.html;
+    }
+
+    location /google {
+        return 301 https://google.com;
+    }
+
+    location /redirect {
+        allow_methods GET;
+        autoindex on;
+    }
+}
+#+END_SRC
+
+* Running
+To start:
+#+BEGIN_SRC sh
+./webserv configs/default.conf
+#+END_SRC
+
+Open `http://127.0.0.1:8080/` in your browser.
+
+* Examples / common tasks
+
+- GET static file:
+#+BEGIN_SRC sh
+curl -v http://127.0.0.1:8080/index.html
+#+END_SRC
+
+- POST file upload (multipart/form-data):
+#+BEGIN_SRC sh
+curl -F "file=@/path/to/localfile" http://127.0.0.1:8080/upload
+#+END_SRC
+
+- Delete a resource:
+#+BEGIN_SRC sh
+curl -X DELETE http://127.0.0.1:8080/uploads/oldfile
+#+END_SRC
+
+* Design notes & implementation details
+- Single event loop: uses `epoll` on Linux. Every active socket is polled; read/write events are handled without blocking in the handlers.
+- No read/write is performed outside the poll loop.
+- Non-blocking file descriptors for accepted sockets and pipes communicating with CGI.
+- Request parsing: incremental state machine that tolerates partial reads and supports chunked and non-chunked bodies.
+- CGI handling:
+  - CGI processes are forked (allowed per subject) only for CGI handling.
+  - Environment variables match CGI/HTTP expectations (REQUEST_METHOD, QUERY_STRING, CONTENT_LENGTH, CONTENT_TYPE, SCRIPT_NAME, PATH_INFO, SERVER_PROTOCOL, SERVER_PORT, REMOTE_ADDR, etc.).
+  - For chunked request bodies, the server un-chunks the body before passing to the CGI stdin.
+  - If CGI returns no Content-Length, the server treats EOF as end of body (per spec).
+- Sessions (bonus):
+  - On first login/request, server generates an unpredictable session ID (UUID-v4-like), sets `Set-Cookie: ID=<id>`.
+
+* Submission & evaluation notes
+This project follows the course requirements for Webserv; the configuration-driven multi-listen behavior, expected methods, and CGI handling were implemented and tested. For full details of the subject and grading rubric consult the project subject. :contentReference[oaicite:5]{index=5}
+
+* Team / contributors
+- [[https://github.com/obluda2173][Erik]]
+- [[https://github.com/Keisn1][Kay]]
+- [[https://github.com/DiqingJunYao][Yao]]
